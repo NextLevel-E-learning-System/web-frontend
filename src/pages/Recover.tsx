@@ -10,15 +10,25 @@ import SendIcon from '@mui/icons-material/Send'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
+import { useResetPassword } from '@/features/auth/hooks'
 
 export default function Recover() {
+  const reset = useResetPassword()
   return (
     <AuthShell title='Redefinir senha'>
       <Box
         component='form'
-        onSubmit={e => {
+        onSubmit={async e => {
           e.preventDefault()
-          alert('Nova senha enviada.')
+          const data = new FormData(e.currentTarget as HTMLFormElement)
+          const email = String(data.get('email') || '')
+          try {
+            await reset.mutateAsync({ email })
+            alert('Se o email existir, uma nova senha foi enviada.')
+          } catch (err) {
+            console.error(err)
+            alert('Não foi possível processar o pedido agora.')
+          }
         }}
       >
         <Typography color='text.secondary' sx={{ mb: 2 }}>
@@ -30,6 +40,7 @@ export default function Recover() {
           type='email'
           required
           margin='normal'
+          name='email'
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
@@ -45,8 +56,9 @@ export default function Recover() {
             size='large'
             sx={{ borderRadius: 8 }}
             endIcon={<SendIcon />}
+            disabled={reset.isPending}
           >
-            Enviar
+            {reset.isPending ? 'Enviando...' : 'Enviar'}
           </Button>
           <Button component={RouterLink} to='/login'  sx={{ borderRadius: 8 }} variant='outlined'  >
             Voltar ao login

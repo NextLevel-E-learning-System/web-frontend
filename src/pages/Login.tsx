@@ -14,16 +14,29 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import SendIcon from '@mui/icons-material/Send'
+import { useLogin } from '@/features/auth/hooks'
+import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
   const [showPass, setShowPass] = useState(false)
+  const navigate = useNavigate()
+  const login = useLogin()
   return (
     <AuthShell title='Login'>
       <Box
         component='form'
-        onSubmit={e => {
+        onSubmit={async e => {
           e.preventDefault()
-          window.location.href = '/dashboard'
+          const data = new FormData(e.currentTarget as HTMLFormElement)
+          const email = String(data.get('email') || '')
+          const senha = String(data.get('senha') || '')
+          try {
+            await login.mutateAsync({ email, senha })
+            navigate('/dashboard')
+          } catch (err) {
+            console.error(err)
+            alert('Falha no login')
+          }
         }}
       >
         <TextField
@@ -32,6 +45,7 @@ export default function Login() {
           type='email'
           required
           margin='normal'
+          name='email'
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
@@ -46,6 +60,7 @@ export default function Login() {
           type={showPass ? 'text' : 'password'}
           required
           margin='normal'
+          name='senha'
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
@@ -73,8 +88,9 @@ export default function Login() {
           variant='contained'
           size='large'
           sx={{ mt: 2, borderRadius: 8 }}  endIcon={<SendIcon />}
+          disabled={login.isPending}
         >
-          Entrar
+          {login.isPending ? 'Entrando...' : 'Entrar'}
         </Button>
         <Typography variant='body2' sx={{ mt: 2, textAlign: 'center' }}>
           Não tem conta?{' '}
