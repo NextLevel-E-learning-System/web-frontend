@@ -120,23 +120,3 @@ export function useDashboard() {
   })
 }
 
-export function useDashboardFuncionario() {
-  return useQuery<DashboardBase>({
-    queryKey: ['users','dashboard','funcionario'],
-    queryFn: () => authGet<DashboardBase>('/users/v1/dashboard/funcionario'),
-  })
-}
-
-export function useDashboardInstrutor() {
-  return useQuery<DashboardBase>({
-    queryKey: ['users','dashboard','instrutor'],
-    queryFn: () => authGet<DashboardBase>('/users/v1/dashboard/instrutor'),
-  })
-}
-
-export function useDashboardAdmin() {
-  return useQuery<DashboardBase>({
-    queryKey: ['users','dashboard','admin'],
-    queryFn: () => authGet<DashboardBase>('/users/v1/admin/dashboard'),
-  })
-}

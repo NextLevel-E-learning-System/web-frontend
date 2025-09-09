@@ -11,6 +11,7 @@ import Register from './pages/Register'
 import Recover from './pages/Recover'
 import EmployeeDashboard from './pages/EmployeeDashboard'
 import AdminDashboard from './pages/AdminDashboard'
+import InstrutorDashboard from './pages/InstrutorDashboard'
 
 const queryClient = new QueryClient()
 
@@ -78,6 +79,7 @@ const App = () => (
           <Route path='/recover' element={<Recover />} />
           <Route path='/dashboard' element={<EmployeeDashboard />} />
           <Route path='/admin' element={<AdminDashboard />} />
+          <Route path='/instrutor' element={<InstrutorDashboard />} />
           <Route path='*' element={<NotFound />} />
         </Routes>
       </BrowserRouter>
