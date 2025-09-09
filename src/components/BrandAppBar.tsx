@@ -52,7 +52,7 @@ export default function BrandAppBar() {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button component={RouterLink} to='/login' color='inherit'>
+            <Button component={RouterLink} to='/login'   variant='outlined'>
               Entrar
             </Button>
             <Button component={RouterLink} to='/register' variant='contained'>

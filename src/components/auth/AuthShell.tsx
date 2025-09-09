@@ -15,16 +15,7 @@ export default function AuthShell({
       }}
     >
       <BrandAppBar />
-      <Container
-        maxWidth='sm'
-        sx={{
-          display: 'grid',
-          placeItems: 'center',
-          pt: { xs: 2, md: 4 },
-           pb: 0,
-          marginTop: 8,
-        }}
-      >
+      <Container maxWidth='sm' sx={{ py: { xs: 8, md: 12 } }}>
         <Paper
           elevation={0}
           sx={{

@@ -83,7 +83,7 @@ export default function Register() {
           }}
         />
 
-        <Typography variant='body2' color='text.secondary' sx={{ mt: 0 }}>
+        <Typography variant='caption' color='text.secondary' sx={{ mt: 0 }}>
           A senha será enviada para seu email corporativo.
         </Typography>
         <Button
