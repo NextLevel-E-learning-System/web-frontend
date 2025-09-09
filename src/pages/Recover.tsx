@@ -60,7 +60,12 @@ export default function Recover() {
           >
             {reset.isPending ? 'Enviando...' : 'Enviar'}
           </Button>
-          <Button component={RouterLink} to='/login'  sx={{ borderRadius: 8 }} variant='outlined'  >
+          <Button
+            component={RouterLink}
+            to='/login'
+            sx={{ borderRadius: 8 }}
+            variant='outlined'
+          >
             Voltar ao login
           </Button>
         </Box>

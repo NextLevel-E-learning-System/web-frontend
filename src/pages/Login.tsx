@@ -87,7 +87,8 @@ export default function Login() {
           fullWidth
           variant='contained'
           size='large'
-          sx={{ mt: 2, borderRadius: 8 }}  endIcon={<SendIcon />}
+          sx={{ mt: 2, borderRadius: 8 }}
+          endIcon={<SendIcon />}
           disabled={login.isPending}
         >
           {login.isPending ? 'Entrando...' : 'Entrar'}

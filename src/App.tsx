@@ -28,7 +28,6 @@ const theme = createTheme({
     background: { default: '#F7FAFF', paper: '#FFFFFF' },
     text: { primary: '#0F172A', secondary: '#475569' },
   },
-  shape: { borderRadius: 8 },
   typography: {
     fontFamily: `Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, \"Apple Color Emoji\", \"Segoe UI Emoji\"`,
     h1: { fontWeight: 800, letterSpacing: -0.5 },

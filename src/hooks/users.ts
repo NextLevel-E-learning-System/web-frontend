@@ -32,29 +32,38 @@ export interface PerfilUsuario extends UsuarioResumo {
 // Departamentos
 export function useListarDepartamentos() {
   return useQuery<Departamento[]>({
-    queryKey: ['users','departments'],
+    queryKey: ['users', 'departments'],
     queryFn: () => authGet<Departamento[]>('/users/v1/departments'),
   })
 }
 
 export function useCriarDepartamento() {
-  return useMutation<Departamento, Error, { codigo: string; nome: string; gestor_id?: string } >({
-    mutationKey: ['users','departments','create'],
-    mutationFn: (input) => authPost<Departamento>('/users/v1/departments', input),
+  return useMutation<
+    Departamento,
+    Error,
+    { codigo: string; nome: string; gestor_id?: string }
+  >({
+    mutationKey: ['users', 'departments', 'create'],
+    mutationFn: input => authPost<Departamento>('/users/v1/departments', input),
   })
 }
 
 export function useAtualizarDepartamento(codigo: string) {
-  return useMutation<Departamento, Error, Partial<Pick<Departamento, 'nome' | 'gestor_id'>>>({
-    mutationKey: ['users','departments','update', codigo],
-    mutationFn: (input) => authPatch<Departamento>(`/users/v1/departments/${codigo}`, input),
+  return useMutation<
+    Departamento,
+    Error,
+    Partial<Pick<Departamento, 'nome' | 'gestor_id'>>
+  >({
+    mutationKey: ['users', 'departments', 'update', codigo],
+    mutationFn: input =>
+      authPatch<Departamento>(`/users/v1/departments/${codigo}`, input),
   })
 }
 
 // Perfil do usuário autenticado
 export function useMeuPerfil() {
   return useQuery<PerfilUsuario>({
-    queryKey: ['users','me'],
+    queryKey: ['users', 'me'],
     queryFn: () => authGet<PerfilUsuario>('/users/v1/me'),
   })
 }
@@ -71,11 +80,12 @@ export interface ListarUsuariosFiltro {
 
 export function useListarUsuarios(filtro: ListarUsuariosFiltro = {}) {
   return useQuery<PaginacaoUsuarios>({
-    queryKey: ['users','list', filtro],
+    queryKey: ['users', 'list', filtro],
     queryFn: () => {
       const params = new URLSearchParams()
       Object.entries(filtro).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== '') params.append(k, String(v))
+        if (v !== undefined && v !== null && v !== '')
+          params.append(k, String(v))
       })
       const qs = params.toString()
       const url = `/users/v1${qs ? `?${qs}` : ''}`
@@ -85,18 +95,26 @@ export function useListarUsuarios(filtro: ListarUsuariosFiltro = {}) {
 }
 
 export function useCompletarCadastro() {
-  return useMutation<PerfilUsuario, Error, { nome: string; cpf: string; email?: string; departamento_id: string; cargo: string }>(
+  return useMutation<
+    PerfilUsuario,
+    Error,
     {
-      mutationKey: ['users','create'],
-      mutationFn: (input) => authPost<PerfilUsuario>('/users/v1', input),
+      nome: string
+      cpf: string
+      email?: string
+      departamento_id: string
+      cargo: string
     }
-  )
+  >({
+    mutationKey: ['users', 'create'],
+    mutationFn: input => authPost<PerfilUsuario>('/users/v1', input),
+  })
 }
 
 // Operações por usuário
 export function useObterUsuario(id: string) {
   return useQuery<PerfilUsuario>({
-    queryKey: ['users','byId', id],
+    queryKey: ['users', 'byId', id],
     queryFn: () => authGet<PerfilUsuario>(`/users/v1/${id}`),
     enabled: Boolean(id),
   })
@@ -104,8 +122,8 @@ export function useObterUsuario(id: string) {
 
 export function useAtualizarUsuario(id: string) {
   return useMutation<PerfilUsuario, Error, Partial<PerfilUsuario>>({
-    mutationKey: ['users','update', id],
-    mutationFn: (input) => authPatch<PerfilUsuario>(`/users/v1/${id}`, input),
+    mutationKey: ['users', 'update', id],
+    mutationFn: input => authPatch<PerfilUsuario>(`/users/v1/${id}`, input),
   })
 }
 
@@ -137,10 +155,9 @@ export interface DashboardBase {
 
 export function useDashboard() {
   return useQuery<DashboardBase>({
-    queryKey: ['users','dashboard','auto'],
+    queryKey: ['users', 'dashboard', 'auto'],
     queryFn: () => authGet<DashboardBase>('/users/v1/dashboard'),
-  staleTime: 0,
-  retry: false,
+    staleTime: 0,
+    retry: false,
   })
 }
-

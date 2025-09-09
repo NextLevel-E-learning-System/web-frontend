@@ -16,7 +16,11 @@ const items: NavItem[] = [
     icon: <ApartmentIcon />,
     href: '/instrutor/departments',
   },
-  { label: 'Configurações', icon: <SettingsIcon />, href: '/instrutor/settings' },
+  {
+    label: 'Configurações',
+    icon: <SettingsIcon />,
+    href: '/instrutor/settings',
+  },
 ]
 
 export default function InstrutorDashboard() {

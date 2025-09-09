@@ -1,5 +1,9 @@
 export type LoginInput = { email: string; senha: string }
-export type LoginResponse = { accessToken: string; tokenType: string; expiresInHours: number }
+export type LoginResponse = {
+  accessToken: string
+  tokenType: string
+  expiresInHours: number
+}
 
 export type RegisterInput = {
   nome: string

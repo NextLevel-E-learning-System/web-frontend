@@ -26,19 +26,20 @@ const Register = () => {
         }}
       >
         <TextField
-         fullWidth
+          fullWidth
           margin='normal'
           label='CPF'
           required
           inputMode='numeric'
-          InputProps={{            startAdornment: (
+          InputProps={{
+            startAdornment: (
               <InputAdornment position='start'>
                 <BadgeOutlinedIcon color='disabled' />
               </InputAdornment>
             ),
           }}
         />
-              name='email'
+        name='email'
         <TextField
           fullWidth
           margin='normal'
@@ -53,7 +54,7 @@ const Register = () => {
           }}
         />
         <TextField
-              name='cpf'
+          name='cpf'
           fullWidth
           margin='normal'
           label='Departamento'
@@ -66,13 +67,19 @@ const Register = () => {
             ),
           }}
         />
-        <TextField fullWidth margin='normal' label='Cargo' required   InputProps={{
+        <TextField
+          fullWidth
+          margin='normal'
+          label='Cargo'
+          required
+          InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
                 <ApartmentOutlinedIcon color='disabled' />
               </InputAdornment>
             ),
-          }}/>
+          }}
+        />
         <TextField
           fullWidth
           margin='normal'
@@ -87,7 +94,6 @@ const Register = () => {
             ),
           }}
         />
-
         <Typography variant='caption' color='text.secondary' sx={{ mt: 0 }}>
           A senha será enviada para seu email corporativo.
         </Typography>
@@ -109,7 +115,9 @@ const Register = () => {
             size='small'
             onSubmit={async e => {
               e.preventDefault()
-              const data = new FormData(e.currentTarget as unknown as HTMLFormElement)
+              const data = new FormData(
+                e.currentTarget as unknown as HTMLFormElement
+              )
               const payload = {
                 email: String(data.get('email') || ''),
                 cpf: String(data.get('cpf') || ''),
@@ -126,9 +134,9 @@ const Register = () => {
                 alert('Falha ao criar conta')
               }
             }}
-              disabled={register.isPending}
+            disabled={register.isPending}
           >
-              {register.isPending ? 'Enviando...' : 'Criar conta'}
+            {register.isPending ? 'Enviando...' : 'Criar conta'}
           </Button>
         </Typography>
       </Box>

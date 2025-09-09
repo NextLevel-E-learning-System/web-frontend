@@ -15,14 +15,17 @@ export default function BrandAppBar() {
     <AppBar
       position='fixed'
       color='transparent'
-           elevation={0}
+      elevation={0}
       sx={{
         background: 'transparent',
         borderBottom: t => `1px solid ${t.palette.divider}`,
       }}
     >
       <Container maxWidth='xxl'>
-        <Toolbar disableGutters sx={{ justifyContent: 'space-between', minHeight: 48 }}>
+        <Toolbar
+          disableGutters
+          sx={{ justifyContent: 'space-between', minHeight: 48 }}
+        >
           <Box
             sx={{
               display: 'flex',
@@ -35,8 +38,6 @@ export default function BrandAppBar() {
           >
             <Box
               sx={{
-                width: 34,
-                height: 34,
                 display: 'grid',
                 placeItems: 'center',
               }}
@@ -44,7 +45,7 @@ export default function BrandAppBar() {
               <img
                 src={logoIcon}
                 alt='NextLevel Logo'
-                style={{ width: 34, height: 34 }}
+                style={{ height: 40, width: 'auto', display: 'block' }}
               />
             </Box>
             <Typography variant='h6' fontWeight={800} color='primary'>
@@ -52,7 +53,7 @@ export default function BrandAppBar() {
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button component={RouterLink} to='/login'   variant='outlined'>
+            <Button component={RouterLink} to='/login' variant='outlined'>
               Entrar
             </Button>
             <Button component={RouterLink} to='/register' variant='contained'>

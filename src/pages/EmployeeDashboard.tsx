@@ -54,11 +54,12 @@ const activities = [
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
   const { data: dashboard, isLoading } = useDashboard()
-  const items: NavItem[] = dashboard?.menu_operacoes?.map((op: any) => ({
-    label: op.nome,
-    icon: iconMap[op.icone] || <DashboardIcon />,
-    href: op.url,
-  })) ?? []
+  const items: NavItem[] =
+    dashboard?.menu_operacoes?.map((op: any) => ({
+      label: op.nome,
+      icon: iconMap[op.icone] || <DashboardIcon />,
+      href: op.url,
+    })) ?? []
 
   return (
     <DashboardLayout title='Página Inicial' items={items}>

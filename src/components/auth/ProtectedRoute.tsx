@@ -9,17 +9,24 @@ interface ProtectedRouteProps {
   fallback?: ReactNode
 }
 
-export default function ProtectedRoute({ children, allowedRoles, fallback }: ProtectedRouteProps) {
+export default function ProtectedRoute({
+  children,
+  allowedRoles,
+  fallback,
+}: ProtectedRouteProps) {
   const token = getAccessToken()
   const { data: dashboard, isLoading } = useDashboard()
 
   if (!token) return <Navigate to='/login' replace />
   if (isLoading) return fallback || null
-  if (!dashboard || !dashboard.tipo_dashboard) return <Navigate to='/login' replace />
+  if (!dashboard || !dashboard.tipo_dashboard)
+    return <Navigate to='/login' replace />
   if (!allowedRoles.includes(dashboard.tipo_dashboard)) {
     // Redireciona para o dashboard correto
-    if (dashboard.tipo_dashboard === 'administrador') return <Navigate to='/dashboard/admin' replace />
-    if (dashboard.tipo_dashboard === 'instrutor') return <Navigate to='/dashboard/instrutor' replace />
+    if (dashboard.tipo_dashboard === 'administrador')
+      return <Navigate to='/dashboard/admin' replace />
+    if (dashboard.tipo_dashboard === 'instrutor')
+      return <Navigate to='/dashboard/instrutor' replace />
     return <Navigate to='/dashboard' replace />
   }
   return <>{children}</>

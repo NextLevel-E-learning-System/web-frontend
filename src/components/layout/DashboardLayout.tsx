@@ -1,7 +1,6 @@
 import { PropsWithChildren, useState } from 'react'
 import {
   AppBar,
-  Avatar,
   Box,
   CssBaseline,
   Divider,
@@ -14,10 +13,12 @@ import {
   Toolbar,
   Typography,
   useMediaQuery,
+  Button,
 } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
+import logoIcon from '@/assets/logo-icon.png'
 import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
-import SearchIcon from '@mui/icons-material/Search'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useLogout } from '@/hooks/auth'
 
@@ -43,7 +44,18 @@ export default function DashboardLayout({
         color: '#e5e7eb',
       }}
     >
-      <Toolbar sx={{ minHeight: 64 }} />
+      <Toolbar sx={{ minHeight: 48 }}>
+        <Button
+          component={RouterLink}
+          to='/dashboard'
+          sx={{ minWidth: 0, display: 'flex', gap: 1 }}
+        >
+          <img src={logoIcon} alt='Logo NextLevel' style={{ minWidth: 50 }} />
+          <Typography variant='h6' fontWeight={800} color='#e5e7eb'>
+            NextLevel
+          </Typography>
+        </Button>
+      </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255,255,255,.12)' }} />
       <List>
         {items.map(it => (
@@ -71,7 +83,7 @@ export default function DashboardLayout({
         ))}
       </List>
       <Box sx={{ flexGrow: 1 }} />
-      <Box sx={{ p: 2, color: '#9ca3af', fontSize: 12 }}>NextLevel</Box>
+      <Box sx={{ p: 1, color: '#9ca3af', fontSize: 12 }}> © {new Date().getFullYear()}. NextLevel E-learning System</Box>
     </Box>
   )
 
@@ -133,7 +145,11 @@ export default function DashboardLayout({
               sx={{ position: 'relative' }}
             >
               {isPending ? (
-                <CircularProgress size={24} color='inherit' sx={{ position: 'absolute', left: 6, top: 6 }} />
+                <CircularProgress
+                  size={24}
+                  color='inherit'
+                  sx={{ position: 'absolute', left: 6, top: 6 }}
+                />
               ) : (
                 <LogoutIcon />
               )}
