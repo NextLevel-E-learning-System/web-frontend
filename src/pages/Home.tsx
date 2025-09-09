@@ -1,7 +1,7 @@
 import { Box, Button, Chip, Container, Grid, Typography } from '@mui/material'
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined'
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1'
-import BrandAppBar from '@/components/BrandAppBar'
+import BrandAppBar from '@/components/auth/BrandAppBar'
 import { Link as RouterLink } from 'react-router-dom'
 
 export default function Home() {

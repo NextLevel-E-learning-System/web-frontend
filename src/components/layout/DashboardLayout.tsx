@@ -125,10 +125,6 @@ export default function DashboardLayout({
             <Typography variant='h6' fontWeight={800} sx={{ flexGrow: 1 }}>
               {title}
             </Typography>
-            <IconButton color='inherit' aria-label='search'>
-              <SearchIcon />
-            </IconButton>
-            <Avatar sx={{ width: 32, height: 32 }}>JD</Avatar>
             <IconButton
               color='inherit'
               aria-label='logout'

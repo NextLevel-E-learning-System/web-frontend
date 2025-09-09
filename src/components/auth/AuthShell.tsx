@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react'
 import { Box, Container, Paper, Typography } from '@mui/material'
-import BrandAppBar from '@/components/BrandAppBar'
+import BrandAppBar from '@/components/auth/BrandAppBar'
 
 export default function AuthShell({
   title,
