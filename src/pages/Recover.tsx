@@ -10,7 +10,7 @@ import SendIcon from '@mui/icons-material/Send'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
-import { useResetPassword } from '@/features/auth/hooks'
+import { useResetPassword } from '@/hooks/auth'
 
 export default function Recover() {
   const reset = useResetPassword()

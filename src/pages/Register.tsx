@@ -10,7 +10,7 @@ import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
-import { useRegister } from '@/features/auth/hooks'
+import { useRegister } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
 
 const Register = () => {

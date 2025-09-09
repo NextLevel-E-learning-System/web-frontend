@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { apiPost, setAccessToken, clearAccessToken } from '@/lib/http'
+import { apiPost, setAccessToken, clearAccessToken } from '@/api/http'
 import type {
   LoginInput,
   LoginResponse,
@@ -7,7 +7,7 @@ import type {
   RegisterResponse,
   ResetPasswordInput,
   ResetPasswordResponse,
-} from './types'
+} from '../types/auth'
 
 export function useLogin() {
   return useMutation({

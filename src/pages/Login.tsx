@@ -14,7 +14,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import SendIcon from '@mui/icons-material/Send'
-import { useLogin } from '@/features/auth/hooks'
+import { useLogin } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
