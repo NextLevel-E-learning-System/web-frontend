@@ -83,7 +83,10 @@ export default function DashboardLayout({
         ))}
       </List>
       <Box sx={{ flexGrow: 1 }} />
-      <Box sx={{ p: 1, color: '#9ca3af', fontSize: 12 }}> © {new Date().getFullYear()}. NextLevel E-learning System</Box>
+      <Box sx={{ p: 1, color: '#9ca3af', fontSize: 12 }}>
+        {' '}
+        © {new Date().getFullYear()}. NextLevel E-learning System
+      </Box>
     </Box>
   )
 
