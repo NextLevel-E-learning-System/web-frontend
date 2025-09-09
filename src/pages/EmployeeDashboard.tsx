@@ -31,47 +31,36 @@ import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
 import GraduationCapIcon from '@mui/icons-material/School'
 import { useDashboardCompleto } from '@/hooks/users'
 
-const iconMap: Record<string, JSX.Element> = {
-  book: <BookIcon />,
-  'graduation-cap': <GraduationCapIcon />,
-  trophy: <EmojiEventsIcon />,
-  user: <AccountCircleIcon />,
-  star: <WorkspacePremiumIcon />,
-}
-
-const courses = [
-  { id: 1, title: 'Project Management Fundamentals', progress: 70 },
-  { id: 2, title: 'Data Analytics Basics', progress: 45 },
-  { id: 3, title: 'Leadership Skills Workshop', progress: 20 },
-]
-
-const activities = [
-  { id: 1, text: "Concluído 'Módulo 3' do curso PM", time: 'Hoje' },
-  { id: 2, text: "Ganhou 'Learner' badge", time: 'Ontem' },
-  { id: 3, text: 'Participou do webinar de IA em Marketing', time: '2 dias' },
-]
-
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
   const { dashboard, perfil, isLoading } = useDashboardCompleto()
 
-  const items: NavItem[] =
-    dashboard?.menu_operacoes?.map((op: any) => ({
-      label: op.nome,
-      icon: iconMap[op.icone] || <DashboardIcon />,
-      href: op.url,
-    })) ?? []
+const items: NavItem[] = [
+  { label: 'Catálogo de Cursos ', icon: <SchoolIcon />, href: '/catalogo' },
+  { label: 'Meus Cursos', icon: <GradeIcon />, href: '/meus-cursos' },
+  { label: 'Conquistas', icon: <EmojiEventsIcon />, href: '/conquistas' },
+  {
+    label: 'Ranking',
+    icon: <WorkspacePremiumIcon />,
+    href: '/ranking',
+  },
+  {
+    label: 'Certificados',
+    icon: <GraduationCapIcon />,
+    href: '/certificados',
+  },
+]
 
   // Dados do dashboard com fallbacks
-  const progressoNivel = dashboardData.progresso_nivel || 0
-  const nivelAtual = dashboardData.nivel_atual || 1
-  const xpAtual = dashboardData.xp_atual || 0
+  const progressoNivel = dashboard?.progresso_nivel || 0
+  const nivelAtual = dashboard?.nivel_atual || 1
+  const xpAtual = dashboard?.xp_atual || 0
 
   // Dados dos cursos vindos do dashboard
-  const cursosEmAndamento = dashboardData.cursos_em_andamento || []
-  const cursosConcluidos = dashboardData.cursos_concluidos || []
-  const cursosDisponiveis = dashboardData.cursos_disponiveis || []
-  const timeline = dashboardData.timeline || []
+  const cursosEmAndamento = dashboard?.cursos_em_andamento || []
+  const cursosConcluidos = dashboard?.cursos_concluidos || []
+  const cursosDisponiveis = dashboard?.cursos_disponiveis || []
+  const timeline = dashboard?.timeline || []
 
   return (
     <DashboardLayout title='Página Inicial' items={items}>
