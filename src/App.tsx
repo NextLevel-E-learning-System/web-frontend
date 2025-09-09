@@ -12,6 +12,7 @@ import Recover from './pages/Recover'
 import EmployeeDashboard from './pages/EmployeeDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import InstrutorDashboard from './pages/InstrutorDashboard'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 
 const queryClient = new QueryClient()
 
@@ -77,9 +78,30 @@ const App = () => (
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Register />} />
           <Route path='/recover' element={<Recover />} />
-          <Route path='/dashboard' element={<EmployeeDashboard />} />
-          <Route path='/admin' element={<AdminDashboard />} />
-          <Route path='/instrutor' element={<InstrutorDashboard />} />
+          <Route
+            path='/dashboard'
+            element={
+              <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
+                <EmployeeDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin'
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/instrutor'
+            element={
+              <ProtectedRoute allowedRoles={['INSTRUTOR']}>
+                <InstrutorDashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route path='*' element={<NotFound />} />
         </Routes>
       </BrowserRouter>
