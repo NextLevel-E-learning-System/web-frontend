@@ -24,18 +24,20 @@ import SchoolIcon from '@mui/icons-material/School'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import GradeIcon from '@mui/icons-material/Grade'
 import SettingsIcon from '@mui/icons-material/Settings'
+import BookIcon from '@mui/icons-material/Book'
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
+import GraduationCapIcon from '@mui/icons-material/School'
+import { useDashboard } from '@/hooks/users'
 
-const items: NavItem[] = [
-  { label: 'Dashboard', icon: <DashboardIcon />, href: '/dashboard' },
-  { label: 'Meus Cursos', icon: <SchoolIcon />, href: '/dashboard/courses' },
-  { label: 'Provas', icon: <AssignmentIcon />, href: '/dashboard/exams' },
-  { label: 'Notas', icon: <GradeIcon />, href: '/dashboard/grades' },
-  {
-    label: 'Configurações',
-    icon: <SettingsIcon />,
-    href: '/dashboard/settings',
-  },
-]
+const iconMap: Record<string, JSX.Element> = {
+  book: <BookIcon />,
+  'graduation-cap': <GraduationCapIcon />,
+  trophy: <EmojiEventsIcon />,
+  user: <AccountCircleIcon />,
+  star: <WorkspacePremiumIcon />,
+}
 
 const courses = [
   { id: 1, title: 'Project Management Fundamentals', progress: 70 },
@@ -51,6 +53,12 @@ const activities = [
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
+  const { data: dashboard, isLoading } = useDashboard()
+  const items: NavItem[] = dashboard?.menu_operacoes?.map((op: any) => ({
+    label: op.nome,
+    icon: iconMap[op.icone] || <DashboardIcon />,
+    href: op.url,
+  })) ?? []
 
   return (
     <DashboardLayout title='Meu Painel' items={items}>

@@ -110,13 +110,37 @@ export function useAtualizarUsuario(id: string) {
 }
 
 // Dashboards
+
 export type DashboardTipo = 'funcionario' | 'instrutor' | 'administrador'
-export interface DashboardBase { tipo_dashboard: DashboardTipo }
+
+export interface MenuOperacao {
+  nome: string
+  url: string
+  icone: string
+}
+
+export interface DashboardBase {
+  tipo_dashboard: DashboardTipo
+  xp_atual: number
+  nivel_atual: number
+  xp_proximo_nivel: number
+  proximo_badge: string
+  progresso_nivel: number
+  ranking_departamento: any
+  cursos_em_andamento: any[]
+  cursos_concluidos: any[]
+  cursos_disponiveis: any[]
+  timeline: any[]
+  badges_conquistados: any[]
+  menu_operacoes: MenuOperacao[]
+}
 
 export function useDashboard() {
   return useQuery<DashboardBase>({
     queryKey: ['users','dashboard','auto'],
     queryFn: () => authGet<DashboardBase>('/users/v1/dashboard'),
+  staleTime: 0,
+  retry: false,
   })
 }
 
