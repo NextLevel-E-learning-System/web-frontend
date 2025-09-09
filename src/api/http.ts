@@ -36,16 +36,27 @@ function mapOptions(opts: HttpOptions = {}): AxiosRequestConfig {
   }
 }
 
-// Refresh via cookie HttpOnly
+// Refresh via cookie HttpOnly + access token atual
 async function doRefresh(): Promise<string> {
+  const currentToken = getAccessToken() // Pega token atual (mesmo expirado)
+  
   const refreshClient = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true,
+    withCredentials: true, // Para enviar refresh token via cookie
   })
+  
+  // Configurar headers com access token atual (mesmo se expirado)
+  const headers: any = {}
+  if (currentToken) {
+    headers['Authorization'] = `Bearer ${currentToken}`
+  }
+  
   const { data } = await refreshClient.post<{ accessToken: string }>(
     '/auth/v1/refresh',
-    {}
+    {}, // Corpo vazio, refresh token vai via cookie
+    { headers }
   )
+  
   setAccessToken(data.accessToken)
   return data.accessToken
 }
@@ -70,20 +81,33 @@ api.interceptors.response.use(
       | (AxiosRequestConfig & { _retry?: boolean })
       | undefined
     const status = error.response?.status
+    
+    // Se 401 e não é a primeira tentativa, tentar refresh
     if (status === 401 && original && !original._retry) {
       try {
+        console.log('[HTTP] Tentando refresh automático...')
         const newToken = await doRefresh()
+        console.log('[HTTP] Refresh bem-sucedido, repetindo requisição original')
+        
         original._retry = true
         const hdrs = (original.headers ?? {}) as any
         if (typeof hdrs.set === 'function')
           hdrs.set('Authorization', `Bearer ${newToken}`)
         else hdrs['Authorization'] = `Bearer ${newToken}`
         original.headers = hdrs
+        
         return api.request(original)
-      } catch (e) {
+      } catch (refreshError) {
+        console.error('[HTTP] Falha no refresh automático:', refreshError)
         clearAccessToken()
+        
+        // Se refresh falhar, redirecionar para login se estivermos no browser
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login'
+        }
       }
     }
+    
     return Promise.reject(error)
   }
 )
