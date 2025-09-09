@@ -13,12 +13,17 @@ import type {
 export function useLogin() {
   return useMutation({
     mutationKey: ['auth', 'login'],
-    mutationFn: async (input: LoginInput) => {
+    mutationFn: async (input: LoginInput & { rememberMe?: boolean }) => {
+      const { rememberMe = true, ...loginData } = input // Padrão: sempre lembrar
+
       // Inclui credenciais para permitir cookie HttpOnly de refresh
-      const data = await apiPost<LoginResponse>('/auth/v1/login', input, {
+      const data = await apiPost<LoginResponse>('/auth/v1/login', loginData, {
         credentials: 'include',
       })
-      setAccessToken(data.accessToken)
+
+      // Salvar token com opção de persistência
+      setAccessToken(data.accessToken, rememberMe)
+
       return data
     },
   })
@@ -50,17 +55,33 @@ export function useLogout() {
     mutationFn: async invalidateAll => {
       const headers: Record<string, string> = {}
       if (invalidateAll) headers['x-invalidate-all'] = 'true'
-      await apiPost<{ sucesso: boolean }>(
-        '/auth/v1/logout',
-        {},
-        { credentials: 'include', headers }
-      )
+
+      try {
+        await apiPost<{ sucesso: boolean }>(
+          '/auth/v1/logout',
+          {},
+          { credentials: 'include', headers }
+        )
+      } catch (error) {
+        // Mesmo se logout falhar no servidor, limpar sessão local
+        console.warn(
+          '[Logout] Falha no servidor, limpando sessão local:',
+          error
+        )
+      }
+
       return true
     },
     onSettled: () => {
-      // Independente do resultado, encerra sessão no cliente
-      clearAccessToken()
-      queryClient.clear()
+      // IMPORTANTE: Limpar TUDO da sessão persistente
+      clearAccessToken() // Remove do localStorage
+      queryClient.clear() // Limpa cache React Query
+
+      // Limpar cookies manualmente (se necessário)
+      document.cookie =
+        'refreshToken=; path=/auth/v1; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+
+      console.log('[Logout] Sessão limpa, redirecionando para login')
       navigate('/login', { replace: true })
     },
   })

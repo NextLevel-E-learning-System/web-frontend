@@ -1,4 +1,8 @@
-export type LoginInput = { email: string; senha: string }
+export type LoginInput = {
+  email: string
+  senha: string
+  rememberMe?: boolean
+}
 export type LoginResponse = {
   accessToken: string
   tokenType: string

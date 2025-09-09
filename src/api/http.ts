@@ -7,16 +7,36 @@ export type HttpOptions = AxiosRequestConfig & {
 
 const ACCESS_TOKEN_KEY = 'access_token'
 
-export function setAccessToken(token: string | null) {
+export function setAccessToken(
+  token: string | null,
+  persistent: boolean = true
+) {
   try {
-    if (token) sessionStorage.setItem(ACCESS_TOKEN_KEY, token)
-    else sessionStorage.removeItem(ACCESS_TOKEN_KEY)
+    if (token) {
+      if (persistent) {
+        // Salvar no localStorage (persiste ao fechar navegador)
+        localStorage.setItem(ACCESS_TOKEN_KEY, token)
+        sessionStorage.removeItem(ACCESS_TOKEN_KEY) // Limpar sessionStorage se existir
+      } else {
+        // Salvar no sessionStorage (não persiste ao fechar navegador)
+        sessionStorage.setItem(ACCESS_TOKEN_KEY, token)
+        localStorage.removeItem(ACCESS_TOKEN_KEY) // Limpar localStorage se existir
+      }
+    } else {
+      // Limpar ambos
+      localStorage.removeItem(ACCESS_TOKEN_KEY)
+      sessionStorage.removeItem(ACCESS_TOKEN_KEY)
+    }
   } catch {}
 }
 
 export function getAccessToken(): string | null {
   try {
-    return sessionStorage.getItem(ACCESS_TOKEN_KEY)
+    // Tentar localStorage primeiro (persistente), depois sessionStorage
+    return (
+      localStorage.getItem(ACCESS_TOKEN_KEY) ||
+      sessionStorage.getItem(ACCESS_TOKEN_KEY)
+    )
   } catch {
     return null
   }
@@ -24,6 +44,14 @@ export function getAccessToken(): string | null {
 
 export function clearAccessToken() {
   setAccessToken(null)
+}
+
+export function isTokenPersistent(): boolean {
+  try {
+    return !!localStorage.getItem(ACCESS_TOKEN_KEY)
+  } catch {
+    return false
+  }
 }
 
 const api: AxiosInstance = axios.create({ baseURL: API_BASE_URL })
@@ -39,24 +67,24 @@ function mapOptions(opts: HttpOptions = {}): AxiosRequestConfig {
 // Refresh via cookie HttpOnly + access token atual
 async function doRefresh(): Promise<string> {
   const currentToken = getAccessToken() // Pega token atual (mesmo expirado)
-  
+
   const refreshClient = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true, // Para enviar refresh token via cookie
   })
-  
+
   // Configurar headers com access token atual (mesmo se expirado)
   const headers: any = {}
   if (currentToken) {
     headers['Authorization'] = `Bearer ${currentToken}`
   }
-  
+
   const { data } = await refreshClient.post<{ accessToken: string }>(
     '/auth/v1/refresh',
     {}, // Corpo vazio, refresh token vai via cookie
     { headers }
   )
-  
+
   setAccessToken(data.accessToken)
   return data.accessToken
 }
@@ -81,33 +109,35 @@ api.interceptors.response.use(
       | (AxiosRequestConfig & { _retry?: boolean })
       | undefined
     const status = error.response?.status
-    
+
     // Se 401 e não é a primeira tentativa, tentar refresh
     if (status === 401 && original && !original._retry) {
       try {
         console.log('[HTTP] Tentando refresh automático...')
         const newToken = await doRefresh()
-        console.log('[HTTP] Refresh bem-sucedido, repetindo requisição original')
-        
+        console.log(
+          '[HTTP] Refresh bem-sucedido, repetindo requisição original'
+        )
+
         original._retry = true
         const hdrs = (original.headers ?? {}) as any
         if (typeof hdrs.set === 'function')
           hdrs.set('Authorization', `Bearer ${newToken}`)
         else hdrs['Authorization'] = `Bearer ${newToken}`
         original.headers = hdrs
-        
+
         return api.request(original)
       } catch (refreshError) {
         console.error('[HTTP] Falha no refresh automático:', refreshError)
         clearAccessToken()
-        
+
         // Se refresh falhar, redirecionar para login se estivermos no browser
         if (typeof window !== 'undefined') {
           window.location.href = '/login'
         }
       }
     }
-    
+
     return Promise.reject(error)
   }
 )

@@ -62,7 +62,10 @@ export interface AtualizacaoBiografia {
 }
 
 // Departamentos
-export function useListarDepartamentos(filtro?: { codigo?: string; gestor_id?: string }) {
+export function useListarDepartamentos(filtro?: {
+  codigo?: string
+  gestor_id?: string
+}) {
   return useQuery<Departamento[]>({
     queryKey: ['users', 'departments', filtro],
     queryFn: () => {
@@ -82,7 +85,7 @@ export function useListarDepartamentos(filtro?: { codigo?: string; gestor_id?: s
 
 export function useCriarDepartamento() {
   const queryClient = useQueryClient()
-  
+
   return useMutation<
     Departamento,
     Error,
@@ -98,7 +101,7 @@ export function useCriarDepartamento() {
 
 export function useAtualizarDepartamento(codigo: string) {
   const queryClient = useQueryClient()
-  
+
   return useMutation<
     Departamento,
     Error,
@@ -123,13 +126,20 @@ export function useMeuPerfil() {
 
 export function useAtualizarMeuPerfil() {
   const queryClient = useQueryClient()
-  
-  return useMutation<{ success: boolean }, Error, Partial<PerfilUsuario> & { userId: string }>({
+
+  return useMutation<
+    { success: boolean },
+    Error,
+    Partial<PerfilUsuario> & { userId: string }
+  >({
     mutationKey: ['users', 'me', 'update'],
-    mutationFn: ({ userId, ...input }) => authPatch<{ success: boolean }>(`/users/v1/${userId}`, input),
+    mutationFn: ({ userId, ...input }) =>
+      authPatch<{ success: boolean }>(`/users/v1/${userId}`, input),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
-      queryClient.invalidateQueries({ queryKey: ['users', 'byId', variables.userId] })
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'byId', variables.userId],
+      })
       queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
     },
   })
@@ -138,13 +148,20 @@ export function useAtualizarMeuPerfil() {
 // Função específica para completar cadastro inicial
 export function useCompletarCadastro() {
   const queryClient = useQueryClient()
-  
-  return useMutation<{ success: boolean }, Error, CompletarCadastro & { userId: string }>({
+
+  return useMutation<
+    { success: boolean },
+    Error,
+    CompletarCadastro & { userId: string }
+  >({
     mutationKey: ['users', 'complete-registration'],
-    mutationFn: ({ userId, ...input }) => authPatch<{ success: boolean }>(`/users/v1/${userId}`, input),
+    mutationFn: ({ userId, ...input }) =>
+      authPatch<{ success: boolean }>(`/users/v1/${userId}`, input),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
-      queryClient.invalidateQueries({ queryKey: ['users', 'byId', variables.userId] })
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'byId', variables.userId],
+      })
       queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
       queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
     },
@@ -154,14 +171,17 @@ export function useCompletarCadastro() {
 // Função específica para atualizações administrativas
 export function useAtualizacaoAdministrativa(id: string) {
   const queryClient = useQueryClient()
-  
+
   return useMutation<{ success: boolean }, Error, AtualizacaoAdmin>({
     mutationKey: ['users', 'admin-update', id],
-    mutationFn: input => authPatch<{ success: boolean }>(`/users/v1/${id}`, input),
+    mutationFn: input =>
+      authPatch<{ success: boolean }>(`/users/v1/${id}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'byId', id] })
       queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
-      const currentUser = queryClient.getQueryData(['users', 'me']) as PerfilUsuario | undefined
+      const currentUser = queryClient.getQueryData(['users', 'me']) as
+        | PerfilUsuario
+        | undefined
       if (currentUser && id === currentUser.id) {
         queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
         queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
@@ -173,13 +193,20 @@ export function useAtualizacaoAdministrativa(id: string) {
 // Função específica para instrutor atualizar biografia
 export function useAtualizarBiografia() {
   const queryClient = useQueryClient()
-  
-  return useMutation<{ success: boolean }, Error, AtualizacaoBiografia & { userId: string }>({
+
+  return useMutation<
+    { success: boolean },
+    Error,
+    AtualizacaoBiografia & { userId: string }
+  >({
     mutationKey: ['users', 'update-bio'],
-    mutationFn: ({ userId, ...input }) => authPatch<{ success: boolean }>(`/users/v1/${userId}`, input),
+    mutationFn: ({ userId, ...input }) =>
+      authPatch<{ success: boolean }>(`/users/v1/${userId}`, input),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
-      queryClient.invalidateQueries({ queryKey: ['users', 'byId', variables.userId] })
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'byId', variables.userId],
+      })
     },
   })
 }
@@ -187,13 +214,18 @@ export function useAtualizarBiografia() {
 // Função específica para promover funcionário para instrutor (ADMIN)
 export function usePromoverParaInstrutor(id: string) {
   const queryClient = useQueryClient()
-  
-  return useMutation<{ success: boolean }, Error, { biografia?: string; cursos_id?: string[] }>({
+
+  return useMutation<
+    { success: boolean },
+    Error,
+    { biografia?: string; cursos_id?: string[] }
+  >({
     mutationKey: ['users', 'promote-instructor', id],
-    mutationFn: input => authPatch<{ success: boolean }>(`/users/v1/${id}`, {
-      tipo_usuario: 'INSTRUTOR',
-      ...input
-    }),
+    mutationFn: input =>
+      authPatch<{ success: boolean }>(`/users/v1/${id}`, {
+        tipo_usuario: 'INSTRUTOR',
+        ...input,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'byId', id] })
       queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
@@ -228,25 +260,27 @@ export function useListarUsuarios(filtro: ListarUsuariosFiltro = {}) {
 }
 
 // Função de conveniência para listar apenas instrutores
-export function useListarInstrutores(filtro: Omit<ListarUsuariosFiltro, 'tipo_usuario'> = {}) {
+export function useListarInstrutores(
+  filtro: Omit<ListarUsuariosFiltro, 'tipo_usuario'> = {}
+) {
   return useListarUsuarios({ ...filtro, tipo_usuario: 'INSTRUTOR' })
 }
- 
+
 // Operações por usuário
 
 /**
  * Sistema de permissões para atualização de usuários:
- * 
+ *
  * 🔑 ADMIN: Pode alterar todos os campos incluindo:
  *   - Dados básicos: nome, cpf, email, departamento_id, cargo
- *   - Status: ATIVO/INATIVO  
+ *   - Status: ATIVO/INATIVO
  *   - Tipo: FUNCIONARIO/INSTRUTOR/ADMIN
  *   - Promover para INSTRUTOR (com biografia e cursos_id opcionais)
- * 
+ *
  * 👨‍🏫 INSTRUTOR: Pode alterar apenas:
  *   - Sua própria biografia
- * 
- * 👤 FUNCIONARIO: 
+ *
+ * 👤 FUNCIONARIO:
  *   - Não pode alterar nenhum campo (bloqueado)
  */
 
@@ -261,7 +295,8 @@ export function useObterUsuario(id: string) {
 export function useAtualizarUsuario(id: string) {
   return useMutation<{ success: boolean }, Error, Partial<PerfilUsuario>>({
     mutationKey: ['users', 'update', id],
-    mutationFn: input => authPatch<{ success: boolean }>(`/users/v1/${id}`, input),
+    mutationFn: input =>
+      authPatch<{ success: boolean }>(`/users/v1/${id}`, input),
   })
 }
 
@@ -295,38 +330,29 @@ export function useConquistasUsuario(id: string) {
 
 export type DashboardTipo = 'funcionario' | 'instrutor' | 'administrador'
 
-export interface MenuOperacao {
-  nome: string
-  url: string
-  icone: string
-}
-
 export interface DashboardBase {
-  menu_operacoes: MenuOperacao[]
-  dashboard_data: {
-    tipo_dashboard: DashboardTipo
-    xp_atual?: number
-    nivel_atual?: number
-    xp_proximo_nivel?: number
-    proximo_badge?: string
-    progresso_nivel?: number
-    ranking_departamento?: any
-    cursos_em_andamento?: any[]
-    cursos_concluidos?: any[]
-    cursos_disponiveis?: any[]
-    timeline?: any[]
-    badges_conquistados?: any[]
-    // Campos específicos para INSTRUTOR
-    cursos_ministrados?: any[]
-    estatisticas_conclusao?: any
-    avaliacoes_pendentes?: any[]
-    metricas_performance?: any
-    // Campos específicos para ADMIN
-    metricas_gerais?: any
-    cursos_populares?: any[]
-    engajamento_departamento?: any
-    alertas_sistema?: any[]
-  }
+  tipo_dashboard: DashboardTipo
+  xp_atual?: number
+  nivel_atual?: number
+  xp_proximo_nivel?: number
+  proximo_badge?: string
+  progresso_nivel?: number
+  ranking_departamento?: any
+  cursos_em_andamento?: any[]
+  cursos_concluidos?: any[]
+  cursos_disponiveis?: any[]
+  timeline?: any[]
+  badges_conquistados?: any[]
+  // Campos específicos para INSTRUTOR
+  cursos_ministrados?: any[]
+  estatisticas_conclusao?: any
+  avaliacoes_pendentes?: any[]
+  metricas_performance?: any
+  // Campos específicos para ADMIN
+  metricas_gerais?: any
+  cursos_populares?: any[]
+  engajamento_departamento?: any
+  alertas_sistema?: any[]
 }
 
 export function useDashboard() {
@@ -342,7 +368,7 @@ export function useDashboard() {
 export function useDashboardCompleto() {
   const dashboard = useDashboard()
   const perfil = useMeuPerfil()
-  
+
   return {
     dashboard: dashboard.data,
     perfil: perfil.data,
@@ -351,6 +377,6 @@ export function useDashboardCompleto() {
     refetch: () => {
       dashboard.refetch()
       perfil.refetch()
-    }
+    },
   }
 }

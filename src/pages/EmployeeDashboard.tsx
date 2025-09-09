@@ -54,7 +54,7 @@ const activities = [
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
   const { dashboard, perfil, isLoading } = useDashboardCompleto()
-  
+
   const items: NavItem[] =
     dashboard?.menu_operacoes?.map((op: any) => ({
       label: op.nome,
@@ -63,7 +63,6 @@ export default function EmployeeDashboard() {
     })) ?? []
 
   // Dados do dashboard com fallbacks
-  const dashboardData = (dashboard?.dashboard_data as any) || {}
   const progressoNivel = dashboardData.progresso_nivel || 0
   const nivelAtual = dashboardData.nivel_atual || 1
   const xpAtual = dashboardData.xp_atual || 0
@@ -128,7 +127,11 @@ export default function EmployeeDashboard() {
                   color='warning'
                   variant='outlined'
                   icon={<StarIcon />}
-                  label={dashboardData.proximo_badge ? `Próxima badge: ${dashboardData.proximo_badge}` : 'Próxima badge: Innovator'}
+                  label={
+                    dashboardData.proximo_badge
+                      ? `Próxima badge: ${dashboardData.proximo_badge}`
+                      : 'Próxima badge: Innovator'
+                  }
                 />
               </Box>
             </CardContent>
@@ -150,48 +153,58 @@ export default function EmployeeDashboard() {
             <CardContent>
               {tab === 0 && (
                 <List>
-                  {cursosEmAndamento.length > 0 ? cursosEmAndamento.map((c: any) => (
-                    <ListItem
-                      key={c.id}
-                      sx={{ flexDirection: 'column', alignItems: 'flex-start' }}
-                    >
-                      <Typography fontWeight={700}>{c.title || c.nome}</Typography>
-                      <Box
+                  {cursosEmAndamento.length > 0 ? (
+                    cursosEmAndamento.map((c: any) => (
+                      <ListItem
+                        key={c.id}
                         sx={{
-                          mt: 1,
-                          width: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
                         }}
                       >
+                        <Typography fontWeight={700}>
+                          {c.title || c.nome}
+                        </Typography>
                         <Box
                           sx={{
-                            flexGrow: 1,
-                            height: 8,
-                            bgcolor: 'grey.200',
-                            borderRadius: 5,
+                            mt: 1,
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
                           }}
                         >
                           <Box
                             sx={{
-                              width: `${c.progress || c.progresso || 0}%`,
+                              flexGrow: 1,
                               height: 8,
-                              bgcolor: 'primary.main',
+                              bgcolor: 'grey.200',
                               borderRadius: 5,
                             }}
-                          />
+                          >
+                            <Box
+                              sx={{
+                                width: `${c.progress || c.progresso || 0}%`,
+                                height: 8,
+                                bgcolor: 'primary.main',
+                                borderRadius: 5,
+                              }}
+                            />
+                          </Box>
+                          <Typography variant='body2' color='text.secondary'>
+                            {c.progress || c.progresso || 0}%
+                          </Typography>
+                          <Button size='small' variant='outlined'>
+                            Continuar
+                          </Button>
                         </Box>
-                        <Typography variant='body2' color='text.secondary'>
-                          {c.progress || c.progresso || 0}%
-                        </Typography>
-                        <Button size='small' variant='outlined'>
-                          Continuar
-                        </Button>
-                      </Box>
-                    </ListItem>
-                  )) : (
-                    <Typography color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
+                      </ListItem>
+                    ))
+                  ) : (
+                    <Typography
+                      color='text.secondary'
+                      sx={{ p: 2, textAlign: 'center' }}
+                    >
                       Nenhum curso em andamento
                     </Typography>
                   )}
@@ -199,20 +212,21 @@ export default function EmployeeDashboard() {
               )}
               {tab === 1 && (
                 <List>
-                  {cursosConcluidos.length > 0 ? cursosConcluidos.map((c: any) => (
-                    <ListItem key={c.id}>
-                      <ListItemText
-                        primary={c.title || c.nome}
-                        secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
-                      />
-                      <Chip 
-                        label="Concluído" 
-                        color="success" 
-                        size="small" 
-                      />
-                    </ListItem>
-                  )) : (
-                    <Typography color='text.secondary' sx={{ p: 2, textAlign: 'center' }}>
+                  {cursosConcluidos.length > 0 ? (
+                    cursosConcluidos.map((c: any) => (
+                      <ListItem key={c.id}>
+                        <ListItemText
+                          primary={c.title || c.nome}
+                          secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
+                        />
+                        <Chip label='Concluído' color='success' size='small' />
+                      </ListItem>
+                    ))
+                  ) : (
+                    <Typography
+                      color='text.secondary'
+                      sx={{ p: 2, textAlign: 'center' }}
+                    >
                       Você ainda não concluiu cursos.
                     </Typography>
                   )}
@@ -220,22 +234,31 @@ export default function EmployeeDashboard() {
               )}
               {tab === 2 && (
                 <List>
-                  {cursosDisponiveis.length > 0 ? cursosDisponiveis.map((c: any) => (
-                    <ListItem key={c.id}>
-                      <ListItemText
-                        primary={c.title || c.nome}
-                        secondary={c.descricao || c.description || 'Curso disponível para matrícula'}
-                      />
-                      <Button 
-                        variant="contained" 
-                        size="small"
-                        color="primary"
-                      >
-                        Inscrever-se
-                      </Button>
-                    </ListItem>
-                  )) : (
-                    <Typography color='text.secondary' sx={{ p: 2, textAlign: 'center' }}>
+                  {cursosDisponiveis.length > 0 ? (
+                    cursosDisponiveis.map((c: any) => (
+                      <ListItem key={c.id}>
+                        <ListItemText
+                          primary={c.title || c.nome}
+                          secondary={
+                            c.descricao ||
+                            c.description ||
+                            'Curso disponível para matrícula'
+                          }
+                        />
+                        <Button
+                          variant='contained'
+                          size='small'
+                          color='primary'
+                        >
+                          Inscrever-se
+                        </Button>
+                      </ListItem>
+                    ))
+                  ) : (
+                    <Typography
+                      color='text.secondary'
+                      sx={{ p: 2, textAlign: 'center' }}
+                    >
                       Novos cursos serão exibidos aqui.
                     </Typography>
                   )}
@@ -252,15 +275,20 @@ export default function EmployeeDashboard() {
                 Atividades Recentes
               </Typography>
               <List dense>
-                {timeline.length > 0 ? timeline.map((a: any) => (
-                  <ListItem key={a.id}>
-                    <ListItemText 
-                      primary={a.text || a.descricao} 
-                      secondary={a.time || a.data || 'Recente'} 
-                    />
-                  </ListItem>
-                )) : (
-                  <Typography color="text.secondary" sx={{ p: 1, textAlign: 'center' }}>
+                {timeline.length > 0 ? (
+                  timeline.map((a: any) => (
+                    <ListItem key={a.id}>
+                      <ListItemText
+                        primary={a.text || a.descricao}
+                        secondary={a.time || a.data || 'Recente'}
+                      />
+                    </ListItem>
+                  ))
+                ) : (
+                  <Typography
+                    color='text.secondary'
+                    sx={{ p: 1, textAlign: 'center' }}
+                  >
                     Nenhuma atividade recente
                   </Typography>
                 )}

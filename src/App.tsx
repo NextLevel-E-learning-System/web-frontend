@@ -1,7 +1,7 @@
 import './global.css'
 
 import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import NotFound from './pages/NotFound'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
@@ -12,9 +12,8 @@ import Recover from './pages/Recover'
 import EmployeeDashboard from './pages/EmployeeDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import InstrutorDashboard from './pages/InstrutorDashboard'
-import ProtectedRoute from './components/auth/ProtectedRoute'
-
-const queryClient = new QueryClient()
+import { ProtectedRoute } from './routes/ProtectedRoute'
+import { queryClient } from './config/queryClient'
 
 // NextLevel brand theme (Material UI)
 const theme = createTheme({
@@ -78,7 +77,7 @@ const App = () => (
           <Route path='/register' element={<Register />} />
           <Route path='/recover' element={<Recover />} />
           <Route
-            path='/dashboard'
+            path='/dashboard/funcionario'
             element={
               <ProtectedRoute allowedRoles={['funcionario']}>
                 <EmployeeDashboard />
