@@ -94,6 +94,11 @@ export async function apiPut<T>(path: string, body?: unknown, opts: HttpOptions 
   return data
 }
 
+export async function apiPatch<T>(path: string, body?: unknown, opts: HttpOptions = {}) {
+  const { data } = await api.patch<T>(path, body ?? {}, mapOptions(opts))
+  return data
+}
+
 export async function apiDelete<T>(path: string, opts: HttpOptions = {}) {
   const { data } = await api.delete<T>(path, mapOptions(opts))
   return data
@@ -103,3 +108,4 @@ export const authGet = apiGet
 export const authPost = apiPost
 export const authPut = apiPut
 export const authDelete = apiDelete
+export const authPatch = apiPatch
