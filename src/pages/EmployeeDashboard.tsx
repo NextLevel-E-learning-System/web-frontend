@@ -61,7 +61,7 @@ export default function EmployeeDashboard() {
   })) ?? []
 
   return (
-    <DashboardLayout title='Meu Painel' items={items}>
+    <DashboardLayout title='Página Inicial' items={items}>
       <Grid container spacing={3}>
         <Grid item xs={12} md={3}>
           <Card sx={{ overflow: 'hidden' }}>

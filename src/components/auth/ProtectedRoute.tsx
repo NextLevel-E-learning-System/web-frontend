@@ -18,8 +18,8 @@ export default function ProtectedRoute({ children, allowedRoles, fallback }: Pro
   if (!dashboard || !dashboard.tipo_dashboard) return <Navigate to='/login' replace />
   if (!allowedRoles.includes(dashboard.tipo_dashboard)) {
     // Redireciona para o dashboard correto
-    if (dashboard.tipo_dashboard === 'administrador') return <Navigate to='/admin' replace />
-    if (dashboard.tipo_dashboard === 'instrutor') return <Navigate to='/instrutor' replace />
+    if (dashboard.tipo_dashboard === 'administrador') return <Navigate to='/dashboard/admin' replace />
+    if (dashboard.tipo_dashboard === 'instrutor') return <Navigate to='/dashboard/instrutor' replace />
     return <Navigate to='/dashboard' replace />
   }
   return <>{children}</>

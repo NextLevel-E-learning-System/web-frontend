@@ -81,23 +81,23 @@ const App = () => (
           <Route
             path='/dashboard'
             element={
-              <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
+              <ProtectedRoute allowedRoles={['funcionario']}>
                 <EmployeeDashboard />
               </ProtectedRoute>
             }
           />
           <Route
-            path='/admin'
+            path='/dashboard/admin'
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProtectedRoute allowedRoles={['administrador']}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
           />
           <Route
-            path='/instrutor'
+            path='/dashboard/instrutor'
             element={
-              <ProtectedRoute allowedRoles={['INSTRUTOR']}>
+              <ProtectedRoute allowedRoles={['instrutor']}>
                 <InstrutorDashboard />
               </ProtectedRoute>
             }
