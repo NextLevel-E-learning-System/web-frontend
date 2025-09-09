@@ -18,6 +18,8 @@ import {
 import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
 import SearchIcon from '@mui/icons-material/Search'
+import CircularProgress from '@mui/material/CircularProgress'
+import { useLogout } from '@/hooks/auth'
 
 export type NavItem = { label: string; icon: JSX.Element; href: string }
 
@@ -29,6 +31,7 @@ export default function DashboardLayout({
   const [open, setOpen] = useState(false)
   const isMdUp = useMediaQuery('(min-width:900px)')
   const drawerWidth = 240
+  const { mutate, isPending } = useLogout()
 
   const drawer = (
     <Box
@@ -126,8 +129,18 @@ export default function DashboardLayout({
               <SearchIcon />
             </IconButton>
             <Avatar sx={{ width: 32, height: 32 }}>JD</Avatar>
-            <IconButton color='inherit' aria-label='logout' href='/login'>
-              <LogoutIcon />
+            <IconButton
+              color='inherit'
+              aria-label='logout'
+              onClick={() => mutate(undefined)}
+              disabled={isPending}
+              sx={{ position: 'relative' }}
+            >
+              {isPending ? (
+                <CircularProgress size={24} color='inherit' sx={{ position: 'absolute', left: 6, top: 6 }} />
+              ) : (
+                <LogoutIcon />
+              )}
             </IconButton>
           </Toolbar>
         </AppBar>

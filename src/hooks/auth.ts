@@ -1,4 +1,5 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { apiPost, setAccessToken, clearAccessToken } from '@/api/http'
 import type {
   LoginInput,
@@ -40,6 +41,8 @@ export function useResetPassword() {
 }
 
 export function useLogout() {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
   return useMutation<boolean, Error, boolean | undefined>({
     mutationKey: ['auth','logout'],
     mutationFn: async (invalidateAll) => {
@@ -50,8 +53,13 @@ export function useLogout() {
         {},
         { credentials: 'include', headers }
       )
-      clearAccessToken()
       return true
     },
+    onSettled: () => {
+      // Independente do resultado, encerra sessão no cliente
+      clearAccessToken()
+      queryClient.clear()
+      navigate('/login', { replace: true })
+    }
   })
 }
