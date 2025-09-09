@@ -1,6 +1,9 @@
 import { API_BASE_URL } from '@/api/api'
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios'
 
-export type HttpOptions = RequestInit & { headers?: Record<string, string> }
+export type HttpOptions = AxiosRequestConfig & {
+  credentials?: RequestCredentials
+}
 
 const ACCESS_TOKEN_KEY = 'access_token'
 
@@ -23,104 +26,80 @@ export function clearAccessToken() {
   setAccessToken(null)
 }
 
-async function handle<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(text || `HTTP ${res.status}`)
+const api: AxiosInstance = axios.create({ baseURL: API_BASE_URL })
+
+function mapOptions(opts: HttpOptions = {}): AxiosRequestConfig {
+  const { credentials, ...rest } = opts
+  return {
+    ...rest,
+    withCredentials: credentials === 'include' ? true : rest.withCredentials,
   }
-  const ct = res.headers.get('content-type') || ''
-  return ct.includes('application/json') ? ((await res.json()) as T) : ((await res.text()) as unknown as T)
 }
 
-export function apiUrl(path: string) {
-  return `${API_BASE_URL}${path}`
-}
-
-export async function apiGet<T>(path: string, opts: HttpOptions = {}) {
-  const res = await fetch(apiUrl(path), { ...opts, method: 'GET' })
-  return handle<T>(res)
-}
-
-export async function apiPost<T>(path: string, body?: unknown, opts: HttpOptions = {}) {
-  const res = await fetch(apiUrl(path), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
-    body: body != null ? JSON.stringify(body) : undefined,
-    ...opts,
-  })
-  return handle<T>(res)
-}
-
-export async function apiPut<T>(path: string, body?: unknown, opts: HttpOptions = {}) {
-  const res = await fetch(apiUrl(path), {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
-    body: body != null ? JSON.stringify(body) : undefined,
-    ...opts,
-  })
-  return handle<T>(res)
-}
-
-export async function apiDelete<T>(path: string, opts: HttpOptions = {}) {
-  const res = await fetch(apiUrl(path), { ...opts, method: 'DELETE' })
-  return handle<T>(res)
-}
-
-// -------- Authenticated client with auto-refresh --------
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
-
-async function refreshAccessToken(): Promise<string> {
-  // Usa cookie HttpOnly do refresh; precisa de credentials:'include'
-  const res = await fetch(apiUrl('/auth/v1/refresh'), {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
-  })
-  const data = await handle<{ accessToken: string }>(res)
+// Refresh via cookie HttpOnly
+async function doRefresh(): Promise<string> {
+  const refreshClient = axios.create({ baseURL: API_BASE_URL, withCredentials: true })
+  const { data } = await refreshClient.post<{ accessToken: string }>('/auth/v1/refresh', {})
   setAccessToken(data.accessToken)
   return data.accessToken
 }
 
-async function requestWithAuth<T>(method: Method, path: string, body?: unknown, opts: HttpOptions = {}, retry = true): Promise<T> {
+// Interceptor: injeta Bearer e faz auto-refresh
+api.interceptors.request.use((config) => {
   const token = getAccessToken()
-  const headers = {
-    ...(method === 'POST' || method === 'PUT' ? { 'Content-Type': 'application/json' } : {}),
-    ...(opts.headers || {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  if (token) {
+    const headers = (config.headers ?? {}) as any
+    if (typeof headers.set === 'function') headers.set('Authorization', `Bearer ${token}`)
+    else headers['Authorization'] = `Bearer ${token}`
+    config.headers = headers
   }
-  const init: RequestInit = {
-    ...opts,
-    method,
-    headers,
-    body: body != null ? JSON.stringify(body) : opts.body,
-  }
-  let res = await fetch(apiUrl(path), init)
-  if (res.status === 401 && retry) {
-    try {
-      const newToken = await refreshAccessToken()
-      const retryHeaders = { ...headers, Authorization: `Bearer ${newToken}` }
-      res = await fetch(apiUrl(path), { ...init, headers: retryHeaders })
-    } catch (e) {
-      clearAccessToken()
-      throw e
+  return config
+})
+
+api.interceptors.response.use(
+  (res) => res,
+  async (error: AxiosError) => {
+    const original = error.config as (AxiosRequestConfig & { _retry?: boolean }) | undefined
+    const status = error.response?.status
+    if (status === 401 && original && !original._retry) {
+      try {
+        const newToken = await doRefresh()
+        original._retry = true
+        const hdrs = (original.headers ?? {}) as any
+        if (typeof hdrs.set === 'function') hdrs.set('Authorization', `Bearer ${newToken}`)
+        else hdrs['Authorization'] = `Bearer ${newToken}`
+        original.headers = hdrs
+        return api.request(original)
+      } catch (e) {
+        clearAccessToken()
+      }
     }
+    return Promise.reject(error)
   }
-  return handle<T>(res)
+)
+
+// -------- API helpers --------
+export async function apiGet<T>(path: string, opts: HttpOptions = {}) {
+  const { data } = await api.get<T>(path, mapOptions(opts))
+  return data
 }
 
-export function authGet<T>(path: string, opts: HttpOptions = {}) {
-  return requestWithAuth<T>('GET', path, undefined, opts)
+export async function apiPost<T>(path: string, body?: unknown, opts: HttpOptions = {}) {
+  const { data } = await api.post<T>(path, body ?? {}, mapOptions(opts))
+  return data
 }
 
-export function authPost<T>(path: string, body?: unknown, opts: HttpOptions = {}) {
-  return requestWithAuth<T>('POST', path, body, opts)
+export async function apiPut<T>(path: string, body?: unknown, opts: HttpOptions = {}) {
+  const { data } = await api.put<T>(path, body ?? {}, mapOptions(opts))
+  return data
 }
 
-export function authPut<T>(path: string, body?: unknown, opts: HttpOptions = {}) {
-  return requestWithAuth<T>('PUT', path, body, opts)
+export async function apiDelete<T>(path: string, opts: HttpOptions = {}) {
+  const { data } = await api.delete<T>(path, mapOptions(opts))
+  return data
 }
 
-export function authDelete<T>(path: string, opts: HttpOptions = {}) {
-  return requestWithAuth<T>('DELETE', path, undefined, opts)
-}
+export const authGet = apiGet
+export const authPost = apiPost
+export const authPut = apiPut
+export const authDelete = apiDelete
