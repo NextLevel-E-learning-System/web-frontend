@@ -54,6 +54,13 @@ import {
   Engineering as EngineeringIcon,
   Analytics as AnalyticsIcon,
   CameraAlt as CameraAltIcon,
+  Book as BookIcon,
+  EmojiEvents as EmojiEventsIcon,
+  WorkspacePremium as WorkspacePremiumIcon,
+  School as GraduationCapIcon,
+  People as PeopleIcon,
+  Badge as BadgeIcon,
+  Apartment as ApartmentIcon,
 } from '@mui/icons-material'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
 import { useMeuPerfil } from '@/hooks/users'
@@ -73,34 +80,6 @@ import {
   useCriarInscricao,
   useVerificarInscricao,
 } from '@/hooks/progress'
-
-const items: NavItem[] = [
-  { label: 'Dashboard', icon: <DashboardIcon />, href: '/dashboard' },
-  { label: 'Cursos', icon: <SchoolIcon />, href: '/cursos' },
-  { label: 'Avaliações', icon: <AssignmentIcon />, href: '/avaliacoes' },
-  { label: 'Notas', icon: <GradeIcon />, href: '/notas' },
-  { label: 'Configurações', icon: <SettingsIcon />, href: '/configuracoes' },
-]
-
-// Ícones para categorias
-const categoriaIcons: Record<string, React.ReactNode> = {
-  TI: <ComputerIcon />,
-  DESIGN: <PaletteIcon />,
-  NEGOCIOS: <BusinessIcon />,
-  SEGURANCA: <SecurityIcon />,
-  DESENVOLVIMENTO: <CodeIcon />,
-  SOFT_SKILLS: <PsychologyIcon />,
-  IDIOMAS: <LanguageIcon />,
-  ENGENHARIA: <EngineeringIcon />,
-  DADOS: <AnalyticsIcon />,
-  FOTOGRAFIA: <CameraAltIcon />,
-}
-
-const dificuldadeColors = {
-  Básico: '#4caf50',
-  Intermediário: '#ff9800',
-  Avançado: '#f44336',
-}
 
 export default function CoursesPage() {
   const theme = useTheme()
@@ -124,6 +103,168 @@ export default function CoursesPage() {
     nivel_dificuldade: 'Básico',
   })
 
+  // Funções para verificar tipo de usuário
+  const isInstrutor = user?.tipo_usuario === 'INSTRUTOR'
+  const isAdmin = user?.tipo_usuario === 'ADMIN'
+  const isFuncionario = user?.tipo_usuario === 'FUNCIONARIO'
+  const canManageCourses = isInstrutor || isAdmin
+
+  // Navegação dinâmica baseada no tipo de usuário
+  const getNavigationItems = (): NavItem[] => {
+    const baseItems: NavItem[] = [
+      { 
+        label: 'Cursos', 
+        icon: <SchoolIcon />, 
+        href: '/cursos' 
+      },
+    ]
+
+    if (isFuncionario) {
+      return [
+        { 
+          label: 'Dashboard', 
+          icon: <DashboardIcon />, 
+          href: '/dashboard/funcionario' 
+        },
+        { 
+          label: 'Catálogo de Cursos', 
+          icon: <SchoolIcon />, 
+          href: '/catalogo' 
+        },
+        { 
+          label: 'Meus Cursos', 
+          icon: <BookIcon />, 
+          href: '/meus-cursos' 
+        },
+        { 
+          label: 'Conquistas', 
+          icon: <EmojiEventsIcon />, 
+          href: '/conquistas' 
+        },
+        { 
+          label: 'Ranking', 
+          icon: <WorkspacePremiumIcon />, 
+          href: '/ranking' 
+        },
+        { 
+          label: 'Certificados', 
+          icon: <GraduationCapIcon />, 
+          href: '/certificados' 
+        },
+        { 
+          label: 'Configurações', 
+          icon: <SettingsIcon />, 
+          href: '/configuracoes' 
+        },
+      ]
+    }
+
+    if (isInstrutor) {
+      return [
+        { 
+          label: 'Dashboard', 
+          icon: <DashboardIcon />, 
+          href: '/dashboard/instrutor' 
+        },
+        { 
+          label: 'Usuários', 
+          icon: <PeopleIcon />, 
+          href: '/instrutor/users' 
+        },
+        { 
+          label: 'Cursos', 
+          icon: <SchoolIcon />, 
+          href: '/cursos' 
+        },
+        { 
+          label: 'Avaliações', 
+          icon: <AssignmentIcon />, 
+          href: '/avaliacoes' 
+        },
+        { 
+          label: 'Departamentos', 
+          icon: <ApartmentIcon />, 
+          href: '/instrutor/departments' 
+        },
+        { 
+          label: 'Configurações', 
+          icon: <SettingsIcon />, 
+          href: '/instrutor/settings' 
+        },
+      ]
+    }
+
+    if (isAdmin) {
+      return [
+        { 
+          label: 'Dashboard', 
+          icon: <DashboardIcon />, 
+          href: '/dashboard/admin' 
+        },
+        { 
+          label: 'Usuários', 
+          icon: <PeopleIcon />, 
+          href: '/admin/users' 
+        },
+        { 
+          label: 'Cursos', 
+          icon: <SchoolIcon />, 
+          href: '/cursos' 
+        },
+        { 
+          label: 'Instrutores', 
+          icon: <BadgeIcon />, 
+          href: '/admin/instructors' 
+        },
+        { 
+          label: 'Avaliações', 
+          icon: <AssignmentIcon />, 
+          href: '/avaliacoes' 
+        },
+        { 
+          label: 'Notas', 
+          icon: <GradeIcon />, 
+          href: '/notas' 
+        },
+        { 
+          label: 'Departamentos', 
+          icon: <ApartmentIcon />, 
+          href: '/admin/departments' 
+        },
+        { 
+          label: 'Configurações', 
+          icon: <SettingsIcon />, 
+          href: '/admin/settings' 
+        },
+      ]
+    }
+
+    // Fallback para usuários não identificados
+    return baseItems
+  }
+
+  const navigationItems = getNavigationItems()
+
+  // Ícones para categorias
+  const categoriaIcons: Record<string, React.ReactNode> = {
+    TI: <ComputerIcon />,
+    DESIGN: <PaletteIcon />,
+    NEGOCIOS: <BusinessIcon />,
+    SEGURANCA: <SecurityIcon />,
+    DESENVOLVIMENTO: <CodeIcon />,
+    SOFT_SKILLS: <PsychologyIcon />,
+    IDIOMAS: <LanguageIcon />,
+    ENGENHARIA: <EngineeringIcon />,
+    DADOS: <AnalyticsIcon />,
+    FOTOGRAFIA: <CameraAltIcon />,
+  }
+
+  const dificuldadeColors = {
+    Básico: '#4caf50',
+    Intermediário: '#ff9800',
+    Avançado: '#f44336',
+  }
+
   // Hooks
   const { data: categorias } = useCategorias()
   const { data: cursos, isLoading: loadingCursos } = useCatalogoCursos(filtros)
@@ -133,12 +274,6 @@ export default function CoursesPage() {
   const alterarStatusMutation = useAlterarStatusCurso()
   const criarInscricaoMutation = useCriarInscricao()
   const { validarCodigo, validarTitulo } = useValidacoesCurso()
-
-  // Funções
-  const isInstrutor = user?.tipo_usuario === 'INSTRUTOR'
-  const isAdmin = user?.tipo_usuario === 'ADMIN'
-  const isFuncionario = user?.tipo_usuario === 'FUNCIONARIO'
-  const canManageCourses = isInstrutor || isAdmin
 
   const handleSearch = () => {
     setFiltros(prev => ({
@@ -596,7 +731,7 @@ export default function CoursesPage() {
   }
 
   return (
-    <DashboardLayout title='Cursos' items={items}>
+    <DashboardLayout title='Cursos' items={navigationItems}>
       <Box
         sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 4, md: 6 } }}
       >
