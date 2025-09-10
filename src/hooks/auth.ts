@@ -13,7 +13,7 @@ import type {
 export function useLogin() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  
+
   return useMutation({
     mutationKey: ['auth', 'login'],
     mutationFn: async (input: LoginInput & { rememberMe?: boolean }) => {
@@ -33,7 +33,7 @@ export function useLogin() {
       // Invalidar queries de autenticação para forçar revalidação
       queryClient.invalidateQueries({ queryKey: ['auth'] })
       queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
-      
+
       // Aguardar um pouco para as queries se atualizarem
       setTimeout(() => {
         navigate('/dashboard/funcionario', { replace: true })
@@ -86,7 +86,6 @@ export function useLogout() {
       clearAccessToken() // Remove do localStorage
       queryClient.clear() // Limpa cache React Query
 
-     
       navigate('/login', { replace: true })
     },
   })

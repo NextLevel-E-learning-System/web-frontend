@@ -44,7 +44,8 @@ export function ProtectedRoute({
   }
 
   // Extrair tipo_dashboard da estrutura da resposta
-  const tipoDashboard = dashboard?.dashboard_data?.tipo_dashboard || dashboard?.tipo_dashboard
+  const tipoDashboard =
+    dashboard?.dashboard_data?.tipo_dashboard || dashboard?.tipo_dashboard
 
   // Se não conseguiu carregar dashboard, redirecionar para login
   if (!dashboard || !tipoDashboard) {

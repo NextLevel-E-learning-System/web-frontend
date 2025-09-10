@@ -30,30 +30,33 @@ export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
   const { dashboard, perfil, isLoading } = useDashboardCompleto()
 
-const items: NavItem[] = [
-  { label: 'Catálogo de Cursos ', icon: <AssignmentIcon />, href: '/catalogo' },
-  { label: 'Meus Cursos', icon: <BookIcon />, href: '/meus-cursos' },
-  { label: 'Conquistas', icon: <EmojiEventsIcon />, href: '/conquistas' },
-  {
-    label: 'Ranking',
-    icon: <WorkspacePremiumIcon />,
-    href: '/ranking',
-  },
-  {
-    label: 'Certificados',
-    icon: <GraduationCapIcon />,
-    href: '/certificados',
-  },
-  { label: 'Configurações', icon: <SettingsIcon />, href: '/configuracoes' },
-]
+  const items: NavItem[] = [
+    {
+      label: 'Catálogo de Cursos ',
+      icon: <AssignmentIcon />,
+      href: '/catalogo',
+    },
+    { label: 'Meus Cursos', icon: <BookIcon />, href: '/meus-cursos' },
+    { label: 'Conquistas', icon: <EmojiEventsIcon />, href: '/conquistas' },
+    {
+      label: 'Ranking',
+      icon: <WorkspacePremiumIcon />,
+      href: '/ranking',
+    },
+    {
+      label: 'Certificados',
+      icon: <GraduationCapIcon />,
+      href: '/certificados',
+    },
+    { label: 'Configurações', icon: <SettingsIcon />, href: '/configuracoes' },
+  ]
 
   // Extrair dados do dashboard (suporta estrutura com dashboard_data)
   const dashboardData = dashboard?.dashboard_data || dashboard
-  
-  const progressoNivel = dashboardData?.progresso_nivel || 0
+
   const nivelAtual = dashboardData?.nivel_atual || 1
   const xpAtual = dashboardData?.xp_atual || 0
-
+  const xp_proximo_nivel = dashboardData?.xp_proximo_nivel
   // Dados dos cursos vindos do dashboard
   const cursosEmAndamento = dashboardData?.cursos_em_andamento || []
   const cursosConcluidos = dashboardData?.cursos_concluidos || []
@@ -74,20 +77,31 @@ const items: NavItem[] = [
                 }}
               >
                 <Avatar sx={{ width: 96, height: 96 }}>
-                  {perfil?.nome?.substring(0, 2)?.toUpperCase()  }
+                  {(() => {
+                    const nomes = perfil?.nome?.split(' ') || []
+                    const primeiroNome = nomes[0]?.[0] || ''
+                    const ultimoNome = nomes[nomes.length - 1]?.[0] || ''
+                    return (primeiroNome + ultimoNome).toUpperCase()
+                  })()}
                 </Avatar>
                 <Typography variant='h6' fontWeight={700}>
-                  {perfil?.nome  }
+                  {perfil?.nome}
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
-                  {perfil?.departamento_id  }
+                  Departamento: {perfil?.departamento_id}
                 </Typography>
-                <Box
-                  sx={{ position: 'relative', display: 'inline-flex', mt: 1 }}
+
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  textAlign={'center'}
                 >
+                  Nível atual: {nivelAtual} - {perfil.nivel}
+                </Typography>
+                <Box sx={{ position: 'relative', display: 'flex', mt: 1 }}>
                   <CircularProgress
                     variant='determinate'
-                    value={progressoNivel}
+                    value={xpAtual}
                     size={90}
                     thickness={5}
                     color='primary'
@@ -105,19 +119,15 @@ const items: NavItem[] = [
                     }}
                   >
                     <Typography variant='subtitle1' fontWeight={700}>
-                      {Math.round(progressoNivel)}%
+                      {xpAtual} xp
                     </Typography>
                   </Box>
                 </Box>
                 <Chip
                   color='warning'
                   variant='outlined'
-                  icon={<StarIcon />}
-                  label={
-                    dashboardData?.proximo_badge
-                      ? `Próxima badge: ${dashboardData.proximo_badge}`
-                      : 'Próxima badge: -'
-                  }
+                  icon={<WorkspacePremiumIcon />}
+                  label={`XP para próximo nível: ${xp_proximo_nivel}`}
                 />
               </Box>
             </CardContent>
