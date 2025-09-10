@@ -86,7 +86,13 @@ export default function CoursesPage() {
   const theme = useTheme()
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const { data: user } = useMeuPerfil()
-  const { navigationItems, canManageCourses, isFuncionario, isInstrutor, isAdmin } = useNavigation()
+  const {
+    navigationItems,
+    canManageCourses,
+    isFuncionario,
+    isInstrutor,
+    isAdmin,
+  } = useNavigation()
 
   // Estados locais
   const [filtros, setFiltros] = useState<FiltrosCatalogo>({})
@@ -121,9 +127,8 @@ export default function CoursesPage() {
   // Função para contar cursos por categoria
   const getContagemCursosPorCategoria = (categoriaId: string): number => {
     if (!todosCursos) return 0
-    return todosCursos.filter(curso => 
-      curso.categoria_id === categoriaId 
-    ).length
+    return todosCursos.filter(curso => curso.categoria_id === categoriaId)
+      .length
   }
 
   const dificuldadeColors = {
@@ -284,7 +289,8 @@ export default function CoursesPage() {
               textAlign: 'center',
             }}
           >
-            {getContagemCursosPorCategoria(categoria.id || categoria.codigo)} Cursos
+            {getContagemCursosPorCategoria(categoria.id || categoria.codigo)}{' '}
+            Cursos
           </Typography>
         </CardContent>
       </Card>
@@ -597,28 +603,29 @@ export default function CoursesPage() {
   }
 
   return (
-    <DashboardLayout title= {isFuncionario ? 'Catálogo de Cursos' : 'Gerenciar Cursos'} items={navigationItems}>
+    <DashboardLayout
+      title={isFuncionario ? 'Catálogo de Cursos' : 'Gerenciar Cursos'}
+      items={navigationItems}
+    >
       <Box
         sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 4, md: 6 } }}
       >
-        
-            {canManageCourses && (
-              <Button
-                variant='contained'
-                startIcon={<AddIcon />}
-                onClick={() => setDialogCriarCurso(true)}
-                sx={{
-                  borderRadius: '24px',
-                  textTransform: 'none',
-                  fontSize: '16px',
-                  px: 3,
-                  py: 1.5,
-                }}
-              >
-                Novo Curso
-              </Button>
-            )}
-       
+        {canManageCourses && (
+          <Button
+            variant='contained'
+            startIcon={<AddIcon />}
+            onClick={() => setDialogCriarCurso(true)}
+            sx={{
+              borderRadius: '24px',
+              textTransform: 'none',
+              fontSize: '16px',
+              px: 3,
+              py: 1.5,
+            }}
+          >
+            Novo Curso
+          </Button>
+        )}
 
         {/* Seção de Categorias */}
         {loadingCategorias && <LinearProgress sx={{ mb: 2 }} />}
