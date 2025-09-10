@@ -16,44 +16,13 @@ import {
 } from '@mui/material'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/EmployeeHeader/EmployeeHeader'
-import AssignmentIcon from '@mui/icons-material/Assignment'
-import SettingsIcon from '@mui/icons-material/Settings'
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import BookIcon from '@mui/icons-material/Book'
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
-import GraduationCapIcon from '@mui/icons-material/School'
 import { useDashboardCompleto } from '@/hooks/users'
+import { useNavigation } from '@/hooks/useNavigation'
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
   const { dashboard, perfil, isLoading } = useDashboardCompleto()
-
-  const items: NavItem[] = [
-    {
-      label: 'Dashboard',
-      icon: <DashboardIcon />,
-      href: '/dashboard/funcionario',
-    },
-    {
-      label: 'Catálogo de Cursos',
-      icon: <AssignmentIcon />,
-      href: '/catalogo',
-    },
-    { label: 'Meus Cursos', icon: <BookIcon />, href: '/meus-cursos' },
-    { label: 'Conquistas', icon: <EmojiEventsIcon />, href: '/conquistas' },
-    {
-      label: 'Ranking',
-      icon: <WorkspacePremiumIcon />,
-      href: '/ranking',
-    },
-    {
-      label: 'Certificados',
-      icon: <GraduationCapIcon />,
-      href: '/certificados',
-    },
-    { label: 'Configurações', icon: <SettingsIcon />, href: '/configuracoes' },
-  ]
+  const { navigationItems } = useNavigation()
 
   // Extrair dados do dashboard (suporta estrutura com dashboard_data)
   const dashboardData = dashboard?.dashboard_data
@@ -62,7 +31,7 @@ export default function EmployeeDashboard() {
   const timeline = dashboardData?.timeline || []
 
   return (
-    <DashboardLayout title='Página Inicial' items={items}>
+    <DashboardLayout title='Página Inicial' items={navigationItems}>
       <EmployeeHeader perfil={perfil} dashboardData={dashboardData} />
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>

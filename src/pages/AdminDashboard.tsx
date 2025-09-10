@@ -1,28 +1,12 @@
 import { Card, CardContent, Grid, Typography } from '@mui/material'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import PeopleIcon from '@mui/icons-material/People'
-import SchoolIcon from '@mui/icons-material/School'
-import BadgeIcon from '@mui/icons-material/Badge'
-import ApartmentIcon from '@mui/icons-material/Apartment'
-import SettingsIcon from '@mui/icons-material/Settings'
-
-const items: NavItem[] = [
-  { label: 'Dashboard', icon: <DashboardIcon />, href: '/admin' },
-  { label: 'Usuários', icon: <PeopleIcon />, href: '/admin/users' },
-  { label: 'Cursos', icon: <SchoolIcon />, href: '/catalogo' },
-  { label: 'Instrutores', icon: <BadgeIcon />, href: '/admin/instructors' },
-  {
-    label: 'Departamentos',
-    icon: <ApartmentIcon />,
-    href: '/admin/departments',
-  },
-  { label: 'Configurações', icon: <SettingsIcon />, href: '/admin/settings' },
-]
+import { useNavigation } from '@/hooks/useNavigation'
 
 export default function AdminDashboard() {
+  const { navigationItems } = useNavigation()
+
   return (
-    <DashboardLayout title='Admin Dashboard' items={items}>
+    <DashboardLayout title='Admin Dashboard' items={navigationItems}>
       <Grid container spacing={3}>
         {['Active Users', 'Popular Courses', 'Completion Rate', 'Alerts'].map(
           t => (
