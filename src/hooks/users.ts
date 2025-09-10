@@ -272,9 +272,9 @@ export interface DashboardBase {
 }
 
 export function useDashboard() {
-  return useQuery<DashboardData>({
+  return useQuery<{ dashboard_data: DashboardData }>({
     queryKey: ['users', 'dashboard', 'auto'],
-    queryFn: () => authGet<DashboardData>('/users/v1/dashboard'),
+    queryFn: () => authGet<{ dashboard_data: DashboardData }>('/users/v1/dashboard'),
     staleTime: 0,
     retry: false,
   })

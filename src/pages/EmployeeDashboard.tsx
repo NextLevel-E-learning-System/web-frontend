@@ -52,14 +52,15 @@ export default function EmployeeDashboard() {
   ]
 
   // Extrair dados do dashboard (suporta estrutura com dashboard_data)
+  const dashboardData = dashboard?.dashboard_data
 
-  const nivelAtual = dashboard?.nivel_atual || 1
-  const xpAtual = dashboard?.xp_atual || 0
-  const xp_proximo_nivel = dashboard?.xp_proximo_nivel
+  const nivelAtual = dashboardData?.nivel_atual || 1
+  const xpAtual = dashboardData?.xp_atual || 0
+  const xp_proximo_nivel = dashboardData?.xp_proximo_nivel
   // Dados dos cursos vindos do dashboard
-  const cursosEmAndamento = dashboard?.cursos_em_andamento || []
-  const cursosConcluidos = dashboard?.cursos_concluidos || []
-  const timeline = dashboard?.timeline || []
+  const cursosEmAndamento = dashboardData?.cursos_em_andamento || []
+  const cursosConcluidos = dashboardData?.cursos_concluidos || []
+  const timeline = dashboardData?.timeline || []
 
   return (
     <DashboardLayout title='Página Inicial' items={items}>
@@ -126,7 +127,7 @@ export default function EmployeeDashboard() {
                   color='warning'
                   variant='outlined'
                   icon={<WorkspacePremiumIcon />}
-                  label={`XP para próximo nível: ${xp_proximo_nivel}`}
+                  label={`XP para próximo nível: ${xp_proximo_nivel || 'N/A'}`}
                 />
               </Box>
             </CardContent>
@@ -157,7 +158,7 @@ export default function EmployeeDashboard() {
                         }}
                       >
                         <Typography fontWeight={700}>
-                          {c.title || c.nome}
+                          {c.titulo || c.title || c.nome}
                         </Typography>
                         <Box
                           sx={{
@@ -210,7 +211,7 @@ export default function EmployeeDashboard() {
                     cursosConcluidos.map((c: any) => (
                       <ListItem key={c.id}>
                         <ListItemText
-                          primary={c.title || c.nome}
+                          primary={c.titulo || c.title || c.nome}
                           secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
                         />
                         <Chip label='Concluído' color='success' size='small' />

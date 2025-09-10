@@ -44,10 +44,10 @@ export function ProtectedRoute({
   }
 
   // Extrair tipo_dashboard da estrutura da resposta
-  const tipoDashboard = dashboard?.tipo_dashboard
+  const tipoDashboard = dashboard?.dashboard_data?.tipo_dashboard
 
   // Se não conseguiu carregar dashboard, redirecionar para login
-  if (!dashboard) {
+  if (!dashboard || !tipoDashboard) {
     return <Navigate to='/login' replace />
   }
 
@@ -57,7 +57,7 @@ export function ProtectedRoute({
   }
 
   // Verificar se o role do usuário está permitido
-  if (!allowedRoles.includes(dashboard.tipo_dashboard)) {
+  if (!allowedRoles.includes(tipoDashboard)) {
     // Redirecionar para o dashboard correto baseado no role
     switch (tipoDashboard) {
       case 'administrador':
