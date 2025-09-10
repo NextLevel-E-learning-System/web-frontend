@@ -18,6 +18,7 @@ import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/EmployeeHeader/EmployeeHeader'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import SettingsIcon from '@mui/icons-material/Settings'
+import DashboardIcon from '@mui/icons-material/Dashboard'
 import BookIcon from '@mui/icons-material/Book'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
@@ -30,7 +31,12 @@ export default function EmployeeDashboard() {
 
   const items: NavItem[] = [
     {
-      label: 'Catálogo de Cursos ',
+      label: 'Dashboard',
+      icon: <DashboardIcon />,
+      href: '/dashboard/funcionario',
+    },
+    {
+      label: 'Catálogo de Cursos',
       icon: <AssignmentIcon />,
       href: '/catalogo',
     },

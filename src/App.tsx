@@ -12,6 +12,7 @@ import Recover from './pages/Recover'
 import EmployeeDashboard from './pages/EmployeeDashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import InstrutorDashboard from './pages/InstrutorDashboard'
+import CoursesPage from './pages/CoursesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
 
@@ -97,6 +98,14 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={['instrutor']}>
                 <InstrutorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/catalogo'
+            element={
+              <ProtectedRoute>
+                <CoursesPage />
               </ProtectedRoute>
             }
           />

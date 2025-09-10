@@ -44,17 +44,11 @@ export default function DashboardLayout({
         color: '#e5e7eb',
       }}
     >
-      <Toolbar sx={{ minHeight: 48 }}>
-        <Button
-          component={RouterLink}
-          to='/dashboard'
-          sx={{ minWidth: 0, display: 'flex', gap: 1 }}
-        >
-          <img src={logoIcon} alt='Logo NextLevel' style={{ minWidth: 50 }} />
-          <Typography variant='h6' fontWeight={800} color='#e5e7eb'>
-            NextLevel
-          </Typography>
-        </Button>
+      <Toolbar sx={{ minHeight: 48, gap: 1 }}>
+        <img src={logoIcon} alt='Logo NextLevel' style={{ width: 50 }} />
+        <Typography variant='h6' fontWeight={800} color='#e5e7eb'>
+          NextLevel
+        </Typography>
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255,255,255,.12)' }} />
       <List>

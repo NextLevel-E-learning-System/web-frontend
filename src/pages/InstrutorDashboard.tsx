@@ -10,7 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 const items: NavItem[] = [
   { label: 'Dashboard', icon: <DashboardIcon />, href: '/instrutor' },
   { label: 'Usuários', icon: <PeopleIcon />, href: '/instrutor/users' },
-  { label: 'Cursos', icon: <SchoolIcon />, href: '/instrutor/courses' },
+  { label: 'Cursos', icon: <SchoolIcon />, href: '/catalogo' },
   {
     label: 'Departamentos',
     icon: <ApartmentIcon />,
@@ -29,7 +29,7 @@ export default function InstrutorDashboard() {
       <Grid container spacing={3}>
         {['Active Users', 'Popular Courses', 'Completion Rate', 'Alerts'].map(
           t => (
-            <Grid key={t} item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }} key={t}>
               <Card>
                 <CardContent>
                   <Typography fontWeight={700}>{t}</Typography>
