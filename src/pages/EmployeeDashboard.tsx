@@ -10,7 +10,6 @@ import {
   Divider,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   Tab,
   Tabs,
@@ -19,14 +18,10 @@ import {
 } from '@mui/material'
 import StarIcon from '@mui/icons-material/Star'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
-import DashboardIcon from '@mui/icons-material/Dashboard'
-import SchoolIcon from '@mui/icons-material/School'
 import AssignmentIcon from '@mui/icons-material/Assignment'
-import GradeIcon from '@mui/icons-material/Grade'
 import SettingsIcon from '@mui/icons-material/Settings'
 import BookIcon from '@mui/icons-material/Book'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
 import GraduationCapIcon from '@mui/icons-material/School'
 import { useDashboardCompleto } from '@/hooks/users'
@@ -36,8 +31,8 @@ export default function EmployeeDashboard() {
   const { dashboard, perfil, isLoading } = useDashboardCompleto()
 
 const items: NavItem[] = [
-  { label: 'Catálogo de Cursos ', icon: <SchoolIcon />, href: '/catalogo' },
-  { label: 'Meus Cursos', icon: <GradeIcon />, href: '/meus-cursos' },
+  { label: 'Catálogo de Cursos ', icon: <AssignmentIcon />, href: '/catalogo' },
+  { label: 'Meus Cursos', icon: <BookIcon />, href: '/meus-cursos' },
   { label: 'Conquistas', icon: <EmojiEventsIcon />, href: '/conquistas' },
   {
     label: 'Ranking',
@@ -49,6 +44,7 @@ const items: NavItem[] = [
     icon: <GraduationCapIcon />,
     href: '/certificados',
   },
+  { label: 'Configurações', icon: <SettingsIcon />, href: '/configuracoes' },
 ]
 
   // Extrair dados do dashboard (suporta estrutura com dashboard_data)
@@ -66,7 +62,7 @@ const items: NavItem[] = [
   return (
     <DashboardLayout title='Página Inicial' items={items}>
       <Grid container spacing={3}>
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card sx={{ overflow: 'hidden' }}>
             <CardContent>
               <Box
@@ -78,13 +74,13 @@ const items: NavItem[] = [
                 }}
               >
                 <Avatar sx={{ width: 96, height: 96 }}>
-                  {perfil?.nome?.substring(0, 2)?.toUpperCase() || 'JD'}
+                  {perfil?.nome?.substring(0, 2)?.toUpperCase()  }
                 </Avatar>
                 <Typography variant='h6' fontWeight={700}>
-                  {perfil?.nome || 'Jane Doe'}
+                  {perfil?.nome  }
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
-                  {perfil?.departamento_id || 'Marketing Team'}
+                  {perfil?.departamento_id  }
                 </Typography>
                 <Box
                   sx={{ position: 'relative', display: 'inline-flex', mt: 1 }}
@@ -128,7 +124,7 @@ const items: NavItem[] = [
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card sx={{ overflow: 'hidden' }}>
             <Tabs
               value={tab}
@@ -138,7 +134,6 @@ const items: NavItem[] = [
             >
               <Tab label='Em andamento' />
               <Tab label='Concluídos' />
-              <Tab label='Disponíveis' />
             </Tabs>
             <CardContent>
               {tab === 0 && (
@@ -226,7 +221,7 @@ const items: NavItem[] = [
           </Card>
         </Grid>
 
-        <Grid item xs={12} md={3}>
+        <Grid size={{ xs: 12, md: 3 }}>
           <Card sx={{ overflow: 'hidden' }}>
             <CardContent>
               <Typography fontWeight={700} gutterBottom>

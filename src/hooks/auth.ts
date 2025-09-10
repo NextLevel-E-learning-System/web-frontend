@@ -30,15 +30,12 @@ export function useLogin() {
       return data
     },
     onSuccess: async () => {
-      console.log('[Login] Login bem-sucedido, invalidando queries...')
-      
       // Invalidar queries de autenticação para forçar revalidação
       queryClient.invalidateQueries({ queryKey: ['auth'] })
       queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
       
       // Aguardar um pouco para as queries se atualizarem
       setTimeout(() => {
-        console.log('[Login] Navegando para verificação de dashboard...')
         navigate('/dashboard/funcionario', { replace: true })
       }, 100)
     },
@@ -80,10 +77,6 @@ export function useLogout() {
         )
       } catch (error) {
         // Mesmo se logout falhar no servidor, limpar sessão local
-        console.warn(
-          '[Logout] Falha no servidor, limpando sessão local:',
-          error
-        )
       }
 
       return true

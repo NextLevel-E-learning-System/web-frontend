@@ -20,17 +20,8 @@ export function ProtectedRoute({
   const { data: dashboard, isLoading: dashboardLoading } = useDashboard()
   const location = useLocation()
 
-  console.log('[ProtectedRoute] Estado:', { 
-    isLoggedIn, 
-    authLoading, 
-    dashboardLoading, 
-    dashboard: !!dashboard,
-    location: location.pathname 
-  })
-
   // Mostrar loading enquanto carrega dados de auth OU dashboard
   if (authLoading || dashboardLoading) {
-    console.log('[ProtectedRoute] Ainda carregando, mostrando loading...')
     return (
       fallback || (
         <Box
@@ -49,22 +40,14 @@ export function ProtectedRoute({
 
   // Se não estiver logado, redirecionar para login
   if (!isLoggedIn) {
-    console.log('[ProtectedRoute] Não logado, redirecionando para login')
     return <Navigate to='/login' state={{ from: location }} replace />
   }
 
   // Extrair tipo_dashboard da estrutura da resposta
   const tipoDashboard = dashboard?.dashboard_data?.tipo_dashboard || dashboard?.tipo_dashboard
 
-  console.log('[ProtectedRoute] Dashboard data:', { 
-    dashboard, 
-    tipoDashboard, 
-    allowedRoles 
-  })
-
   // Se não conseguiu carregar dashboard, redirecionar para login
   if (!dashboard || !tipoDashboard) {
-    console.log('[ProtectedRoute] Dashboard não carregado, redirecionando para login')
     return <Navigate to='/login' replace />
   }
 
@@ -75,7 +58,6 @@ export function ProtectedRoute({
 
   // Verificar se o role do usuário está permitido
   if (!allowedRoles.includes(tipoDashboard)) {
-    console.log('[ProtectedRoute] Role não permitido, redirecionando para dashboard correto:', tipoDashboard)
     // Redirecionar para o dashboard correto baseado no role
     switch (tipoDashboard) {
       case 'administrador':
@@ -88,7 +70,6 @@ export function ProtectedRoute({
     }
   }
 
-  console.log('[ProtectedRoute] Role permitido, mostrando conteúdo')
   // Role permitido, mostrar conteúdo
   return <>{children}</>
 }

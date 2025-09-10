@@ -384,12 +384,7 @@ export interface DashboardBase {
 export function useDashboard() {
   return useQuery<DashboardBase>({
     queryKey: ['users', 'dashboard', 'auto'],
-    queryFn: async () => {
-      console.log('[Dashboard] Buscando dados do dashboard...')
-      const result = await authGet<DashboardBase>('/users/v1/dashboard')
-      console.log('[Dashboard] Dados recebidos:', result)
-      return result
-    },
+    queryFn: () => authGet<DashboardBase>('/users/v1/dashboard'),
     staleTime: 0,
     retry: false,
   })

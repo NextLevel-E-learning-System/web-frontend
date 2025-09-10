@@ -22,16 +22,13 @@ export function useAuthCheck(): AuthCheckResult {
     queryKey: ['auth', 'check'],
     queryFn: async () => {
       const token = getAccessToken()
-      console.log('[AuthCheck] Verificando token:', !!token)
       if (!token) {
         throw new Error('no_token')
       }
 
       // Tentar buscar dados do usuário
       // Se token expirou, o interceptor fará refresh automático
-      const userData = await apiGet('/users/v1/me')
-      console.log('[AuthCheck] Usuário logado:', userData)
-      return userData
+      return await apiGet('/users/v1/me')
     },
     enabled: !!getAccessToken(), // Só executa se tiver token
     retry: (failureCount, error: any) => {
@@ -56,7 +53,6 @@ export function useAuthCheck(): AuthCheckResult {
     // Se tem token e a query terminou (com sucesso ou erro)
     if (!isUserLoading) {
       if (error) {
-        console.log('[AuthCheck] Token inválido, limpando sessão')
         clearAccessToken()
       }
       setIsLoading(false)
@@ -64,14 +60,6 @@ export function useAuthCheck(): AuthCheckResult {
   }, [isUserLoading, error])
 
   const isLoggedIn = !!user && !!getAccessToken()
-  
-  console.log('[AuthCheck] Estado final:', { 
-    isLoggedIn, 
-    isLoading, 
-    hasUser: !!user, 
-    hasToken: !!getAccessToken(),
-    isUserLoading 
-  })
 
   return {
     isLoggedIn,
