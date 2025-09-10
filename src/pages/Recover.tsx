@@ -11,6 +11,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useResetPassword } from '@/hooks/auth'
+import { showToast } from '@/utils/toast'
 
 export default function Recover() {
   const reset = useResetPassword()
@@ -24,10 +25,10 @@ export default function Recover() {
           const email = String(data.get('email') || '')
           try {
             await reset.mutateAsync({ email })
-            alert('Se o email existir, uma nova senha foi enviada.')
+            showToast.success('Se o email existir, uma nova senha foi enviada.')
           } catch (err) {
             console.error(err)
-            alert('Não foi possível processar o pedido agora.')
+            showToast.error('Não foi possível processar o pedido agora.')
           }
         }}
       >

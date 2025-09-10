@@ -4,6 +4,10 @@ import {
   InputAdornment,
   TextField,
   Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
@@ -12,18 +16,56 @@ import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useRegister } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
+import { useListarDepartamentos } from '@/hooks/users'
+import { useState } from 'react'
+import { showToast } from '@/utils/toast'
 
 const Register = () => {
   const navigate = useNavigate()
   const register = useRegister()
+  const { data: departamentos = [], isLoading: loadingDepartamentos } = useListarDepartamentos()
+  
+  const departamentosArray = Array.isArray(departamentos) ? departamentos : []
+  
+  const [formData, setFormData] = useState({
+    cpf: '',
+    nome: '',
+    email: '',
+    departamento_id: '',
+    cargo: '',
+  })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await register.mutateAsync(formData as any)
+      showToast.success('Conta criada com sucesso! Senha enviada por email.')
+      navigate('/login')
+    } catch (err) {
+      console.error(err)
+      showToast.error('Falha ao criar conta. Tente novamente.')
+    }
+  }
+
+  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement> | any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: e.target.value as string
+    }))
+  }
   return (
     <AuthShell title='Criar conta'>
       <Box
-        component='form'>
+        component='form'
+        onSubmit={handleSubmit}
+      >
         <TextField
           fullWidth
           margin='normal'
           label='CPF'
+          name='cpf'
+          value={formData.cpf}
+          onChange={handleChange('cpf')}
           required
           inputMode='numeric'
           InputProps={{
@@ -34,11 +76,14 @@ const Register = () => {
             ),
           }}
         />
-        name='email'
+        
         <TextField
           fullWidth
           margin='normal'
           label='Nome completo'
+          name='nome'
+          value={formData.nome}
+          onChange={handleChange('nome')}
           required
           InputProps={{
             startAdornment: (
@@ -48,24 +93,35 @@ const Register = () => {
             ),
           }}
         />
-        <TextField
-          name='cpf'
-          fullWidth
-          margin='normal'
-          label='Departamento'
-          required
-          InputProps={{
-            startAdornment: (
+
+        <FormControl fullWidth margin='normal' required>
+          <InputLabel>Departamento</InputLabel>
+          <Select
+            value={formData.departamento_id}
+            onChange={handleChange('departamento_id')}
+            label='Departamento'
+            disabled={loadingDepartamentos}
+            startAdornment={
               <InputAdornment position='start'>
                 <ApartmentOutlinedIcon color='disabled' />
               </InputAdornment>
-            ),
-          }}
-        />
+            }
+          >
+            {departamentosArray.map((dept) => (
+              <MenuItem key={dept.codigo} value={dept.codigo}>
+                {dept.nome}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <TextField
           fullWidth
           margin='normal'
           label='Cargo'
+          name='cargo'
+          value={formData.cargo}
+          onChange={handleChange('cargo')}
           required
           InputProps={{
             startAdornment: (
@@ -75,11 +131,15 @@ const Register = () => {
             ),
           }}
         />
+        
         <TextField
           fullWidth
           margin='normal'
           label='Email corporativo'
+          name='email'
           type='email'
+          value={formData.email}
+          onChange={handleChange('email')}
           required
           InputProps={{
             startAdornment: (
@@ -89,18 +149,22 @@ const Register = () => {
             ),
           }}
         />
+        
         <Typography variant='caption' color='text.secondary' sx={{ mt: 0 }}>
           A senha será enviada para seu email corporativo.
         </Typography>
+        
         <Button
           type='submit'
           fullWidth
           variant='contained'
           size='large'
           sx={{ mt: 2, borderRadius: 8 }}
+          disabled={register.isPending}
         >
-          Criar conta
+          {register.isPending ? 'Enviando...' : 'Criar conta'}
         </Button>
+        
         <Typography variant='body2' sx={{ mt: 2, textAlign: 'center' }}>
           Já tem uma conta?{' '}
           <Button
@@ -108,30 +172,8 @@ const Register = () => {
             to='/login'
             variant='text'
             size='small'
-            onSubmit={async e => {
-              e.preventDefault()
-              const data = new FormData(
-                e.currentTarget as unknown as HTMLFormElement
-              )
-              const payload = {
-                email: String(data.get('email') || ''),
-                cpf: String(data.get('cpf') || ''),
-                nome: String(data.get('nome') || ''),
-                departamento_id: String(data.get('departamento') || ''),
-                cargo: String(data.get('cargo') || ''),
-              }
-              try {
-                await register.mutateAsync(payload as any)
-                alert('Conta criada. Senha enviada por email.')
-                navigate('/login')
-              } catch (err) {
-                console.error(err)
-                alert('Falha ao criar conta')
-              }
-            }}
-            disabled={register.isPending}
           >
-            {register.isPending ? 'Enviando...' : 'Criar conta'}
+            Fazer login
           </Button>
         </Typography>
       </Box>

@@ -9,6 +9,11 @@ export interface Departamento {
   gestor_id?: string
 }
 
+export interface DepartamentosResponse {
+  items: Departamento[]
+  total: number
+}
+
 export interface UsuarioResumo {
   id: string
   nome: string
@@ -59,7 +64,7 @@ export function useListarDepartamentos(filtro?: {
 }) {
   return useQuery<Departamento[]>({
     queryKey: ['users', 'departments', filtro],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams()
       if (filtro) {
         Object.entries(filtro).forEach(([k, v]) => {
@@ -69,7 +74,8 @@ export function useListarDepartamentos(filtro?: {
       }
       const qs = params.toString()
       const url = `/users/v1/departments${qs ? `?${qs}` : ''}`
-      return authGet<Departamento[]>(url)
+      const response = await authGet<DepartamentosResponse>(url)
+      return response.items
     },
   })
 }

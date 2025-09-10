@@ -1,8 +1,10 @@
 import './global.css'
+import 'react-toastify/dist/ReactToastify.css'
 
 import { createRoot } from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 import NotFound from './pages/NotFound'
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
 import Home from './pages/Home'
@@ -112,6 +114,18 @@ const App = () => (
           <Route path='*' element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </ThemeProvider>
   </QueryClientProvider>
 )
