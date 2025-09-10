@@ -4,14 +4,13 @@ import {
   InputAdornment,
   TextField,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Autocomplete,
 } from '@mui/material'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
+import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useRegister } from '@/hooks/auth'
@@ -37,10 +36,26 @@ const Register = () => {
     cargo: '',
   })
 
+  const [selectedDepartamento, setSelectedDepartamento] = useState<any>(null)
+  const [selectedCargo, setSelectedCargo] = useState<any>(null)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validar se departamento e cargo foram selecionados
+    if (!selectedDepartamento || !selectedCargo) {
+      showToast.error('Selecione um departamento e cargo válidos.')
+      return
+    }
+    
+    const submitData = {
+      ...formData,
+      departamento_id: selectedDepartamento.codigo,
+      cargo: selectedCargo.nome,
+    }
+    
     try {
-      await register.mutateAsync(formData as any)
+      await register.mutateAsync(submitData as any)
       showToast.success('Conta criada com sucesso! Senha enviada por email.')
       navigate('/login')
     } catch (err) {
@@ -73,7 +88,7 @@ const Register = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <BadgeOutlinedIcon color='disabled' />
+                <FingerprintOutlinedIcon color='disabled' />
               </InputAdornment>
             ),
           }}
@@ -90,53 +105,81 @@ const Register = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <BadgeOutlinedIcon color='disabled' />
+                <PersonOutlineOutlinedIcon color='disabled' />
               </InputAdornment>
             ),
           }}
         />
 
-        <FormControl fullWidth margin='normal' required>
-          <InputLabel>Departamento</InputLabel>
-          <Select
-            value={formData.departamento_id}
-            onChange={handleChange('departamento_id')}
-            label='Departamento'
-            disabled={loadingDepartamentos}
-            startAdornment={
-              <InputAdornment position='start'>
-                <ApartmentOutlinedIcon color='disabled' />
-              </InputAdornment>
-            }
-          >
-            {departamentosArray.map((dept) => (
-              <MenuItem key={dept.codigo} value={dept.codigo}>
-                {dept.nome}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Autocomplete
+          fullWidth
+          options={departamentosArray}
+          getOptionLabel={(option) => option?.nome || ''}
+          value={selectedDepartamento}
+          onChange={(_, newValue) => setSelectedDepartamento(newValue)}
+          loading={loadingDepartamentos}
+          filterOptions={(options, { inputValue }) =>
+            options.filter((option) =>
+              option.nome.toLowerCase().includes(inputValue.toLowerCase())
+            )
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Departamento"
+              margin="normal"
+              required
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <>
+                    <InputAdornment position="start">
+                      <ApartmentOutlinedIcon color="disabled" />
+                    </InputAdornment>
+                    {params.InputProps.startAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          noOptionsText="Nenhum departamento encontrado"
+          loadingText="Carregando departamentos..."
+        />
 
-        <FormControl fullWidth margin='normal' required>
-          <InputLabel>Cargo</InputLabel>
-          <Select
-            value={formData.cargo}
-            onChange={handleChange('cargo')}
-            label='Cargo'
-            disabled={loadingCargos}
-            startAdornment={
-              <InputAdornment position='start'>
-                <ApartmentOutlinedIcon color='disabled' />
-              </InputAdornment>
-            }
-          >
-            {cargosArray.map((cargo) => (
-              <MenuItem key={cargo.id} value={cargo.nome}>
-                {cargo.nome}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Autocomplete
+          fullWidth
+          options={cargosArray}
+          getOptionLabel={(option) => option?.nome || ''}
+          value={selectedCargo}
+          onChange={(_, newValue) => setSelectedCargo(newValue)}
+          loading={loadingCargos}
+          filterOptions={(options, { inputValue }) =>
+            options.filter((option) =>
+              option.nome.toLowerCase().includes(inputValue.toLowerCase())
+            )
+          }
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Cargo"
+              margin="normal"
+              required
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <>
+                    <InputAdornment position="start">
+                      <BadgeOutlinedIcon color="disabled" />
+                    </InputAdornment>
+                    {params.InputProps.startAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+          noOptionsText="Nenhum cargo encontrado"
+          loadingText="Carregando cargos..."
+        />
         
         <TextField
           fullWidth
