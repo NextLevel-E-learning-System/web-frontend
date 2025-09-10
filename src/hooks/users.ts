@@ -34,15 +34,6 @@ export interface PerfilUsuario extends UsuarioResumo {
   ultimo_login?: string
 }
 
-// Interface específica para completar cadastro inicial
-export interface CompletarCadastro {
-  nome: string
-  cpf: string // Exatamente 11 dígitos
-  departamento_id: string
-  cargo: string
-  email?: string
-}
-
 // Interface para atualização administrativa (ADMIN pode alterar todos os campos)
 export interface AtualizacaoAdmin {
   nome?: string
@@ -276,36 +267,14 @@ export interface DashboardData {
 }
 
 export interface DashboardBase {
-  // Nova estrutura: pode vir com dashboard_data wrapper ou diretamente
   dashboard_data?: DashboardData
-  // Campos diretos para compatibilidade
-  tipo_dashboard?: DashboardTipo
-  xp_atual?: number
-  nivel_atual?: number
-  xp_proximo_nivel?: number
-  proximo_badge?: string
-  progresso_nivel?: number
-  ranking_departamento?: any
-  cursos_em_andamento?: any[]
-  cursos_concluidos?: any[]
-  timeline?: any[]
-  badges_conquistados?: any[]
-  // Campos específicos para INSTRUTOR
-  cursos_ministrados?: any[]
-  estatisticas_conclusao?: any
-  avaliacoes_pendentes?: any[]
-  metricas_performance?: any
-  // Campos específicos para ADMIN
-  metricas_gerais?: any
-  cursos_populares?: any[]
-  engajamento_departamento?: any
-  alertas_sistema?: any[]
+
 }
 
 export function useDashboard() {
-  return useQuery<DashboardBase>({
+  return useQuery<DashboardData>({
     queryKey: ['users', 'dashboard', 'auto'],
-    queryFn: () => authGet<DashboardBase>('/users/v1/dashboard'),
+    queryFn: () => authGet<DashboardData>('/users/v1/dashboard'),
     staleTime: 0,
     retry: false,
   })

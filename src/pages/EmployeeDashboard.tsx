@@ -52,15 +52,14 @@ export default function EmployeeDashboard() {
   ]
 
   // Extrair dados do dashboard (suporta estrutura com dashboard_data)
-  const dashboardData = dashboard?.dashboard_data || dashboard
 
-  const nivelAtual = dashboardData?.nivel_atual || 1
-  const xpAtual = dashboardData?.xp_atual || 0
-  const xp_proximo_nivel = dashboardData?.xp_proximo_nivel
+  const nivelAtual = dashboard?.nivel_atual || 1
+  const xpAtual = dashboard?.xp_atual || 0
+  const xp_proximo_nivel = dashboard?.xp_proximo_nivel
   // Dados dos cursos vindos do dashboard
-  const cursosEmAndamento = dashboardData?.cursos_em_andamento || []
-  const cursosConcluidos = dashboardData?.cursos_concluidos || []
-  const timeline = dashboardData?.timeline || []
+  const cursosEmAndamento = dashboard?.cursos_em_andamento || []
+  const cursosConcluidos = dashboard?.cursos_concluidos || []
+  const timeline = dashboard?.timeline || []
 
   return (
     <DashboardLayout title='Página Inicial' items={items}>

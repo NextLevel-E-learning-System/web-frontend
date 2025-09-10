@@ -2,7 +2,7 @@ import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { useAuthCheck } from '@/hooks/useAuthCheck'
-import { useDashboard } from '@/hooks/users'
+import { useDashboard, useDashboardCompleto } from '@/hooks/users'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -17,11 +17,11 @@ export function ProtectedRoute({
   fallback,
 }: ProtectedRouteProps) {
   const { isLoggedIn, isLoading: authLoading } = useAuthCheck()
-  const { data: dashboard, isLoading: dashboardLoading } = useDashboard()
+  const { dashboard, isLoading } = useDashboardCompleto()
   const location = useLocation()
 
   // Mostrar loading enquanto carrega dados de auth OU dashboard
-  if (authLoading || dashboardLoading) {
+  if (authLoading || isLoading) {
     return (
       fallback || (
         <Box
@@ -44,21 +44,20 @@ export function ProtectedRoute({
   }
 
   // Extrair tipo_dashboard da estrutura da resposta
-  const tipoDashboard =
-    dashboard?.dashboard_data?.tipo_dashboard || dashboard?.tipo_dashboard
+  const tipoDashboard = dashboard?.tipo_dashboard
 
   // Se não conseguiu carregar dashboard, redirecionar para login
-  if (!dashboard || !tipoDashboard) {
+  if (!dashboard) {
     return <Navigate to='/login' replace />
   }
 
-  // Se não há roles específicos definidos, permitir acesso
+    // Se não há roles específicos definidos, permitir acesso
   if (allowedRoles.length === 0) {
     return <>{children}</>
   }
 
   // Verificar se o role do usuário está permitido
-  if (!allowedRoles.includes(tipoDashboard)) {
+  if (!allowedRoles.includes(dashboard.tipo_dashboard)) {
     // Redirecionar para o dashboard correto baseado no role
     switch (tipoDashboard) {
       case 'administrador':
