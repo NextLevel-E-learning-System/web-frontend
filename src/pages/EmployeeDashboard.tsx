@@ -96,7 +96,7 @@ export default function EmployeeDashboard() {
                   color='text.secondary'
                   textAlign={'center'}
                 >
-                  Nível atual: {nivelAtual} - {perfil.nivel}
+                  Nível atual: {nivelAtual} - {perfil?.nivel}
                 </Typography>
                 <Box sx={{ position: 'relative', display: 'flex', mt: 1 }}>
                   <CircularProgress

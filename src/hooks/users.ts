@@ -145,28 +145,6 @@ export function useAtualizarMeuPerfil() {
   })
 }
 
-// Função específica para completar cadastro inicial
-export function useCompletarCadastro() {
-  const queryClient = useQueryClient()
-
-  return useMutation<
-    { success: boolean },
-    Error,
-    CompletarCadastro & { userId: string }
-  >({
-    mutationKey: ['users', 'complete-registration'],
-    mutationFn: ({ userId, ...input }) =>
-      authPatch<{ success: boolean }>(`/users/v1/${userId}`, input),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'me'] })
-      queryClient.invalidateQueries({
-        queryKey: ['users', 'byId', variables.userId],
-      })
-      queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
-      queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
-    },
-  })
-}
 
 // Função específica para atualizações administrativas
 export function useAtualizacaoAdministrativa(id: string) {
@@ -211,28 +189,6 @@ export function useAtualizarBiografia() {
   })
 }
 
-// Função específica para promover funcionário para instrutor (ADMIN)
-export function usePromoverParaInstrutor(id: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation<
-    { success: boolean },
-    Error,
-    { biografia?: string; cursos_id?: string[] }
-  >({
-    mutationKey: ['users', 'promote-instructor', id],
-    mutationFn: input =>
-      authPatch<{ success: boolean }>(`/users/v1/${id}`, {
-        tipo_usuario: 'INSTRUTOR',
-        ...input,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'byId', id] })
-      queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
-    },
-  })
-}
-
 // Listagem e criação de usuários (completa cadastro)
 export interface ListarUsuariosFiltro {
   status?: 'ATIVO' | 'INATIVO'
@@ -259,31 +215,6 @@ export function useListarUsuarios(filtro: ListarUsuariosFiltro = {}) {
   })
 }
 
-// Função de conveniência para listar apenas instrutores
-export function useListarInstrutores(
-  filtro: Omit<ListarUsuariosFiltro, 'tipo_usuario'> = {}
-) {
-  return useListarUsuarios({ ...filtro, tipo_usuario: 'INSTRUTOR' })
-}
-
-// Operações por usuário
-
-/**
- * Sistema de permissões para atualização de usuários:
- *
- * 🔑 ADMIN: Pode alterar todos os campos incluindo:
- *   - Dados básicos: nome, cpf, email, departamento_id, cargo
- *   - Status: ATIVO/INATIVO
- *   - Tipo: FUNCIONARIO/INSTRUTOR/ADMIN
- *   - Promover para INSTRUTOR (com biografia e cursos_id opcionais)
- *
- * 👨‍🏫 INSTRUTOR: Pode alterar apenas:
- *   - Sua própria biografia
- *
- * 👤 FUNCIONARIO:
- *   - Não pode alterar nenhum campo (bloqueado)
- */
-
 export function useObterUsuario(id: string) {
   return useQuery<PerfilUsuario>({
     queryKey: ['users', 'byId', id],
@@ -292,15 +223,6 @@ export function useObterUsuario(id: string) {
   })
 }
 
-export function useAtualizarUsuario(id: string) {
-  return useMutation<{ success: boolean }, Error, Partial<PerfilUsuario>>({
-    mutationKey: ['users', 'update', id],
-    mutationFn: input =>
-      authPatch<{ success: boolean }>(`/users/v1/${id}`, input),
-  })
-}
-
-// Conquistas do usuário
 export interface ConquistaUsuario {
   id: string
   nome: string
@@ -326,7 +248,6 @@ export function useConquistasUsuario(id: string) {
   })
 }
 
-// Dashboards
 
 export type DashboardTipo = 'funcionario' | 'instrutor' | 'administrador'
 
