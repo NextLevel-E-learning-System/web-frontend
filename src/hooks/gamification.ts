@@ -118,7 +118,7 @@ export interface RankingDepartamento {
  */
 export function useCriarBadge() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (dadosBadge: CriarBadge) => {
       return await authPost('/gamification/v1/badges', dadosBadge)
@@ -169,8 +169,8 @@ export function usePerfilGamificacao(userId: string, enabled: boolean = true) {
     queryFn: async () => {
       return await authGet('/gamification/v1/me', {
         headers: {
-          'X-User-Id': userId
-        }
+          'X-User-Id': userId,
+        },
       })
     },
     enabled: enabled && !!userId,
@@ -180,14 +180,17 @@ export function usePerfilGamificacao(userId: string, enabled: boolean = true) {
 /**
  * Hook para obter conquistas de gamificação do usuário
  */
-export function useConquistasGamificacao(userId: string, enabled: boolean = true) {
+export function useConquistasGamificacao(
+  userId: string,
+  enabled: boolean = true
+) {
   return useQuery<{ badges: BadgeUsuario[]; historico_xp: HistoricoXP[] }>({
     queryKey: ['gamification', 'conquistas', userId],
     queryFn: async () => {
       return await authGet('/gamification/v1/conquistas', {
         headers: {
-          'X-User-Id': userId
-        }
+          'X-User-Id': userId,
+        },
       })
     },
     enabled: enabled && !!userId,
@@ -238,14 +241,17 @@ export function useRankingMensal() {
 /**
  * Hook para obter ranking por departamento
  */
-export function useRankingDepartamento(departamentoId: string, enabled: boolean = true) {
+export function useRankingDepartamento(
+  departamentoId: string,
+  enabled: boolean = true
+) {
   return useQuery<RankingDepartamento>({
     queryKey: ['gamification', 'ranking', 'departamento', departamentoId],
     queryFn: async () => {
       return await authGet('/gamification/v1/ranking/departamento', {
         headers: {
-          'X-Departamento-Id': departamentoId
-        }
+          'X-Departamento-Id': departamentoId,
+        },
       })
     },
     enabled: enabled && !!departamentoId,
@@ -261,18 +267,28 @@ export function useRankingDepartamento(departamentoId: string, enabled: boolean 
  */
 export function useReprocessarBadges() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (userId?: string) => {
       const headers = userId ? { 'X-User-Id': userId } : {}
-      return await authPost('/gamification/v1/badges/auto/process', {}, { headers })
+      return await authPost(
+        '/gamification/v1/badges/auto/process',
+        {},
+        { headers }
+      )
     },
     onSuccess: (_, userId) => {
       // Invalida cache relevante
       if (userId) {
-        queryClient.invalidateQueries({ queryKey: ['gamification', 'perfil', userId] })
-        queryClient.invalidateQueries({ queryKey: ['gamification', 'badges-usuario', userId] })
-        queryClient.invalidateQueries({ queryKey: ['gamification', 'conquistas', userId] })
+        queryClient.invalidateQueries({
+          queryKey: ['gamification', 'perfil', userId],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['gamification', 'badges-usuario', userId],
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['gamification', 'conquistas', userId],
+        })
       }
       queryClient.invalidateQueries({ queryKey: ['gamification', 'ranking'] })
     },
@@ -286,11 +302,14 @@ export function useReprocessarBadges() {
 /**
  * Hook que combina perfil de gamificação com conquistas
  */
-export function useGamificacaoCompleta(userId: string, enabled: boolean = true) {
+export function useGamificacaoCompleta(
+  userId: string,
+  enabled: boolean = true
+) {
   const perfil = usePerfilGamificacao(userId, enabled)
   const conquistas = useConquistasGamificacao(userId, enabled)
   const historico = useHistoricoXP(userId, enabled)
-  
+
   return {
     perfil: perfil.data,
     conquistas: conquistas.data,
@@ -309,41 +328,66 @@ export function useGamificacaoCompleta(userId: string, enabled: boolean = true) 
 /**
  * Hook para obter posição do usuário em todos os rankings
  */
-export function usePosicaoRankings(userId: string, departamentoId?: string, enabled: boolean = true) {
+export function usePosicaoRankings(
+  userId: string,
+  departamentoId?: string,
+  enabled: boolean = true
+) {
   const rankingGlobal = useRankingGlobal()
   const rankingMensal = useRankingMensal()
-  const rankingDepartamento = useRankingDepartamento(departamentoId || '', enabled && !!departamentoId)
-  
+  const rankingDepartamento = useRankingDepartamento(
+    departamentoId || '',
+    enabled && !!departamentoId
+  )
+
   const posicoes = React.useMemo(() => {
-    const global = rankingGlobal.data?.usuarios?.find(u => u.usuario_id === userId)?.posicao
-    const mensal = rankingMensal.data?.usuarios?.find(u => u.usuario_id === userId)?.posicao
-    const departamento = rankingDepartamento.data?.usuarios?.find(u => u.usuario_id === userId)?.posicao
-    
+    const global = rankingGlobal.data?.usuarios?.find(
+      u => u.usuario_id === userId
+    )?.posicao
+    const mensal = rankingMensal.data?.usuarios?.find(
+      u => u.usuario_id === userId
+    )?.posicao
+    const departamento = rankingDepartamento.data?.usuarios?.find(
+      u => u.usuario_id === userId
+    )?.posicao
+
     return {
       global,
       mensal,
       departamento,
     }
   }, [rankingGlobal.data, rankingMensal.data, rankingDepartamento.data, userId])
-  
+
   return {
     posicoes,
-    isLoading: rankingGlobal.isLoading || rankingMensal.isLoading || rankingDepartamento.isLoading,
-    isError: rankingGlobal.isError || rankingMensal.isError || rankingDepartamento.isError,
+    isLoading:
+      rankingGlobal.isLoading ||
+      rankingMensal.isLoading ||
+      rankingDepartamento.isLoading,
+    isError:
+      rankingGlobal.isError ||
+      rankingMensal.isError ||
+      rankingDepartamento.isError,
   }
 }
 
 /**
  * Hook para estatísticas de gamificação do usuário
  */
-export function useEstatisticasGamificacao(userId: string, enabled: boolean = true) {
-  const { perfil, conquistas, historico } = useGamificacaoCompleta(userId, enabled)
-  
+export function useEstatisticasGamificacao(
+  userId: string,
+  enabled: boolean = true
+) {
+  const { perfil, conquistas, historico } = useGamificacaoCompleta(
+    userId,
+    enabled
+  )
+
   const stats = React.useMemo(() => {
     if (!perfil || !conquistas || !historico) {
       return null
     }
-    
+
     const xpUltimos30Dias = historico
       .filter(h => {
         const dataEvento = new Date(h.data_evento)
@@ -352,14 +396,14 @@ export function useEstatisticasGamificacao(userId: string, enabled: boolean = tr
         return dataEvento >= diasAtras
       })
       .reduce((sum, h) => sum + h.delta_xp, 0)
-    
+
     const badgesUltimos30Dias = conquistas.badges.filter(b => {
       const dataConquista = new Date(b.data_conquista)
       const agora = new Date()
       const diasAtras = new Date(agora.getTime() - 30 * 24 * 60 * 60 * 1000)
       return dataConquista >= diasAtras
     }).length
-    
+
     return {
       xp_total: perfil.xp_total,
       nivel_atual: perfil.nivel_atual,
@@ -370,7 +414,7 @@ export function useEstatisticasGamificacao(userId: string, enabled: boolean = tr
       xp_para_proximo_nivel: perfil.xp_proximo_nivel - perfil.xp_total,
     }
   }, [perfil, conquistas, historico])
-  
+
   return stats
 }
 
@@ -395,7 +439,7 @@ export function useValidacoesGamificacao() {
       } catch {
         return false
       }
-    }
+    },
   }
 }
 

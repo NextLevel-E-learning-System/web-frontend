@@ -1,11 +1,4 @@
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  Toolbar,
-  Typography,
-} from '@mui/material'
+import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material'
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward'
 import { Link as RouterLink } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
@@ -21,10 +14,10 @@ export default function BrandAppBar() {
         borderBottom: t => `1px solid ${t.palette.divider}`,
       }}
     >
-      <Container maxWidth='xxl'>
+      <Box sx={{ width: '100%', px: 2 }}>
         <Toolbar
           disableGutters
-          sx={{ justifyContent: 'space-between', minHeight: 48 }}
+          sx={{ justifyContent: 'space-between', minHeight: 48, width: '100%' }}
         >
           <Box
             sx={{
@@ -61,7 +54,7 @@ export default function BrandAppBar() {
             </Button>
           </Box>
         </Toolbar>
-      </Container>
+      </Box>
     </AppBar>
   )
 }

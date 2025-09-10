@@ -113,7 +113,7 @@ export interface RevisaoTentativa {
  */
 export function useCriarAvaliacao() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (dadosAvaliacao: CriarAvaliacao) => {
       return await authPost('/assessments/v1', dadosAvaliacao)
@@ -142,13 +142,21 @@ export function useAvaliacao(codigo: string, enabled: boolean = true) {
  */
 export function useSubmeterRespostas() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ codigo, respostas }: { codigo: string; respostas: SubmeterRespostas }) => {
+    mutationFn: async ({
+      codigo,
+      respostas,
+    }: {
+      codigo: string
+      respostas: SubmeterRespostas
+    }) => {
       return await authPost(`/assessments/v1/${codigo}`, respostas)
     },
     onSuccess: (_, { codigo }) => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'tentativas', codigo] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'tentativas', codigo],
+      })
     },
   })
 }
@@ -175,13 +183,21 @@ export function useQuestoesAvaliacao(codigo: string, enabled: boolean = true) {
  */
 export function useAdicionarQuestao() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ codigo, questao }: { codigo: string; questao: CriarQuestao }) => {
+    mutationFn: async ({
+      codigo,
+      questao,
+    }: {
+      codigo: string
+      questao: CriarQuestao
+    }) => {
       return await authPost(`/assessments/v1/${codigo}/questions`, questao)
     },
     onSuccess: (_, { codigo }) => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'questoes', codigo] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'questoes', codigo],
+      })
     },
   })
 }
@@ -193,11 +209,16 @@ export function useAdicionarQuestao() {
 /**
  * Hook para listar alternativas de uma questão
  */
-export function useAlternativasQuestao(questaoId: string, enabled: boolean = true) {
+export function useAlternativasQuestao(
+  questaoId: string,
+  enabled: boolean = true
+) {
   return useQuery<Alternativa[]>({
     queryKey: ['assessments', 'alternativas', questaoId],
     queryFn: async () => {
-      return await authGet(`/assessments/v1/questions/${questaoId}/alternatives`)
+      return await authGet(
+        `/assessments/v1/questions/${questaoId}/alternatives`
+      )
     },
     enabled: enabled && !!questaoId,
   })
@@ -208,13 +229,24 @@ export function useAlternativasQuestao(questaoId: string, enabled: boolean = tru
  */
 export function useAdicionarAlternativa() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ questaoId, alternativa }: { questaoId: string; alternativa: CriarAlternativa }) => {
-      return await authPost(`/assessments/v1/questions/${questaoId}/alternatives`, alternativa)
+    mutationFn: async ({
+      questaoId,
+      alternativa,
+    }: {
+      questaoId: string
+      alternativa: CriarAlternativa
+    }) => {
+      return await authPost(
+        `/assessments/v1/questions/${questaoId}/alternatives`,
+        alternativa
+      )
     },
     onSuccess: (_, { questaoId }) => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'alternativas', questaoId] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'alternativas', questaoId],
+      })
     },
   })
 }
@@ -228,13 +260,24 @@ export function useAdicionarAlternativa() {
  */
 export function useIniciarTentativa() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ codigo, dados }: { codigo: string; dados?: IniciarTentativa }) => {
-      return await authPost(`/assessments/v1/${codigo}/attempts/start`, dados || {})
+    mutationFn: async ({
+      codigo,
+      dados,
+    }: {
+      codigo: string
+      dados?: IniciarTentativa
+    }) => {
+      return await authPost(
+        `/assessments/v1/${codigo}/attempts/start`,
+        dados || {}
+      )
     },
     onSuccess: (_, { codigo }) => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'tentativas', codigo] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'tentativas', codigo],
+      })
     },
   })
 }
@@ -242,7 +285,10 @@ export function useIniciarTentativa() {
 /**
  * Hook para obter respostas dissertativas pendentes de revisão
  */
-export function useRespostasDissertativas(attemptId: string, enabled: boolean = true) {
+export function useRespostasDissertativas(
+  attemptId: string,
+  enabled: boolean = true
+) {
   return useQuery<RespostaDissertativa[]>({
     queryKey: ['assessments', 'dissertativas', attemptId],
     queryFn: async () => {
@@ -257,13 +303,24 @@ export function useRespostasDissertativas(attemptId: string, enabled: boolean = 
  */
 export function useRevisarTentativa() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ attemptId, revisao }: { attemptId: string; revisao: RevisaoTentativa }) => {
-      return await authPatch(`/assessments/v1/attempts/${attemptId}/review`, revisao)
+    mutationFn: async ({
+      attemptId,
+      revisao,
+    }: {
+      attemptId: string
+      revisao: RevisaoTentativa
+    }) => {
+      return await authPatch(
+        `/assessments/v1/attempts/${attemptId}/review`,
+        revisao
+      )
     },
     onSuccess: (_, { attemptId }) => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'dissertativas', attemptId] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'dissertativas', attemptId],
+      })
       queryClient.invalidateQueries({ queryKey: ['assessments', 'tentativas'] })
     },
   })
@@ -279,7 +336,7 @@ export function useRevisarTentativa() {
 export function useAvaliacaoCompleta(codigo: string, enabled: boolean = true) {
   const avaliacao = useAvaliacao(codigo, enabled)
   const questoes = useQuestoesAvaliacao(codigo, enabled && avaliacao.isSuccess)
-  
+
   return {
     avaliacao: avaliacao.data,
     questoes: questoes.data || [],
@@ -298,7 +355,7 @@ export function useAvaliacaoCompleta(codigo: string, enabled: boolean = true) {
  */
 export function useQuestaoCompleta(questaoId: string, enabled: boolean = true) {
   const alternativas = useAlternativasQuestao(questaoId, enabled)
-  
+
   return {
     alternativas: alternativas.data || [],
     isLoading: alternativas.isLoading,
@@ -333,6 +390,6 @@ export function useValidacoesAvaliacao() {
     },
     validarAlternativa: (texto: string): boolean => {
       return texto.trim().length >= 2
-    }
+    },
   }
 }

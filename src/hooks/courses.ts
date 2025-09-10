@@ -111,7 +111,7 @@ export interface FiltrosCatalogo {
  */
 export function useCriarCurso() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (dadosCurso: CriarCurso) => {
       return await authPost('/courses/v1', dadosCurso)
@@ -141,9 +141,15 @@ export function useCurso(codigo: string, enabled: boolean = true) {
  */
 export function useAtualizarCurso() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ codigo, dados }: { codigo: string; dados: AtualizarCurso }) => {
+    mutationFn: async ({
+      codigo,
+      dados,
+    }: {
+      codigo: string
+      dados: AtualizarCurso
+    }) => {
       return await authPatch(`/courses/v1/${codigo}`, dados)
     },
     onSuccess: (_, { codigo }) => {
@@ -159,7 +165,7 @@ export function useAtualizarCurso() {
  */
 export function useDuplicarCurso() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (codigo: string) => {
       return await authPost(`/courses/v1/${codigo}/duplicar`)
@@ -176,9 +182,15 @@ export function useDuplicarCurso() {
  */
 export function useAlterarStatusCurso() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ codigo, active }: { codigo: string; active: boolean }) => {
+    mutationFn: async ({
+      codigo,
+      active,
+    }: {
+      codigo: string
+      active: boolean
+    }) => {
       return await authPatch(`/courses/v1/${codigo}/active`, { active })
     },
     onSuccess: (_, { codigo }) => {
@@ -196,10 +208,10 @@ export function useCatalogoCursos(filtros?: FiltrosCatalogo) {
   const params = new URLSearchParams()
   if (filtros?.categoria) params.append('categoria', filtros.categoria)
   if (filtros?.instrutor) params.append('instrutor', filtros.instrutor)
-  
+
   const queryString = params.toString()
   const url = `/courses/v1/catalogo${queryString ? `?${queryString}` : ''}`
-  
+
   return useQuery<Curso[]>({
     queryKey: ['courses', 'catalogo', filtros],
     queryFn: async () => {
@@ -229,9 +241,11 @@ export function useCategorias() {
  */
 export function useCriarCategoria() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async (categoria: Omit<Categoria, 'codigo'> & { codigo: string }) => {
+    mutationFn: async (
+      categoria: Omit<Categoria, 'codigo'> & { codigo: string }
+    ) => {
       return await authPost('/courses/v1/categories', categoria)
     },
     onSuccess: () => {
@@ -263,14 +277,22 @@ export function useModulosCurso(codigoCurso: string, enabled: boolean = true) {
  */
 export function useAdicionarModulo() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ codigoCurso, dadosModulo }: { codigoCurso: string; dadosModulo: CriarModulo }) => {
+    mutationFn: async ({
+      codigoCurso,
+      dadosModulo,
+    }: {
+      codigoCurso: string
+      dadosModulo: CriarModulo
+    }) => {
       return await authPost(`/courses/v1/${codigoCurso}/modulos`, dadosModulo)
     },
     onSuccess: (_, { codigoCurso }) => {
       // Invalida cache dos módulos do curso
-      queryClient.invalidateQueries({ queryKey: ['courses', 'modulos', codigoCurso] })
+      queryClient.invalidateQueries({
+        queryKey: ['courses', 'modulos', codigoCurso],
+      })
     },
   })
 }
@@ -280,18 +302,27 @@ export function useAdicionarModulo() {
  */
 export function useAtualizarModulo() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ codigoCurso, moduloId, dados }: { 
-      codigoCurso: string; 
-      moduloId: string; 
-      dados: AtualizarModulo 
+    mutationFn: async ({
+      codigoCurso,
+      moduloId,
+      dados,
+    }: {
+      codigoCurso: string
+      moduloId: string
+      dados: AtualizarModulo
     }) => {
-      return await authPatch(`/courses/v1/${codigoCurso}/modulos/${moduloId}`, dados)
+      return await authPatch(
+        `/courses/v1/${codigoCurso}/modulos/${moduloId}`,
+        dados
+      )
     },
     onSuccess: (_, { codigoCurso }) => {
       // Invalida cache dos módulos do curso
-      queryClient.invalidateQueries({ queryKey: ['courses', 'modulos', codigoCurso] })
+      queryClient.invalidateQueries({
+        queryKey: ['courses', 'modulos', codigoCurso],
+      })
     },
   })
 }
@@ -318,14 +349,25 @@ export function useMateriaisModulo(moduloId: string, enabled: boolean = true) {
  */
 export function useUploadMaterial() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ moduloId, material }: { moduloId: string; material: UploadMaterial }) => {
-      return await authPost(`/courses/v1/modulos/${moduloId}/materiais`, material)
+    mutationFn: async ({
+      moduloId,
+      material,
+    }: {
+      moduloId: string
+      material: UploadMaterial
+    }) => {
+      return await authPost(
+        `/courses/v1/modulos/${moduloId}/materiais`,
+        material
+      )
     },
     onSuccess: (_, { moduloId }) => {
       // Invalida cache dos materiais do módulo
-      queryClient.invalidateQueries({ queryKey: ['courses', 'materiais', moduloId] })
+      queryClient.invalidateQueries({
+        queryKey: ['courses', 'materiais', moduloId],
+      })
     },
   })
 }
@@ -340,7 +382,7 @@ export function useUploadMaterial() {
 export function useCursoCompleto(codigo: string, enabled: boolean = true) {
   const curso = useCurso(codigo, enabled)
   const modulos = useModulosCurso(codigo, enabled && curso.isSuccess)
-  
+
   return {
     curso: curso.data,
     modulos: modulos.data || [],
@@ -368,7 +410,7 @@ export function useEstatisticasCurso(codigo: string, enabled: boolean = true) {
         concluidos: 0,
         em_andamento: 0,
         taxa_conclusao: 0,
-        avaliacao_media: 0
+        avaliacao_media: 0,
       }
     },
     enabled: enabled && !!codigo,
@@ -392,7 +434,7 @@ export function useConvertFileToBase64() {
         reader.onerror = reject
         reader.readAsDataURL(file)
       })
-    }
+    },
   }
 }
 
@@ -412,6 +454,6 @@ export function useValidacoesCurso() {
     },
     validarXP: (xp: number): boolean => {
       return xp > 0 && xp <= 10000
-    }
+    },
   }
 }

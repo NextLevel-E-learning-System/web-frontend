@@ -136,7 +136,6 @@ export function useAtualizarMeuPerfil() {
   })
 }
 
-
 // Função específica para atualizações administrativas
 export function useAtualizacaoAdministrativa(id: string) {
   const queryClient = useQueryClient()
@@ -239,7 +238,6 @@ export function useConquistasUsuario(id: string) {
   })
 }
 
-
 export type DashboardTipo = 'funcionario' | 'instrutor' | 'administrador'
 
 export interface DashboardData {
@@ -268,13 +266,13 @@ export interface DashboardData {
 
 export interface DashboardBase {
   dashboard_data?: DashboardData
-
 }
 
 export function useDashboard() {
   return useQuery<{ dashboard_data: DashboardData }>({
     queryKey: ['users', 'dashboard', 'auto'],
-    queryFn: () => authGet<{ dashboard_data: DashboardData }>('/users/v1/dashboard'),
+    queryFn: () =>
+      authGet<{ dashboard_data: DashboardData }>('/users/v1/dashboard'),
     staleTime: 0,
     retry: false,
   })

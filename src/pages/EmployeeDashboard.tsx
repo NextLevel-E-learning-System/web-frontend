@@ -58,7 +58,7 @@ export default function EmployeeDashboard() {
   return (
     <DashboardLayout title='Página Inicial' items={items}>
       <EmployeeHeader perfil={perfil} dashboardData={dashboardData} />
-       <Grid container spacing={3}>
+      <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ overflow: 'hidden' }}>
             <Tabs

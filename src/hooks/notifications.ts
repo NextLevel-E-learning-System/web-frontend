@@ -10,7 +10,15 @@ export interface Notificacao {
   usuario_id: string
   titulo: string
   mensagem: string
-  tipo: 'INFO' | 'SUCESSO' | 'AVISO' | 'ERRO' | 'BADGE' | 'CURSO' | 'AVALIACAO' | 'SISTEMA'
+  tipo:
+    | 'INFO'
+    | 'SUCESSO'
+    | 'AVISO'
+    | 'ERRO'
+    | 'BADGE'
+    | 'CURSO'
+    | 'AVALIACAO'
+    | 'SISTEMA'
   canal: 'IN_APP' | 'EMAIL' | 'PUSH' | 'SMS'
   lida: boolean
   data_criacao: string
@@ -26,7 +34,15 @@ export interface CriarNotificacao {
   usuario_id: string
   titulo: string
   mensagem: string
-  tipo?: 'INFO' | 'SUCESSO' | 'AVISO' | 'ERRO' | 'BADGE' | 'CURSO' | 'AVALIACAO' | 'SISTEMA'
+  tipo?:
+    | 'INFO'
+    | 'SUCESSO'
+    | 'AVISO'
+    | 'ERRO'
+    | 'BADGE'
+    | 'CURSO'
+    | 'AVALIACAO'
+    | 'SISTEMA'
   canal?: 'IN_APP' | 'EMAIL' | 'PUSH' | 'SMS'
   metadata?: Record<string, any>
   acao_url?: string
@@ -75,16 +91,17 @@ export interface ConfiguracaoNotificacao {
 export function useNotificacoes(filtros?: FiltrosNotificacao) {
   const params = new URLSearchParams()
   if (filtros?.tipo) params.append('tipo', filtros.tipo)
-  if (filtros?.lida !== undefined) params.append('lida', filtros.lida.toString())
+  if (filtros?.lida !== undefined)
+    params.append('lida', filtros.lida.toString())
   if (filtros?.prioridade) params.append('prioridade', filtros.prioridade)
   if (filtros?.data_inicio) params.append('data_inicio', filtros.data_inicio)
   if (filtros?.data_fim) params.append('data_fim', filtros.data_fim)
   if (filtros?.limit) params.append('limit', filtros.limit.toString())
   if (filtros?.offset) params.append('offset', filtros.offset.toString())
-  
+
   const queryString = params.toString()
   const url = `/notifications/v1${queryString ? `?${queryString}` : ''}`
-  
+
   return useQuery<Notificacao[]>({
     queryKey: ['notifications', 'lista', filtros],
     queryFn: async () => {
@@ -98,7 +115,7 @@ export function useNotificacoes(filtros?: FiltrosNotificacao) {
  */
 export function useCriarNotificacao() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (dadosNotificacao: CriarNotificacao) => {
       return await authPost('/notifications/v1', dadosNotificacao)
@@ -115,7 +132,7 @@ export function useCriarNotificacao() {
  */
 export function useMarcarComoLida() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (notificacaoId: string) => {
       // Endpoint não especificado na API, mas é comum ter essa funcionalidade
@@ -133,11 +150,13 @@ export function useMarcarComoLida() {
  */
 export function useMarcarMultiplasComoLidas() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (notificacaoIds: string[]) => {
       // Endpoint não especificado na API, mas implementação comum
-      return await authPatch('/notifications/v1/bulk/read', { ids: notificacaoIds })
+      return await authPatch('/notifications/v1/bulk/read', {
+        ids: notificacaoIds,
+      })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
@@ -150,7 +169,7 @@ export function useMarcarMultiplasComoLidas() {
  */
 export function useDeletarNotificacao() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (notificacaoId: string) => {
       // Endpoint não especificado na API
@@ -199,7 +218,10 @@ export function useNotificacaoNaoLidas() {
 /**
  * Hook para obter configurações de notificação do usuário
  */
-export function useConfiguracaoNotificacoes(userId: string, enabled: boolean = true) {
+export function useConfiguracaoNotificacoes(
+  userId: string,
+  enabled: boolean = true
+) {
   return useQuery<ConfiguracaoNotificacao>({
     queryKey: ['notifications', 'config', userId],
     queryFn: async () => {
@@ -214,13 +236,21 @@ export function useConfiguracaoNotificacoes(userId: string, enabled: boolean = t
  */
 export function useAtualizarConfiguracaoNotificacoes() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ userId, config }: { userId: string; config: Partial<ConfiguracaoNotificacao> }) => {
+    mutationFn: async ({
+      userId,
+      config,
+    }: {
+      userId: string
+      config: Partial<ConfiguracaoNotificacao>
+    }) => {
       return await authPatch(`/notifications/v1/config/${userId}`, config)
     },
     onSuccess: (_, { userId }) => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'config', userId] })
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'config', userId],
+      })
     },
   })
 }
@@ -235,7 +265,7 @@ export function useAtualizarConfiguracaoNotificacoes() {
 export function useNotificacoesTempoReal(intervalo: number = 30000) {
   const naoLidas = useNotificacaoNaoLidas()
   const notificacoes = useNotificacoes({ lida: false, limit: 10 })
-  
+
   return {
     count_nao_lidas: naoLidas.data?.count || 0,
     notificacoes_recentes: notificacoes.data || [],
@@ -243,7 +273,7 @@ export function useNotificacoesTempoReal(intervalo: number = 30000) {
     refetch: () => {
       naoLidas.refetch()
       notificacoes.refetch()
-    }
+    },
   }
 }
 
@@ -252,22 +282,25 @@ export function useNotificacoesTempoReal(intervalo: number = 30000) {
  */
 export function useNotificacoesAgrupadas(filtros?: FiltrosNotificacao) {
   const { data: notificacoes, ...rest } = useNotificacoes(filtros)
-  
+
   const agrupadas = React.useMemo(() => {
     if (!notificacoes) return {}
-    
-    return notificacoes.reduce((grupos, notificacao) => {
-      const data = new Date(notificacao.data_criacao).toDateString()
-      if (!grupos[data]) grupos[data] = []
-      grupos[data].push(notificacao)
-      return grupos
-    }, {} as Record<string, Notificacao[]>)
+
+    return notificacoes.reduce(
+      (grupos, notificacao) => {
+        const data = new Date(notificacao.data_criacao).toDateString()
+        if (!grupos[data]) grupos[data] = []
+        grupos[data].push(notificacao)
+        return grupos
+      },
+      {} as Record<string, Notificacao[]>
+    )
   }, [notificacoes])
-  
+
   return {
     notificacoes_agrupadas: agrupadas,
     notificacoes_array: notificacoes || [],
-    ...rest
+    ...rest,
   }
 }
 
@@ -276,18 +309,21 @@ export function useNotificacoesAgrupadas(filtros?: FiltrosNotificacao) {
  */
 export function useNotificacoesPorTipo() {
   const { data: notificacoes } = useNotificacoes()
-  
+
   const porTipo = React.useMemo(() => {
     if (!notificacoes) return {}
-    
-    return notificacoes.reduce((tipos, notificacao) => {
-      const tipo = notificacao.tipo
-      if (!tipos[tipo]) tipos[tipo] = []
-      tipos[tipo].push(notificacao)
-      return tipos
-    }, {} as Record<string, Notificacao[]>)
+
+    return notificacoes.reduce(
+      (tipos, notificacao) => {
+        const tipo = notificacao.tipo
+        if (!tipos[tipo]) tipos[tipo] = []
+        tipos[tipo].push(notificacao)
+        return tipos
+      },
+      {} as Record<string, Notificacao[]>
+    )
   }, [notificacoes])
-  
+
   return porTipo
 }
 
@@ -297,32 +333,32 @@ export function useNotificacoesPorTipo() {
 export function useAcoesLoteNotificacoes() {
   const marcarMultiplasLidas = useMarcarMultiplasComoLidas()
   const queryClient = useQueryClient()
-  
+
   return {
     marcarTodasComoLidas: async () => {
       // Busca todas as notificações não lidas
-      const notificacoes = await queryClient.fetchQuery({
+      const notificacoes = (await queryClient.fetchQuery({
         queryKey: ['notifications', 'lista', { lida: false }],
-        queryFn: () => authGet('/notifications/v1?lida=false')
-      }) as Notificacao[]
-      
+        queryFn: () => authGet('/notifications/v1?lida=false'),
+      })) as Notificacao[]
+
       const ids = notificacoes.map(n => n.id)
       if (ids.length > 0) {
         return marcarMultiplasLidas.mutateAsync(ids)
       }
     },
-    
+
     marcarPorTipoComoLidas: async (tipo: string) => {
-      const notificacoes = await queryClient.fetchQuery({
+      const notificacoes = (await queryClient.fetchQuery({
         queryKey: ['notifications', 'lista', { lida: false, tipo }],
-        queryFn: () => authGet(`/notifications/v1?lida=false&tipo=${tipo}`)
-      }) as Notificacao[]
-      
+        queryFn: () => authGet(`/notifications/v1?lida=false&tipo=${tipo}`),
+      })) as Notificacao[]
+
       const ids = notificacoes.map(n => n.id)
       if (ids.length > 0) {
         return marcarMultiplasLidas.mutateAsync(ids)
       }
-    }
+    },
   }
 }
 
@@ -338,7 +374,16 @@ export function useValidacoesNotificacao() {
       return mensagem.trim().length >= 5 && mensagem.length <= 500
     },
     validarTipo: (tipo: string): boolean => {
-      const tiposValidos = ['INFO', 'SUCESSO', 'AVISO', 'ERRO', 'BADGE', 'CURSO', 'AVALIACAO', 'SISTEMA']
+      const tiposValidos = [
+        'INFO',
+        'SUCESSO',
+        'AVISO',
+        'ERRO',
+        'BADGE',
+        'CURSO',
+        'AVALIACAO',
+        'SISTEMA',
+      ]
       return tiposValidos.includes(tipo)
     },
     validarCanal: (canal: string): boolean => {
@@ -356,7 +401,7 @@ export function useValidacoesNotificacao() {
       } catch {
         return false
       }
-    }
+    },
   }
 }
 

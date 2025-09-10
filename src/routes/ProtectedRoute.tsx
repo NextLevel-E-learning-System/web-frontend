@@ -51,7 +51,7 @@ export function ProtectedRoute({
     return <Navigate to='/login' replace />
   }
 
-    // Se não há roles específicos definidos, permitir acesso
+  // Se não há roles específicos definidos, permitir acesso
   if (allowedRoles.length === 0) {
     return <>{children}</>
   }

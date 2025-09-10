@@ -17,7 +17,7 @@ export default function Home() {
       <BrandAppBar />
       <Container maxWidth='xl' sx={{ py: { xs: 16, md: 24 } }}>
         <Grid container spacing={12} alignItems='center'>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Chip
               color='primary'
               label='Plataforma de E-learning Corporativa'

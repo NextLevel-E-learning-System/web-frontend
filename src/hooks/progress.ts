@@ -90,14 +90,16 @@ export interface ProgressoTrilha {
  */
 export function useCriarInscricao() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (dadosInscricao: CriarInscricao) => {
       return await authPost('/progress/v1/inscricoes', dadosInscricao)
     },
     onSuccess: (_, { funcionario_id }) => {
       // Invalida cache das inscrições do usuário
-      queryClient.invalidateQueries({ queryKey: ['progress', 'inscricoes', funcionario_id] })
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'inscricoes', funcionario_id],
+      })
       queryClient.invalidateQueries({ queryKey: ['progress', 'inscricoes'] })
     },
   })
@@ -134,10 +136,19 @@ export function useInscricoesUsuario(userId: string, enabled: boolean = true) {
  */
 export function useAtualizarProgresso() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ id, progresso }: { id: string; progresso: AtualizarProgresso }) => {
-      return await authPatch(`/progress/v1/inscricoes/${id}/progresso`, progresso)
+    mutationFn: async ({
+      id,
+      progresso,
+    }: {
+      id: string
+      progresso: AtualizarProgresso
+    }) => {
+      return await authPatch(
+        `/progress/v1/inscricoes/${id}/progresso`,
+        progresso
+      )
     },
     onSuccess: (_, { id }) => {
       // Invalida cache da inscrição específica
@@ -152,14 +163,24 @@ export function useAtualizarProgresso() {
  */
 export function useConcluirModulo() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: async ({ inscricaoId, moduloId }: { inscricaoId: string; moduloId: string }) => {
-      return await authPost(`/progress/v1/inscricoes/${inscricaoId}/modulos/${moduloId}/concluir`)
+    mutationFn: async ({
+      inscricaoId,
+      moduloId,
+    }: {
+      inscricaoId: string
+      moduloId: string
+    }) => {
+      return await authPost(
+        `/progress/v1/inscricoes/${inscricaoId}/modulos/${moduloId}/concluir`
+      )
     },
     onSuccess: (_, { inscricaoId }) => {
       // Invalida cache da inscrição e progresso
-      queryClient.invalidateQueries({ queryKey: ['progress', 'inscricao', inscricaoId] })
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'inscricao', inscricaoId],
+      })
       queryClient.invalidateQueries({ queryKey: ['progress', 'inscricoes'] })
       // Também invalida dashboard pois pode afetar XP
       queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
@@ -174,7 +195,10 @@ export function useConcluirModulo() {
 /**
  * Hook para listar certificados de um usuário
  */
-export function useCertificadosUsuario(userId: string, enabled: boolean = true) {
+export function useCertificadosUsuario(
+  userId: string,
+  enabled: boolean = true
+) {
   return useQuery<Certificado[]>({
     queryKey: ['progress', 'certificados', userId],
     queryFn: async () => {
@@ -189,15 +213,19 @@ export function useCertificadosUsuario(userId: string, enabled: boolean = true) 
  */
 export function useEmitirCertificado() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (enrollmentId: string) => {
-      return await authPost(`/progress/v1/certificates/enrollment/${enrollmentId}`)
+      return await authPost(
+        `/progress/v1/certificates/enrollment/${enrollmentId}`
+      )
     },
     onSuccess: (data: any) => {
       // Invalida cache dos certificados do usuário
       if (data?.usuario_id) {
-        queryClient.invalidateQueries({ queryKey: ['progress', 'certificados', data.usuario_id] })
+        queryClient.invalidateQueries({
+          queryKey: ['progress', 'certificados', data.usuario_id],
+        })
       }
       queryClient.invalidateQueries({ queryKey: ['progress', 'certificados'] })
     },
@@ -207,11 +235,16 @@ export function useEmitirCertificado() {
 /**
  * Hook para obter link PDF do certificado
  */
-export function usePdfCertificado(enrollmentId: string, enabled: boolean = true) {
+export function usePdfCertificado(
+  enrollmentId: string,
+  enabled: boolean = true
+) {
   return useQuery<{ pdf_url: string; certificado: Certificado }>({
     queryKey: ['progress', 'certificado-pdf', enrollmentId],
     queryFn: async () => {
-      return await authGet(`/progress/v1/certificates/enrollment/${enrollmentId}/pdf`)
+      return await authGet(
+        `/progress/v1/certificates/enrollment/${enrollmentId}/pdf`
+      )
     },
     enabled: enabled && !!enrollmentId,
   })
@@ -223,7 +256,9 @@ export function usePdfCertificado(enrollmentId: string, enabled: boolean = true)
 export function useValidarCertificado() {
   return useMutation({
     mutationFn: async ({ codigo, hash }: ValidarCertificado) => {
-      return await authGet(`/progress/v1/certificates/validate/${codigo}?hash=${hash}`)
+      return await authGet(
+        `/progress/v1/certificates/validate/${codigo}?hash=${hash}`
+      )
     },
   })
 }
@@ -247,7 +282,10 @@ export function useTrilhas() {
 /**
  * Hook para progresso do usuário em trilhas
  */
-export function useProgressoTrilhasUsuario(userId: string, enabled: boolean = true) {
+export function useProgressoTrilhasUsuario(
+  userId: string,
+  enabled: boolean = true
+) {
   return useQuery<ProgressoTrilha[]>({
     queryKey: ['progress', 'trilhas-usuario', userId],
     queryFn: async () => {
@@ -268,12 +306,13 @@ export function useProgressoCompleto(userId: string, enabled: boolean = true) {
   const inscricoes = useInscricoesUsuario(userId, enabled)
   const certificados = useCertificadosUsuario(userId, enabled)
   const trilhas = useProgressoTrilhasUsuario(userId, enabled)
-  
+
   return {
     inscricoes: inscricoes.data || [],
     certificados: certificados.data || [],
     trilhas: trilhas.data || [],
-    isLoading: inscricoes.isLoading || certificados.isLoading || trilhas.isLoading,
+    isLoading:
+      inscricoes.isLoading || certificados.isLoading || trilhas.isLoading,
     isError: inscricoes.isError || certificados.isError || trilhas.isError,
     error: inscricoes.error || certificados.error || trilhas.error,
     refetch: () => {
@@ -287,16 +326,21 @@ export function useProgressoCompleto(userId: string, enabled: boolean = true) {
 /**
  * Hook para estatísticas de progresso do usuário
  */
-export function useEstatisticasProgresso(userId: string, enabled: boolean = true) {
+export function useEstatisticasProgresso(
+  userId: string,
+  enabled: boolean = true
+) {
   const { inscricoes, certificados } = useProgressoCompleto(userId, enabled)
-  
+
   const stats = React.useMemo(() => {
     const total = inscricoes.length
     const concluidos = inscricoes.filter(i => i.status === 'CONCLUIDO').length
-    const emAndamento = inscricoes.filter(i => i.status === 'EM_ANDAMENTO').length
+    const emAndamento = inscricoes.filter(
+      i => i.status === 'EM_ANDAMENTO'
+    ).length
     const totalCertificados = certificados.length
     const taxaConclusao = total > 0 ? (concluidos / total) * 100 : 0
-    
+
     return {
       total_inscricoes: total,
       cursos_concluidos: concluidos,
@@ -305,7 +349,7 @@ export function useEstatisticasProgresso(userId: string, enabled: boolean = true
       taxa_conclusao: taxaConclusao,
     }
   }, [inscricoes, certificados])
-  
+
   return stats
 }
 
@@ -314,22 +358,23 @@ export function useEstatisticasProgresso(userId: string, enabled: boolean = true
  */
 export function useVerificarInscricao(userId: string, cursoId: string) {
   const { inscricoes } = useProgressoCompleto(userId)
-  
+
   const podeInscrever = React.useMemo(() => {
-    const inscricaoExistente = inscricoes.find(i => 
-      i.curso_id === cursoId && 
-      ['INSCRITO', 'EM_ANDAMENTO', 'CONCLUIDO'].includes(i.status)
+    const inscricaoExistente = inscricoes.find(
+      i =>
+        i.curso_id === cursoId &&
+        ['INSCRITO', 'EM_ANDAMENTO', 'CONCLUIDO'].includes(i.status)
     )
-    
+
     return {
       pode_inscrever: !inscricaoExistente,
-      motivo: inscricaoExistente ? 
-        `Usuário já está ${inscricaoExistente.status.toLowerCase()} neste curso` : 
-        null,
-      inscricao_existente: inscricaoExistente
+      motivo: inscricaoExistente
+        ? `Usuário já está ${inscricaoExistente.status.toLowerCase()} neste curso`
+        : null,
+      inscricao_existente: inscricaoExistente,
     }
   }, [inscricoes, cursoId])
-  
+
   return podeInscrever
 }
 
@@ -346,7 +391,7 @@ export function useValidacoesProgresso() {
     },
     validarHashCertificado: (hash: string): boolean => {
       return /^[a-f0-9]{32,64}$/.test(hash)
-    }
+    },
   }
 }
 
