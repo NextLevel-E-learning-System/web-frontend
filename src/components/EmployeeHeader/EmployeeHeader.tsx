@@ -17,25 +17,11 @@ import {
   LocalFireDepartment as FlameIcon,
   NotificationsOutlined as BellIcon,
 } from '@mui/icons-material'
-
-interface UserProgress {
-  nivel_atual: number
-  xp_atual: number
-  xp_proximo_nivel: number
-  progresso_nivel: number
-  proximo_badge?: string
-  badges_conquistados?: any[]
-}
-
-interface UserProfile {
-  nome: string
-  departamento_id: string
-  nivel: string
-}
+import { PerfilUsuario, DashboardData } from '@/hooks/users'
 
 interface EmployeeHeaderProps {
-  perfil: UserProfile
-  dashboardData: UserProgress
+  perfil: PerfilUsuario
+  dashboardData: DashboardData
 }
 
 export default function EmployeeHeader({ perfil, dashboardData }: EmployeeHeaderProps) {

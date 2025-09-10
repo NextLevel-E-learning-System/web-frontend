@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import {
-  Avatar,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   Divider,
   List,
   ListItem,
@@ -16,8 +14,8 @@ import {
   Typography,
   Grid,
 } from '@mui/material'
-import StarIcon from '@mui/icons-material/Star'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
+import EmployeeHeader from '@/components/EmployeeHeader/EmployeeHeader'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import SettingsIcon from '@mui/icons-material/Settings'
 import BookIcon from '@mui/icons-material/Book'
@@ -53,88 +51,15 @@ export default function EmployeeDashboard() {
 
   // Extrair dados do dashboard (suporta estrutura com dashboard_data)
   const dashboardData = dashboard?.dashboard_data
-
-  const nivelAtual = dashboardData?.nivel_atual || 1
-  const xpAtual = dashboardData?.xp_atual || 0
-  const xp_proximo_nivel = dashboardData?.xp_proximo_nivel
-  // Dados dos cursos vindos do dashboard
   const cursosEmAndamento = dashboardData?.cursos_em_andamento || []
   const cursosConcluidos = dashboardData?.cursos_concluidos || []
   const timeline = dashboardData?.timeline || []
 
   return (
     <DashboardLayout title='Página Inicial' items={items}>
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <Card sx={{ overflow: 'hidden' }}>
-            <CardContent>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
-              >
-                <Avatar sx={{ width: 96, height: 96 }}>
-                  {(() => {
-                    const nomes = perfil?.nome?.split(' ') || []
-                    const primeiroNome = nomes[0]?.[0] || ''
-                    const ultimoNome = nomes[nomes.length - 1]?.[0] || ''
-                    return (primeiroNome + ultimoNome).toUpperCase()
-                  })()}
-                </Avatar>
-                <Typography variant='h6' fontWeight={700}>
-                  {perfil?.nome}
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  Departamento: {perfil?.departamento_id}
-                </Typography>
-
-                <Typography
-                  variant='body2'
-                  color='text.secondary'
-                  textAlign={'center'}
-                >
-                  Nível atual: {nivelAtual} - {perfil?.nivel}
-                </Typography>
-                <Box sx={{ position: 'relative', display: 'flex', mt: 1 }}>
-                  <CircularProgress
-                    variant='determinate'
-                    value={xpAtual}
-                    size={90}
-                    thickness={5}
-                    color='primary'
-                  />
-                  <Box
-                    sx={{
-                      top: 0,
-                      left: 0,
-                      bottom: 0,
-                      right: 0,
-                      position: 'absolute',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Typography variant='subtitle1' fontWeight={700}>
-                      {xpAtual} xp
-                    </Typography>
-                  </Box>
-                </Box>
-                <Chip
-                  color='warning'
-                  variant='outlined'
-                  icon={<WorkspacePremiumIcon />}
-                  label={`XP para próximo nível: ${xp_proximo_nivel || 'N/A'}`}
-                />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 6 }}>
+      <EmployeeHeader perfil={perfil} dashboardData={dashboardData} />
+       <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ overflow: 'hidden' }}>
             <Tabs
               value={tab}
