@@ -15,7 +15,7 @@ import {
   useMediaQuery,
   Button,
 } from '@mui/material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useLocation } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
 import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -31,6 +31,7 @@ export default function DashboardLayout({
 }: PropsWithChildren<{ title: string; items: NavItem[] }>) {
   const [open, setOpen] = useState(false)
   const isMdUp = useMediaQuery('(min-width:900px)')
+  const location = useLocation()
   const drawerWidth = 240
   const { mutate, isPending } = useLogout()
 
@@ -55,8 +56,8 @@ export default function DashboardLayout({
         {items.map(it => (
           <ListItemButton
             key={it.href}
-            component='a'
-            href={it.href}
+            component={RouterLink}
+            to={it.href}
             sx={{
               borderRadius: 1,
               mx: 1,

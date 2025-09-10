@@ -19,12 +19,7 @@ const Register = () => {
   return (
     <AuthShell title='Criar conta'>
       <Box
-        component='form'
-        onSubmit={e => {
-          e.preventDefault()
-          window.location.href = '/dashboard'
-        }}
-      >
+        component='form'>
         <TextField
           fullWidth
           margin='normal'
