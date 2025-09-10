@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -64,6 +64,7 @@ import {
 } from '@mui/icons-material'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
 import { useMeuPerfil } from '@/hooks/users'
+import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCatalogoCursos,
   useCategorias,
@@ -85,6 +86,7 @@ export default function CoursesPage() {
   const theme = useTheme()
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const { data: user } = useMeuPerfil()
+  const { navigationItems, canManageCourses, isFuncionario, isInstrutor, isAdmin } = useNavigation()
 
   // Estados locais
   const [filtros, setFiltros] = useState<FiltrosCatalogo>({})
@@ -103,147 +105,26 @@ export default function CoursesPage() {
     nivel_dificuldade: 'Básico',
   })
 
-  // Funções para verificar tipo de usuário
-  const isInstrutor = user?.tipo_usuario === 'INSTRUTOR'
-  const isAdmin = user?.tipo_usuario === 'ADMIN'
-  const isFuncionario = user?.tipo_usuario === 'FUNCIONARIO'
-  const canManageCourses = isInstrutor || isAdmin
+  // Hooks
+  const { data: categorias, isLoading: loadingCategorias } = useCategorias()
+  const { data: cursos, isLoading: loadingCursos } = useCatalogoCursos(filtros)
+  const { inscricoes } = useProgressoCompleto(user?.id || '', !!user?.id)
+  const criarCursoMutation = useCriarCurso()
+  const duplicarCursoMutation = useDuplicarCurso()
+  const alterarStatusMutation = useAlterarStatusCurso()
+  const criarInscricaoMutation = useCriarInscricao()
+  const { validarCodigo, validarTitulo } = useValidacoesCurso()
 
-  // Navegação dinâmica baseada no tipo de usuário
-  const getNavigationItems = (): NavItem[] => {
-    const baseItems: NavItem[] = [
-      { 
-        label: 'Cursos', 
-        icon: <SchoolIcon />, 
-        href: '/cursos' 
-      },
-    ]
+  // Hook para buscar todos os cursos (sem filtros) para contagem por categoria
+  const { data: todosCursos } = useCatalogoCursos()
 
-    if (isFuncionario) {
-      return [
-        { 
-          label: 'Dashboard', 
-          icon: <DashboardIcon />, 
-          href: '/dashboard/funcionario' 
-        },
-        { 
-          label: 'Catálogo de Cursos', 
-          icon: <SchoolIcon />, 
-          href: '/catalogo' 
-        },
-        { 
-          label: 'Meus Cursos', 
-          icon: <BookIcon />, 
-          href: '/meus-cursos' 
-        },
-        { 
-          label: 'Conquistas', 
-          icon: <EmojiEventsIcon />, 
-          href: '/conquistas' 
-        },
-        { 
-          label: 'Ranking', 
-          icon: <WorkspacePremiumIcon />, 
-          href: '/ranking' 
-        },
-        { 
-          label: 'Certificados', 
-          icon: <GraduationCapIcon />, 
-          href: '/certificados' 
-        },
-        { 
-          label: 'Configurações', 
-          icon: <SettingsIcon />, 
-          href: '/configuracoes' 
-        },
-      ]
-    }
-
-    if (isInstrutor) {
-      return [
-        { 
-          label: 'Dashboard', 
-          icon: <DashboardIcon />, 
-          href: '/dashboard/instrutor' 
-        },
-        { 
-          label: 'Usuários', 
-          icon: <PeopleIcon />, 
-          href: '/instrutor/users' 
-        },
-        { 
-          label: 'Cursos', 
-          icon: <SchoolIcon />, 
-          href: '/cursos' 
-        },
-        { 
-          label: 'Avaliações', 
-          icon: <AssignmentIcon />, 
-          href: '/avaliacoes' 
-        },
-        { 
-          label: 'Departamentos', 
-          icon: <ApartmentIcon />, 
-          href: '/instrutor/departments' 
-        },
-        { 
-          label: 'Configurações', 
-          icon: <SettingsIcon />, 
-          href: '/instrutor/settings' 
-        },
-      ]
-    }
-
-    if (isAdmin) {
-      return [
-        { 
-          label: 'Dashboard', 
-          icon: <DashboardIcon />, 
-          href: '/dashboard/admin' 
-        },
-        { 
-          label: 'Usuários', 
-          icon: <PeopleIcon />, 
-          href: '/admin/users' 
-        },
-        { 
-          label: 'Cursos', 
-          icon: <SchoolIcon />, 
-          href: '/cursos' 
-        },
-        { 
-          label: 'Instrutores', 
-          icon: <BadgeIcon />, 
-          href: '/admin/instructors' 
-        },
-        { 
-          label: 'Avaliações', 
-          icon: <AssignmentIcon />, 
-          href: '/avaliacoes' 
-        },
-        { 
-          label: 'Notas', 
-          icon: <GradeIcon />, 
-          href: '/notas' 
-        },
-        { 
-          label: 'Departamentos', 
-          icon: <ApartmentIcon />, 
-          href: '/admin/departments' 
-        },
-        { 
-          label: 'Configurações', 
-          icon: <SettingsIcon />, 
-          href: '/admin/settings' 
-        },
-      ]
-    }
-
-    // Fallback para usuários não identificados
-    return baseItems
+  // Função para contar cursos por categoria
+  const getContagemCursosPorCategoria = (categoriaId: string): number => {
+    if (!todosCursos) return 0
+    return todosCursos.filter(curso => 
+      curso.categoria_id === categoriaId 
+    ).length
   }
-
-  const navigationItems = getNavigationItems()
 
   // Ícones para categorias
   const categoriaIcons: Record<string, React.ReactNode> = {
@@ -265,15 +146,13 @@ export default function CoursesPage() {
     Avançado: '#f44336',
   }
 
-  // Hooks
-  const { data: categorias } = useCategorias()
-  const { data: cursos, isLoading: loadingCursos } = useCatalogoCursos(filtros)
-  const { inscricoes } = useProgressoCompleto(user?.id || '', !!user?.id)
-  const criarCursoMutation = useCriarCurso()
-  const duplicarCursoMutation = useDuplicarCurso()
-  const alterarStatusMutation = useAlterarStatusCurso()
-  const criarInscricaoMutation = useCriarInscricao()
-  const { validarCodigo, validarTitulo } = useValidacoesCurso()
+  // Atualizar filtros automaticamente quando categoria é selecionada
+  useEffect(() => {
+    setFiltros(prev => ({
+      ...prev,
+      categoria: selectedCategory || undefined,
+    }))
+  }, [selectedCategory])
 
   const handleSearch = () => {
     setFiltros(prev => ({
@@ -370,7 +249,6 @@ export default function CoursesPage() {
         }}
         onClick={() => {
           setSelectedCategory(categoria.codigo)
-          handleSearch()
         }}
       >
         <CardContent
@@ -417,7 +295,7 @@ export default function CoursesPage() {
                 color: '#555',
               }}
             >
-              {categoria.total_cursos || 0} Cursos
+              {getContagemCursosPorCategoria(categoria.id || categoria.codigo)} Cursos
             </Typography>
           </Box>
         </CardContent>
@@ -816,6 +694,7 @@ export default function CoursesPage() {
         </Box>
 
         {/* Seção de Categorias */}
+        {loadingCategorias && <LinearProgress sx={{ mb: 2 }} />}
         {categorias && categorias.length > 0 && (
           <Box>
             <Box
@@ -862,7 +741,7 @@ export default function CoursesPage() {
                 justifyContent: 'center',
               }}
             >
-              {categorias.map(renderCategoriaCard)}
+              {categorias?.map(renderCategoriaCard)}
             </Box>
           </Box>
         )}
