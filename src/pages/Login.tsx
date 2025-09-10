@@ -36,9 +36,7 @@ export default function Login() {
 
           try {
             await login.mutateAsync({ email, senha, rememberMe })
-            console.log(
-              '[Login] Sucesso, AuthGuard redirecionará automaticamente'
-            )
+            // Redirecionamento automático é feito pelo hook useLogin
           } catch (err) {
             console.error('[Login] Erro:', err)
           }

@@ -51,16 +51,17 @@ const items: NavItem[] = [
   },
 ]
 
-  // Dados do dashboard com fallbacks
-  const progressoNivel = dashboard?.progresso_nivel || 0
-  const nivelAtual = dashboard?.nivel_atual || 1
-  const xpAtual = dashboard?.xp_atual || 0
+  // Extrair dados do dashboard (suporta estrutura com dashboard_data)
+  const dashboardData = dashboard?.dashboard_data || dashboard
+  
+  const progressoNivel = dashboardData?.progresso_nivel || 0
+  const nivelAtual = dashboardData?.nivel_atual || 1
+  const xpAtual = dashboardData?.xp_atual || 0
 
   // Dados dos cursos vindos do dashboard
-  const cursosEmAndamento = dashboard?.cursos_em_andamento || []
-  const cursosConcluidos = dashboard?.cursos_concluidos || []
-  const cursosDisponiveis = dashboard?.cursos_disponiveis || []
-  const timeline = dashboard?.timeline || []
+  const cursosEmAndamento = dashboardData?.cursos_em_andamento || []
+  const cursosConcluidos = dashboardData?.cursos_concluidos || []
+  const timeline = dashboardData?.timeline || []
 
   return (
     <DashboardLayout title='Página Inicial' items={items}>
@@ -117,9 +118,9 @@ const items: NavItem[] = [
                   variant='outlined'
                   icon={<StarIcon />}
                   label={
-                    dashboardData.proximo_badge
+                    dashboardData?.proximo_badge
                       ? `Próxima badge: ${dashboardData.proximo_badge}`
-                      : 'Próxima badge: Innovator'
+                      : 'Próxima badge: -'
                   }
                 />
               </Box>
@@ -217,38 +218,6 @@ const items: NavItem[] = [
                       sx={{ p: 2, textAlign: 'center' }}
                     >
                       Você ainda não concluiu cursos.
-                    </Typography>
-                  )}
-                </List>
-              )}
-              {tab === 2 && (
-                <List>
-                  {cursosDisponiveis.length > 0 ? (
-                    cursosDisponiveis.map((c: any) => (
-                      <ListItem key={c.id}>
-                        <ListItemText
-                          primary={c.title || c.nome}
-                          secondary={
-                            c.descricao ||
-                            c.description ||
-                            'Curso disponível para matrícula'
-                          }
-                        />
-                        <Button
-                          variant='contained'
-                          size='small'
-                          color='primary'
-                        >
-                          Inscrever-se
-                        </Button>
-                      </ListItem>
-                    ))
-                  ) : (
-                    <Typography
-                      color='text.secondary'
-                      sx={{ p: 2, textAlign: 'center' }}
-                    >
-                      Novos cursos serão exibidos aqui.
                     </Typography>
                   )}
                 </List>

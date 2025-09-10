@@ -20,13 +20,17 @@ export function ProtectedRoute({
   const { data: dashboard, isLoading: dashboardLoading } = useDashboard()
   const location = useLocation()
 
-  // Se não estiver logado, redirecionar para login
-  if (!isLoggedIn) {
-    return <Navigate to='/login' state={{ from: location }} replace />
-  }
+  console.log('[ProtectedRoute] Estado:', { 
+    isLoggedIn, 
+    authLoading, 
+    dashboardLoading, 
+    dashboard: !!dashboard,
+    location: location.pathname 
+  })
 
-  // Mostrar loading enquanto carrega dados
+  // Mostrar loading enquanto carrega dados de auth OU dashboard
   if (authLoading || dashboardLoading) {
+    console.log('[ProtectedRoute] Ainda carregando, mostrando loading...')
     return (
       fallback || (
         <Box
@@ -38,16 +42,29 @@ export function ProtectedRoute({
           gap={2}
         >
           <CircularProgress size={48} />
-          <Typography variant='body1' color='text.secondary'>
-            Carregando dashboard...
-          </Typography>
         </Box>
       )
     )
   }
 
+  // Se não estiver logado, redirecionar para login
+  if (!isLoggedIn) {
+    console.log('[ProtectedRoute] Não logado, redirecionando para login')
+    return <Navigate to='/login' state={{ from: location }} replace />
+  }
+
+  // Extrair tipo_dashboard da estrutura da resposta
+  const tipoDashboard = dashboard?.dashboard_data?.tipo_dashboard || dashboard?.tipo_dashboard
+
+  console.log('[ProtectedRoute] Dashboard data:', { 
+    dashboard, 
+    tipoDashboard, 
+    allowedRoles 
+  })
+
   // Se não conseguiu carregar dashboard, redirecionar para login
-  if (!dashboard || !dashboard.tipo_dashboard) {
+  if (!dashboard || !tipoDashboard) {
+    console.log('[ProtectedRoute] Dashboard não carregado, redirecionando para login')
     return <Navigate to='/login' replace />
   }
 
@@ -57,19 +74,21 @@ export function ProtectedRoute({
   }
 
   // Verificar se o role do usuário está permitido
-  if (!allowedRoles.includes(dashboard.tipo_dashboard)) {
+  if (!allowedRoles.includes(tipoDashboard)) {
+    console.log('[ProtectedRoute] Role não permitido, redirecionando para dashboard correto:', tipoDashboard)
     // Redirecionar para o dashboard correto baseado no role
-    switch (dashboard.tipo_dashboard) {
+    switch (tipoDashboard) {
       case 'administrador':
         return <Navigate to='/dashboard/admin' replace />
       case 'instrutor':
         return <Navigate to='/dashboard/instrutor' replace />
       case 'funcionario':
       default:
-        return <Navigate to='/dashboard' replace />
+        return <Navigate to='/dashboard/funcionario' replace />
     }
   }
 
+  console.log('[ProtectedRoute] Role permitido, mostrando conteúdo')
   // Role permitido, mostrar conteúdo
   return <>{children}</>
 }

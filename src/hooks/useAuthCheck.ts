@@ -22,13 +22,16 @@ export function useAuthCheck(): AuthCheckResult {
     queryKey: ['auth', 'check'],
     queryFn: async () => {
       const token = getAccessToken()
+      console.log('[AuthCheck] Verificando token:', !!token)
       if (!token) {
         throw new Error('no_token')
       }
 
       // Tentar buscar dados do usuário
       // Se token expirou, o interceptor fará refresh automático
-      return await apiGet('/users/v1/me')
+      const userData = await apiGet('/users/v1/me')
+      console.log('[AuthCheck] Usuário logado:', userData)
+      return userData
     },
     enabled: !!getAccessToken(), // Só executa se tiver token
     retry: (failureCount, error: any) => {
@@ -38,22 +41,21 @@ export function useAuthCheck(): AuthCheckResult {
       }
       return failureCount < 2
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 0, // Sempre revalidar
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   })
 
   useEffect(() => {
-    const token = getAccessToken()
-
-    if (!token) {
-      // Sem token = não logado
+    // Se não tem token, marcar como não logado
+    if (!getAccessToken()) {
       setIsLoading(false)
       return
     }
 
-    // Se tem token, aguardar verificação da query
+    // Se tem token e a query terminou (com sucesso ou erro)
     if (!isUserLoading) {
       if (error) {
-        // Se deu erro (mesmo após refresh), limpar token
         console.log('[AuthCheck] Token inválido, limpando sessão')
         clearAccessToken()
       }
@@ -61,8 +63,18 @@ export function useAuthCheck(): AuthCheckResult {
     }
   }, [isUserLoading, error])
 
+  const isLoggedIn = !!user && !!getAccessToken()
+  
+  console.log('[AuthCheck] Estado final:', { 
+    isLoggedIn, 
+    isLoading, 
+    hasUser: !!user, 
+    hasToken: !!getAccessToken(),
+    isUserLoading 
+  })
+
   return {
-    isLoggedIn: !!user && !!getAccessToken(),
+    isLoggedIn,
     isLoading,
     user,
   }

@@ -11,6 +11,9 @@ import type {
 } from '../types/auth'
 
 export function useLogin() {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  
   return useMutation({
     mutationKey: ['auth', 'login'],
     mutationFn: async (input: LoginInput & { rememberMe?: boolean }) => {
@@ -25,6 +28,19 @@ export function useLogin() {
       setAccessToken(data.accessToken, rememberMe)
 
       return data
+    },
+    onSuccess: async () => {
+      console.log('[Login] Login bem-sucedido, invalidando queries...')
+      
+      // Invalidar queries de autenticação para forçar revalidação
+      queryClient.invalidateQueries({ queryKey: ['auth'] })
+      queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
+      
+      // Aguardar um pouco para as queries se atualizarem
+      setTimeout(() => {
+        console.log('[Login] Navegando para verificação de dashboard...')
+        navigate('/dashboard/funcionario', { replace: true })
+      }, 100)
     },
   })
 }
@@ -77,11 +93,7 @@ export function useLogout() {
       clearAccessToken() // Remove do localStorage
       queryClient.clear() // Limpa cache React Query
 
-      // Limpar cookies manualmente (se necessário)
-      document.cookie =
-        'refreshToken=; path=/auth/v1; expires=Thu, 01 Jan 1970 00:00:00 GMT'
-
-      console.log('[Logout] Sessão limpa, redirecionando para login')
+     
       navigate('/login', { replace: true })
     },
   })

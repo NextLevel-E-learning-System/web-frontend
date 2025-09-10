@@ -330,7 +330,7 @@ export function useConquistasUsuario(id: string) {
 
 export type DashboardTipo = 'funcionario' | 'instrutor' | 'administrador'
 
-export interface DashboardBase {
+export interface DashboardData {
   tipo_dashboard: DashboardTipo
   xp_atual?: number
   nivel_atual?: number
@@ -340,7 +340,33 @@ export interface DashboardBase {
   ranking_departamento?: any
   cursos_em_andamento?: any[]
   cursos_concluidos?: any[]
-  cursos_disponiveis?: any[]
+  timeline?: any[]
+  badges_conquistados?: any[]
+  // Campos específicos para INSTRUTOR
+  cursos_ministrados?: any[]
+  estatisticas_conclusao?: any
+  avaliacoes_pendentes?: any[]
+  metricas_performance?: any
+  // Campos específicos para ADMIN
+  metricas_gerais?: any
+  cursos_populares?: any[]
+  engajamento_departamento?: any
+  alertas_sistema?: any[]
+}
+
+export interface DashboardBase {
+  // Nova estrutura: pode vir com dashboard_data wrapper ou diretamente
+  dashboard_data?: DashboardData
+  // Campos diretos para compatibilidade
+  tipo_dashboard?: DashboardTipo
+  xp_atual?: number
+  nivel_atual?: number
+  xp_proximo_nivel?: number
+  proximo_badge?: string
+  progresso_nivel?: number
+  ranking_departamento?: any
+  cursos_em_andamento?: any[]
+  cursos_concluidos?: any[]
   timeline?: any[]
   badges_conquistados?: any[]
   // Campos específicos para INSTRUTOR
@@ -358,7 +384,12 @@ export interface DashboardBase {
 export function useDashboard() {
   return useQuery<DashboardBase>({
     queryKey: ['users', 'dashboard', 'auto'],
-    queryFn: () => authGet<DashboardBase>('/users/v1/dashboard'),
+    queryFn: async () => {
+      console.log('[Dashboard] Buscando dados do dashboard...')
+      const result = await authGet<DashboardBase>('/users/v1/dashboard')
+      console.log('[Dashboard] Dados recebidos:', result)
+      return result
+    },
     staleTime: 0,
     retry: false,
   })
