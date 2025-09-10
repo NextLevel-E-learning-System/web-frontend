@@ -131,10 +131,7 @@ api.interceptors.response.use(
         console.error('[HTTP] Falha no refresh automático:', refreshError)
         clearAccessToken()
 
-        // Se refresh falhar, redirecionar para login se estivermos no browser
-        if (typeof window !== 'undefined') {
-          window.location.href = '/login'
-        }
+       
       }
     }
 

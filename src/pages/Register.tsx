@@ -16,7 +16,7 @@ import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useRegister } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
-import { useListarDepartamentos } from '@/hooks/users'
+import { useListarDepartamentos, useListarCargos } from '@/hooks/users'
 import { useState } from 'react'
 import { showToast } from '@/utils/toast'
 
@@ -24,8 +24,10 @@ const Register = () => {
   const navigate = useNavigate()
   const register = useRegister()
   const { data: departamentos = [], isLoading: loadingDepartamentos } = useListarDepartamentos()
+  const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
   
   const departamentosArray = Array.isArray(departamentos) ? departamentos : []
+  const cargosArray = Array.isArray(cargos) ? cargos : []
   
   const [formData, setFormData] = useState({
     cpf: '',
@@ -115,22 +117,26 @@ const Register = () => {
           </Select>
         </FormControl>
 
-        <TextField
-          fullWidth
-          margin='normal'
-          label='Cargo'
-          name='cargo'
-          value={formData.cargo}
-          onChange={handleChange('cargo')}
-          required
-          InputProps={{
-            startAdornment: (
+        <FormControl fullWidth margin='normal' required>
+          <InputLabel>Cargo</InputLabel>
+          <Select
+            value={formData.cargo}
+            onChange={handleChange('cargo')}
+            label='Cargo'
+            disabled={loadingCargos}
+            startAdornment={
               <InputAdornment position='start'>
                 <ApartmentOutlinedIcon color='disabled' />
               </InputAdornment>
-            ),
-          }}
-        />
+            }
+          >
+            {cargosArray.map((cargo) => (
+              <MenuItem key={cargo.id} value={cargo.nome}>
+                {cargo.nome}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         
         <TextField
           fullWidth

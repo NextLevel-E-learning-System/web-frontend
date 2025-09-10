@@ -14,6 +14,16 @@ export interface DepartamentosResponse {
   total: number
 }
 
+export interface Cargo {
+  id: string
+  nome: string
+}
+
+export interface CargosResponse {
+  items: Cargo[]
+  total: number
+}
+
 export interface UsuarioResumo {
   id: string
   nome: string
@@ -109,6 +119,62 @@ export function useAtualizarDepartamento(codigo: string) {
       authPatch<Departamento>(`/users/v1/departments/${codigo}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'departments'] })
+    },
+  })
+}
+
+// Cargos
+export function useListarCargos(filtro?: {
+  nome?: string
+  id?: string
+}) {
+  return useQuery<Cargo[]>({
+    queryKey: ['users', 'cargos', filtro],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+      if (filtro) {
+        Object.entries(filtro).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== '')
+            params.append(k, String(v))
+        })
+      }
+      const qs = params.toString()
+      const url = `/users/v1/cargos${qs ? `?${qs}` : ''}`
+      const response = await authGet<CargosResponse>(url)
+      return response.items
+    },
+  })
+}
+
+export function useCriarCargo() {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    Cargo,
+    Error,
+    { nome: string }
+  >({
+    mutationKey: ['users', 'cargos', 'create'],
+    mutationFn: input => authPost<Cargo>('/users/v1/cargos', input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'cargos'] })
+    },
+  })
+}
+
+export function useAtualizarCargo(id: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    Cargo,
+    Error,
+    Partial<Pick<Cargo, 'nome'>>
+  >({
+    mutationKey: ['users', 'cargos', 'update', id],
+    mutationFn: input =>
+      authPatch<Cargo>(`/users/v1/cargos/${id}`, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'cargos'] })
     },
   })
 }
