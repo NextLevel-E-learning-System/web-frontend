@@ -126,20 +126,6 @@ export default function CoursesPage() {
     ).length
   }
 
-  // Ícones para categorias
-  const categoriaIcons: Record<string, React.ReactNode> = {
-    TI: <ComputerIcon />,
-    DESIGN: <PaletteIcon />,
-    NEGOCIOS: <BusinessIcon />,
-    SEGURANCA: <SecurityIcon />,
-    DESENVOLVIMENTO: <CodeIcon />,
-    SOFT_SKILLS: <PsychologyIcon />,
-    IDIOMAS: <LanguageIcon />,
-    ENGENHARIA: <EngineeringIcon />,
-    DADOS: <AnalyticsIcon />,
-    FOTOGRAFIA: <CameraAltIcon />,
-  }
-
   const dificuldadeColors = {
     Básico: '#4caf50',
     Intermediário: '#ff9800',
@@ -158,7 +144,6 @@ export default function CoursesPage() {
     setFiltros(prev => ({
       ...prev,
       categoria: selectedCategory || undefined,
-      // Adicionar search quando API suportar
     }))
   }
 
@@ -232,72 +217,75 @@ export default function CoursesPage() {
     >
       <Card
         sx={{
-          height: 234,
+          height: 180,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderRadius: '20px',
+          borderRadius: '16px',
           border: '1px solid #EAEAEA',
           bgcolor: 'transparent',
           cursor: 'pointer',
           transition: 'all 0.3s ease',
+          overflow: 'hidden',
           '&:hover': {
             boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.10)',
-            bgcolor: '#FFF',
+            transform: 'translateY(-2px)',
           },
         }}
         onClick={() => {
           setSelectedCategory(categoria.codigo)
         }}
       >
+        {/* Header com cor da categoria */}
+        <Box
+          sx={{
+            height: 80,
+            background: categoria.cor_hex || '#3B82F6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+          }}
+        >
+          <Typography
+            variant='h6'
+            sx={{
+              fontFamily: 'Exo, -apple-system, Roboto, Helvetica, sans-serif',
+              fontSize: '18px',
+              fontWeight: 700,
+              color: '#FFF',
+              textAlign: 'center',
+              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+            }}
+          >
+            {categoria.nome}
+          </Typography>
+        </Box>
+
+        {/* Conteúdo do card */}
         <CardContent
           sx={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 3,
-            p: 3,
+            justifyContent: 'center',
+            gap: 2,
+            p: 2,
+            flexGrow: 1,
           }}
         >
-          <Box sx={{ color: '#FF782D', fontSize: '32px' }}>
-            {categoriaIcons[categoria.codigo] || <SchoolIcon />}
-          </Box>
-          <Box
+          <Typography
+            variant='body2'
             sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 1.5,
+              fontFamily: 'Jost, -apple-system, Roboto, Helvetica, sans-serif',
+              fontSize: '16px',
+              fontWeight: 500,
+              lineHeight: 1.5,
+              color: '#666',
+              textAlign: 'center',
             }}
           >
-            <Typography
-              variant='h6'
-              sx={{
-                fontFamily: 'Exo, -apple-system, Roboto, Helvetica, sans-serif',
-                fontSize: '20px',
-                fontWeight: 700,
-                lineHeight: 1.2,
-                color: '#000',
-                textAlign: 'center',
-              }}
-            >
-              {categoria.nome}
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{
-                fontFamily:
-                  'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                fontSize: '18px',
-                fontWeight: 400,
-                lineHeight: 1.5,
-                color: '#555',
-              }}
-            >
-              {getContagemCursosPorCategoria(categoria.id || categoria.codigo)} Cursos
-            </Typography>
-          </Box>
+            {getContagemCursosPorCategoria(categoria.id || categoria.codigo)} Cursos
+          </Typography>
         </CardContent>
       </Card>
     </Box>
@@ -609,32 +597,11 @@ export default function CoursesPage() {
   }
 
   return (
-    <DashboardLayout title='Cursos' items={navigationItems}>
+    <DashboardLayout title= {isFuncionario ? 'Catálogo de Cursos' : 'Gerenciar Cursos'} items={navigationItems}>
       <Box
         sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 4, md: 6 } }}
       >
-        {/* Header com busca */}
-        <Box>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 3,
-            }}
-          >
-            <Typography
-              variant='h4'
-              fontWeight={700}
-              sx={{
-                fontFamily: 'Exo, -apple-system, Roboto, Helvetica, sans-serif',
-                fontSize: { xs: '24px', md: '32px' },
-                color: '#000',
-              }}
-            >
-              {isFuncionario ? 'Catálogo de Cursos' : 'Gerenciar Cursos'}
-            </Typography>
-
+        
             {canManageCourses && (
               <Button
                 variant='contained'
@@ -651,47 +618,7 @@ export default function CoursesPage() {
                 Novo Curso
               </Button>
             )}
-          </Box>
-
-          {/* Barra de busca e filtros */}
-          <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
-            <TextField
-              placeholder='Buscar cursos...'
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              sx={{ flex: 1, minWidth: 300 }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position='start'>
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Categoria</InputLabel>
-              <Select
-                value={selectedCategory}
-                label='Categoria'
-                onChange={e => setSelectedCategory(e.target.value)}
-              >
-                <MenuItem value=''>Todas</MenuItem>
-                {categorias?.map(categoria => (
-                  <MenuItem key={categoria.codigo} value={categoria.codigo}>
-                    {categoria.nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Button
-              variant='contained'
-              onClick={handleSearch}
-              sx={{ borderRadius: '20px', px: 3 }}
-            >
-              Buscar
-            </Button>
-          </Box>
-        </Box>
+       
 
         {/* Seção de Categorias */}
         {loadingCategorias && <LinearProgress sx={{ mb: 2 }} />}
