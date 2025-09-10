@@ -145,13 +145,6 @@ export default function CoursesPage() {
     }))
   }, [selectedCategory])
 
-  const handleSearch = () => {
-    setFiltros(prev => ({
-      ...prev,
-      categoria: selectedCategory || undefined,
-    }))
-  }
-
   const handleCriarCurso = async () => {
     try {
       await criarCursoMutation.mutateAsync(dadosNovoCurso)
@@ -210,6 +203,11 @@ export default function CoursesPage() {
 
   const getInscricaoStatus = (cursoId: string) => {
     return inscricoes?.find(i => i.curso_id === cursoId)
+  }
+
+  // Função para buscar categoria por ID
+  const getCategoriaById = (categoriaId: string) => {
+    return categorias?.find(categoria => categoria.codigo === categoriaId)
   }
 
   const renderCategoriaCard = (categoria: any) => (
@@ -302,12 +300,15 @@ export default function CoursesPage() {
     const isInscrito = !!inscricao
     const isCompleto = inscricao?.status === 'CONCLUIDO'
     const progresso = inscricao?.progresso_percentual || 0
+    
+    // Buscar dados da categoria
+    const categoria = getCategoriaById(curso.categoria_id || '')
 
     return (
       <Box
         key={curso.codigo}
         sx={{
-          width: { xs: '100%', sm: '50%', lg: '33.33%' },
+          width: { xs: '100%', sm: '50%', lg: '24%' },
           p: 1,
         }}
       >
@@ -342,12 +343,12 @@ export default function CoursesPage() {
             </Box>
 
             <Chip
-              label={curso.categoria_nome || 'Categoria'}
+              label={categoria?.nome || curso.categoria_nome || 'Categoria'}
               sx={{
                 position: 'absolute',
                 top: 16,
                 left: 16,
-                bgcolor: '#000',
+                bgcolor: categoria?.cor_hex || '#000',
                 color: '#FFF',
                 fontFamily:
                   'Jost, -apple-system, Roboto, Helvetica, sans-serif',
