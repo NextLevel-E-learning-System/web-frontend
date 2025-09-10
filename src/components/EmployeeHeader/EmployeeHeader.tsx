@@ -38,8 +38,7 @@ export default function EmployeeHeader({ perfil, dashboardData }: EmployeeHeader
     <Card sx={{ 
       width: '100%', 
       mb: 3, 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      color: 'white',
+      bgcolor: 'white',
       overflow: 'hidden'
     }}>
       <CardContent sx={{ p: 4 }}>
@@ -63,25 +62,23 @@ export default function EmployeeHeader({ perfil, dashboardData }: EmployeeHeader
             </Avatar>
             
             <Box>
-              <Typography variant='h4' fontWeight={700} sx={{ color: 'white', mb: 0.5 }}>
+              <Typography variant='h4' fontWeight={700} sx={{ color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', mb: 0.5 }}>
                 Olá, {perfil?.nome?.split(' ')[0] || 'Usuário'}!
               </Typography>
-              <Typography variant='h6' sx={{ color: 'rgba(255,255,255,0.9)', mb: 0.5 }}>
+              <Typography variant='h6' sx={{   mb: 0.5 }}>
                 Nível {nivelAtual} - {perfil?.nivel}
               </Typography>
-              <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                Departamento: {perfil?.departamento_id}
-              </Typography>
+               
             </Box>
           </Box>
 
           {/* Progresso XP */}
           <Box sx={{ flex: 1, mx: 4 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+              <Typography variant='body2' sx={{  fontWeight: 600 }}>
                 Progresso XP
               </Typography>
-              <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.9)' }}>
+              <Typography variant='body2' sx={{  }}>
                 {xpAtual} / {xp_proximo_nivel} XP
               </Typography>
             </Box>
