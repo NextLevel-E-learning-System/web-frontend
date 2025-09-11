@@ -13,12 +13,7 @@ import {
   Tabs,
   Tab,
 } from '@mui/material'
-import {
-  People,
-  School,
-  Assignment,
-  CheckCircle,
-} from '@mui/icons-material'
+import { People, School, Assignment, CheckCircle } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
 import StatCard from '@/components/admin/StatCard'
@@ -102,10 +97,10 @@ export default function AdminDashboard() {
               <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Funcionários Ativos por Departamento
               </Typography>
-              <DepartmentBarChart 
-                data={funcionariosAtivosData} 
+              <DepartmentBarChart
+                data={funcionariosAtivosData}
                 labels={departmentLabels}
-                title="Funcionários Ativos"
+                title='Funcionários Ativos'
               />
             </Paper>
           </Grid>
@@ -120,11 +115,11 @@ export default function AdminDashboard() {
               <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Inscrições por Departamento
               </Typography>
-              <DepartmentPieChart 
-                data={inscricoesChartData} 
+              <DepartmentPieChart
+                data={inscricoesChartData}
                 labels={departmentLabels}
                 departmentNames={departmentNames}
-                title="Inscrições"
+                title='Inscrições'
               />
             </Paper>
           </Grid>
@@ -305,28 +300,36 @@ export default function AdminDashboard() {
                 Rankings
               </Typography>
               <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1.3 }}>
-                <Tabs 
-                  value={rankingTab} 
+                <Tabs
+                  value={rankingTab}
                   onChange={(_, newValue) => setRankingTab(newValue)}
-                  variant="fullWidth"
+                  variant='fullWidth'
                 >
-                  <Tab label="Ranking Geral" />
-                  <Tab label="Por Departamento" />
+                  <Tab label='Ranking Geral' />
+                  <Tab label='Por Departamento' />
                 </Tabs>
               </Box>
-              
+
               {rankingTab === 0 && (
                 <Box>
-                  <Typography color='text.secondary' align='center' sx={{ py: 3 }}>
+                  <Typography
+                    color='text.secondary'
+                    align='center'
+                    sx={{ py: 3 }}
+                  >
                     Ranking Geral dos Usuários
                   </Typography>
                 </Box>
               )}
-              
+
               {rankingTab === 1 && (
                 <Box>
-                  <Typography color='text.secondary' align='center' sx={{ py: 3 }}>
-                    Ranking por Departamento                    
+                  <Typography
+                    color='text.secondary'
+                    align='center'
+                    sx={{ py: 3 }}
+                  >
+                    Ranking por Departamento
                   </Typography>
                 </Box>
               )}

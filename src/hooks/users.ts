@@ -24,6 +24,19 @@ export interface CargosResponse {
   total: number
 }
 
+// Categorias de cursos
+export interface Categoria {
+  id: string
+  nome: string
+  departamento_codigo: string
+  descricao?: string
+}
+
+export interface CategoriasResponse {
+  items: Categoria[]
+  total: number
+}
+
 export interface UsuarioResumo {
   id: string
   nome: string
@@ -163,6 +176,62 @@ export function useAtualizarCargo(id: string) {
     mutationFn: input => authPatch<Cargo>(`/users/v1/cargos/${id}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'cargos'] })
+    },
+  })
+}
+
+// Categorias
+export function useListarCategorias(filtro?: {
+  nome?: string
+  departamento_codigo?: string
+}) {
+  return useQuery<Categoria[]>({
+    queryKey: ['users', 'categorias', filtro],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+      if (filtro) {
+        Object.entries(filtro).forEach(([k, v]) => {
+          if (v !== undefined && v !== null && v !== '')
+            params.append(k, String(v))
+        })
+      }
+      const qs = params.toString()
+      const url = `/users/v1/categorias${qs ? `?${qs}` : ''}`
+      const response = await authGet<CategoriasResponse>(url)
+      return response.items
+    },
+  })
+}
+
+export function useCriarCategoria() {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    Categoria,
+    Error,
+    { nome: string; departamento_codigo: string; descricao?: string }
+  >({
+    mutationKey: ['users', 'categorias', 'create'],
+    mutationFn: input => authPost<Categoria>('/users/v1/categorias', input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'categorias'] })
+    },
+  })
+}
+
+export function useAtualizarCategoria(id: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation<
+    Categoria,
+    Error,
+    Partial<Pick<Categoria, 'nome' | 'departamento_codigo' | 'descricao'>>
+  >({
+    mutationKey: ['users', 'categorias', 'update', id],
+    mutationFn: input =>
+      authPatch<Categoria>(`/users/v1/categorias/${id}`, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'categorias'] })
     },
   })
 }

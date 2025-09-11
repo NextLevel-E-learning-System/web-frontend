@@ -49,11 +49,17 @@ interface DepartmentForm {
 
 export default function AdminDepartments() {
   const { navigationItems } = useNavigation()
-  const { data: departamentos = [], isLoading, refetch } = useListarDepartamentos()
+  const {
+    data: departamentos = [],
+    isLoading,
+    refetch,
+  } = useListarDepartamentos()
   const criarDepartamento = useCriarDepartamento()
   const [editingDept, setEditingDept] = useState<Departamento | null>(null)
-  const atualizarDepartamento = useAtualizarDepartamento(editingDept?.codigo || '')
-  
+  const atualizarDepartamento = useAtualizarDepartamento(
+    editingDept?.codigo || ''
+  )
+
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [form, setForm] = useState<DepartmentForm>({
     codigo: '',
@@ -95,7 +101,7 @@ export default function AdminDepartments() {
         descricao: form.descricao.trim() || undefined,
         gestor_id: form.gestor_id.trim() || undefined,
       })
-      
+
       toast.success('Departamento criado com sucesso!')
       setIsAddOpen(false)
       resetForm()
@@ -130,7 +136,7 @@ export default function AdminDepartments() {
         descricao: form.descricao.trim() || undefined,
         gestor_id: form.gestor_id.trim() || undefined,
       })
-      
+
       toast.success('Departamento atualizado com sucesso!')
       setEditingDept(null)
       resetForm()
@@ -141,7 +147,13 @@ export default function AdminDepartments() {
     }
   }
 
-  const DepartmentAvatar = ({ codigo, nome }: { codigo: string; nome: string }) => (
+  const DepartmentAvatar = ({
+    codigo,
+    nome,
+  }: {
+    codigo: string
+    nome: string
+  }) => (
     <Avatar
       sx={{
         width: 40,
@@ -157,9 +169,9 @@ export default function AdminDepartments() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Gerenciar Departamentos" items={navigationItems}>
+      <DashboardLayout title='Gerenciar Departamentos' items={navigationItems}>
         <Box>
-          <Skeleton variant="rectangular" height={200} />
+          <Skeleton variant='rectangular' height={200} />
         </Box>
       </DashboardLayout>
     )
@@ -177,16 +189,16 @@ export default function AdminDepartments() {
           }}
         >
           <Button
-            href="/dashboard/admin"
+            href='/dashboard/admin'
             startIcon={<ArrowBackIcon />}
-            variant="text"
+            variant='text'
           >
             Voltar ao Dashboard
           </Button>
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
-            variant="contained"
+            variant='contained'
             disabled={criarDepartamento.isPending}
           >
             Adicionar Departamento
@@ -196,43 +208,53 @@ export default function AdminDepartments() {
         <Card>
           <CardHeader
             title={
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant='h6' fontWeight={600}>
                 Todos os Departamentos
               </Typography>
             }
           />
           <CardContent>
             {departamentos.length === 0 ? (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.
+              <Alert severity='info' sx={{ mt: 2 }}>
+                Nenhum departamento cadastrado. Clique em "Adicionar
+                Departamento" para começar.
               </Alert>
             ) : (
-              <Table size="small">
+              <Table size='small'>
                 <TableHead>
                   <TableRow>
                     <TableCell>Código</TableCell>
                     <TableCell>Departamento</TableCell>
                     <TableCell>Descrição</TableCell>
                     <TableCell>Gestor ID</TableCell>
-                    <TableCell align="right">Ações</TableCell>
+                    <TableCell align='right'>Ações</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {departamentos.map((dept) => (
+                  {departamentos.map(dept => (
                     <TableRow key={dept.codigo} hover>
                       <TableCell>
                         <Typography fontWeight={500}>{dept.codigo}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <DepartmentAvatar codigo={dept.codigo} nome={dept.nome} />
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                          }}
+                        >
+                          <DepartmentAvatar
+                            codigo={dept.codigo}
+                            nome={dept.nome}
+                          />
                           <Typography fontWeight={500}>{dept.nome}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Typography
-                          variant="body2"
-                          color="text.secondary"
+                          variant='body2'
+                          color='text.secondary'
                           sx={{
                             maxWidth: 400,
                             overflow: 'hidden',
@@ -244,31 +266,34 @@ export default function AdminDepartments() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                        >
+                        <Typography variant='body2' color='text.secondary'>
                           {dept.gestor_id || '—'}
                         </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align='right'>
                         <IconButton
-                          size="small"
+                          size='small'
                           onClick={() => handleEdit(dept)}
-                          aria-label="editar"
+                          aria-label='editar'
                         >
                           <EditIcon />
                         </IconButton>
                         <IconButton
-                          size="small"
+                          size='small'
                           onClick={() => {
-                            if (confirm(`Tem certeza que deseja excluir o departamento "${dept.nome}"?`)) {
+                            if (
+                              confirm(
+                                `Tem certeza que deseja excluir o departamento "${dept.nome}"?`
+                              )
+                            ) {
                               // TODO: Implementar exclusão quando endpoint estiver disponível
-                              toast.info('Funcionalidade de exclusão será implementada em breve')
+                              toast.info(
+                                'Funcionalidade de exclusão será implementada em breve'
+                              )
                             }
                           }}
-                          aria-label="excluir"
-                          color="error"
+                          aria-label='excluir'
+                          color='error'
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -282,7 +307,12 @@ export default function AdminDepartments() {
         </Card>
 
         {/* Dialog Adicionar Departamento */}
-        <Dialog open={isAddOpen} onClose={() => setIsAddOpen(false)} maxWidth="md" fullWidth>
+        <Dialog
+          open={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          maxWidth='md'
+          fullWidth
+        >
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <BusinessIcon />
@@ -293,10 +323,12 @@ export default function AdminDepartments() {
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="Código do Departamento"
+                  label='Código do Departamento'
                   value={form.codigo}
-                  onChange={(e) => setForm({ ...form, codigo: e.target.value.toUpperCase() })}
-                  placeholder="ex.: TI, RH, MKT"
+                  onChange={e =>
+                    setForm({ ...form, codigo: e.target.value.toUpperCase() })
+                  }
+                  placeholder='ex.: TI, RH, MKT'
                   fullWidth
                   required
                   inputProps={{ maxLength: 10 }}
@@ -304,29 +336,33 @@ export default function AdminDepartments() {
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="ID do Gestor"
+                  label='ID do Gestor'
                   value={form.gestor_id}
-                  onChange={(e) => setForm({ ...form, gestor_id: e.target.value })}
-                  placeholder="ID do usuário gestor (opcional)"
+                  onChange={e =>
+                    setForm({ ...form, gestor_id: e.target.value })
+                  }
+                  placeholder='ID do usuário gestor (opcional)'
                   fullWidth
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Nome do Departamento"
+                  label='Nome do Departamento'
                   value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                  placeholder="ex.: Tecnologia da Informação"
+                  onChange={e => setForm({ ...form, nome: e.target.value })}
+                  placeholder='ex.: Tecnologia da Informação'
                   fullWidth
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Descrição"
+                  label='Descrição'
                   value={form.descricao}
-                  onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-                  placeholder="Descreva as responsabilidades e objetivos do departamento"
+                  onChange={e =>
+                    setForm({ ...form, descricao: e.target.value })
+                  }
+                  placeholder='Descreva as responsabilidades e objetivos do departamento'
                   fullWidth
                   multiline
                   minRows={3}
@@ -337,14 +373,14 @@ export default function AdminDepartments() {
           </DialogContent>
           <DialogActions>
             <Button
-              variant="outlined"
+              variant='outlined'
               onClick={() => setIsAddOpen(false)}
               disabled={criarDepartamento.isPending}
             >
               Cancelar
             </Button>
             <Button
-              variant="contained"
+              variant='contained'
               onClick={handleAdd}
               disabled={criarDepartamento.isPending}
             >
@@ -357,7 +393,7 @@ export default function AdminDepartments() {
         <Dialog
           open={!!editingDept}
           onClose={() => setEditingDept(null)}
-          maxWidth="md"
+          maxWidth='md'
           fullWidth
         >
           <DialogTitle>
@@ -370,37 +406,41 @@ export default function AdminDepartments() {
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="Código do Departamento"
+                  label='Código do Departamento'
                   value={form.codigo}
                   disabled
                   fullWidth
-                  helperText="O código não pode ser alterado"
+                  helperText='O código não pode ser alterado'
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="ID do Gestor"
+                  label='ID do Gestor'
                   value={form.gestor_id}
-                  onChange={(e) => setForm({ ...form, gestor_id: e.target.value })}
-                  placeholder="ID do usuário gestor (opcional)"
+                  onChange={e =>
+                    setForm({ ...form, gestor_id: e.target.value })
+                  }
+                  placeholder='ID do usuário gestor (opcional)'
                   fullWidth
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Nome do Departamento"
+                  label='Nome do Departamento'
                   value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                  onChange={e => setForm({ ...form, nome: e.target.value })}
                   fullWidth
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Descrição"
+                  label='Descrição'
                   value={form.descricao}
-                  onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-                  placeholder="Descreva as responsabilidades e objetivos do departamento"
+                  onChange={e =>
+                    setForm({ ...form, descricao: e.target.value })
+                  }
+                  placeholder='Descreva as responsabilidades e objetivos do departamento'
                   fullWidth
                   multiline
                   minRows={3}
@@ -410,15 +450,15 @@ export default function AdminDepartments() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant='outlined'
               onClick={() => setEditingDept(null)}
               disabled={atualizarDepartamento.isPending}
             >
               Cancelar
             </Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant='contained'
               onClick={handleUpdate}
               disabled={atualizarDepartamento.isPending}
             >

@@ -122,7 +122,7 @@ export function useNavigation() {
           icon: React.createElement(AssignmentIcon),
           href: '/admin/categorias',
         },
-         {
+        {
           label: 'Cursos',
           icon: React.createElement(SchoolIcon),
           href: '/cursos',

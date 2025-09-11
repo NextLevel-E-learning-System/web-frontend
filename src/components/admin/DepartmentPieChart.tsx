@@ -1,56 +1,56 @@
-import { useEffect, useRef } from 'react';
-import * as echarts from 'echarts/core';
+import { useEffect, useRef } from 'react'
+import * as echarts from 'echarts/core'
 import {
   TooltipComponent,
   TooltipComponentOption,
   LegendComponent,
-  LegendComponentOption
-} from 'echarts/components';
-import { PieChart, PieSeriesOption } from 'echarts/charts';
-import { LabelLayout } from 'echarts/features';
-import { CanvasRenderer } from 'echarts/renderers';
+  LegendComponentOption,
+} from 'echarts/components'
+import { PieChart, PieSeriesOption } from 'echarts/charts'
+import { LabelLayout } from 'echarts/features'
+import { CanvasRenderer } from 'echarts/renderers'
 
 echarts.use([
   TooltipComponent,
   LegendComponent,
   PieChart,
   CanvasRenderer,
-  LabelLayout
-]);
+  LabelLayout,
+])
 
 type EChartsOption = echarts.ComposeOption<
   TooltipComponentOption | LegendComponentOption | PieSeriesOption
->;
+>
 
 interface DepartmentPieChartProps {
-  data: number[];
-  labels: string[];
-  departmentNames: string[];
-  title?: string;
+  data: number[]
+  labels: string[]
+  departmentNames: string[]
+  title?: string
 }
 
-export default function DepartmentPieChart({ 
-  data, 
-  labels, 
-  departmentNames, 
-  title = "Distribuição por Departamento" 
+export default function DepartmentPieChart({
+  data,
+  labels,
+  departmentNames,
+  title = 'Distribuição por Departamento',
 }: DepartmentPieChartProps) {
-  const chartRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current) return
 
-    const myChart = echarts.init(chartRef.current);
-    
+    const myChart = echarts.init(chartRef.current)
+
     // Filtrar apenas departamentos com dados > 0 para o gráfico pizza
     const chartData = data
       .map((value, index) => ({
         value,
         name: `${departmentNames[index]} (${labels[index]})`,
         label: labels[index],
-        fullName: departmentNames[index]
+        fullName: departmentNames[index],
       }))
-      .filter(item => item.value > 0);
+      .filter(item => item.value > 0)
 
     // Se não há dados, mostrar mensagem
     if (chartData.length === 0) {
@@ -58,23 +58,23 @@ export default function DepartmentPieChart({
         value: 1,
         name: 'Nenhum dado disponível',
         label: 'N/A',
-        fullName: 'Sem dados'
-      });
+        fullName: 'Sem dados',
+      })
     }
 
     const option: EChartsOption = {
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b}: {c} ({d}%)'
+        formatter: '{a} <br/>{b}: {c} ({d}%)',
       },
       legend: {
         orient: 'horizontal',
         left: 'center',
         bottom: '0%',
         formatter: (name: string) => {
-          const item = chartData.find(d => d.name === name);
-          return item ? `${item.label}: ${item.value}` : name;
-        }
+          const item = chartData.find(d => d.name === name)
+          return item ? `${item.label}: ${item.value}` : name
+        },
       },
       series: [
         {
@@ -86,37 +86,37 @@ export default function DepartmentPieChart({
           itemStyle: {
             borderRadius: 6,
             borderColor: '#fff',
-            borderWidth: 2
+            borderWidth: 2,
           },
           label: {
             show: false,
-            position: 'center'
+            position: 'center',
           },
           emphasis: {
             label: {
               show: true,
               fontSize: 20,
-              fontWeight: 'bold'
-            }
+              fontWeight: 'bold',
+            },
           },
           labelLine: {
-            show: false
+            show: false,
           },
           data: chartData.map(item => ({
             value: item.value,
-            name: item.name
-          }))
-        }
-      ]
-    };
+            name: item.name,
+          })),
+        },
+      ],
+    }
 
-    myChart.setOption(option);
+    myChart.setOption(option)
 
     // Cleanup
     return () => {
-      myChart.dispose();
-    };
-  }, [data, labels, departmentNames, title]);
+      myChart.dispose()
+    }
+  }, [data, labels, departmentNames, title])
 
-  return <div ref={chartRef} style={{ width: '100%', height: '300px' }} />;
+  return <div ref={chartRef} style={{ width: '100%', height: '300px' }} />
 }
