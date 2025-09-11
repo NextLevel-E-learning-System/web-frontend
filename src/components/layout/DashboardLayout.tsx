@@ -70,13 +70,13 @@ export default function DashboardLayout({
         const key = `${level}-${idx}-${it.label}`
         const hasChildren = !!it.children?.length
         const selected =
-          currentPath === it.href ||
+          currentPath === it.href || 
           (hasChildren && it.children!.some(c => c.href === currentPath))
         const content = (
           <ListItemButton
             key={key}
-            component='a'
-            href={it.href}
+            component={RouterLink}
+            to={it.href || ''}
             onClick={e => {
               if (hasChildren) {
                 e.preventDefault()
