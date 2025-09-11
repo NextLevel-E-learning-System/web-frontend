@@ -17,6 +17,7 @@ import InstrutorDashboard from './pages/InstrutorDashboard'
 import CoursesPage from './pages/CoursesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
+import AdminDepartments from './pages/admin/AdminDepartments'
 
 // NextLevel brand theme (Material UI)
 const theme = createTheme({
@@ -92,6 +93,14 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={['administrador']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin/departments'
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <AdminDepartments />
               </ProtectedRoute>
             }
           />
