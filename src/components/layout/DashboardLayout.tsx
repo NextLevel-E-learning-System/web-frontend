@@ -78,9 +78,9 @@ export default function DashboardLayout({
             component={RouterLink}
             to={it.href || ''}
             onClick={e => {
-              if (hasChildren) {
+              if (hasChildren && !isCollapsed) {
                 e.preventDefault()
-                if (!isCollapsed) toggleSection(key)
+                toggleSection(key)
               }
               if (!isMdUp) setMobileOpen(false)
             }}
@@ -126,13 +126,41 @@ export default function DashboardLayout({
               content
             )}
             {hasChildren && (
-              <Collapse
-                in={!isCollapsed && !!openSections[key]}
-                timeout='auto'
-                unmountOnExit
-              >
-                <Box sx={{ pl: 2 }}>{renderItems(it.children!, level + 1)}</Box>
-              </Collapse>
+              isCollapsed
+                ? (
+                    <Box sx={{ pl: 0 }}>
+                      {it.children!.map((child, cidx) => (
+                        <Tooltip title={child.label} arrow placement='right' key={child.label + cidx}>
+                          <ListItemButton
+                            component={RouterLink}
+                            to={child.href || ''}
+                            sx={{
+                              borderRadius: 1,
+                              mx: 1,
+                              my: 0.5,
+                              color: '#e5e7eb',
+                              minHeight: 48,
+                              justifyContent: 'center',
+                            }}
+                            selected={currentPath === child.href}
+                          >
+                            <ListItemIcon sx={{ color: '#60a5fa', minWidth: 36 }}>
+                              {child.icon}
+                            </ListItemIcon>
+                          </ListItemButton>
+                        </Tooltip>
+                      ))}
+                    </Box>
+                  )
+                : (
+                    <Collapse
+                      in={!!openSections[key]}
+                      timeout='auto'
+                      unmountOnExit
+                    >
+                      <Box sx={{ pl: 2 }}>{renderItems(it.children!, level + 1)}</Box>
+                    </Collapse>
+                  )
             )}
           </Box>
         )
