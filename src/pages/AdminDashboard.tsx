@@ -10,6 +10,8 @@ import {
   TableHead,
   TableRow,
   Chip,
+  Tabs,
+  Tab,
 } from '@mui/material'
 import {
   People,
@@ -23,10 +25,12 @@ import StatCard from '@/components/admin/StatCard'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import { useDashboard } from '@/hooks/users'
+import { useState } from 'react'
 
 export default function AdminDashboard() {
   const { navigationItems } = useNavigation()
   const { data: dashboardResponse } = useDashboard()
+  const [rankingTab, setRankingTab] = useState(0)
 
   const dashboardData = dashboardResponse?.dashboard_data
   const metricas = dashboardData?.metricas_gerais
@@ -126,81 +130,9 @@ export default function AdminDashboard() {
           </Grid>
         </Grid>
 
-        {/* Tabelas de Dados */}
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Paper
-              sx={{
-                p: 3,
-                borderRadius: 3,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              }}
-            >
-              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                Cursos Populares
-              </Typography>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Curso</TableCell>
-                      <TableCell align='right'>Inscrições</TableCell>
-                      <TableCell align='right'>Taxa Conclusão</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {cursosPopulares.map(curso => (
-                      <TableRow key={curso.codigo} hover>
-                        <TableCell>
-                          <Box>
-                            <Typography variant='body2' fontWeight={500}>
-                              {curso.titulo}
-                            </Typography>
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              {curso.codigo}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align='right'>
-                          <Typography variant='body2'>
-                            {curso.inscricoes}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align='right'>
-                          <Chip
-                            label={`${(curso.taxa_conclusao * 100).toFixed(1)}%`}
-                            size='small'
-                            color={
-                              curso.taxa_conclusao > 0.7
-                                ? 'success'
-                                : curso.taxa_conclusao > 0.4
-                                  ? 'warning'
-                                  : 'error'
-                            }
-                            variant='filled'
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {cursosPopulares.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={3} align='center'>
-                          <Typography color='text.secondary'>
-                            Nenhum curso encontrado
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 6 }}>
+        {/* Tabela de Métricas Completas - Largura Total */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12 }}>
             <Paper
               sx={{
                 p: 3,
@@ -283,6 +215,121 @@ export default function AdminDashboard() {
                   </TableBody>
                 </Table>
               </TableContainer>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Cards Inferiores - Cursos e Rankings */}
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Paper
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              }}
+            >
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                Cursos Populares
+              </Typography>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Curso</TableCell>
+                      <TableCell align='right'>Inscrições</TableCell>
+                      <TableCell align='right'>Taxa Conclusão</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {cursosPopulares.map(curso => (
+                      <TableRow key={curso.codigo} hover>
+                        <TableCell>
+                          <Box>
+                            <Typography variant='body2' fontWeight={500}>
+                              {curso.titulo}
+                            </Typography>
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
+                              {curso.codigo}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align='right'>
+                          <Typography variant='body2'>
+                            {curso.inscricoes}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align='right'>
+                          <Chip
+                            label={`${(curso.taxa_conclusao * 100).toFixed(1)}%`}
+                            size='small'
+                            color={
+                              curso.taxa_conclusao > 0.7
+                                ? 'success'
+                                : curso.taxa_conclusao > 0.4
+                                  ? 'warning'
+                                  : 'error'
+                            }
+                            variant='filled'
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {cursosPopulares.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} align='center'>
+                          <Typography color='text.secondary'>
+                            Nenhum curso encontrado
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Paper
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              }}
+            >
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                Rankings
+              </Typography>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1.3 }}>
+                <Tabs 
+                  value={rankingTab} 
+                  onChange={(_, newValue) => setRankingTab(newValue)}
+                  variant="fullWidth"
+                >
+                  <Tab label="Ranking Geral" />
+                  <Tab label="Por Departamento" />
+                </Tabs>
+              </Box>
+              
+              {rankingTab === 0 && (
+                <Box>
+                  <Typography color='text.secondary' align='center' sx={{ py: 3 }}>
+                    Ranking Geral dos Usuários
+                  </Typography>
+                </Box>
+              )}
+              
+              {rankingTab === 1 && (
+                <Box>
+                  <Typography color='text.secondary' align='center' sx={{ py: 3 }}>
+                    Ranking por Departamento                    
+                  </Typography>
+                </Box>
+              )}
             </Paper>
           </Grid>
         </Grid>
