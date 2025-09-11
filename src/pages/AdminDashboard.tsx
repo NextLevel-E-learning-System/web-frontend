@@ -9,34 +9,25 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Alert,
-  AlertTitle,
   Chip,
-  Avatar,
-  Stack,
 } from '@mui/material'
 import {
   People,
   School,
   Assignment,
-  TrendingUp,
-  Warning,
-  Info,
   CheckCircle,
-  Business,
 } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
 import StatCard from '@/components/admin/StatCard'
-import SimpleBarChart from '@/components/admin/SimpleBarChart'
-import SimpleAreaChart from '@/components/admin/SimpleAreaChart'
-import { useDashboard, useListarUsuarios } from '@/hooks/users'
+import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
+import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
+import { useDashboard } from '@/hooks/users'
 
 export default function AdminDashboard() {
   const { navigationItems } = useNavigation()
   const { data: dashboardResponse } = useDashboard()
 
-  // Dados da API do dashboard
   const dashboardData = dashboardResponse?.dashboard_data
   const metricas = dashboardData?.metricas_gerais
   const cursosPopulares = dashboardData?.cursos_populares || []
@@ -51,6 +42,9 @@ export default function AdminDashboard() {
   )
   const departmentLabels = engajamentoDepartamento.map(
     dept => dept.departamento
+  )
+  const departmentNames = engajamentoDepartamento.map(
+    dept => dept.nome_departamento
   )
 
   return (
@@ -107,17 +101,11 @@ export default function AdminDashboard() {
               <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
                 Número de funcionários ativos em cada departamento
               </Typography>
-              <SimpleBarChart data={funcionariosAtivosData} />
-              <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {departmentLabels.map((label, index) => (
-                  <Chip
-                    key={label}
-                    label={`${label}: ${funcionariosAtivosData[index]}`}
-                    size='small'
-                    variant='outlined'
-                  />
-                ))}
-              </Box>
+              <DepartmentBarChart 
+                data={funcionariosAtivosData} 
+                labels={departmentLabels}
+                title="Funcionários Ativos"
+              />
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
@@ -129,25 +117,17 @@ export default function AdminDashboard() {
               }}
             >
               <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                Total de Inscrições por Departamento
+                Distribuição de Inscrições por Departamento
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
-                Número total de inscrições em cursos por departamento
+                Visualização em pizza das inscrições por departamento
               </Typography>
-              <SimpleAreaChart data={inscricoesChartData} color='#10B981' />
-              <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {departmentLabels.map((label, index) => (
-                  <Chip
-                    key={label}
-                    label={`${label}: ${inscricoesChartData[index]}`}
-                    size='small'
-                    variant='outlined'
-                    color={
-                      inscricoesChartData[index] > 0 ? 'primary' : 'default'
-                    }
-                  />
-                ))}
-              </Box>
+              <DepartmentPieChart 
+                data={inscricoesChartData} 
+                labels={departmentLabels}
+                departmentNames={departmentNames}
+                title="Inscrições"
+              />
             </Paper>
           </Grid>
         </Grid>
