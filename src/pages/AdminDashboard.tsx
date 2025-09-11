@@ -98,9 +98,6 @@ export default function AdminDashboard() {
               <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Funcionários Ativos por Departamento
               </Typography>
-              <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
-                Número de funcionários ativos em cada departamento
-              </Typography>
               <DepartmentBarChart 
                 data={funcionariosAtivosData} 
                 labels={departmentLabels}
@@ -117,10 +114,7 @@ export default function AdminDashboard() {
               }}
             >
               <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                Distribuição de Inscrições por Departamento
-              </Typography>
-              <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
-                Visualização em pizza das inscrições por departamento
+                Inscrições por Departamento
               </Typography>
               <DepartmentPieChart 
                 data={inscricoesChartData} 

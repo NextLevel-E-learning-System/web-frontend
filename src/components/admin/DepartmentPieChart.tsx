@@ -118,5 +118,5 @@ export default function DepartmentPieChart({
     };
   }, [data, labels, departmentNames, title]);
 
-  return <div ref={chartRef} style={{ width: '100%', height: '380px' }} />;
+  return <div ref={chartRef} style={{ width: '100%', height: '300px' }} />;
 }
