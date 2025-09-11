@@ -53,8 +53,8 @@ export default function AdminDashboard() {
 
   return (
     <DashboardLayout title='Dashboard Administrativo' items={navigationItems}>
-      <Box sx={{ p: 3 }}>
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title='Total de Usuários'
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Gráficos */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper
               sx={{
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
         </Grid>
 
         {/* Tabela de Métricas Completas - Largura Total */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12 }}>
             <Paper
               sx={{
