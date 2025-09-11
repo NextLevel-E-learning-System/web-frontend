@@ -608,24 +608,23 @@ export default function CoursesPage() {
       title={isFuncionario ? 'Catálogo de Cursos' : 'Gerenciar Cursos'}
       items={navigationItems}
     >
-      <Box
-        sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 4, md: 6 } }}
-      >
+      <Box>
         {canManageCourses && (
-          <Button
-            variant='contained'
-            startIcon={<AddIcon />}
-            onClick={() => setDialogCriarCurso(true)}
+          <Box
             sx={{
-              borderRadius: '24px',
-              textTransform: 'none',
-              fontSize: '16px',
-              px: 3,
-              py: 1.5,
+              display: 'flex',
+              justifyContent: 'end',
+              mb: 3,
             }}
           >
-            Novo Curso
-          </Button>
+            <Button
+              variant='contained'
+              startIcon={<AddIcon />}
+              onClick={() => setDialogCriarCurso(true)}
+            >
+              Novo Curso
+            </Button>
+          </Box>
         )}
 
         {/* Seção de Categorias */}

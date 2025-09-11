@@ -182,18 +182,10 @@ export default function AdminDepartments() {
         <Box
           sx={{
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'end',
             mb: 3,
           }}
         >
-          <Button
-            href='/dashboard/admin'
-            startIcon={<ArrowBackIcon />}
-            variant='text'
-          >
-            Voltar ao Dashboard
-          </Button>
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}

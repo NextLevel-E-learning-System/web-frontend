@@ -64,11 +64,11 @@ const theme = createTheme({
     MuiTabs: { styleOverrides: { indicator: { height: 3, borderRadius: 3 } } },
     MuiButton: {
       styleOverrides: {
-        root: { borderRadius: 8, paddingLeft: 18, paddingRight: 18 },
+        root: { borderRadius: 24, paddingLeft: 18, paddingRight: 18 },
         containedPrimary: { boxShadow: '0 12px 24px rgba(18,131,230,.22)' },
       },
     },
-    MuiChip: { styleOverrides: { root: { fontWeight: 700 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 700, padding: 8 } } },
     MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 8 } } },
   },
 })

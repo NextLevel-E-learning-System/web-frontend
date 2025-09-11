@@ -179,13 +179,23 @@ export default function AdminCategories() {
             mb: 3,
           }}
         >
-          <Button
-            href='/dashboard/admin'
-            startIcon={<ArrowBackIcon />}
-            variant='text'
-          >
-            Voltar ao Dashboard
-          </Button>
+          <FormControl>
+            <InputLabel>Departamento</InputLabel>
+            <Select
+              value={selectedDept}
+              onChange={e => setSelectedDept(e.target.value)}
+              label='Departamento'
+            >
+              <MenuItem value='all'>
+                <em>Todos os Departamentos</em>
+              </MenuItem>
+              {departamentos.map(dept => (
+                <MenuItem key={dept.codigo} value={dept.codigo}>
+                  {dept.nome} ({dept.codigo})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -195,38 +205,6 @@ export default function AdminCategories() {
             Adicionar Categoria
           </Button>
         </Box>
-
-        {/* Filtro por Departamento */}
-        <Card sx={{ mb: 3 }}>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                Filtrar por Departamento
-              </Typography>
-            }
-          />
-          <CardContent>
-            <Box sx={{ width: 320 }}>
-              <FormControl fullWidth>
-                <InputLabel>Departamento</InputLabel>
-                <Select
-                  value={selectedDept}
-                  onChange={e => setSelectedDept(e.target.value)}
-                  label='Departamento'
-                >
-                  <MenuItem value='all'>
-                    <em>Todos os Departamentos</em>
-                  </MenuItem>
-                  {departamentos.map(dept => (
-                    <MenuItem key={dept.codigo} value={dept.codigo}>
-                      {dept.nome} ({dept.codigo})
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-          </CardContent>
-        </Card>
 
         {/* Lista de Categorias */}
         <Card>
