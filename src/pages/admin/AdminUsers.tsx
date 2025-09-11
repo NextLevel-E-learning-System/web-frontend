@@ -64,14 +64,19 @@ interface UserForm {
 
 export default function AdminUsers() {
   const { navigationItems } = useNavigation()
-  const { data: usuarios = { items: [] }, isLoading: loadingUsers, refetch: refetchUsers } = useListarUsuarios()
-  const { data: departamentos = [], isLoading: loadingDepartments } = useListarDepartamentos()
+  const {
+    data: usuarios = { items: [] },
+    isLoading: loadingUsers,
+    refetch: refetchUsers,
+  } = useListarUsuarios()
+  const { data: departamentos = [], isLoading: loadingDepartments } =
+    useListarDepartamentos()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
   const criarUsuario = useCriarUsuario()
   const [editingUser, setEditingUser] = useState<UsuarioResumo | null>(null)
   const atualizarUsuario = useAtualizarUsuario(editingUser?.id || '')
   const excluirUsuario = useExcluirUsuario()
-  
+
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [form, setForm] = useState<UserForm>({
     nome: '',
@@ -109,7 +114,12 @@ export default function AdminUsers() {
   }
 
   const handleAdd = async () => {
-    if (!form.nome.trim() || !form.cpf.trim() || !form.email.trim() || !form.departamento_id.trim()) {
+    if (
+      !form.nome.trim() ||
+      !form.cpf.trim() ||
+      !form.email.trim() ||
+      !form.departamento_id.trim()
+    ) {
       toast.error('Nome, CPF, Email e Departamento são obrigatórios')
       return
     }
@@ -127,7 +137,7 @@ export default function AdminUsers() {
       }
 
       await criarUsuario.mutateAsync(input)
-      
+
       toast.success('Usuário criado com sucesso!')
       setIsAddOpen(false)
       resetForm()
@@ -172,7 +182,7 @@ export default function AdminUsers() {
       }
 
       await atualizarUsuario.mutateAsync(input)
-      
+
       toast.success('Usuário atualizado com sucesso!')
       setEditingUser(null)
       resetForm()
@@ -197,21 +207,21 @@ export default function AdminUsers() {
   }
 
   const getDepartmentName = (id: string) => {
-    return departamentos.find((d) => d.codigo === id)?.nome || id
+    return departamentos.find(d => d.codigo === id)?.nome || id
   }
 
   const getCargoName = (id: string) => {
-    return cargos.find((c) => c.id === id)?.nome || id
+    return cargos.find(c => c.id === id)?.nome || id
   }
 
   const getUserTypeIcon = (tipo: string) => {
     switch (tipo) {
       case 'ADMIN':
-        return <AdminIcon fontSize="small" />
+        return <AdminIcon fontSize='small' />
       case 'INSTRUTOR':
-        return <BadgeIcon fontSize="small" />
+        return <BadgeIcon fontSize='small' />
       default:
-        return <PersonIcon fontSize="small" />
+        return <PersonIcon fontSize='small' />
     }
   }
 
@@ -228,9 +238,9 @@ export default function AdminUsers() {
 
   if (loadingUsers || loadingDepartments || loadingCargos) {
     return (
-      <DashboardLayout title="Gerenciar Usuários" items={navigationItems}>
-        <Box >
-          <Skeleton variant="rectangular" height={300} />
+      <DashboardLayout title='Gerenciar Usuários' items={navigationItems}>
+        <Box>
+          <Skeleton variant='rectangular' height={300} />
         </Box>
       </DashboardLayout>
     )
@@ -238,7 +248,7 @@ export default function AdminUsers() {
 
   return (
     <DashboardLayout title={title} items={navigationItems}>
-      <Box >
+      <Box>
         <Box
           sx={{
             display: 'flex',
@@ -248,16 +258,16 @@ export default function AdminUsers() {
           }}
         >
           <Button
-            href="/dashboard/admin"
+            href='/dashboard/admin'
             startIcon={<ArrowBackIcon />}
-            variant="outlined"
+            variant='outlined'
           >
             Voltar ao Dashboard
           </Button>
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
-            variant="contained"
+            variant='contained'
             disabled={criarUsuario.isPending}
           >
             Adicionar Usuário
@@ -267,7 +277,7 @@ export default function AdminUsers() {
         <Card>
           <CardHeader
             title={
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant='h6' fontWeight={600}>
                 Usuários do Sistema
               </Typography>
             }
@@ -275,11 +285,12 @@ export default function AdminUsers() {
           />
           <CardContent>
             {usuarios.items.length === 0 ? (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                Nenhum usuário cadastrado. Clique em "Adicionar Usuário" para começar.
+              <Alert severity='info' sx={{ mt: 2 }}>
+                Nenhum usuário cadastrado. Clique em "Adicionar Usuário" para
+                começar.
               </Alert>
             ) : (
-              <Table size="small">
+              <Table size='small'>
                 <TableHead>
                   <TableRow>
                     <TableCell>Nome</TableCell>
@@ -288,21 +299,26 @@ export default function AdminUsers() {
                     <TableCell>Cargo</TableCell>
                     <TableCell>Tipo</TableCell>
                     <TableCell>Status</TableCell>
-                    <TableCell align="right">Ações</TableCell>
+                    <TableCell align='right'>Ações</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {usuarios.items.map((user) => (
+                  {usuarios.items.map(user => (
                     <TableRow key={user.id} hover>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                           
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                          }}
+                        >
                           <Typography fontWeight={500}>{user.nome}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Typography
-                          component="span"
+                          component='span'
                           sx={{
                             fontFamily:
                               'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
@@ -312,40 +328,50 @@ export default function AdminUsers() {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {user.departamento_id ? getDepartmentName(user.departamento_id) : '—'}
+                        {user.departamento_id
+                          ? getDepartmentName(user.departamento_id)
+                          : '—'}
                       </TableCell>
                       <TableCell>
                         {user.cargo ? getCargoName(user.cargo) : '—'}
                       </TableCell>
                       <TableCell>
                         <Chip
-                          icon={getUserTypeIcon(user.tipo_usuario || 'FUNCIONARIO')}
-                          variant="outlined"
+                          icon={getUserTypeIcon(
+                            user.tipo_usuario || 'FUNCIONARIO'
+                          )}
+                          variant='outlined'
                           label={user.tipo_usuario || 'FUNCIONARIO'}
-                          color={getUserTypeColor(user.tipo_usuario || 'FUNCIONARIO') as any}
-                          size="small"
+                          color={
+                            getUserTypeColor(
+                              user.tipo_usuario || 'FUNCIONARIO'
+                            ) as any
+                          }
+                          size='small'
                         />
                       </TableCell>
                       <TableCell>
                         <Chip
-                          size="small"
-                          color={user.status === 'ATIVO' ? 'success' : 'default'}
+                          size='small'
+                          color={
+                            user.status === 'ATIVO' ? 'success' : 'default'
+                          }
                           label={user.status || 'ATIVO'}
                         />
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align='right'>
                         <IconButton
-                          size="small"
+                          size='small'
                           onClick={() => handleEdit(user)}
-                          aria-label="editar"
+                          aria-label='editar'
                         >
                           <EditIcon />
                         </IconButton>
                         <IconButton
-                          size="small"
+                          size='small'
                           onClick={() => handleDelete(user.id, user.nome)}
-                          aria-label="excluir"
-                          color="error"
+                          aria-label='excluir'
+                          color='error'
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -359,7 +385,12 @@ export default function AdminUsers() {
         </Card>
 
         {/* Dialog Adicionar Usuário */}
-        <Dialog open={isAddOpen} onClose={() => setIsAddOpen(false)} maxWidth="md" fullWidth>
+        <Dialog
+          open={isAddOpen}
+          onClose={() => setIsAddOpen(false)}
+          maxWidth='md'
+          fullWidth
+        >
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <PersonIcon />
@@ -370,29 +401,29 @@ export default function AdminUsers() {
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Nome completo"
+                  label='Nome completo'
                   value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                  onChange={e => setForm({ ...form, nome: e.target.value })}
                   fullWidth
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="CPF"
+                  label='CPF'
                   value={form.cpf}
-                  onChange={(e) => setForm({ ...form, cpf: e.target.value })}
-                  placeholder="000.000.000-00"
+                  onChange={e => setForm({ ...form, cpf: e.target.value })}
+                  placeholder='000.000.000-00'
                   fullWidth
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
-                  label="Email"
-                  type="email"
+                  label='Email'
+                  type='email'
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
                   fullWidth
                   required
                 />
@@ -402,13 +433,15 @@ export default function AdminUsers() {
                   <InputLabel>Departamento</InputLabel>
                   <Select
                     value={form.departamento_id}
-                    onChange={(e) => setForm({ ...form, departamento_id: e.target.value })}
-                    label="Departamento"
+                    onChange={e =>
+                      setForm({ ...form, departamento_id: e.target.value })
+                    }
+                    label='Departamento'
                   >
-                    <MenuItem value="">
+                    <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept) => (
+                    {departamentos.map(dept => (
                       <MenuItem key={dept.codigo} value={dept.codigo}>
                         {dept.nome}
                       </MenuItem>
@@ -421,13 +454,13 @@ export default function AdminUsers() {
                   <InputLabel>Cargo</InputLabel>
                   <Select
                     value={form.cargo}
-                    onChange={(e) => setForm({ ...form, cargo: e.target.value })}
-                    label="Cargo"
+                    onChange={e => setForm({ ...form, cargo: e.target.value })}
+                    label='Cargo'
                   >
-                    <MenuItem value="">
+                    <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map((cargo) => (
+                    {cargos.map(cargo => (
                       <MenuItem key={cargo.id} value={cargo.id}>
                         {cargo.nome}
                       </MenuItem>
@@ -440,12 +473,14 @@ export default function AdminUsers() {
                   <InputLabel>Tipo de Usuário</InputLabel>
                   <Select
                     value={form.tipo_usuario}
-                    onChange={(e) => setForm({ ...form, tipo_usuario: e.target.value as any })}
-                    label="Tipo de Usuário"
+                    onChange={e =>
+                      setForm({ ...form, tipo_usuario: e.target.value as any })
+                    }
+                    label='Tipo de Usuário'
                   >
-                    <MenuItem value="FUNCIONARIO">Funcionário</MenuItem>
-                    <MenuItem value="INSTRUTOR">Instrutor</MenuItem>
-                    <MenuItem value="ADMIN">Administrador</MenuItem>
+                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
+                    <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
+                    <MenuItem value='ADMIN'>Administrador</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -454,25 +489,29 @@ export default function AdminUsers() {
                   <InputLabel>Status</InputLabel>
                   <Select
                     value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value as any })}
-                    label="Status"
+                    onChange={e =>
+                      setForm({ ...form, status: e.target.value as any })
+                    }
+                    label='Status'
                   >
-                    <MenuItem value="ATIVO">Ativo</MenuItem>
-                    <MenuItem value="INATIVO">Inativo</MenuItem>
+                    <MenuItem value='ATIVO'>Ativo</MenuItem>
+                    <MenuItem value='INATIVO'>Inativo</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
               {form.tipo_usuario === 'INSTRUTOR' && (
                 <Grid size={{ xs: 12 }}>
                   <TextField
-                    label="Biografia (Instrutor)"
+                    label='Biografia (Instrutor)'
                     value={form.biografia}
-                    onChange={(e) => setForm({ ...form, biografia: e.target.value })}
+                    onChange={e =>
+                      setForm({ ...form, biografia: e.target.value })
+                    }
                     fullWidth
                     multiline
                     minRows={3}
                     maxRows={5}
-                    placeholder="Descreva a experiência e qualificações do instrutor..."
+                    placeholder='Descreva a experiência e qualificações do instrutor...'
                   />
                 </Grid>
               )}
@@ -480,14 +519,14 @@ export default function AdminUsers() {
           </DialogContent>
           <DialogActions>
             <Button
-              variant="outlined"
+              variant='outlined'
               onClick={() => setIsAddOpen(false)}
               disabled={criarUsuario.isPending}
             >
               Cancelar
             </Button>
             <Button
-              variant="contained"
+              variant='contained'
               onClick={handleAdd}
               disabled={criarUsuario.isPending}
             >
@@ -500,7 +539,7 @@ export default function AdminUsers() {
         <Dialog
           open={!!editingUser}
           onClose={() => setEditingUser(null)}
-          maxWidth="md"
+          maxWidth='md'
           fullWidth
         >
           <DialogTitle>
@@ -513,19 +552,19 @@ export default function AdminUsers() {
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Nome completo"
+                  label='Nome completo'
                   value={form.nome}
-                  onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                  onChange={e => setForm({ ...form, nome: e.target.value })}
                   fullWidth
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Email"
-                  type="email"
+                  label='Email'
+                  type='email'
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
                   fullWidth
                   required
                 />
@@ -535,13 +574,15 @@ export default function AdminUsers() {
                   <InputLabel>Departamento</InputLabel>
                   <Select
                     value={form.departamento_id}
-                    onChange={(e) => setForm({ ...form, departamento_id: e.target.value })}
-                    label="Departamento"
+                    onChange={e =>
+                      setForm({ ...form, departamento_id: e.target.value })
+                    }
+                    label='Departamento'
                   >
-                    <MenuItem value="">
+                    <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept) => (
+                    {departamentos.map(dept => (
                       <MenuItem key={dept.codigo} value={dept.codigo}>
                         {dept.nome}
                       </MenuItem>
@@ -554,13 +595,13 @@ export default function AdminUsers() {
                   <InputLabel>Cargo</InputLabel>
                   <Select
                     value={form.cargo}
-                    onChange={(e) => setForm({ ...form, cargo: e.target.value })}
-                    label="Cargo"
+                    onChange={e => setForm({ ...form, cargo: e.target.value })}
+                    label='Cargo'
                   >
-                    <MenuItem value="">
+                    <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map((cargo) => (
+                    {cargos.map(cargo => (
                       <MenuItem key={cargo.id} value={cargo.id}>
                         {cargo.nome}
                       </MenuItem>
@@ -573,12 +614,14 @@ export default function AdminUsers() {
                   <InputLabel>Tipo de Usuário</InputLabel>
                   <Select
                     value={form.tipo_usuario}
-                    onChange={(e) => setForm({ ...form, tipo_usuario: e.target.value as any })}
-                    label="Tipo de Usuário"
+                    onChange={e =>
+                      setForm({ ...form, tipo_usuario: e.target.value as any })
+                    }
+                    label='Tipo de Usuário'
                   >
-                    <MenuItem value="FUNCIONARIO">Funcionário</MenuItem>
-                    <MenuItem value="INSTRUTOR">Instrutor</MenuItem>
-                    <MenuItem value="ADMIN">Administrador</MenuItem>
+                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
+                    <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
+                    <MenuItem value='ADMIN'>Administrador</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -587,40 +630,44 @@ export default function AdminUsers() {
                   <InputLabel>Status</InputLabel>
                   <Select
                     value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value as any })}
-                    label="Status"
+                    onChange={e =>
+                      setForm({ ...form, status: e.target.value as any })
+                    }
+                    label='Status'
                   >
-                    <MenuItem value="ATIVO">Ativo</MenuItem>
-                    <MenuItem value="INATIVO">Inativo</MenuItem>
+                    <MenuItem value='ATIVO'>Ativo</MenuItem>
+                    <MenuItem value='INATIVO'>Inativo</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
               {form.tipo_usuario === 'INSTRUTOR' && (
                 <Grid size={{ xs: 12 }}>
                   <TextField
-                    label="Biografia (Instrutor)"
+                    label='Biografia (Instrutor)'
                     value={form.biografia}
-                    onChange={(e) => setForm({ ...form, biografia: e.target.value })}
+                    onChange={e =>
+                      setForm({ ...form, biografia: e.target.value })
+                    }
                     fullWidth
                     multiline
                     minRows={3}
                     maxRows={5}
-                    placeholder="Descreva a experiência e qualificações do instrutor..."
+                    placeholder='Descreva a experiência e qualificações do instrutor...'
                   />
                 </Grid>
               )}
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant='outlined'
               onClick={() => setEditingUser(null)}
               disabled={atualizarUsuario.isPending}
             >
               Cancelar
             </Button>
-            <Button 
-              variant="contained" 
+            <Button
+              variant='contained'
               onClick={handleUpdate}
               disabled={atualizarUsuario.isPending}
             >
