@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,

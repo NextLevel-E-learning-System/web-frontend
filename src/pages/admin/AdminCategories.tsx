@@ -161,7 +161,7 @@ export default function AdminCategories() {
   if (loadingCategorias || loadingDepartamentos) {
     return (
       <DashboardLayout title='Gerenciar Categorias' items={navigationItems}>
-        <Box sx={{ p: 3 }}>
+        <Box>
           <Skeleton variant='rectangular' height={300} />
         </Box>
       </DashboardLayout>
@@ -170,7 +170,7 @@ export default function AdminCategories() {
 
   return (
     <DashboardLayout title={title} items={navigationItems}>
-      <Box sx={{ p: 3 }}>
+      <Box>
         <Box
           sx={{
             display: 'flex',
@@ -182,7 +182,7 @@ export default function AdminCategories() {
           <Button
             href='/dashboard/admin'
             startIcon={<ArrowBackIcon />}
-            variant='outlined'
+            variant='text'
           >
             Voltar ao Dashboard
           </Button>
