@@ -113,32 +113,26 @@ export function useNavigation() {
           href: '/dashboard/admin',
         },
         {
-          label: 'Cursos',
-          icon: React.createElement(SchoolIcon),
-          children: [
-            {
-              label: 'Gerenciar Categorias',
-              icon: React.createElement(AssignmentIcon),
-              href: '/admin/categorias',
-            },
-            {
-              label: 'Todos os Cursos',
-              icon: React.createElement(SchoolIcon),
-              href: '/cursos',
-            },
-          ],
-        },
-        {
           label: 'Departamentos',
           icon: React.createElement(ApartmentIcon),
           href: '/admin/departments',
+        },
+        {
+          label: 'Categorias',
+          icon: React.createElement(AssignmentIcon),
+          href: '/admin/categorias',
+        },
+         {
+          label: 'Cursos',
+          icon: React.createElement(SchoolIcon),
+          href: '/cursos',
         },
         {
           label: 'Usuários',
           icon: React.createElement(PeopleIcon),
           children: [
             {
-              label: 'Usuários',
+              label: 'Funcionários',
               icon: React.createElement(PeopleIcon),
               href: '/admin/users',
             },
@@ -148,11 +142,6 @@ export function useNavigation() {
               href: '/admin/instructors',
             },
           ],
-        },
-        {
-          label: 'Configurações',
-          icon: React.createElement(SettingsIcon),
-          href: '/admin/settings',
         },
       ]
     }
