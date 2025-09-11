@@ -11,14 +11,15 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Recover from './pages/Recover'
-import EmployeeDashboard from './pages/EmployeeDashboard'
+import EmployeeDashboard from './pages/employee/EmployeeDashboard'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminDepartments from './pages/admin/AdminDepartments'
 import AdminCategories from './pages/admin/AdminCategories'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminInstructors from './pages/admin/AdminInstructors'
-import InstrutorDashboard from './pages/InstrutorDashboard'
-import CoursesPage from './pages/CoursesPage'
+import AdminCourses from './pages/admin/AdminCourses'
+import InstrutorDashboard from './pages/instrutor/InstrutorDashboard'
+import CoursesPage from './pages/employee/CoursesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
 
@@ -128,6 +129,14 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={['administrador']}>
                 <AdminInstructors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin/courses'
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <AdminCourses />
               </ProtectedRoute>
             }
           />

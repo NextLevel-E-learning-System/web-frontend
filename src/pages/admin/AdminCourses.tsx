@@ -1,0 +1,504 @@
+import Grid from '@mui/material/Grid'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+  Chip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Alert,
+  Skeleton,
+  Avatar,
+  LinearProgress,
+  Rating,
+  Paper,
+} from '@mui/material'
+import {
+  ArrowBack as ArrowBackIcon,
+  FilterAlt as FilterAltIcon,
+  School as SchoolIcon,
+  Person as PersonIcon,
+  Star as StarIcon,
+  TrendingUp as TrendingUpIcon,
+  Group as GroupIcon,
+  CheckCircle as CheckCircleIcon,
+  Schedule as ScheduleIcon,
+} from '@mui/icons-material'
+import { useMemo, useState } from 'react'
+import DashboardLayout from '@/components/layout/DashboardLayout'
+import StatusFilterTabs from '@/components/common/StatusFilterTabs'
+import { useNavigation } from '@/hooks/useNavigation'
+import {
+  useCatalogoCursos,
+  useCategorias,
+  type Curso,
+} from '@/hooks/courses'
+import {
+  useListarDepartamentos,
+  useListarUsuarios,
+} from '@/hooks/users'
+
+interface CursoMetricas extends Curso {
+  total_inscritos: number
+  total_concluidos: number
+  em_andamento: number
+  taxa_conclusao: number
+  avaliacao_media: number
+  total_avaliacoes: number
+  tempo_medio_conclusao: number // em dias
+  status_visual: 'active' | 'inactive' | 'draft'
+}
+
+// Mock data para demonstração
+const mockMetricas: CursoMetricas[] = [
+  {
+    id: '1',
+    codigo: 'TI-001',
+    titulo: 'Fundamentos de Programação',
+    descricao: 'Introdução aos conceitos básicos de programação',
+    categoria_nome: 'Desenvolvimento',
+    instrutor_nome: 'João Silva',
+    instrutor_id: 'INS001',
+    duracao_estimada: 40,
+    xp_oferecido: 500,
+    nivel_dificuldade: 'Básico',
+    ativo: true,
+    total_modulos: 8,
+    total_inscritos: 125,
+    total_concluidos: 89,
+    em_andamento: 36,
+    taxa_conclusao: 71.2,
+    avaliacao_media: 4.3,
+    total_avaliacoes: 67,
+    tempo_medio_conclusao: 35,
+    status_visual: 'active',
+    data_criacao: '2024-01-15',
+  },
+  {
+    id: '2',
+    codigo: 'MKT-002',
+    titulo: 'Marketing Digital Avançado',
+    descricao: 'Estratégias avançadas de marketing digital',
+    categoria_nome: 'Marketing',
+    instrutor_nome: 'Maria Santos',
+    instrutor_id: 'INS002',
+    duracao_estimada: 60,
+    xp_oferecido: 750,
+    nivel_dificuldade: 'Avançado',
+    ativo: true,
+    total_modulos: 12,
+    total_inscritos: 89,
+    total_concluidos: 34,
+    em_andamento: 55,
+    taxa_conclusao: 38.2,
+    avaliacao_media: 4.7,
+    total_avaliacoes: 28,
+    tempo_medio_conclusao: 52,
+    status_visual: 'active',
+    data_criacao: '2024-02-10',
+  },
+  {
+    id: '3',
+    codigo: 'ADM-003',
+    titulo: 'Gestão de Projetos',
+    descricao: 'Metodologias ágeis e gestão de projetos',
+    categoria_nome: 'Gestão',
+    instrutor_nome: 'Pedro Costa',
+    instrutor_id: 'INS003',
+    duracao_estimada: 30,
+    xp_oferecido: 400,
+    nivel_dificuldade: 'Intermediário',
+    ativo: false,
+    total_modulos: 6,
+    total_inscritos: 45,
+    total_concluidos: 12,
+    em_andamento: 8,
+    taxa_conclusao: 26.7,
+    avaliacao_media: 3.9,
+    total_avaliacoes: 10,
+    tempo_medio_conclusao: 28,
+    status_visual: 'inactive',
+    data_criacao: '2024-03-05',
+  },
+]
+
+interface Filtros {
+  categoria: string
+  instrutor: string
+  status: string
+  nivel: string
+}
+
+export default function AdminCourses() {
+  const { navigationItems } = useNavigation()
+  
+  // Estados
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
+  const [filtros, setFiltros] = useState<Filtros>({
+    categoria: 'all',
+    instrutor: 'all',
+    status: 'all',
+    nivel: 'all',
+  })
+
+  // Hooks de dados reais (quando disponíveis)
+  const { data: cursosReais = [], isLoading: loadingCursos } = useCatalogoCursos()
+  const { data: categorias = [], isLoading: loadingCategorias } = useCategorias()
+  const { data: departamentos = [] } = useListarDepartamentos()
+  const { data: usuarios = { items: [] } } = useListarUsuarios({ tipo_usuario: 'INSTRUTOR' })
+
+  // Usar dados mock por enquanto
+  const cursos = mockMetricas
+  const instrutores = usuarios.items || []
+
+  // Filtros aplicados
+  const cursosAtivos = cursos.filter(c => c.ativo === true)
+  const cursosInativos = cursos.filter(c => c.ativo === false)
+  
+  const filtered = cursos.filter(curso => {
+    if (tab === 'active' && !curso.ativo) return false
+    if (tab === 'disabled' && curso.ativo) return false
+    
+    return (
+      (filtros.categoria === 'all' || curso.categoria_nome === filtros.categoria) &&
+      (filtros.instrutor === 'all' || curso.instrutor_id === filtros.instrutor) &&
+      (filtros.nivel === 'all' || curso.nivel_dificuldade === filtros.nivel)
+    )
+  })
+
+  // Estatísticas gerais
+  const estatisticas = useMemo(() => {
+    const totalCursos = cursos.length
+    const totalInscritos = cursos.reduce((acc, curso) => acc + curso.total_inscritos, 0)
+    const totalConcluidos = cursos.reduce((acc, curso) => acc + curso.total_concluidos, 0)
+    const taxaMediaConclusao = totalInscritos > 0 ? (totalConcluidos / totalInscritos) * 100 : 0
+    const avaliacaoMedia = cursos.reduce((acc, curso) => acc + curso.avaliacao_media, 0) / totalCursos
+
+    return {
+      totalCursos,
+      totalInscritos,
+      totalConcluidos,
+      taxaMediaConclusao,
+      avaliacaoMedia,
+    }
+  }, [cursos])
+
+  const getNivelColor = (nivel: string) => {
+    switch (nivel) {
+      case 'Básico': return 'success'
+      case 'Intermediário': return 'warning'
+      case 'Avançado': return 'error'
+      default: return 'default'
+    }
+  }
+
+  const getStatusColor = (ativo: boolean) => {
+    return ativo ? 'success' : 'default'
+  }
+
+  if (loadingCursos || loadingCategorias) {
+    return (
+      <DashboardLayout title="Acompanhar Cursos" items={navigationItems}>
+        <Box>
+          <Skeleton variant="rectangular" height={300} />
+        </Box>
+      </DashboardLayout>
+    )
+  }
+
+  return (
+    <DashboardLayout title="Acompanhar Cursos" items={navigationItems}>
+      <Box>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 3,
+          }}
+        >
+          <Button
+            href="/dashboard/admin"
+            startIcon={<ArrowBackIcon />}
+            variant="outlined"
+          >
+            Voltar ao Dashboard
+          </Button>
+          <Typography variant="h6" fontWeight={600}>
+            Métricas e Acompanhamento de Cursos
+          </Typography>
+        </Box>
+
+        {/* Cards de Estatísticas Gerais */}
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <SchoolIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
+              <Typography variant="h4" fontWeight={600}>
+                {estatisticas.totalCursos}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Cursos Disponíveis
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <GroupIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
+              <Typography variant="h4" fontWeight={600}>
+                {estatisticas.totalInscritos}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Total de Inscritos
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <CheckCircleIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
+              <Typography variant="h4" fontWeight={600}>
+                {Math.round(estatisticas.taxaMediaConclusao)}%
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Taxa de Conclusão
+              </Typography>
+            </Paper>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Paper sx={{ p: 2, textAlign: 'center' }}>
+              <StarIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
+              <Typography variant="h4" fontWeight={600}>
+                {estatisticas.avaliacaoMedia.toFixed(1)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Avaliação Média
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Filtros */}
+        <Card sx={{ mb: 3 }}>
+          <CardHeader
+            title={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <FilterAltIcon fontSize="small" />
+                Filtros
+              </Box>
+            }
+          />
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Categoria</InputLabel>
+                  <Select
+                    value={filtros.categoria}
+                    onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })}
+                    label="Categoria"
+                  >
+                    <MenuItem value="all">
+                      <em>Todas as Categorias</em>
+                    </MenuItem>
+                    {categorias.map((cat) => (
+                      <MenuItem key={cat.codigo} value={cat.nome}>
+                        {cat.nome}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Instrutor</InputLabel>
+                  <Select
+                    value={filtros.instrutor}
+                    onChange={(e) => setFiltros({ ...filtros, instrutor: e.target.value })}
+                    label="Instrutor"
+                  >
+                    <MenuItem value="all">
+                      <em>Todos os Instrutores</em>
+                    </MenuItem>
+                    {instrutores.map((instrutor) => (
+                      <MenuItem key={instrutor.id} value={instrutor.id}>
+                        {instrutor.nome}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 12, md: 3 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Nível</InputLabel>
+                  <Select
+                    value={filtros.nivel}
+                    onChange={(e) => setFiltros({ ...filtros, nivel: e.target.value })}
+                    label="Nível"
+                  >
+                    <MenuItem value="all">
+                      <em>Todos os Níveis</em>
+                    </MenuItem>
+                    <MenuItem value="Básico">Básico</MenuItem>
+                    <MenuItem value="Intermediário">Intermediário</MenuItem>
+                    <MenuItem value="Avançado">Avançado</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+
+        {/* Tabs de Status */}
+        <StatusFilterTabs
+          value={tab}
+          onChange={setTab}
+          activeCount={cursosAtivos.length}
+          inactiveCount={cursosInativos.length}
+          activeLabel="Cursos Ativos"
+          inactiveLabel="Cursos Inativos"
+        />
+
+        {/* Tabela de Cursos */}
+        <Card>
+          <CardHeader
+            title={
+              <Typography variant="h6" fontWeight={600}>
+                {tab === 'active' ? 'Cursos Ativos' : tab === 'disabled' ? 'Cursos Inativos' : 'Todos os Cursos'}
+              </Typography>
+            }
+            subheader={`${filtered.length} cursos encontrados`}
+          />
+          <CardContent>
+            {filtered.length === 0 ? (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                {tab === 'all' 
+                  ? 'Nenhum curso encontrado com os filtros selecionados.'
+                  : `Nenhum curso ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
+              </Alert>
+            ) : (
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Curso</TableCell>
+                    <TableCell>Categoria</TableCell>
+                    <TableCell>Instrutor</TableCell>
+                    <TableCell>Nível</TableCell>
+                    <TableCell align="center">Inscritos</TableCell>
+                    <TableCell align="center">Taxa Conclusão</TableCell>
+                    <TableCell align="center">Avaliação</TableCell>
+                    <TableCell align="center">Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filtered.map((curso) => (
+                    <TableRow key={curso.id} hover>
+                      <TableCell>
+                        <Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {curso.titulo}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              color: 'text.secondary',
+                            }}
+                          >
+                            {curso.codigo}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                            <ScheduleIcon fontSize="small" color="action" />
+                            <Typography variant="caption" color="text.secondary">
+                              {curso.duracao_estimada}h
+                            </Typography>
+                            <TrendingUpIcon fontSize="small" color="action" />
+                            <Typography variant="caption" color="text.secondary">
+                              {curso.xp_oferecido} XP
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip variant="outlined" label={curso.categoria_nome} size="small" />
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
+                            {curso.instrutor_nome?.charAt(0)}
+                          </Avatar>
+                          <Typography variant="body2">
+                            {curso.instrutor_nome}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          size="small"
+                          label={curso.nivel_dificuldade}
+                          color={getNivelColor(curso.nivel_dificuldade || 'Básico') as any}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {curso.total_inscritos}
+                          </Typography>
+                          <Typography variant="caption" color="success.main">
+                            {curso.total_concluidos} concluídos
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ minWidth: 80 }}>
+                          <Typography variant="body2" fontWeight={500}>
+                            {curso.taxa_conclusao.toFixed(1)}%
+                          </Typography>
+                          <LinearProgress
+                            variant="determinate"
+                            value={curso.taxa_conclusao}
+                            sx={{ mt: 0.5 }}
+                            color={curso.taxa_conclusao > 70 ? 'success' : curso.taxa_conclusao > 40 ? 'warning' : 'error'}
+                          />
+                        </Box>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <Rating
+                            value={curso.avaliacao_media}
+                            readOnly
+                            size="small"
+                            precision={0.1}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {curso.avaliacao_media.toFixed(1)} ({curso.total_avaliacoes})
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          size="small"
+                          label={curso.ativo ? 'Ativo' : 'Inativo'}
+                          color={getStatusColor(curso.ativo)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+    </DashboardLayout>
+  )
+}

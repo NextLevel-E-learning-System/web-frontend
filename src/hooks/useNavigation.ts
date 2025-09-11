@@ -125,7 +125,7 @@ export function useNavigation() {
         {
           label: 'Cursos',
           icon: React.createElement(SchoolIcon),
-          href: '/cursos',
+          href: '/admin/courses',
         },
         {
           label: 'Usuários',
