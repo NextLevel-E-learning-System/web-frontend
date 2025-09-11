@@ -14,11 +14,13 @@ import Recover from './pages/Recover'
 import EmployeeDashboard from './pages/EmployeeDashboard'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminDepartments from './pages/admin/AdminDepartments'
+import AdminCategories from './pages/admin/AdminCategories'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminInstructors from './pages/admin/AdminInstructors'
 import InstrutorDashboard from './pages/InstrutorDashboard'
 import CoursesPage from './pages/CoursesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
-import AdminCategories from './pages/admin/AdminCategories'
 
 // NextLevel brand theme (Material UI)
 const theme = createTheme({
@@ -110,6 +112,22 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={['administrador']}>
                 <AdminCategories />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin/users'
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin/instructors'
+            element={
+              <ProtectedRoute allowedRoles={['administrador']}>
+                <AdminInstructors />
               </ProtectedRoute>
             }
           />

@@ -423,3 +423,52 @@ export function useDashboardCompleto() {
     },
   }
 }
+
+// CRUD para usuários (Admin)
+export interface CriarUsuarioInput {
+  nome: string
+  cpf: string
+  email: string
+  departamento_id: string
+  cargo?: string
+  tipo_usuario: 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN'
+  status?: 'ATIVO' | 'INATIVO'
+  biografia?: string
+}
+
+export function useCriarUsuario() {
+  const queryClient = useQueryClient()
+
+  return useMutation<UsuarioResumo, Error, CriarUsuarioInput>({
+    mutationKey: ['users', 'create'],
+    mutationFn: input => authPost<UsuarioResumo>('/users/v1', input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
+    },
+  })
+}
+
+export function useAtualizarUsuario(id: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation<UsuarioResumo, Error, AtualizacaoAdmin>({
+    mutationKey: ['users', 'update', id],
+    mutationFn: input => authPatch<UsuarioResumo>(`/users/v1/${id}`, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
+      queryClient.invalidateQueries({ queryKey: ['users', 'byId', id] })
+    },
+  })
+}
+
+export function useExcluirUsuario() {
+  const queryClient = useQueryClient()
+
+  return useMutation<void, Error, string>({
+    mutationKey: ['users', 'delete'],
+    mutationFn: id => authPost(`/users/v1/${id}/delete`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'list'] })
+    },
+  })
+}
