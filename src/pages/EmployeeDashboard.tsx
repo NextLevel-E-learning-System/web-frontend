@@ -15,7 +15,7 @@ import {
   Grid,
 } from '@mui/material'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
-import EmployeeHeader from '@/components/EmployeeHeader/EmployeeHeader'
+import EmployeeHeader from '@/components/employee/EmployeeHeader'
 import { useDashboardCompleto } from '@/hooks/users'
 import { useNavigation } from '@/hooks/useNavigation'
 

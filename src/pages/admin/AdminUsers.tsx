@@ -38,6 +38,7 @@ import {
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useListarUsuarios,
@@ -77,6 +78,7 @@ export default function AdminUsers() {
   const atualizarUsuario = useAtualizarUsuario(editingUser?.id || '')
   const excluirUsuario = useExcluirUsuario()
 
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [form, setForm] = useState<UserForm>({
     nome: '',
@@ -93,6 +95,14 @@ export default function AdminUsers() {
     () => (editingUser ? 'Editar Usuário' : 'Gerenciar Usuários'),
     [editingUser]
   )
+
+  // Filtrar usuários por status
+  const allUsers = usuarios.items || []
+  const filtered = allUsers.filter(user => {
+    if (tab === 'all') return true
+    if (tab === 'active') return user.status === 'ATIVO'
+    return user.status === 'INATIVO'
+  })
 
   const resetForm = () => {
     setForm({
@@ -257,13 +267,14 @@ export default function AdminUsers() {
             mb: 3,
           }}
         >
-          <Button
-            href='/dashboard/admin'
-            startIcon={<ArrowBackIcon />}
-            variant='outlined'
-          >
-            Voltar ao Dashboard
-          </Button>
+          <StatusFilterTabs
+            value={tab}
+            onChange={setTab}
+            activeCount={allUsers.filter(u => u.status === 'ATIVO').length}
+            inactiveCount={allUsers.filter(u => u.status === 'INATIVO').length}
+            activeLabel='Usuários Ativos'
+            inactiveLabel='Usuários Inativos'
+          />
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -278,16 +289,21 @@ export default function AdminUsers() {
           <CardHeader
             title={
               <Typography variant='h6' fontWeight={600}>
-                Usuários do Sistema
+                {tab === 'active'
+                  ? 'Usuários Ativos'
+                  : tab === 'disabled'
+                    ? 'Usuários Inativos'
+                    : 'Todos os Usuários'}
               </Typography>
             }
-            subheader={`${usuarios.items.length} usuários cadastrados`}
+            subheader={`${filtered.length} usuários encontrados`}
           />
           <CardContent>
-            {usuarios.items.length === 0 ? (
+            {filtered.length === 0 ? (
               <Alert severity='info' sx={{ mt: 2 }}>
-                Nenhum usuário cadastrado. Clique em "Adicionar Usuário" para
-                começar.
+                {tab === 'all'
+                  ? 'Nenhum usuário cadastrado. Clique em "Adicionar Usuário" para começar.'
+                  : `Nenhum usuário ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
               </Alert>
             ) : (
               <Table size='small'>
@@ -303,7 +319,7 @@ export default function AdminUsers() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {usuarios.items.map(user => (
+                  {filtered.map(user => (
                     <TableRow key={user.id} hover>
                       <TableCell>
                         <Box

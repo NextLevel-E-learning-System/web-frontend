@@ -40,6 +40,7 @@ import {
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useListarUsuarios,
@@ -273,29 +274,13 @@ export default function AdminInstructors() {
             mb: 3,
           }}
         >
-          <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-            <Tab
-              value='active'
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircleIcon fontSize='small' />
-                  Ativos ({instrutores.filter(i => i.status === 'ATIVO').length}
-                  )
-                </Box>
-              }
-            />
-            <Tab
-              value='disabled'
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <BlockIcon fontSize='small' />
-                  Inativos (
-                  {instrutores.filter(i => i.status === 'INATIVO').length})
-                </Box>
-              }
-            />
-            <Tab value='all' label='Todos' />
-          </Tabs>
+          <Button
+            href='/dashboard/admin'
+            startIcon={<ArrowBackIcon />}
+            variant='outlined'
+          >
+            Voltar ao Dashboard
+          </Button>
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -305,6 +290,15 @@ export default function AdminInstructors() {
             Adicionar Instrutor
           </Button>
         </Box>
+
+        <StatusFilterTabs
+          value={tab}
+          onChange={setTab}
+          activeCount={instrutores.filter(i => i.status === 'ATIVO').length}
+          inactiveCount={instrutores.filter(i => i.status === 'INATIVO').length}
+          activeLabel='Instrutores Ativos'
+          inactiveLabel='Instrutores Inativos'
+        />
 
         <Card>
           <CardHeader
