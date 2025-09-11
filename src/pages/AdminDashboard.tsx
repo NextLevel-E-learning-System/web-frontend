@@ -34,81 +34,57 @@ import { useDashboard, useListarUsuarios } from "@/hooks/users";
 
 export default function AdminDashboard() {
   const { navigationItems } = useNavigation();
-  const { data: usuarios = [] } = useListarUsuarios({});
-  const { data: dashboardData } = useDashboard();
-
-  // Métricas calculadas dos usuários
-  const totalUsuarios = usuarios.length;
-  const usuariosAtivos = usuarios.filter(u => u.ativo).length;
-  const usuariosPorCargo = usuarios.reduce((acc, user) => {
-    const cargo = user.cargo?.nome || "Sem cargo";
-    acc[cargo] = (acc[cargo] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const { data: dashboardResponse } = useDashboard();
+  
+  // Dados da API do dashboard
+  const dashboardData = dashboardResponse?.dashboard_data;
+  const metricas = dashboardData?.metricas_gerais;
+  const cursosPopulares = dashboardData?.cursos_populares || [];
+  const engajamentoDepartamento = dashboardData?.engajamento_departamento || [];
 
   // Dados para gráficos
-  const barChartData = Object.values(usuariosPorCargo);
-  const areaChartData = [45, 52, 38, 65, 72, 85, 91]; // Exemplo de dados de atividade semanal
+  const departmentChartData = engajamentoDepartamento.map(dept => dept.total_funcionarios);
+  const inscricoesChartData = engajamentoDepartamento.map(dept => dept.total_inscricoes);
+  
+  // Taxa de conclusão média dos departamentos ativos
+  const taxaConclusaoData = engajamentoDepartamento
+    .filter(dept => dept.total_funcionarios > 0)
+    .map(dept => dept.taxa_conclusao * 100);
 
   return (
     <DashboardLayout title="Dashboard Administrativo" items={navigationItems}>
       <Box sx={{ p: 3 }}>
-        {/* Header */}
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, color: "#1B2559" }}>
-          Dashboard Administrativo
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Visão geral do sistema NextLevel e métricas de engajamento
-        </Typography>
-
-        {/* Alertas */}
-        <Stack spacing={2} sx={{ mb: 4 }}>
-          <Alert severity="warning" sx={{ borderRadius: 2 }}>
-            <AlertTitle>Atenção</AlertTitle>
-            Há {totalUsuarios - usuariosAtivos} usuários inativos que precisam de revisão
-          </Alert>
-          <Alert severity="info" sx={{ borderRadius: 2 }}>
-            <AlertTitle>Sistema Estável</AlertTitle>
-            Todos os serviços estão operando normalmente
-          </Alert>
-        </Stack>
-
-        {/* Métricas Principais */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="Total de Usuários"
-              value={totalUsuarios.toString()}
+              value={metricas?.total_usuarios || 0}
               icon={<People />}
-              trend="up"
-              trendValue="12%"
+              positive={true}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
-              title="Usuários Ativos"
-              value={usuariosAtivos.toString()}
+              title="Usuários Ativos (30d)"
+              value={metricas?.usuarios_ativos_30d || 0}
               icon={<CheckCircle />}
-              trend="up"
-              trendValue="8%"
+              positive={true}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
               title="Total de Cursos"
-              value={dashboardData?.totalCursos?.toString() || "0"}
+              value={metricas?.total_cursos || 0}
               icon={<School />}
-              trend="up"
-              trendValue="3%"
+              positive={true}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard
-              title="Avaliações"
-              value={dashboardData?.totalAvaliacoes?.toString() || "0"}
+              title="Taxa de Conclusão"
+              value={`${(metricas?.taxa_conclusao_geral || 0) * 100}%`}
               icon={<Assignment />}
-              trend="down"
-              trendValue="2%"
+              positive={false}
             />
           </Grid>
         </Grid>
@@ -118,23 +94,23 @@ export default function AdminDashboard() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Usuários por Cargo
+                Funcionários por Departamento
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Distribuição dos usuários por função na empresa
+                Distribuição dos funcionários por departamento
               </Typography>
-              <SimpleBarChart data={barChartData} />
+              <SimpleBarChart data={departmentChartData} />
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Atividade Semanal
+                Inscrições por Departamento
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Engajamento dos usuários nos últimos 7 dias
+                Número de inscrições em cursos por departamento
               </Typography>
-              <SimpleAreaChart data={areaChartData} color="#10B981" />
+              <SimpleAreaChart data={inscricoesChartData} color="#10B981" />
             </Paper>
           </Grid>
         </Grid>
@@ -144,53 +120,50 @@ export default function AdminDashboard() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Últimos Usuários Cadastrados
+                Cursos Populares
               </Typography>
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Usuário</TableCell>
-                      <TableCell>Cargo</TableCell>
-                      <TableCell>Status</TableCell>
+                      <TableCell>Curso</TableCell>
+                      <TableCell align="right">Inscrições</TableCell>
+                      <TableCell align="right">Taxa Conclusão</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {usuarios.slice(0, 5).map((usuario) => (
-                      <TableRow key={usuario.id} hover>
+                    {cursosPopulares.map((curso) => (
+                      <TableRow key={curso.codigo} hover>
                         <TableCell>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            <Avatar sx={{ width: 32, height: 32, bgcolor: "#1283E6" }}>
-                              {usuario.nome?.charAt(0) || "U"}
-                            </Avatar>
-                            <Box>
-                              <Typography variant="body2" fontWeight={500}>
-                                {usuario.nome}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {usuario.email}
-                              </Typography>
-                            </Box>
+                          <Box>
+                            <Typography variant="body2" fontWeight={500}>
+                              {curso.titulo}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {curso.codigo}
+                            </Typography>
                           </Box>
                         </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={usuario.cargo?.nome || "Sem cargo"}
-                            size="small"
-                            variant="outlined"
-                            icon={<Business />}
-                          />
+                        <TableCell align="right">
+                          <Typography variant="body2">{curso.inscricoes}</Typography>
                         </TableCell>
-                        <TableCell>
+                        <TableCell align="right">
                           <Chip
-                            label={usuario.ativo ? "Ativo" : "Inativo"}
+                            label={`${(curso.taxa_conclusao * 100).toFixed(1)}%`}
                             size="small"
-                            color={usuario.ativo ? "success" : "error"}
+                            color={curso.taxa_conclusao > 0.7 ? "success" : curso.taxa_conclusao > 0.4 ? "warning" : "error"}
                             variant="filled"
                           />
                         </TableCell>
                       </TableRow>
                     ))}
+                    {cursosPopulares.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} align="center">
+                          <Typography color="text.secondary">Nenhum curso encontrado</Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -200,31 +173,45 @@ export default function AdminDashboard() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Estatísticas por Departamento
+                Engajamento por Departamento
               </Typography>
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Cargo</TableCell>
-                      <TableCell align="right">Usuários</TableCell>
-                      <TableCell align="right">Percentual</TableCell>
+                      <TableCell>Departamento</TableCell>
+                      <TableCell align="right">Funcionários</TableCell>
+                      <TableCell align="right">Ativos</TableCell>
+                      <TableCell align="right">Inscrições</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Object.entries(usuariosPorCargo).map(([cargo, quantidade]) => (
-                      <TableRow key={cargo} hover>
+                    {engajamentoDepartamento.map((dept) => (
+                      <TableRow key={dept.departamento} hover>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {cargo}
-                          </Typography>
+                          <Box>
+                            <Typography variant="body2" fontWeight={500}>
+                              {dept.nome_departamento}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {dept.departamento}
+                            </Typography>
+                          </Box>
                         </TableCell>
                         <TableCell align="right">
-                          <Typography variant="body2">{quantidade}</Typography>
+                          <Typography variant="body2">{dept.total_funcionarios}</Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Chip
+                            label={dept.funcionarios_ativos.toString()}
+                            size="small"
+                            color={dept.funcionarios_ativos > 0 ? "success" : "default"}
+                            variant="outlined"
+                          />
                         </TableCell>
                         <TableCell align="right">
                           <Typography variant="body2" color="primary">
-                            {((quantidade / totalUsuarios) * 100).toFixed(1)}%
+                            {dept.total_inscricoes}
                           </Typography>
                         </TableCell>
                       </TableRow>
