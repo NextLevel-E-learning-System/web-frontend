@@ -31,14 +31,25 @@ export function useNavigation() {
           href: '/dashboard/funcionario',
         },
         {
-          label: 'Catálogo de Cursos',
+          label: 'Cursos',
           icon: React.createElement(SchoolIcon),
-          href: '/catalogo',
-        },
-        {
-          label: 'Meus Cursos',
-          icon: React.createElement(BookIcon),
-          href: '/meus-cursos',
+          children: [
+            {
+              label: 'Catálogo de Cursos',
+              icon: React.createElement(SchoolIcon),
+              href: '/cursos',
+            },
+            {
+              label: 'Meus Cursos',
+              icon: React.createElement(BookIcon),
+              href: '/meus-cursos',
+            },
+            {
+              label: 'Certificados',
+              icon: React.createElement(SchoolIcon),
+              href: '/certificados',
+            },
+          ],
         },
         {
           label: 'Conquistas',
@@ -49,11 +60,6 @@ export function useNavigation() {
           label: 'Ranking',
           icon: React.createElement(WorkspacePremiumIcon),
           href: '/ranking',
-        },
-        {
-          label: 'Certificados',
-          icon: React.createElement(SchoolIcon),
-          href: '/certificados',
         },
         {
           label: 'Configurações',
@@ -71,24 +77,25 @@ export function useNavigation() {
           href: '/dashboard/instrutor',
         },
         {
-          label: 'Usuários',
-          icon: React.createElement(PeopleIcon),
-          href: '/instrutor/users',
-        },
-        {
           label: 'Cursos',
           icon: React.createElement(SchoolIcon),
-          href: '/cursos',
-        },
-        {
-          label: 'Avaliações',
-          icon: React.createElement(AssignmentIcon),
-          href: '/avaliacoes',
-        },
-        {
-          label: 'Departamentos',
-          icon: React.createElement(ApartmentIcon),
-          href: '/instrutor/departments',
+          children: [
+            {
+              label: 'Todos os Cursos',
+              icon: React.createElement(SchoolIcon),
+              href: '/cursos',
+            },
+            {
+              label: 'Minhas Turmas',
+              icon: React.createElement(BookIcon),
+              href: '/instrutor/turmas',
+            },
+            {
+              label: 'Avaliações',
+              icon: React.createElement(AssignmentIcon),
+              href: '/avaliacoes',
+            },
+          ],
         },
         {
           label: 'Configurações',
@@ -106,34 +113,41 @@ export function useNavigation() {
           href: '/dashboard/admin',
         },
         {
-          label: 'Usuários',
-          icon: React.createElement(PeopleIcon),
-          href: '/admin/users',
-        },
-        {
           label: 'Cursos',
           icon: React.createElement(SchoolIcon),
-          href: '/cursos',
-        },
-        {
-          label: 'Instrutores',
-          icon: React.createElement(BadgeIcon),
-          href: '/admin/instructors',
-        },
-        {
-          label: 'Avaliações',
-          icon: React.createElement(AssignmentIcon),
-          href: '/avaliacoes',
-        },
-        {
-          label: 'Notas',
-          icon: React.createElement(GradeIcon),
-          href: '/notas',
+          children: [
+             {
+              label: 'Gerenciar Categorias',
+              icon: React.createElement(AssignmentIcon),
+              href: '/admin/categorias',
+            },
+            {
+              label: 'Todos os Cursos',
+              icon: React.createElement(SchoolIcon),
+              href: '/cursos',
+            },
+          ],
         },
         {
           label: 'Departamentos',
           icon: React.createElement(ApartmentIcon),
           href: '/admin/departments',
+        },
+        {
+          label: 'Usuários',
+          icon: React.createElement(PeopleIcon),
+          children: [
+            {
+              label: 'Usuários',
+              icon: React.createElement(PeopleIcon),
+              href: '/admin/users',
+            },
+            {
+              label: 'Instrutores',
+              icon: React.createElement(BadgeIcon),
+              href: '/admin/instructors',
+            },
+          ],
         },
         {
           label: 'Configurações',

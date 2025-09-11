@@ -14,7 +14,10 @@ import {
   Typography,
   useMediaQuery,
   Button,
+  Collapse,
 } from '@mui/material'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
 import MenuIcon from '@mui/icons-material/Menu'
@@ -22,7 +25,12 @@ import LogoutIcon from '@mui/icons-material/Logout'
 import CircularProgress from '@mui/material/CircularProgress'
 import { useLogout } from '@/hooks/auth'
 
-export type NavItem = { label: string; icon: JSX.Element; href: string }
+export type NavItem = {
+  label: string;
+  icon: JSX.Element;
+  href?: string;
+  children?: NavItem[];
+}
 
 export default function DashboardLayout({
   title,
@@ -34,6 +42,62 @@ export default function DashboardLayout({
   const location = useLocation()
   const drawerWidth = 240
   const { mutate, isPending } = useLogout()
+
+   function ExpandableMenuItem({ item, location }) {
+          const [open, setOpen] = useState(false)
+          const handleClick = () => setOpen(o => !o)
+          return (
+            <>
+              <ListItemButton
+                onClick={handleClick}
+                sx={{
+                  borderRadius: 1,
+                  mx: 1,
+                  my: 0.5,
+                  color: '#e5e7eb',
+                  '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
+                }}
+              >
+                <ListItemIcon sx={{ color: '#93c5fd', minWidth: 40 }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 600 }}
+                  primary={item.label}
+                />
+                {open ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+              <Collapse in={open} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {item.children?.map(child => (
+                    <ListItemButton
+                      key={child.href}
+                      component={RouterLink}
+                      to={child.href}
+                      sx={{
+                        pl: 6,
+                        borderRadius: 1,
+                        mx: 1,
+                        my: 0.5,
+                        color: '#e5e7eb',
+                        '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.10)' },
+                      }}
+                      selected={location.pathname === child.href}
+                    >
+                      <ListItemIcon sx={{ color: '#60a5fa', minWidth: 40 }}>
+                        {child.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primaryTypographyProps={{ fontWeight: 500 }}
+                        primary={child.label}
+                      />
+                    </ListItemButton>
+                  ))}
+                </List>
+              </Collapse>
+            </>
+          )
+        }
 
   const drawer = (
     <Box
@@ -53,28 +117,36 @@ export default function DashboardLayout({
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255,255,255,.12)' }} />
       <List>
-        {items.map(it => (
-          <ListItemButton
-            key={it.href}
-            component={RouterLink}
-            to={it.href}
-            sx={{
-              borderRadius: 1,
-              mx: 1,
-              my: 0.5,
-              color: '#e5e7eb',
-              '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
-            }}
-            selected={location.pathname === it.href}
-          >
-            <ListItemIcon sx={{ color: '#93c5fd', minWidth: 40 }}>
-              {it.icon}
-            </ListItemIcon>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 600 }}
-              primary={it.label}
+        {items.map((it, idx) => (
+          it.children ? (
+            <ExpandableMenuItem
+              key={it.label + idx}
+              item={it}
+              location={location}
             />
-          </ListItemButton>
+          ) : (
+            <ListItemButton
+              key={it.href}
+              component={RouterLink}
+              to={it.href}
+              sx={{
+                borderRadius: 1,
+                mx: 1,
+                my: 0.5,
+                color: '#e5e7eb',
+                '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
+              }}
+              selected={location.pathname === it.href}
+            >
+              <ListItemIcon sx={{ color: '#93c5fd', minWidth: 40 }}>
+                {it.icon}
+              </ListItemIcon>
+              <ListItemText
+                primaryTypographyProps={{ fontWeight: 600 }}
+                primary={it.label}
+              />
+            </ListItemButton>
+          )
         ))}
       </List>
       <Box sx={{ flexGrow: 1 }} />

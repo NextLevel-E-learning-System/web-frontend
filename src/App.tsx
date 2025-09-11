@@ -104,7 +104,7 @@ const App = () => (
             }
           />
           <Route
-            path='/catalogo'
+            path='/cursos'
             element={
               <ProtectedRoute>
                 <CoursesPage />
