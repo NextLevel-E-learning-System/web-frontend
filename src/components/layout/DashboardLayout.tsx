@@ -73,47 +73,60 @@ export default function DashboardLayout({
           currentPath === it.href || 
           (hasChildren && it.children!.some(c => c.href === currentPath))
         const content = (
-          <ListItemButton
-            key={key}
-            component={RouterLink}
-            to={it.href || ''}
-            onClick={e => {
-              if (hasChildren && !isCollapsed) {
-                e.preventDefault()
-                toggleSection(key)
-              }
-              if (!isMdUp) setMobileOpen(false)
-            }}
-            selected={selected}
-            sx={{
-              borderRadius: 1,
-              mx: 1,
-              my: 0.5,
-              pl: 1 + level * 2,
-              color: '#e5e7eb',
-              '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
-            }}
-          >
-            <ListItemIcon sx={{ color: '#93c5fd', minWidth: 36 }}>
-              {it.icon}
-            </ListItemIcon>
-            {!isCollapsed && (
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 600 }}
-                primary={it.label}
-              />
-            )}
-            {hasChildren &&
-              !isCollapsed &&
-              (openSections[key] ? (
-                <ExpandLess fontSize='small' />
-              ) : (
-                <ExpandMore fontSize='small' />
-              ))}
-            {hasChildren && isCollapsed && (
-              <ChevronRightIcon fontSize='small' />
-            )}
-          </ListItemButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start', width: '100%' }}>
+            <ListItemButton
+              key={key}
+              component={RouterLink}
+              to={it.href || ''}
+              onClick={e => {
+                if (hasChildren && !isCollapsed) {
+                  e.preventDefault()
+                  toggleSection(key)
+                }
+                if (!isMdUp) setMobileOpen(false)
+              }}
+              selected={selected}
+              sx={{
+                borderRadius: 1,
+                mx: 1,
+                my: 0.5,
+                pl: 1 + level * 2,
+                color: '#e5e7eb',
+                '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
+              }}
+            >
+              <ListItemIcon sx={{ color: '#93c5fd', minWidth: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {it.icon}
+              </ListItemIcon>
+              {!isCollapsed && (
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 600 }}
+                  primary={it.label}
+                />
+              )}
+              {hasChildren && (
+                <IconButton
+                  size='small'
+                  edge='end'
+                  sx={{
+                    color: '#93c5fd',
+                    ml: isCollapsed ? 0 : 0.5,
+                    zIndex: 2,
+                    alignSelf: 'center',
+                    p: 0,
+                    display: 'flex',
+                  }}
+                  onClick={e => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    toggleSection(key)
+                  }}
+                >
+                  {openSections[key] ? <ExpandLess fontSize='small' /> : <ExpandMore fontSize='small' />}
+                </IconButton>
+              )}
+            </ListItemButton>
+          </Box>
         )
 
         return (
@@ -128,29 +141,32 @@ export default function DashboardLayout({
             {hasChildren && (
               isCollapsed
                 ? (
-                    <Box sx={{ pl: 0 }}>
-                      {it.children!.map((child, cidx) => (
-                        <Tooltip title={child.label} arrow placement='right' key={child.label + cidx}>
-                          <ListItemButton
-                            component={RouterLink}
-                            to={child.href || ''}
-                            sx={{
-                              borderRadius: 1,
-                              mx: 1,
-                              my: 0.5,
-                              color: '#e5e7eb',
-                              minHeight: 48,
-                              justifyContent: 'center',
-                            }}
-                            selected={currentPath === child.href}
-                          >
-                            <ListItemIcon sx={{ color: '#60a5fa', minWidth: 36 }}>
-                              {child.icon}
-                            </ListItemIcon>
-                          </ListItemButton>
-                        </Tooltip>
-                      ))}
-                    </Box>
+                    openSections[key] ? (
+                      <Box sx={{ pl: 0 }}>
+                        {it.children!.map((child, cidx) => (
+                          <Tooltip title={child.label} arrow placement='right' key={child.label + cidx}>
+                            <ListItemButton
+                              component={RouterLink}
+                              to={child.href || ''}
+                              sx={{
+                                borderRadius: 1,
+                                mx: 1,
+                                my: 0.5,
+                                color: '#e5e7eb',
+                                minHeight: 48,
+                                justifyContent: 'center',
+                                display: 'flex',
+                              }}
+                              selected={currentPath === child.href}
+                            >
+                              <ListItemIcon sx={{ color: '#60a5fa', minWidth: 36, justifyContent: 'center', display: 'flex' }}>
+                                {child.icon}
+                              </ListItemIcon>
+                            </ListItemButton>
+                          </Tooltip>
+                        ))}
+                      </Box>
+                    ) : null
                   )
                 : (
                     <Collapse
@@ -178,14 +194,14 @@ export default function DashboardLayout({
         color: '#e5e7eb',
       }}
     >
-      <Toolbar sx={{ minHeight: 48, gap: 1 }}>
+      <Toolbar sx={{ minHeight: 48, px: 1, display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
         {!isCollapsed && (
-          <>
+          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             <img src={logoIcon} alt='Logo NextLevel' style={{ width: 50 }} />
-            <Typography variant='h6' fontWeight={800} color='#e5e7eb'>
+            <Typography variant='h6' fontWeight={800} color='#e5e7eb' sx={{ ml: 1 }}>
               NextLevel
             </Typography>
-          </>
+          </Box>
         )}
         {isMdUp && (
           <IconButton
@@ -193,6 +209,7 @@ export default function DashboardLayout({
             color='inherit'
             onClick={() => setIsCollapsed(v => !v)}
             aria-label='toggle sidebar'
+            sx={{ ml: isCollapsed ? 0 : 2, alignSelf: 'center' }}
           >
             <MenuIcon />
           </IconButton>
