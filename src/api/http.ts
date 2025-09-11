@@ -130,8 +130,6 @@ api.interceptors.response.use(
       } catch (refreshError) {
         console.error('[HTTP] Falha no refresh automático:', refreshError)
         clearAccessToken()
-
-       
       }
     }
 

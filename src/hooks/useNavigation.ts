@@ -116,7 +116,7 @@ export function useNavigation() {
           label: 'Cursos',
           icon: React.createElement(SchoolIcon),
           children: [
-             {
+            {
               label: 'Gerenciar Categorias',
               icon: React.createElement(AssignmentIcon),
               href: '/admin/categorias',

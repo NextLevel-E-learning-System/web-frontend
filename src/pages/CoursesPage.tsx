@@ -300,7 +300,7 @@ export default function CoursesPage() {
     const isInscrito = !!inscricao
     const isCompleto = inscricao?.status === 'CONCLUIDO'
     const progresso = inscricao?.progresso_percentual || 0
-    
+
     // Buscar dados da categoria
     const categoria = getCategoriaById(curso.categoria_id || '')
 

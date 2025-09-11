@@ -1,6 +1,7 @@
-import { PropsWithChildren, useState } from 'react'
+import { PropsWithChildren, useMemo, useState } from 'react'
 import {
   AppBar,
+  Avatar,
   Box,
   CssBaseline,
   Divider,
@@ -13,91 +14,131 @@ import {
   Toolbar,
   Typography,
   useMediaQuery,
-  Button,
   Collapse,
+  Tooltip,
 } from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import LogoutIcon from '@mui/icons-material/Logout'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import { Link as RouterLink, useLocation } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
-import MenuIcon from '@mui/icons-material/Menu'
-import LogoutIcon from '@mui/icons-material/Logout'
-import CircularProgress from '@mui/material/CircularProgress'
+
 import { useLogout } from '@/hooks/auth'
 
 export type NavItem = {
-  label: string;
-  icon: JSX.Element;
-  href?: string;
-  children?: NavItem[];
+  label: string
+  icon: JSX.Element
+  href?: string
+  children?: NavItem[]
 }
+
+const DRAWER_WIDTH = 240
+const DRAWER_WIDTH_COLLAPSED = 72
 
 export default function DashboardLayout({
   title,
   items,
   children,
 }: PropsWithChildren<{ title: string; items: NavItem[] }>) {
-  const [open, setOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
   const isMdUp = useMediaQuery('(min-width:900px)')
   const location = useLocation()
-  const drawerWidth = 240
-  const { mutate, isPending } = useLogout()
+  const { mutate } = useLogout()
+  const currentPath = typeof location !== 'undefined' ? location.pathname : ''
 
-   function ExpandableMenuItem({ item, location }) {
-          const [open, setOpen] = useState(false)
-          const handleClick = () => setOpen(o => !o)
-          return (
-            <>
-              <ListItemButton
-                onClick={handleClick}
-                sx={{
-                  borderRadius: 1,
-                  mx: 1,
-                  my: 0.5,
-                  color: '#e5e7eb',
-                  '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
-                }}
+  const toggleSection = (key: string) => {
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const drawerWidth = useMemo(
+    () =>
+      isMdUp
+        ? isCollapsed
+          ? DRAWER_WIDTH_COLLAPSED
+          : DRAWER_WIDTH
+        : DRAWER_WIDTH,
+    [isMdUp, isCollapsed]
+  )
+
+  const renderItems = (navItems: NavItem[], level = 0) => (
+    <List disablePadding>
+      {navItems.map((it, idx) => {
+        const key = `${level}-${idx}-${it.label}`
+        const hasChildren = !!it.children?.length
+        const selected =
+          currentPath === it.href ||
+          (hasChildren && it.children!.some(c => c.href === currentPath))
+        const content = (
+          <ListItemButton
+            key={key}
+            component='a'
+            href={it.href}
+            onClick={e => {
+              if (hasChildren) {
+                e.preventDefault()
+                if (!isCollapsed) toggleSection(key)
+              }
+              if (!isMdUp) setMobileOpen(false)
+            }}
+            selected={selected}
+            sx={{
+              borderRadius: 1,
+              mx: 1,
+              my: 0.5,
+              pl: 1 + level * 2,
+              color: '#e5e7eb',
+              '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
+            }}
+          >
+            <ListItemIcon sx={{ color: '#93c5fd', minWidth: 36 }}>
+              {it.icon}
+            </ListItemIcon>
+            {!isCollapsed && (
+              <ListItemText
+                primaryTypographyProps={{ fontWeight: 600 }}
+                primary={it.label}
+              />
+            )}
+            {hasChildren &&
+              !isCollapsed &&
+              (openSections[key] ? (
+                <ExpandLess fontSize='small' />
+              ) : (
+                <ExpandMore fontSize='small' />
+              ))}
+            {hasChildren && isCollapsed && (
+              <ChevronRightIcon fontSize='small' />
+            )}
+          </ListItemButton>
+        )
+
+        return (
+          <Box key={key}>
+            {isCollapsed ? (
+              <Tooltip title={it.label} arrow placement='right'>
+                {content}
+              </Tooltip>
+            ) : (
+              content
+            )}
+            {hasChildren && (
+              <Collapse
+                in={!isCollapsed && !!openSections[key]}
+                timeout='auto'
+                unmountOnExit
               >
-                <ListItemIcon sx={{ color: '#93c5fd', minWidth: 40 }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 600 }}
-                  primary={item.label}
-                />
-                {open ? <ExpandLess /> : <ExpandMore />}
-              </ListItemButton>
-              <Collapse in={open} timeout="auto" unmountOnExit>
-                <List component="div" disablePadding>
-                  {item.children?.map(child => (
-                    <ListItemButton
-                      key={child.href}
-                      component={RouterLink}
-                      to={child.href}
-                      sx={{
-                        pl: 6,
-                        borderRadius: 1,
-                        mx: 1,
-                        my: 0.5,
-                        color: '#e5e7eb',
-                        '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.10)' },
-                      }}
-                      selected={location.pathname === child.href}
-                    >
-                      <ListItemIcon sx={{ color: '#60a5fa', minWidth: 40 }}>
-                        {child.icon}
-                      </ListItemIcon>
-                      <ListItemText
-                        primaryTypographyProps={{ fontWeight: 500 }}
-                        primary={child.label}
-                      />
-                    </ListItemButton>
-                  ))}
-                </List>
+                <Box sx={{ pl: 2 }}>{renderItems(it.children!, level + 1)}</Box>
               </Collapse>
-            </>
-          )
-        }
+            )}
+          </Box>
+        )
+      })}
+    </List>
+  )
 
   const drawer = (
     <Box
@@ -110,50 +151,27 @@ export default function DashboardLayout({
       }}
     >
       <Toolbar sx={{ minHeight: 48, gap: 1 }}>
-        <img src={logoIcon} alt='Logo NextLevel' style={{ width: 50 }} />
-        <Typography variant='h6' fontWeight={800} color='#e5e7eb'>
-          NextLevel
-        </Typography>
+        {!isCollapsed && (
+          <>
+            <img src={logoIcon} alt='Logo NextLevel' style={{ width: 50 }} />
+            <Typography variant='h6' fontWeight={800} color='#e5e7eb'>
+              NextLevel
+            </Typography>
+          </>
+        )}
+        {isMdUp && (
+          <IconButton
+            size='small'
+            color='inherit'
+            onClick={() => setIsCollapsed(v => !v)}
+            aria-label='toggle sidebar'
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255,255,255,.12)' }} />
-      <List>
-        {items.map((it, idx) => (
-          it.children ? (
-            <ExpandableMenuItem
-              key={it.label + idx}
-              item={it}
-              location={location}
-            />
-          ) : (
-            <ListItemButton
-              key={it.href}
-              component={RouterLink}
-              to={it.href}
-              sx={{
-                borderRadius: 1,
-                mx: 1,
-                my: 0.5,
-                color: '#e5e7eb',
-                '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
-              }}
-              selected={location.pathname === it.href}
-            >
-              <ListItemIcon sx={{ color: '#93c5fd', minWidth: 40 }}>
-                {it.icon}
-              </ListItemIcon>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 600 }}
-                primary={it.label}
-              />
-            </ListItemButton>
-          )
-        ))}
-      </List>
-      <Box sx={{ flexGrow: 1 }} />
-      <Box sx={{ p: 1, color: '#9ca3af', fontSize: 12 }}>
-        {' '}
-        © {new Date().getFullYear()}. NextLevel E-learning System
-      </Box>
+      <Box sx={{ flex: 1, overflow: 'auto' }}>{renderItems(items)}</Box>
     </Box>
   )
 
@@ -167,8 +185,8 @@ export default function DashboardLayout({
       >
         <Drawer
           variant={isMdUp ? 'permanent' : 'temporary'}
-          open={isMdUp ? true : open}
-          onClose={() => setOpen(false)}
+          open={isMdUp ? true : mobileOpen}
+          onClose={() => setMobileOpen(false)}
           ModalProps={{ keepMounted: true }}
           sx={{
             '& .MuiDrawer-paper': {
@@ -194,35 +212,16 @@ export default function DashboardLayout({
           }}
         >
           <Toolbar sx={{ gap: 2 }}>
-            {!isMdUp && (
-              <IconButton
-                edge='start'
-                color='inherit'
-                onClick={() => setOpen(true)}
-                aria-label='menu'
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
             <Typography variant='h6' fontWeight={800} sx={{ flexGrow: 1 }}>
               {title}
             </Typography>
+            <Avatar sx={{ width: 32, height: 32 }}>JD</Avatar>
             <IconButton
               color='inherit'
               aria-label='logout'
               onClick={() => mutate(undefined)}
-              disabled={isPending}
-              sx={{ position: 'relative' }}
             >
-              {isPending ? (
-                <CircularProgress
-                  size={24}
-                  color='inherit'
-                  sx={{ position: 'absolute', left: 6, top: 6 }}
-                />
-              ) : (
-                <LogoutIcon />
-              )}
+              <LogoutIcon />
             </IconButton>
           </Toolbar>
         </AppBar>

@@ -7,10 +7,10 @@ import {
   Autocomplete,
 } from '@mui/material'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
-import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
+import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useRegister } from '@/hooks/auth'
@@ -22,12 +22,13 @@ import { showToast } from '@/utils/toast'
 const Register = () => {
   const navigate = useNavigate()
   const register = useRegister()
-  const { data: departamentos = [], isLoading: loadingDepartamentos } = useListarDepartamentos()
+  const { data: departamentos = [], isLoading: loadingDepartamentos } =
+    useListarDepartamentos()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
-  
+
   const departamentosArray = Array.isArray(departamentos) ? departamentos : []
   const cargosArray = Array.isArray(cargos) ? cargos : []
-  
+
   const [formData, setFormData] = useState({
     cpf: '',
     nome: '',
@@ -41,19 +42,19 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Validar se departamento e cargo foram selecionados
     if (!selectedDepartamento || !selectedCargo) {
       showToast.error('Selecione um departamento e cargo válidos.')
       return
     }
-    
+
     const submitData = {
       ...formData,
       departamento_id: selectedDepartamento.codigo,
       cargo: selectedCargo.nome,
     }
-    
+
     try {
       await register.mutateAsync(submitData as any)
       showToast.success('Conta criada com sucesso! Senha enviada por email.')
@@ -64,18 +65,16 @@ const Register = () => {
     }
   }
 
-  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement> | any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value as string
-    }))
-  }
+  const handleChange =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement> | any) => {
+      setFormData(prev => ({
+        ...prev,
+        [field]: e.target.value as string,
+      }))
+    }
   return (
     <AuthShell title='Criar conta'>
-      <Box
-        component='form'
-        onSubmit={handleSubmit}
-      >
+      <Box component='form' onSubmit={handleSubmit}>
         <TextField
           fullWidth
           margin='normal'
@@ -93,7 +92,7 @@ const Register = () => {
             ),
           }}
         />
-        
+
         <TextField
           fullWidth
           margin='normal'
@@ -114,27 +113,27 @@ const Register = () => {
         <Autocomplete
           fullWidth
           options={departamentosArray}
-          getOptionLabel={(option) => option?.nome || ''}
+          getOptionLabel={option => option?.nome || ''}
           value={selectedDepartamento}
           onChange={(_, newValue) => setSelectedDepartamento(newValue)}
           loading={loadingDepartamentos}
           filterOptions={(options, { inputValue }) =>
-            options.filter((option) =>
+            options.filter(option =>
               option.nome.toLowerCase().includes(inputValue.toLowerCase())
             )
           }
-          renderInput={(params) => (
+          renderInput={params => (
             <TextField
               {...params}
-              label="Departamento"
-              margin="normal"
+              label='Departamento'
+              margin='normal'
               required
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
                   <>
-                    <InputAdornment position="start">
-                      <ApartmentOutlinedIcon color="disabled" />
+                    <InputAdornment position='start'>
+                      <ApartmentOutlinedIcon color='disabled' />
                     </InputAdornment>
                     {params.InputProps.startAdornment}
                   </>
@@ -142,34 +141,34 @@ const Register = () => {
               }}
             />
           )}
-          noOptionsText="Nenhum departamento encontrado"
-          loadingText="Carregando departamentos..."
+          noOptionsText='Nenhum departamento encontrado'
+          loadingText='Carregando departamentos...'
         />
 
         <Autocomplete
           fullWidth
           options={cargosArray}
-          getOptionLabel={(option) => option?.nome || ''}
+          getOptionLabel={option => option?.nome || ''}
           value={selectedCargo}
           onChange={(_, newValue) => setSelectedCargo(newValue)}
           loading={loadingCargos}
           filterOptions={(options, { inputValue }) =>
-            options.filter((option) =>
+            options.filter(option =>
               option.nome.toLowerCase().includes(inputValue.toLowerCase())
             )
           }
-          renderInput={(params) => (
+          renderInput={params => (
             <TextField
               {...params}
-              label="Cargo"
-              margin="normal"
+              label='Cargo'
+              margin='normal'
               required
               InputProps={{
                 ...params.InputProps,
                 startAdornment: (
                   <>
-                    <InputAdornment position="start">
-                      <BadgeOutlinedIcon color="disabled" />
+                    <InputAdornment position='start'>
+                      <BadgeOutlinedIcon color='disabled' />
                     </InputAdornment>
                     {params.InputProps.startAdornment}
                   </>
@@ -177,10 +176,10 @@ const Register = () => {
               }}
             />
           )}
-          noOptionsText="Nenhum cargo encontrado"
-          loadingText="Carregando cargos..."
+          noOptionsText='Nenhum cargo encontrado'
+          loadingText='Carregando cargos...'
         />
-        
+
         <TextField
           fullWidth
           margin='normal'
@@ -198,11 +197,11 @@ const Register = () => {
             ),
           }}
         />
-        
+
         <Typography variant='caption' color='text.secondary' sx={{ mt: 0 }}>
           A senha será enviada para seu email corporativo.
         </Typography>
-        
+
         <Button
           type='submit'
           fullWidth
@@ -213,7 +212,7 @@ const Register = () => {
         >
           {register.isPending ? 'Enviando...' : 'Criar conta'}
         </Button>
-        
+
         <Typography variant='body2' sx={{ mt: 2, textAlign: 'center' }}>
           Já tem uma conta?{' '}
           <Button

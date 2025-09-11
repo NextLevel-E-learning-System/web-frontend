@@ -124,10 +124,7 @@ export function useAtualizarDepartamento(codigo: string) {
 }
 
 // Cargos
-export function useListarCargos(filtro?: {
-  nome?: string
-  id?: string
-}) {
+export function useListarCargos(filtro?: { nome?: string; id?: string }) {
   return useQuery<Cargo[]>({
     queryKey: ['users', 'cargos', filtro],
     queryFn: async () => {
@@ -149,11 +146,7 @@ export function useListarCargos(filtro?: {
 export function useCriarCargo() {
   const queryClient = useQueryClient()
 
-  return useMutation<
-    Cargo,
-    Error,
-    { nome: string }
-  >({
+  return useMutation<Cargo, Error, { nome: string }>({
     mutationKey: ['users', 'cargos', 'create'],
     mutationFn: input => authPost<Cargo>('/users/v1/cargos', input),
     onSuccess: () => {
@@ -165,14 +158,9 @@ export function useCriarCargo() {
 export function useAtualizarCargo(id: string) {
   const queryClient = useQueryClient()
 
-  return useMutation<
-    Cargo,
-    Error,
-    Partial<Pick<Cargo, 'nome'>>
-  >({
+  return useMutation<Cargo, Error, Partial<Pick<Cargo, 'nome'>>>({
     mutationKey: ['users', 'cargos', 'update', id],
-    mutationFn: input =>
-      authPatch<Cargo>(`/users/v1/cargos/${id}`, input),
+    mutationFn: input => authPatch<Cargo>(`/users/v1/cargos/${id}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'cargos'] })
     },

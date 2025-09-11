@@ -115,7 +115,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
       <ToastContainer
-        position="top-right"
+        position='top-right'
         autoClose={5000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -124,7 +124,7 @@ const App = () => (
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme="light"
+        theme='light'
       />
     </ThemeProvider>
   </QueryClientProvider>
