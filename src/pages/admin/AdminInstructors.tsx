@@ -271,16 +271,16 @@ export default function AdminInstructors() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 3,
           }}
         >
-          <Button
-            href='/dashboard/admin'
-            startIcon={<ArrowBackIcon />}
-            variant='outlined'
-          >
-            Voltar ao Dashboard
-          </Button>
+          <StatusFilterTabs
+          value={tab}
+          onChange={setTab}
+          activeCount={instrutores.filter(i => i.status === 'ATIVO').length}
+          inactiveCount={instrutores.filter(i => i.status === 'INATIVO').length}
+          activeLabel='Instrutores Ativos'
+          inactiveLabel='Instrutores Inativos'
+        />
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -290,15 +290,6 @@ export default function AdminInstructors() {
             Adicionar Instrutor
           </Button>
         </Box>
-
-        <StatusFilterTabs
-          value={tab}
-          onChange={setTab}
-          activeCount={instrutores.filter(i => i.status === 'ATIVO').length}
-          inactiveCount={instrutores.filter(i => i.status === 'INATIVO').length}
-          activeLabel='Instrutores Ativos'
-          inactiveLabel='Instrutores Inativos'
-        />
 
         <Card>
           <CardHeader
@@ -315,7 +306,7 @@ export default function AdminInstructors() {
           />
           <CardContent>
             {filtered.length === 0 ? (
-              <Alert severity='info' sx={{ mt: 2 }}>
+              <Alert severity='info'>
                 {tab === 'all'
                   ? 'Nenhum instrutor cadastrado. Clique em "Adicionar Instrutor" para começar.'
                   : `Nenhum instrutor ${tab === 'active' ? 'ativo' : 'desabilitado'} encontrado.`}

@@ -264,7 +264,6 @@ export default function AdminUsers() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 3,
           }}
         >
           <StatusFilterTabs
@@ -300,7 +299,7 @@ export default function AdminUsers() {
           />
           <CardContent>
             {filtered.length === 0 ? (
-              <Alert severity='info' sx={{ mt: 2 }}>
+              <Alert severity='info'>
                 {tab === 'all'
                   ? 'Nenhum usuário cadastrado. Clique em "Adicionar Usuário" para começar.'
                   : `Nenhum usuário ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}

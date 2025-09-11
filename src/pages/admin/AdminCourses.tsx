@@ -37,6 +37,7 @@ import {
 import { useMemo, useState } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
+import CourseDetailsDialog from '@/components/admin/CourseDetailsDialog'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCatalogoCursos,
@@ -144,6 +145,7 @@ export default function AdminCourses() {
   
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
+  const [selectedCourse, setSelectedCourse] = useState<CursoMetricas | null>(null)
   const [filtros, setFiltros] = useState<Filtros>({
     categoria: 'all',
     instrutor: 'all',
@@ -208,7 +210,7 @@ export default function AdminCourses() {
 
   if (loadingCursos || loadingCategorias) {
     return (
-      <DashboardLayout title="Acompanhar Cursos" items={navigationItems}>
+      <DashboardLayout title="Cursos" items={navigationItems}>
         <Box>
           <Skeleton variant="rectangular" height={300} />
         </Box>
@@ -217,88 +219,11 @@ export default function AdminCourses() {
   }
 
   return (
-    <DashboardLayout title="Acompanhar Cursos" items={navigationItems}>
+    <DashboardLayout title="Cursos" items={navigationItems}>
       <Box>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 3,
-          }}
-        >
-          <Button
-            href="/dashboard/admin"
-            startIcon={<ArrowBackIcon />}
-            variant="outlined"
-          >
-            Voltar ao Dashboard
-          </Button>
-          <Typography variant="h6" fontWeight={600}>
-            Métricas e Acompanhamento de Cursos
-          </Typography>
-        </Box>
-
-        {/* Cards de Estatísticas Gerais */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Paper sx={{ p: 2, textAlign: 'center' }}>
-              <SchoolIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h4" fontWeight={600}>
-                {estatisticas.totalCursos}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Cursos Disponíveis
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Paper sx={{ p: 2, textAlign: 'center' }}>
-              <GroupIcon sx={{ fontSize: 40, color: 'info.main', mb: 1 }} />
-              <Typography variant="h4" fontWeight={600}>
-                {estatisticas.totalInscritos}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total de Inscritos
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Paper sx={{ p: 2, textAlign: 'center' }}>
-              <CheckCircleIcon sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
-              <Typography variant="h4" fontWeight={600}>
-                {Math.round(estatisticas.taxaMediaConclusao)}%
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Taxa de Conclusão
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Paper sx={{ p: 2, textAlign: 'center' }}>
-              <StarIcon sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
-              <Typography variant="h4" fontWeight={600}>
-                {estatisticas.avaliacaoMedia.toFixed(1)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Avaliação Média
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
 
         {/* Filtros */}
-        <Card sx={{ mb: 3 }}>
-          <CardHeader
-            title={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FilterAltIcon fontSize="small" />
-                Filtros
-              </Box>
-            }
-          />
-          <CardContent>
-            <Grid container spacing={2}>
+            <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid size={{ xs: 12, md: 3 }}>
                 <FormControl fullWidth>
                   <InputLabel>Categoria</InputLabel>
@@ -355,8 +280,6 @@ export default function AdminCourses() {
                 </FormControl>
               </Grid>
             </Grid>
-          </CardContent>
-        </Card>
 
         {/* Tabs de Status */}
         <StatusFilterTabs
@@ -380,7 +303,7 @@ export default function AdminCourses() {
           />
           <CardContent>
             {filtered.length === 0 ? (
-              <Alert severity="info" sx={{ mt: 2 }}>
+              <Alert severity="info">
                 {tab === 'all' 
                   ? 'Nenhum curso encontrado com os filtros selecionados.'
                   : `Nenhum curso ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
@@ -401,7 +324,12 @@ export default function AdminCourses() {
                 </TableHead>
                 <TableBody>
                   {filtered.map((curso) => (
-                    <TableRow key={curso.id} hover>
+                    <TableRow 
+                      key={curso.id} 
+                      hover 
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => setSelectedCourse(curso)}
+                    >
                       <TableCell>
                         <Box>
                           <Typography variant="body2" fontWeight={500}>
@@ -498,6 +426,13 @@ export default function AdminCourses() {
             )}
           </CardContent>
         </Card>
+
+        {/* Dialog de Detalhes do Curso */}
+        <CourseDetailsDialog
+          open={!!selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+          curso={selectedCourse as any}
+        />
       </Box>
     </DashboardLayout>
   )
