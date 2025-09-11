@@ -43,13 +43,9 @@ export default function AdminDashboard() {
   const engajamentoDepartamento = dashboardData?.engajamento_departamento || [];
 
   // Dados para gráficos
-  const departmentChartData = engajamentoDepartamento.map(dept => dept.total_funcionarios);
+  const funcionariosAtivosData = engajamentoDepartamento.map(dept => dept.funcionarios_ativos);
   const inscricoesChartData = engajamentoDepartamento.map(dept => dept.total_inscricoes);
-  
-  // Taxa de conclusão média dos departamentos ativos
-  const taxaConclusaoData = engajamentoDepartamento
-    .filter(dept => dept.total_funcionarios > 0)
-    .map(dept => dept.taxa_conclusao * 100);
+  const departmentLabels = engajamentoDepartamento.map(dept => dept.departamento);
 
   return (
     <DashboardLayout title="Dashboard Administrativo" items={navigationItems}>
@@ -94,23 +90,44 @@ export default function AdminDashboard() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Funcionários por Departamento
+                Funcionários Ativos por Departamento
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Distribuição dos funcionários por departamento
+                Número de funcionários ativos em cada departamento
               </Typography>
-              <SimpleBarChart data={departmentChartData} />
+              <SimpleBarChart data={funcionariosAtivosData} />
+              <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {departmentLabels.map((label, index) => (
+                  <Chip 
+                    key={label} 
+                    label={`${label}: ${funcionariosAtivosData[index]}`} 
+                    size="small" 
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
             </Paper>
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Inscrições por Departamento
+                Total de Inscrições por Departamento
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Número de inscrições em cursos por departamento
+                Número total de inscrições em cursos por departamento
               </Typography>
               <SimpleAreaChart data={inscricoesChartData} color="#10B981" />
+              <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {departmentLabels.map((label, index) => (
+                  <Chip 
+                    key={label} 
+                    label={`${label}: ${inscricoesChartData[index]}`} 
+                    size="small" 
+                    variant="outlined"
+                    color={inscricoesChartData[index] > 0 ? "primary" : "default"}
+                  />
+                ))}
+              </Box>
             </Paper>
           </Grid>
         </Grid>
@@ -173,16 +190,17 @@ export default function AdminDashboard() {
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Engajamento por Departamento
+                Métricas Completas por Departamento
               </Typography>
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
                       <TableCell>Departamento</TableCell>
-                      <TableCell align="right">Funcionários</TableCell>
-                      <TableCell align="right">Ativos</TableCell>
+                      <TableCell align="right">Total Func.</TableCell>
+                      <TableCell align="right">Func. Ativos</TableCell>
                       <TableCell align="right">Inscrições</TableCell>
+                      <TableCell align="right">Taxa Conclusão</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -213,6 +231,14 @@ export default function AdminDashboard() {
                           <Typography variant="body2" color="primary">
                             {dept.total_inscricoes}
                           </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Chip
+                            label={`${(dept.taxa_conclusao * 100).toFixed(1)}%`}
+                            size="small"
+                            color={dept.taxa_conclusao > 0.7 ? "success" : dept.taxa_conclusao > 0.4 ? "warning" : dept.taxa_conclusao > 0 ? "error" : "default"}
+                            variant={dept.taxa_conclusao > 0 ? "filled" : "outlined"}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
