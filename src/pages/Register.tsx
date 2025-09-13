@@ -34,7 +34,7 @@ const Register = () => {
     nome: '',
     email: '',
     departamento_id: '',
-    cargo: '',
+    cargo_nome: '',
   })
 
   const [selectedDepartamento, setSelectedDepartamento] = useState<any>(null)
@@ -52,7 +52,7 @@ const Register = () => {
     const submitData = {
       ...formData,
       departamento_id: selectedDepartamento.codigo,
-      cargo: selectedCargo.nome,
+      cargo_nome: selectedCargo.nome,
     }
 
     try {
