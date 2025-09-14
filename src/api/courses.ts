@@ -2,34 +2,38 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authGet, authPost, authPatch, authPut } from './http';
 import { API_ENDPOINTS } from './config';
 
-// Types
+// Types alinhados com schema do banco
 export interface Category {
-  id: string;
-  codigo: string;
+  codigo: string;   // PRIMARY KEY no schema
   nome: string;
   descricao?: string;
+  departamento_codigo?: string;  // REFERENCES departamentos(codigo)
   cor_hex?: string;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 export interface CreateCategoryInput {
   codigo: string;
   nome: string;
   descricao?: string;
+  departamento_codigo?: string;
   cor_hex?: string;
 }
 
 export interface Course {
-  id: string;
-  codigo: string;
+  codigo: string;   // PRIMARY KEY no schema
   titulo: string;
   descricao?: string;
-  categoria_id?: string;
-  instrutor_id?: string;
+  categoria_id?: string;        // REFERENCES categorias(codigo)
+  instrutor_id?: string;        // REFERENCES instrutores(funcionario_id)
   duracao_estimada?: number;
   xp_oferecido?: number;
-  nivel_dificuldade?: 'Básico' | 'Intermediário' | 'Avançado';
-  pre_requisitos?: string[];
+  nivel_dificuldade?: string;
   ativo: boolean;
+  pre_requisitos?: string[];
+  criado_em: string;
+  atualizado_em: string;
 }
 
 export interface CreateCourseInput {
@@ -40,7 +44,7 @@ export interface CreateCourseInput {
   instrutor_id?: string;
   duracao_estimada?: number;
   xp_oferecido?: number;
-  nivel_dificuldade?: 'Básico' | 'Intermediário' | 'Avançado';
+  nivel_dificuldade?: string;
   pre_requisitos?: string[];
 }
 
@@ -50,7 +54,7 @@ export interface UpdateCourseInput {
   categoria_id?: string;
   duracao_estimada?: number;
   xp_oferecido?: number;
-  nivel_dificuldade?: 'Básico' | 'Intermediário' | 'Avançado';
+  nivel_dificuldade?: string;
 }
 
 export interface Module {

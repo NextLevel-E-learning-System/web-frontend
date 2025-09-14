@@ -2,13 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authGet, authPost, authPut, authPatch, authDelete } from './http';
 import { API_ENDPOINTS } from './config';
 
-// Types
+// Types alinhados com o schema do banco de dados
 export interface Departamento {
   codigo: string;
   nome: string;
   descricao?: string | null;
   gestor_funcionario_id?: string | null;
   ativo: boolean;
+  inactivated_at?: string | null;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 export interface DepartamentoCreate {
@@ -25,11 +28,14 @@ export interface DepartamentoUpdate {
 }
 
 export interface Cargo {
-  id: string;
+  codigo: string;  // PRIMARY KEY no schema
   nome: string;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 export interface CargoCreate {
+  codigo: string;  // Requer codigo como PK
   nome: string;
 }
 
@@ -37,21 +43,29 @@ export interface CargoUpdate {
   nome?: string;
 }
 
+// Schema do banco: funcionarios referencia cargo_nome, não cargo_id
 export interface Funcionario {
   id: string;
-  email: string;
+  auth_user_id?: string;
+  cpf?: string;
   nome: string;
-  cargo_id?: string | null;
-  departamento_codigo?: string | null;
-  tipo_usuario: 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN';
-  status: 'ATIVO' | 'INATIVO';
+  email: string;
+  departamento_id?: string | null;  // references departamentos(codigo)
+  cargo_nome?: string | null;       // references cargos(nome) - não cargo_id!
+  xp_total: number;
+  nivel: string;
+  ativo: boolean;
+  inactivated_at?: string | null;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 export interface FuncionarioRegister {
-  email: string;
+  cpf?: string;
   nome: string;
-  cargo_id?: string | null;
-  departamento_codigo?: string | null;
+  email: string;
+  departamento_id?: string | null;
+  cargo_nome?: string | null;      // Corrigido para cargo_nome
 }
 
 export interface UpdateRoleInput {

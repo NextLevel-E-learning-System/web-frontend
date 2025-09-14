@@ -2,15 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authGet, authPost, authPatch } from './http';
 import { API_ENDPOINTS } from './config';
 
-// Types
+// Types alinhados com schema do banco
 export interface Assessment {
-  id: string;
-  codigo: string;
-  curso_id: string;
+  codigo: string;               // PRIMARY KEY no schema
+  curso_id: string;            // REFERENCES cursos(codigo)
   titulo: string;
   tempo_limite?: number;
   tentativas_permitidas?: number;
   nota_minima?: number;
+  ativo: boolean;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 export interface CreateAssessmentInput {
@@ -24,16 +26,19 @@ export interface CreateAssessmentInput {
 
 export interface Question {
   id: string;
+  avaliacao_id: string;        // REFERENCES avaliacoes(codigo)
+  tipo_questao: string;
   enunciado: string;
-  tipo: 'MULTIPLA_ESCOLHA' | 'VERDADEIRO_FALSO' | 'DISSERTATIVA';
   opcoes_resposta?: string[];
   resposta_correta?: string;
-  peso?: number;
+  peso: number;
+  criado_em: string;
 }
 
 export interface CreateQuestionInput {
+  avaliacao_id: string;
+  tipo_questao: string;
   enunciado: string;
-  tipo: 'MULTIPLA_ESCOLHA' | 'VERDADEIRO_FALSO' | 'DISSERTATIVA';
   opcoes_resposta?: string[];
   resposta_correta?: string;
   peso?: number;
@@ -52,21 +57,30 @@ export interface CreateAlternativeInput {
 
 export interface Attempt {
   id: string;
-  userId: string;
-  assessmentId: string;
-  started_at: string;
-  ended_at?: string;
-  status: 'EM_ANDAMENTO' | 'CONCLUIDA' | 'EXPIRADA';
-  recovery?: string;
+  funcionario_id: string;      // REFERENCES funcionarios(id)
+  avaliacao_id: string;        // REFERENCES avaliacoes(codigo)
+  data_inicio: string;
+  data_fim?: string;
+  nota_obtida?: number;
+  status: string;              // 'EM_ANDAMENTO' | 'CONCLUIDA' | 'EXPIRADA'
+  criado_em: string;
 }
 
 export interface StartAttemptInput {
-  userId?: string;
+  avaliacao_id: string;
+}
+
+export interface Answer {
+  id: string;
+  tentativa_id: string;        // REFERENCES tentativas(id)
+  questao_id: string;          // REFERENCES questoes(id)
+  resposta_funcionario?: string;
+  pontuacao?: number;
+  criado_em: string;
 }
 
 export interface SubmitAnswersInput {
-  userId: string;
-  attemptId: string;
+  tentativa_id: string;
   respostas: Array<{
     questao_id: string;
     resposta: string;
@@ -184,7 +198,7 @@ export function useStartAttempt(codigo: string) {
   
   return useMutation({
     mutationKey: ['assessments', 'attempts', 'start', codigo],
-    mutationFn: (input: StartAttemptInput = {}) =>
+    mutationFn: (input: StartAttemptInput) =>
       authPost<Attempt>(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}/attempts/start`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] });
