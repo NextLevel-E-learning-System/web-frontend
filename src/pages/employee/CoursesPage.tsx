@@ -508,6 +508,7 @@ export default function CoursesPage() {
               </Box>
             </Box>
           </CardContent>
+          </Box>
         </Card>
       </Box>
     )

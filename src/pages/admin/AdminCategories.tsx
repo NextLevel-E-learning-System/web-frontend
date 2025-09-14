@@ -37,12 +37,8 @@ import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarCategorias,
   useListarDepartamentos,
-  useCriarCategoria,
-  useAtualizarCategoria,
-  type Categoria,
-  type Departamento,
+
 } from '@/hooks/users'
 
 interface CategoryForm {
@@ -53,16 +49,9 @@ interface CategoryForm {
 
 export default function AdminCategories() {
   const { navigationItems } = useNavigation()
-  const {
-    data: categorias = [],
-    isLoading: loadingCategorias,
-    refetch: refetchCategorias,
-  } = useListarCategorias()
+
   const { data: departamentos = [], isLoading: loadingDepartamentos } =
     useListarDepartamentos()
-  const criarCategoria = useCriarCategoria()
-  const [editingCat, setEditingCat] = useState<Categoria | null>(null)
-  const atualizarCategoria = useAtualizarCategoria(editingCat?.id || '')
 
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -72,93 +61,13 @@ export default function AdminCategories() {
     descricao: '',
   })
 
-  const title = useMemo(
-    () => (editingCat ? 'Editar Categoria' : 'Gerenciar Categorias'),
-    [editingCat]
-  )
 
-  // Filtrar categorias por departamento
-  const filteredCategories =
-    selectedDept === 'all'
-      ? categorias
-      : categorias.filter(c => c.departamento_codigo === selectedDept)
-
-  const resetForm = () => {
-    setForm({
-      nome: '',
-      departamento_codigo: '',
-      descricao: '',
-    })
-  }
-
-  const openAdd = () => {
-    resetForm()
-    setEditingCat(null)
-    setIsAddOpen(true)
-  }
-
-  const handleAdd = async () => {
-    if (!form.nome.trim() || !form.departamento_codigo.trim()) {
-      toast.error('Nome e Departamento são obrigatórios')
-      return
-    }
-
-    try {
-      await criarCategoria.mutateAsync({
-        nome: form.nome.trim(),
-        departamento_codigo: form.departamento_codigo.trim(),
-        descricao: form.descricao.trim() || undefined,
-      })
-
-      toast.success('Categoria criada com sucesso!')
-      setIsAddOpen(false)
-      resetForm()
-      refetchCategorias()
-    } catch (error) {
-      toast.error('Erro ao criar categoria')
-      console.error(error)
-    }
-  }
-
-  const handleEdit = (cat: Categoria) => {
-    setEditingCat(cat)
-    setForm({
-      nome: cat.nome,
-      departamento_codigo: cat.departamento_codigo,
-      descricao: cat.descricao || '',
-    })
-  }
-
-  const handleUpdate = async () => {
-    if (!form.nome.trim() || !form.departamento_codigo.trim()) {
-      toast.error('Nome e Departamento são obrigatórios')
-      return
-    }
-
-    if (!editingCat) return
-
-    try {
-      await atualizarCategoria.mutateAsync({
-        nome: form.nome.trim(),
-        departamento_codigo: form.departamento_codigo.trim(),
-        descricao: form.descricao.trim() || undefined,
-      })
-
-      toast.success('Categoria atualizada com sucesso!')
-      setEditingCat(null)
-      resetForm()
-      refetchCategorias()
-    } catch (error) {
-      toast.error('Erro ao atualizar categoria')
-      console.error(error)
-    }
-  }
 
   const getDepartmentName = (codigo: string) => {
     return departamentos.find(d => d.codigo === codigo)?.nome || codigo
   }
 
-  if (loadingCategorias || loadingDepartamentos) {
+  if (loadingDepartamentos) {
     return (
       <DashboardLayout title='Gerenciar Categorias' items={navigationItems}>
         <Box>
@@ -169,7 +78,7 @@ export default function AdminCategories() {
   }
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout title={'Gerenciar Categorias'} items={navigationItems}>
       <Box>
         <Box
           sx={{
@@ -197,10 +106,8 @@ export default function AdminCategories() {
             </Select>
           </FormControl>
           <Button
-            onClick={openAdd}
             startIcon={<AddIcon />}
             variant='contained'
-            disabled={criarCategoria.isPending}
           >
             Adicionar Categoria
           </Button>
@@ -214,16 +121,9 @@ export default function AdminCategories() {
                 Lista de Categorias
               </Typography>
             }
-            subheader={`${filteredCategories.length} categorias encontradas`}
           />
           <CardContent>
-            {filteredCategories.length === 0 ? (
-              <Alert severity='info' sx={{ mt: 2 }}>
-                {selectedDept === 'all'
-                  ? 'Nenhuma categoria cadastrada. Clique em "Adicionar Categoria" para começar.'
-                  : 'Nenhuma categoria encontrada para este departamento.'}
-              </Alert>
-            ) : (
+       
               <Table size='small'>
                 <TableHead>
                   <TableRow>
@@ -234,8 +134,7 @@ export default function AdminCategories() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredCategories.map(cat => (
-                    <TableRow key={cat.id} hover>
+                    <TableRow hover>
                       <TableCell>
                         <Box
                           sx={{
@@ -245,21 +144,18 @@ export default function AdminCategories() {
                           }}
                         >
                           <Chip
-                            label={cat.id}
                             size='small'
                             color='primary'
                             variant='outlined'
                           />
-                          <Typography fontWeight={500}>{cat.nome}</Typography>
+                          <Typography fontWeight={500}></Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight={500}>
-                            {getDepartmentName(cat.departamento_codigo)}
                           </Typography>
                           <Typography variant='caption' color='text.secondary'>
-                            {cat.departamento_codigo}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -274,13 +170,11 @@ export default function AdminCategories() {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {cat.descricao || '—'}
                         </Typography>
                       </TableCell>
                       <TableCell align='right'>
                         <IconButton
                           size='small'
-                          onClick={() => handleEdit(cat)}
                           aria-label='editar'
                         >
                           <EditIcon />
@@ -290,7 +184,6 @@ export default function AdminCategories() {
                           onClick={() => {
                             if (
                               confirm(
-                                `Tem certeza que deseja excluir a categoria "${cat.nome}"?`
                               )
                             ) {
                               // TODO: Implementar exclusão quando endpoint estiver disponível
@@ -306,10 +199,8 @@ export default function AdminCategories() {
                         </IconButton>
                       </TableCell>
                     </TableRow>
-                  ))}
                 </TableBody>
               </Table>
-            )}
           </CardContent>
         </Card>
 
@@ -379,27 +270,22 @@ export default function AdminCategories() {
             <Button
               variant='outlined'
               onClick={() => setIsAddOpen(false)}
-              disabled={criarCategoria.isPending}
             >
               Cancelar
             </Button>
             <Button
               variant='contained'
-              onClick={handleAdd}
-              disabled={criarCategoria.isPending}
+             
             >
-              {criarCategoria.isPending ? 'Criando...' : 'Adicionar'}
             </Button>
           </DialogActions>
         </Dialog>
 
         {/* Dialog Editar Categoria */}
         <Dialog
-          open={!!editingCat}
-          onClose={() => setEditingCat(null)}
+          
           maxWidth='sm'
-          fullWidth
-        >
+          fullWidth open={false}        >
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EditIcon />
@@ -457,17 +343,14 @@ export default function AdminCategories() {
           <DialogActions>
             <Button
               variant='outlined'
-              onClick={() => setEditingCat(null)}
-              disabled={atualizarCategoria.isPending}
+            
             >
               Cancelar
             </Button>
             <Button
               variant='contained'
-              onClick={handleUpdate}
-              disabled={atualizarCategoria.isPending}
+            
             >
-              {atualizarCategoria.isPending ? 'Atualizando...' : 'Atualizar'}
             </Button>
           </DialogActions>
         </Dialog>

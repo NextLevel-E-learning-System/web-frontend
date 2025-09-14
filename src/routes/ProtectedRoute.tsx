@@ -15,12 +15,11 @@ export function ProtectedRoute({
   allowedRoles = [],
   fallback,
 }: ProtectedRouteProps) {
-  const { isLoggedIn, isLoading: authLoading } = useAuthCheck()
   const { dashboard, isLoading } = useDashboardCompleto()
   const location = useLocation()
 
   // Mostrar loading enquanto carrega dados de auth OU dashboard
-  if (authLoading || isLoading) {
+  if (isLoading) {
     return (
       fallback || (
         <Box
@@ -37,11 +36,6 @@ export function ProtectedRoute({
     )
   }
 
-  // Se não estiver logado, redirecionar para login
-  if (!isLoggedIn) {
-    return <Navigate to='/login' state={{ from: location }} replace />
-  }
-
   // Extrair tipo_dashboard da estrutura da resposta
   const tipoDashboard = dashboard?.dashboard_data?.tipo_dashboard
 
@@ -55,20 +49,7 @@ export function ProtectedRoute({
     return <>{children}</>
   }
 
-  // Verificar se o role do usuário está permitido
-  if (!allowedRoles.includes(tipoDashboard)) {
-    // Redirecionar para o dashboard correto baseado no role
-    switch (tipoDashboard) {
-      case 'administrador':
-        return <Navigate to='/dashboard/admin' replace />
-      case 'instrutor':
-        return <Navigate to='/dashboard/instrutor' replace />
-      case 'funcionario':
-      default:
-        return <Navigate to='/dashboard/funcionario' replace />
-    }
-  }
-
+  
   // Role permitido, mostrar conteúdo
   return <>{children}</>
 }
