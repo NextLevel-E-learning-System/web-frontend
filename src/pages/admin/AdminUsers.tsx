@@ -41,15 +41,17 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarUsuarios,
   useListarDepartamentos,
   useListarCargos,
-  useCriarUsuario,
-  useAtualizarUsuario,
-  useExcluirUsuario,
-  type UsuarioResumo,
-  type CriarUsuarioInput,
-  type AtualizacaoAdmin,
+  useFuncionarios,
+  useRegisterFuncionario,
+  useUpdateFuncionarioRole,
+  useDeleteFuncionario,
+  type PerfilUsuario,
+  type FuncionarioRegister,
+  type UpdateRoleInput,
+  type UserRole,
+  type Funcionario,
 } from '@/hooks/users'
 
 interface UserForm {
@@ -57,26 +59,31 @@ interface UserForm {
   cpf: string
   email: string
   departamento_id: string
-  cargo: string
-  tipo_usuario: 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN'
+  cargo_nome: string
+  tipo_usuario: UserRole
   status: 'ATIVO' | 'INATIVO'
   biografia: string
 }
 
+// Interface estendida para o frontend incluir tipo_usuario
+interface FuncionarioWithRole extends Funcionario {
+  tipo_usuario?: UserRole
+}
+
 export default function AdminUsers() {
-  const { navigationItems } = useNavigation()
+  const { navigationItems, user, isGerente, isAdmin } = useNavigation()
   const {
-    data: usuarios = { items: [] },
+    data: usuarios = [],
     isLoading: loadingUsers,
     refetch: refetchUsers,
-  } = useListarUsuarios()
+  } = useFuncionarios()
   const { data: departamentos = [], isLoading: loadingDepartments } =
     useListarDepartamentos()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
-  const criarUsuario = useCriarUsuario()
-  const [editingUser, setEditingUser] = useState<UsuarioResumo | null>(null)
-  const atualizarUsuario = useAtualizarUsuario(editingUser?.id || '')
-  const excluirUsuario = useExcluirUsuario()
+  const criarUsuario = useRegisterFuncionario()
+  const [editingUser, setEditingUser] = useState<PerfilUsuario | null>(null)
+  const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '')
+  const excluirUsuario = useDeleteFuncionario()
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -85,23 +92,35 @@ export default function AdminUsers() {
     cpf: '',
     email: '',
     departamento_id: '',
-    cargo: '',
-    tipo_usuario: 'FUNCIONARIO',
+    cargo_nome: '',
+    tipo_usuario: 'ALUNO',
     status: 'ATIVO',
     biografia: '',
   })
 
-  const title = useMemo(
-    () => (editingUser ? 'Editar Usuário' : 'Gerenciar Usuários'),
-    [editingUser]
-  )
+  // Título dinâmico baseado na role
+  const title = useMemo(() => {
+    if (editingUser) return 'Editar Usuário'
+    if (isGerente) return `Funcionários - Departamento ${user?.departamento_id || ''}`
+    return 'Gerenciar Usuários'
+  }, [editingUser, isGerente, user?.departamento_id])
+
+  // Filtrar usuários: GERENTE vê apenas do seu departamento, ADMIN vê todos
+  const allUsers = useMemo(() => {
+    if (!usuarios) return []
+    
+    if (isGerente && user?.departamento_id) {
+      return usuarios.filter(u => u.departamento_id === user.departamento_id)
+    }
+    
+    return usuarios
+  }, [usuarios, isGerente, user?.departamento_id])
 
   // Filtrar usuários por status
-  const allUsers = usuarios.items || []
   const filtered = allUsers.filter(user => {
     if (tab === 'all') return true
-    if (tab === 'active') return user.status === 'ATIVO'
-    return user.status === 'INATIVO'
+    if (tab === 'active') return user.ativo === true
+    return user.ativo === false
   })
 
   const resetForm = () => {
@@ -110,8 +129,8 @@ export default function AdminUsers() {
       cpf: '',
       email: '',
       departamento_id: '',
-      cargo: '',
-      tipo_usuario: 'FUNCIONARIO',
+      cargo_nome: '',
+      tipo_usuario: 'ALUNO',
       status: 'ATIVO',
       biografia: '',
     })
@@ -135,39 +154,36 @@ export default function AdminUsers() {
     }
 
     try {
-      const input: CriarUsuarioInput = {
+      const input: FuncionarioRegister = {
         nome: form.nome.trim(),
         cpf: form.cpf.trim(),
         email: form.email.trim(),
         departamento_id: form.departamento_id.trim(),
-        cargo: form.cargo.trim() || undefined,
-        tipo_usuario: form.tipo_usuario,
-        status: form.status,
-        biografia: form.biografia.trim() || undefined,
+        cargo_nome: form.cargo_nome.trim() || undefined,
       }
 
       await criarUsuario.mutateAsync(input)
 
-      toast.success('Usuário criado com sucesso!')
+      toast.success('Funcionário criado com sucesso!')
       setIsAddOpen(false)
       resetForm()
       refetchUsers()
     } catch (error) {
-      toast.error('Erro ao criar usuário')
+      toast.error('Erro ao criar funcionário')
       console.error(error)
     }
   }
 
-  const handleEdit = (user: UsuarioResumo) => {
+  const handleEdit = (user: PerfilUsuario) => {
     setEditingUser(user)
     setForm({
       nome: user.nome,
       cpf: '', // CPF não é retornado na listagem por segurança
       email: user.email,
       departamento_id: user.departamento_id || '',
-      cargo: user.cargo || '',
-      tipo_usuario: user.tipo_usuario || 'FUNCIONARIO',
-      status: user.status || 'ATIVO',
+      cargo_nome: user.cargo_nome || '',
+      tipo_usuario: user.tipo_usuario || 'ALUNO',
+      status: user.ativo ? 'ATIVO' : 'INATIVO',
       biografia: '',
     })
   }
@@ -181,24 +197,19 @@ export default function AdminUsers() {
     if (!editingUser) return
 
     try {
-      const input: AtualizacaoAdmin = {
-        nome: form.nome.trim(),
-        email: form.email.trim(),
-        departamento_id: form.departamento_id.trim() || undefined,
-        cargo: form.cargo.trim() || undefined,
-        tipo_usuario: form.tipo_usuario,
-        status: form.status,
-        biografia: form.biografia.trim() || undefined,
+      // Para atualizar role, usamos API específica de role
+      const input: UpdateRoleInput = {
+        role: form.tipo_usuario,
       }
 
       await atualizarUsuario.mutateAsync(input)
 
-      toast.success('Usuário atualizado com sucesso!')
+      toast.success('Role do funcionário atualizada com sucesso!')
       setEditingUser(null)
       resetForm()
       refetchUsers()
     } catch (error) {
-      toast.error('Erro ao atualizar usuário')
+      toast.error('Erro ao atualizar funcionário')
       console.error(error)
     }
   }
@@ -220,8 +231,8 @@ export default function AdminUsers() {
     return departamentos.find(d => d.codigo === id)?.nome || id
   }
 
-  const getCargoName = (id: string) => {
-    return cargos.find(c => c.id === id)?.nome || id
+  const getCargoName = (codigo: string) => {
+    return cargos.find(c => c.codigo === codigo)?.nome || codigo
   }
 
   const getUserTypeIcon = (tipo: string) => {
@@ -269,8 +280,8 @@ export default function AdminUsers() {
           <StatusFilterTabs
             value={tab}
             onChange={setTab}
-            activeCount={allUsers.filter(u => u.status === 'ATIVO').length}
-            inactiveCount={allUsers.filter(u => u.status === 'INATIVO').length}
+            activeCount={allUsers.filter(u => u.ativo === true).length}
+            inactiveCount={allUsers.filter(u => u.ativo === false).length}
             activeLabel='Usuários Ativos'
             inactiveLabel='Usuários Inativos'
           />
@@ -348,18 +359,18 @@ export default function AdminUsers() {
                           : '—'}
                       </TableCell>
                       <TableCell>
-                        {user.cargo ? getCargoName(user.cargo) : '—'}
+                        {user.cargo_nome ? getCargoName(user.cargo_nome) : '—'}
                       </TableCell>
                       <TableCell>
                         <Chip
                           icon={getUserTypeIcon(
-                            user.tipo_usuario || 'FUNCIONARIO'
+                            (user as FuncionarioWithRole).tipo_usuario || 'FUNCIONARIO'
                           )}
                           variant='outlined'
-                          label={user.tipo_usuario || 'FUNCIONARIO'}
+                          label={(user as FuncionarioWithRole).tipo_usuario || 'FUNCIONARIO'}
                           color={
                             getUserTypeColor(
-                              user.tipo_usuario || 'FUNCIONARIO'
+                              (user as FuncionarioWithRole).tipo_usuario || 'FUNCIONARIO'
                             ) as any
                           }
                           size='small'
@@ -369,9 +380,9 @@ export default function AdminUsers() {
                         <Chip
                           size='small'
                           color={
-                            user.status === 'ATIVO' ? 'success' : 'default'
+                            user.ativo ? 'success' : 'default'
                           }
-                          label={user.status || 'ATIVO'}
+                          label={user.ativo ? 'ATIVO' : 'INATIVO'}
                         />
                       </TableCell>
                       <TableCell align='right'>
@@ -468,15 +479,15 @@ export default function AdminUsers() {
                 <FormControl fullWidth>
                   <InputLabel>Cargo</InputLabel>
                   <Select
-                    value={form.cargo}
-                    onChange={e => setForm({ ...form, cargo: e.target.value })}
+                    value={form.cargo_nome}
+                    onChange={e => setForm({ ...form, cargo_nome: e.target.value })}
                     label='Cargo'
                   >
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
                     {cargos.map(cargo => (
-                      <MenuItem key={cargo.id} value={cargo.id}>
+                      <MenuItem key={cargo.codigo} value={cargo.codigo}>
                         {cargo.nome}
                       </MenuItem>
                     ))}
@@ -609,15 +620,15 @@ export default function AdminUsers() {
                 <FormControl fullWidth>
                   <InputLabel>Cargo</InputLabel>
                   <Select
-                    value={form.cargo}
-                    onChange={e => setForm({ ...form, cargo: e.target.value })}
+                    value={form.cargo_nome}
+                    onChange={e => setForm({ ...form, cargo_nome: e.target.value })}
                     label='Cargo'
                   >
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
                     {cargos.map(cargo => (
-                      <MenuItem key={cargo.id} value={cargo.id}>
+                      <MenuItem key={cargo.codigo} value={cargo.codigo}>
                         {cargo.nome}
                       </MenuItem>
                     ))}

@@ -17,6 +17,21 @@ import {
   ResetPasswordResponse
 } from '@/api/users'
 
+// Re-exportar tipos importantes para uso nos componentes
+export type {
+  Departamento,
+  DepartamentoCreate,
+  DepartamentoUpdate,
+  Cargo,
+  CargoCreate,
+  CargoUpdate,
+  Funcionario,
+  FuncionarioRegister,
+  UpdateRoleInput,
+  ResetPasswordInput,
+  ResetPasswordResponse
+}
+
 // Tipos para as 4 roles do sistema
 export type UserRole = 'ALUNO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE';
 
@@ -38,6 +53,9 @@ export interface PerfilUsuario extends UsuarioResumo {
   criado_em?: string
   atualizado_em?: string
   tipo_usuario?: UserRole  // Adicionando o tipo de usuário
+  cargo_nome?: string     // Compatibilidade com Funcionario
+  xp_total?: number       // Compatibilidade com Funcionario
+  nivel?: string          // Compatibilidade com Funcionario
 }
 
 // Tipos para dashboard baseado em roles
@@ -162,6 +180,18 @@ export function useResetPassword() {
     mutationKey: ['users', 'funcionarios', 'reset-password'],
     mutationFn: (input: ResetPasswordInput) =>
       authPost<ResetPasswordResponse>(`${API_ENDPOINTS.USERS}/funcionarios/reset-password`, input)
+  })
+}
+
+export function useDeleteFuncionario() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['users', 'funcionarios', 'delete'],
+    mutationFn: (funcionarioId: string) =>
+      authDelete(`${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
+    }
   })
 }
 

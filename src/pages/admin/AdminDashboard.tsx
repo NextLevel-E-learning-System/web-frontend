@@ -12,6 +12,7 @@ import {
   Chip,
   Tabs,
   Tab,
+  Alert,
 } from '@mui/material'
 import { People, School, Assignment, CheckCircle } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -19,18 +20,26 @@ import { useNavigation } from '@/hooks/useNavigation'
 import StatCard from '@/components/admin/StatCard'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
-import { useDashboard } from '@/hooks/users'
+import { useDashboardCompleto } from '@/hooks/users'
 import { useState } from 'react'
 
 export default function AdminDashboard() {
-  const { navigationItems } = useNavigation()
-  const { data: dashboardResponse } = useDashboard()
+  const { navigationItems, user, isGerente, isAdmin } = useNavigation()
   const [rankingTab, setRankingTab] = useState(0)
+  
+  // GERENTE: filtra por seu departamento_id, ADMIN: vê tudo
+  const departamentoFiltro = isGerente ? user?.departamento_id : undefined
+  const { dashboard, isLoading } = useDashboardCompleto(departamentoFiltro)
 
-  const dashboardData = dashboardResponse?.dashboard_data
+  const dashboardData = dashboard?.dashboard_data
   const metricas = dashboardData?.metricas_gerais
   const cursosPopulares = dashboardData?.cursos_populares || []
   const engajamentoDepartamento = dashboardData?.engajamento_departamento || []
+
+  // Título dinâmico baseado na role
+  const pageTitle = isGerente 
+    ? `Dashboard - Departamento ${user?.departamento_id || ''}` 
+    : 'Dashboard Administrativo'
 
   // Dados para gráficos
   const funcionariosAtivosData = engajamentoDepartamento.map(
@@ -46,9 +55,23 @@ export default function AdminDashboard() {
     dept => dept.nome_departamento
   )
 
+  if (isLoading) {
+    return (
+      <DashboardLayout title={pageTitle} items={navigationItems}>
+        <Box>Carregando dashboard...</Box>
+      </DashboardLayout>
+    )
+  }
+
   return (
-    <DashboardLayout title='Dashboard Administrativo' items={navigationItems}>
+    <DashboardLayout title={pageTitle} items={navigationItems}>
       <Box>
+        {/* Alert para GERENTE indicando filtro */}
+        {isGerente && (
+          <Alert severity="info" sx={{ mb: 3 }}>
+            Visualizando dados do departamento: {user?.departamento_id || 'Não definido'}
+          </Alert>
+        )}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard

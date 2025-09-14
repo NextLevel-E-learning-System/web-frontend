@@ -18,17 +18,20 @@ import { useMeuPerfil } from './users'
 export function useNavigation() {
   const { data: user } = useMeuPerfil()
 
+  // Mapear as 4 roles do sistema
+  const isAluno = user?.tipo_usuario === 'ALUNO'
   const isInstrutor = user?.tipo_usuario === 'INSTRUTOR'
   const isAdmin = user?.tipo_usuario === 'ADMIN'
-  const isFuncionario = user?.tipo_usuario === 'FUNCIONARIO'
+  const isGerente = user?.tipo_usuario === 'GERENTE'
 
   const getNavigationItems = (): NavItem[] => {
-    if (isFuncionario) {
+    // ALUNO - Acesso básico aos cursos e gamificação
+    if (isAluno) {
       return [
         {
           label: 'Dashboard',
           icon: React.createElement(DashboardIcon),
-          href: '/dashboard/funcionario',
+          href: '/dashboard/aluno',
         },
         {
           label: 'Cursos',
@@ -69,6 +72,7 @@ export function useNavigation() {
       ]
     }
 
+    // INSTRUTOR - Gerencia próprios cursos e turmas
     if (isInstrutor) {
       return [
         {
@@ -81,30 +85,84 @@ export function useNavigation() {
           icon: React.createElement(SchoolIcon),
           children: [
             {
-              label: 'Todos os Cursos',
+              label: 'Meus Cursos',
               icon: React.createElement(SchoolIcon),
-              href: '/cursos',
+              href: '/instrutor/cursos',
             },
             {
-              label: 'Minhas Turmas',
+              label: 'Criar Curso',
               icon: React.createElement(BookIcon),
-              href: '/instrutor/turmas',
+              href: '/instrutor/criar-curso',
             },
             {
               label: 'Avaliações',
               icon: React.createElement(AssignmentIcon),
-              href: '/avaliacoes',
+              href: '/instrutor/avaliacoes',
             },
           ],
         },
         {
+          label: 'Turmas',
+          icon: React.createElement(PeopleIcon),
+          href: '/instrutor/turmas',
+        },
+        {
           label: 'Configurações',
           icon: React.createElement(SettingsIcon),
-          href: '/instrutor/settings',
+          href: '/instrutor/configuracoes',
         },
       ]
     }
 
+    // GERENTE - Acesso ao departamento e relatórios (mesmo dashboard que ADMIN)
+    if (isGerente) {
+      return [
+        {
+          label: 'Dashboard',
+          icon: React.createElement(DashboardIcon),
+          href: '/dashboard/admin', // Mesmo dashboard que ADMIN
+        },
+        {
+          label: 'Meu Departamento',
+          icon: React.createElement(ApartmentIcon),
+          children: [
+            {
+              label: 'Funcionários',
+              icon: React.createElement(PeopleIcon),
+              href: '/admin/users', // Mesma página, mas filtrada
+            },
+            {
+              label: 'Relatórios',
+              icon: React.createElement(AssignmentIcon),
+              href: '/admin/relatorios', // Mesma página, mas filtrada
+            },
+            {
+              label: 'Progresso da Equipe',
+              icon: React.createElement(GradeIcon),
+              href: '/admin/courses', // Mesma página, mas filtrada
+            },
+          ],
+        },
+        {
+          label: 'Cursos',
+          icon: React.createElement(SchoolIcon),
+          children: [
+            {
+              label: 'Catálogo de Cursos',
+              icon: React.createElement(SchoolIcon),
+              href: '/cursos',
+            },
+            {
+              label: 'Cursos do Departamento',
+              icon: React.createElement(BookIcon),
+              href: '/admin/courses', // Filtrado por departamento
+            },
+          ],
+        },
+      ]
+    }
+
+    // ADMIN - Acesso total ao sistema
     if (isAdmin) {
       return [
         {
@@ -143,6 +201,11 @@ export function useNavigation() {
             },
           ],
         },
+        {
+          label: 'Relatórios',
+          icon: React.createElement(GradeIcon),
+          href: '/admin/relatorios',
+        },
       ]
     }
   }
@@ -150,10 +213,13 @@ export function useNavigation() {
   return {
     navigationItems: getNavigationItems(),
     user,
+    isAluno,
     isInstrutor,
     isAdmin,
-    isFuncionario,
+    isGerente,
     canManageCourses: isInstrutor || isAdmin,
+    canManageDepartment: isGerente || isAdmin,
+    canViewReports: isGerente || isAdmin,
   }
 }
 
