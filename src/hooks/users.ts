@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authGet, authPost, authPatch } from '@/api/http'
+import { API_ENDPOINTS } from '@/api/config'
 
 // Tipos básicos (poderão ser refinados depois com schemas reais)
 export interface Departamento {
@@ -96,7 +97,7 @@ export function useListarDepartamentos(filtro?: {
         })
       }
       const qs = params.toString()
-      const url = `/users/v1/departments${qs ? `?${qs}` : ''}`
+      const url = `${API_ENDPOINTS.USERS}/departamentos${qs ? `?${qs}` : ''}`
       const response = await authGet<DepartamentosResponse>(url)
       return response.items
     },

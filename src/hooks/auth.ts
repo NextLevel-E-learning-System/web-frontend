@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { apiPost, setAccessToken, clearAccessToken } from '@/api/http'
+import { API_ENDPOINTS } from '@/api/config'
 import type {
   LoginInput,
   LoginResponse,
@@ -20,7 +21,7 @@ export function useLogin() {
       const { rememberMe = true, ...loginData } = input // Padrão: sempre lembrar
 
       // Inclui credenciais para permitir cookie HttpOnly de refresh
-      const data = await apiPost<LoginResponse>('/auth/v1/login', loginData, {
+      const data = await apiPost<LoginResponse>(`${API_ENDPOINTS.AUTH}/login`, loginData, {
         credentials: 'include',
       })
 
@@ -46,7 +47,7 @@ export function useRegister() {
   return useMutation({
     mutationKey: ['auth', 'register'],
     mutationFn: async (input: RegisterInput) => {
-      return apiPost<RegisterResponse>('/auth/v1/register', input)
+      return apiPost<RegisterResponse>(`${API_ENDPOINTS.AUTH}/register`, input)
     },
   })
 }
@@ -55,7 +56,7 @@ export function useResetPassword() {
   return useMutation({
     mutationKey: ['auth', 'reset-password'],
     mutationFn: async (input: ResetPasswordInput) => {
-      return apiPost<ResetPasswordResponse>('/auth/v1/reset-password', input)
+      return apiPost<ResetPasswordResponse>(`${API_ENDPOINTS.AUTH}/reset-password`, input)
     },
   })
 }
@@ -71,7 +72,7 @@ export function useLogout() {
 
       try {
         await apiPost<{ sucesso: boolean }>(
-          '/auth/v1/logout',
+          `${API_ENDPOINTS.AUTH}/logout`,
           {},
           { credentials: 'include', headers }
         )

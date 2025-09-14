@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '@/api/api'
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios'
+import { API_BASE_URL } from './config'
 
 export type HttpOptions = AxiosRequestConfig & {
   credentials?: RequestCredentials
