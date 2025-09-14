@@ -69,7 +69,7 @@ export interface FuncionarioRegister {
 }
 
 export interface UpdateRoleInput {
-  role: 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN';
+  role: 'ALUNO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE';
 }
 
 export interface ResetPasswordInput {
