@@ -40,13 +40,13 @@ import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import CourseDetailsDialog from '@/components/admin/CourseDetailsDialog'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useCatalogoCursos,
-  useCategorias,
-  type Curso,
-} from '@/hooks/courses'
+  useCourseCatalog,
+  useCategories,
+  type Course as Curso,
+} from '@/api/courses'
 import {
   useListarDepartamentos,
-  useListarUsuarios,
+  useFuncionarios,
 } from '@/hooks/users'
 
 interface CursoMetricas extends Curso {
@@ -62,75 +62,24 @@ interface CursoMetricas extends Curso {
 
 // Mock data para demonstração
 const mockMetricas: CursoMetricas[] = [
+
+  
   {
-    id: '1',
-    codigo: 'TI-001',
-    titulo: 'Fundamentos de Programação',
-    descricao: 'Introdução aos conceitos básicos de programação',
-    categoria_nome: 'Desenvolvimento',
-    instrutor_nome: 'João Silva',
-    instrutor_id: 'INS001',
-    duracao_estimada: 40,
-    xp_oferecido: 500,
-    nivel_dificuldade: 'Básico',
-    ativo: true,
-    total_modulos: 8,
-    total_inscritos: 125,
-    total_concluidos: 89,
-    em_andamento: 36,
-    taxa_conclusao: 71.2,
-    avaliacao_media: 4.3,
-    total_avaliacoes: 67,
-    tempo_medio_conclusao: 35,
-    status_visual: 'active',
-    data_criacao: '2024-01-15',
-  },
-  {
-    id: '2',
     codigo: 'MKT-002',
-    titulo: 'Marketing Digital Avançado',
-    descricao: 'Estratégias avançadas de marketing digital',
-    categoria_nome: 'Marketing',
-    instrutor_nome: 'Maria Santos',
-    instrutor_id: 'INS002',
-    duracao_estimada: 60,
-    xp_oferecido: 750,
-    nivel_dificuldade: 'Avançado',
-    ativo: true,
-    total_modulos: 12,
-    total_inscritos: 89,
-    total_concluidos: 34,
-    em_andamento: 55,
-    taxa_conclusao: 38.2,
-    avaliacao_media: 4.7,
-    total_avaliacoes: 28,
-    tempo_medio_conclusao: 52,
+    total_inscritos: 0,
+    total_concluidos: 0,
+    em_andamento: 0,
+    taxa_conclusao: 0,
+    avaliacao_media: 0,
+    total_avaliacoes: 0,
+    tempo_medio_conclusao: 0,
     status_visual: 'active',
-    data_criacao: '2024-02-10',
-  },
-  {
-    id: '3',
-    codigo: 'ADM-003',
-    titulo: 'Gestão de Projetos',
-    descricao: 'Metodologias ágeis e gestão de projetos',
-    categoria_nome: 'Gestão',
-    instrutor_nome: 'Pedro Costa',
-    instrutor_id: 'INS003',
-    duracao_estimada: 30,
-    xp_oferecido: 400,
-    nivel_dificuldade: 'Intermediário',
+    titulo: '',
     ativo: false,
-    total_modulos: 6,
-    total_inscritos: 45,
-    total_concluidos: 12,
-    em_andamento: 8,
-    taxa_conclusao: 26.7,
-    avaliacao_media: 3.9,
-    total_avaliacoes: 10,
-    tempo_medio_conclusao: 28,
-    status_visual: 'inactive',
-    data_criacao: '2024-03-05',
-  },
+    criado_em: '',
+    atualizado_em: ''
+  }
+  
 ]
 
 interface Filtros {
@@ -154,14 +103,14 @@ export default function AdminCourses() {
   })
 
   // Hooks de dados reais (quando disponíveis)
-  const { data: cursosReais = [], isLoading: loadingCursos } = useCatalogoCursos()
-  const { data: categorias = [], isLoading: loadingCategorias } = useCategorias()
+  const { data: cursosReais = [], isLoading: loadingCursos } = useCourseCatalog()
+  const { data: categorias = [], isLoading: loadingCategorias } = useCategories()
   const { data: departamentos = [] } = useListarDepartamentos()
-  const { data: usuarios = { items: [] } } = useListarUsuarios({ tipo_usuario: 'INSTRUTOR' })
+  const { data: usuarios = [] } = useFuncionarios()
 
   // Usar dados mock por enquanto
   const cursos = mockMetricas
-  const instrutores = usuarios.items || []
+  const instrutores = usuarios || []
 
   // Filtros aplicados
   const cursosAtivos = cursos.filter(c => c.ativo === true)
@@ -172,7 +121,6 @@ export default function AdminCourses() {
     if (tab === 'disabled' && curso.ativo) return false
     
     return (
-      (filtros.categoria === 'all' || curso.categoria_nome === filtros.categoria) &&
       (filtros.instrutor === 'all' || curso.instrutor_id === filtros.instrutor) &&
       (filtros.nivel === 'all' || curso.nivel_dificuldade === filtros.nivel)
     )
@@ -325,7 +273,6 @@ export default function AdminCourses() {
                 <TableBody>
                   {filtered.map((curso) => (
                     <TableRow 
-                      key={curso.id} 
                       hover 
                       sx={{ cursor: 'pointer' }}
                       onClick={() => setSelectedCourse(curso)}
@@ -357,15 +304,13 @@ export default function AdminCourses() {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip variant="outlined" label={curso.categoria_nome} size="small" />
+                        <Chip variant="outlined"  size="small" />
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-                            {curso.instrutor_nome?.charAt(0)}
                           </Avatar>
                           <Typography variant="body2">
-                            {curso.instrutor_nome}
                           </Typography>
                         </Box>
                       </TableCell>

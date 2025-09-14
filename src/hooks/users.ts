@@ -163,12 +163,12 @@ export function useFuncionarios() {
   })
 }
 
-export function useUpdateFuncionarioRole(funcionarioId: string) {
+export function useUpdateFuncionarioRole(funcionarioId?: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationKey: ['users', 'funcionarios', 'role', funcionarioId],
-    mutationFn: (input: UpdateRoleInput) =>
-      authPut<Funcionario>(`${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}/role`, input),
+    mutationFn: ({ id, input }: { id: string; input: UpdateRoleInput }) =>
+      authPut<Funcionario>(`${API_ENDPOINTS.USERS}/funcionarios/${id}/role`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
     }

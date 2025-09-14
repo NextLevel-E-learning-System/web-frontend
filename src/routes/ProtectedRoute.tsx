@@ -1,8 +1,7 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
-import { useAuthCheck } from '@/hooks/useAuthCheck'
-import { useDashboard, useDashboardCompleto } from '@/hooks/users'
+ import { useDashboard, useDashboardCompleto } from '@/hooks/users'
 
 interface ProtectedRouteProps {
   children: React.ReactNode

@@ -43,217 +43,41 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarUsuarios,
   useListarDepartamentos,
   useListarCargos,
-  useCriarUsuario,
-  useAtualizarUsuario,
-  useExcluirUsuario,
-  type UsuarioResumo,
-  type CriarUsuarioInput,
-  type AtualizacaoAdmin,
+  useFuncionarios,
+  UsuarioResumo,
+
 } from '@/hooks/users'
 
-interface InstructorForm {
-  nome: string
-  cpf: string
-  email: string
-  departamento_id: string
-  cargo: string
-  biografia: string
-  status: 'ATIVO' | 'INATIVO'
-}
 
 export default function AdminInstructors() {
   const { navigationItems } = useNavigation()
 
-  // Filtrar apenas instrutores
-  const {
-    data: todosUsuarios = { items: [] },
-    isLoading: loadingUsers,
-    refetch: refetchUsers,
-  } = useListarUsuarios({
-    tipo_usuario: 'INSTRUTOR',
-  })
-
+  const { data: funcionarios = [], isLoading: loadingFuncionarios } = useFuncionarios()
   const { data: departamentos = [], isLoading: loadingDepartments } =
     useListarDepartamentos()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
-  const criarUsuario = useCriarUsuario()
   const [editingInstructor, setEditingInstructor] =
     useState<UsuarioResumo | null>(null)
-  const atualizarUsuario = useAtualizarUsuario(editingInstructor?.id || '')
-  const excluirUsuario = useExcluirUsuario()
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
   const [isAddOpen, setIsAddOpen] = useState(false)
-  const [form, setForm] = useState<InstructorForm>({
-    nome: '',
-    cpf: '',
-    email: '',
-    departamento_id: '',
-    cargo: '',
-    biografia: '',
-    status: 'ATIVO',
-  })
 
-  const title = useMemo(
-    () => (editingInstructor ? 'Editar Instrutor' : 'Gerenciar Instrutores'),
-    [editingInstructor]
-  )
-
-  // Filtrar instrutores por status
-  const instrutores = todosUsuarios.items || []
+  // Filtrar apenas instrutores e aplicar filtro de status
+  const instrutores = funcionarios.filter(f => (f as any).tipo_usuario === 'INSTRUTOR')
   const filtered = instrutores.filter(i => {
     if (tab === 'all') return true
-    if (tab === 'active') return i.status === 'ATIVO'
-    return i.status === 'INATIVO'
+    if (tab === 'active') return i.ativo === true
+    return i.ativo === false
   })
 
-  const resetForm = () => {
-    setForm({
-      nome: '',
-      cpf: '',
-      email: '',
-      departamento_id: '',
-      cargo: '',
-      biografia: '',
-      status: 'ATIVO',
-    })
-  }
-
   const openAdd = () => {
-    resetForm()
-    setEditingInstructor(null)
     setIsAddOpen(true)
   }
 
-  const handleAdd = async () => {
-    if (
-      !form.nome.trim() ||
-      !form.cpf.trim() ||
-      !form.email.trim() ||
-      !form.departamento_id.trim()
-    ) {
-      toast.error('Nome, CPF, Email e Departamento são obrigatórios')
-      return
-    }
 
-    try {
-      const input: CriarUsuarioInput = {
-        nome: form.nome.trim(),
-        cpf: form.cpf.trim(),
-        email: form.email.trim(),
-        departamento_id: form.departamento_id.trim(),
-        cargo: form.cargo.trim() || undefined,
-        tipo_usuario: 'INSTRUTOR',
-        status: form.status,
-        biografia: form.biografia.trim() || undefined,
-      }
-
-      await criarUsuario.mutateAsync(input)
-
-      toast.success('Instrutor criado com sucesso!')
-      setIsAddOpen(false)
-      resetForm()
-      refetchUsers()
-    } catch (error) {
-      toast.error('Erro ao criar instrutor')
-      console.error(error)
-    }
-  }
-
-  const handleEdit = (instructor: UsuarioResumo) => {
-    setEditingInstructor(instructor)
-    setForm({
-      nome: instructor.nome,
-      cpf: '', // CPF não é retornado na listagem por segurança
-      email: instructor.email,
-      departamento_id: instructor.departamento_id || '',
-      cargo: instructor.cargo || '',
-      biografia: '', // Será carregado do perfil completo se necessário
-      status: instructor.status || 'ATIVO',
-    })
-  }
-
-  const handleUpdate = async () => {
-    if (!form.nome.trim() || !form.email.trim()) {
-      toast.error('Nome e Email são obrigatórios')
-      return
-    }
-
-    if (!editingInstructor) return
-
-    try {
-      const input: AtualizacaoAdmin = {
-        nome: form.nome.trim(),
-        email: form.email.trim(),
-        departamento_id: form.departamento_id.trim() || undefined,
-        cargo: form.cargo.trim() || undefined,
-        tipo_usuario: 'INSTRUTOR',
-        status: form.status,
-        biografia: form.biografia.trim() || undefined,
-      }
-
-      await atualizarUsuario.mutateAsync(input)
-
-      toast.success('Instrutor atualizado com sucesso!')
-      setEditingInstructor(null)
-      resetForm()
-      refetchUsers()
-    } catch (error) {
-      toast.error('Erro ao atualizar instrutor')
-      console.error(error)
-    }
-  }
-
-  const handleDelete = async (id: string, nome: string) => {
-    if (confirm(`Tem certeza que deseja excluir o instrutor "${nome}"?`)) {
-      try {
-        await excluirUsuario.mutateAsync(id)
-        toast.success('Instrutor excluído com sucesso!')
-        refetchUsers()
-      } catch (error) {
-        toast.error('Erro ao excluir instrutor')
-        console.error(error)
-      }
-    }
-  }
-
-  const toggleStatus = (instructor: UsuarioResumo) => {
-    setEditingInstructor(instructor)
-    const newStatus = instructor.status === 'ATIVO' ? 'INATIVO' : 'ATIVO'
-
-    // Atualizar diretamente
-    atualizarUsuario.mutate(
-      {
-        status: newStatus,
-      },
-      {
-        onSuccess: () => {
-          toast.success(
-            `Instrutor ${newStatus === 'ATIVO' ? 'ativado' : 'desativado'} com sucesso!`
-          )
-          setEditingInstructor(null)
-          refetchUsers()
-        },
-        onError: () => {
-          toast.error('Erro ao alterar status do instrutor')
-          setEditingInstructor(null)
-        },
-      }
-    )
-  }
-
-  const getDepartmentName = (id: string) => {
-    return departamentos.find(d => d.codigo === id)?.nome || id
-  }
-
-  const getCargoName = (id: string) => {
-    return cargos.find(c => c.id === id)?.nome || id
-  }
-
-  if (loadingUsers || loadingDepartments || loadingCargos) {
+  if (loadingDepartments || loadingCargos || loadingFuncionarios) {
     return (
       <DashboardLayout title='Gerenciar Instrutores' items={navigationItems}>
         <Box>
@@ -264,7 +88,7 @@ export default function AdminInstructors() {
   }
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout title={'Gerenciar Instrutores'} items={navigationItems}>
       <Box>
         <Box
           sx={{
@@ -274,19 +98,18 @@ export default function AdminInstructors() {
           }}
         >
           <StatusFilterTabs
-          value={tab}
-          onChange={setTab}
-          activeCount={instrutores.filter(i => i.status === 'ATIVO').length}
-          inactiveCount={instrutores.filter(i => i.status === 'INATIVO').length}
-          activeLabel='Instrutores Ativos'
-          inactiveLabel='Instrutores Inativos'
-        />
+            value={tab}
+            onChange={setTab}
+            activeLabel='Instrutores Ativos'
+            inactiveLabel='Instrutores Inativos' 
+            activeCount={instrutores.filter(i => i.ativo === true).length} 
+            inactiveCount={instrutores.filter(i => i.ativo === false).length}
+          />
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
             variant='contained'
-            disabled={criarUsuario.isPending}
-          >
+           >
             Adicionar Instrutor
           </Button>
         </Box>
@@ -302,8 +125,7 @@ export default function AdminInstructors() {
                     : 'Todos os Instrutores'}
               </Typography>
             }
-            subheader={`${filtered.length} instrutores encontrados`}
-          />
+           />
           <CardContent>
             {filtered.length === 0 ? (
               <Alert severity='info'>
@@ -325,8 +147,7 @@ export default function AdminInstructors() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filtered.map(instructor => (
-                    <TableRow key={instructor.id} hover>
+                     <TableRow   hover>
                       <TableCell>
                         <Typography
                           component='span'
@@ -335,24 +156,20 @@ export default function AdminInstructors() {
                               'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                           }}
                         >
-                          {instructor.id}
+                           
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography fontWeight={500}>
-                          {instructor.nome}
+                           
                         </Typography>
                       </TableCell>
-                      <TableCell>{instructor.email}</TableCell>
+                      <TableCell>{ }</TableCell>
                       <TableCell>
-                        {instructor.departamento_id
-                          ? getDepartmentName(instructor.departamento_id)
-                          : '—'}
+                        
                       </TableCell>
                       <TableCell>
-                        {instructor.cargo
-                          ? getCargoName(instructor.cargo)
-                          : '—'}
+                        
                       </TableCell>
                       <TableCell>
                         <Box
@@ -363,33 +180,23 @@ export default function AdminInstructors() {
                           }}
                         >
                           <Switch
-                            checked={instructor.status === 'ATIVO'}
-                            onChange={() => toggleStatus(instructor)}
-                          />
+                            />
                           <Chip
                             size='small'
-                            color={
-                              instructor.status === 'ATIVO'
-                                ? 'success'
-                                : 'default'
-                            }
-                            label={instructor.status || 'ATIVO'}
+                             
                           />
                         </Box>
                       </TableCell>
                       <TableCell align='right'>
                         <IconButton
                           size='small'
-                          onClick={() => handleEdit(instructor)}
-                          aria-label='editar'
+                           aria-label='editar'
                         >
                           <EditIcon />
                         </IconButton>
                         <IconButton
                           size='small'
-                          onClick={() =>
-                            handleDelete(instructor.id, instructor.nome)
-                          }
+                         
                           aria-label='excluir'
                           color='error'
                         >
@@ -397,8 +204,7 @@ export default function AdminInstructors() {
                         </IconButton>
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
+                 </TableBody>
               </Table>
             )}
           </CardContent>
@@ -422,9 +228,7 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Nome completo'
-                  value={form.nome}
-                  onChange={e => setForm({ ...form, nome: e.target.value })}
-                  fullWidth
+                    fullWidth
                   required
                 />
               </Grid>
@@ -432,18 +236,14 @@ export default function AdminInstructors() {
                 <TextField
                   label='Email'
                   type='email'
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  fullWidth
+                   fullWidth
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='CPF'
-                  value={form.cpf}
-                  onChange={e => setForm({ ...form, cpf: e.target.value })}
-                  placeholder='000.000.000-00'
+                   placeholder='000.000.000-00'
                   fullWidth
                   required
                 />
@@ -452,10 +252,7 @@ export default function AdminInstructors() {
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
                   <Select
-                    value={form.status}
-                    onChange={e =>
-                      setForm({ ...form, status: e.target.value as any })
-                    }
+                  
                     label='Status'
                   >
                     <MenuItem value='ATIVO'>Ativo</MenuItem>
@@ -467,10 +264,7 @@ export default function AdminInstructors() {
                 <FormControl fullWidth required>
                   <InputLabel>Departamento</InputLabel>
                   <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
+                    
                     label='Departamento'
                   >
                     <MenuItem value=''>
@@ -488,28 +282,20 @@ export default function AdminInstructors() {
                 <FormControl fullWidth>
                   <InputLabel>Cargo</InputLabel>
                   <Select
-                    value={form.cargo}
-                    onChange={e => setForm({ ...form, cargo: e.target.value })}
+                  
                     label='Cargo'
                   >
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map(cargo => (
-                      <MenuItem key={cargo.id} value={cargo.id}>
-                        {cargo.nome}
-                      </MenuItem>
-                    ))}
+                   
                   </Select>
                 </FormControl>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Biografia do Instrutor'
-                  value={form.biografia}
-                  onChange={e =>
-                    setForm({ ...form, biografia: e.target.value })
-                  }
+                  
                   fullWidth
                   multiline
                   minRows={3}
@@ -523,16 +309,14 @@ export default function AdminInstructors() {
             <Button
               variant='outlined'
               onClick={() => setIsAddOpen(false)}
-              disabled={criarUsuario.isPending}
             >
               Cancelar
             </Button>
             <Button
               variant='contained'
-              onClick={handleAdd}
-              disabled={criarUsuario.isPending}
+             
             >
-              {criarUsuario.isPending ? 'Criando...' : 'Adicionar'}
+              'Adicionar'
             </Button>
           </DialogActions>
         </Dialog>
@@ -555,9 +339,7 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Nome completo'
-                  value={form.nome}
-                  onChange={e => setForm({ ...form, nome: e.target.value })}
-                  fullWidth
+                   fullWidth
                   required
                 />
               </Grid>
@@ -565,9 +347,7 @@ export default function AdminInstructors() {
                 <TextField
                   label='Email'
                   type='email'
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  fullWidth
+                   fullWidth
                   required
                 />
               </Grid>
@@ -575,10 +355,7 @@ export default function AdminInstructors() {
                 <FormControl fullWidth>
                   <InputLabel>Departamento</InputLabel>
                   <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
+                    
                     label='Departamento'
                   >
                     <MenuItem value=''>
@@ -596,18 +373,12 @@ export default function AdminInstructors() {
                 <FormControl fullWidth>
                   <InputLabel>Cargo</InputLabel>
                   <Select
-                    value={form.cargo}
-                    onChange={e => setForm({ ...form, cargo: e.target.value })}
-                    label='Cargo'
+                     label='Cargo'
                   >
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map(cargo => (
-                      <MenuItem key={cargo.id} value={cargo.id}>
-                        {cargo.nome}
-                      </MenuItem>
-                    ))}
+                    
                   </Select>
                 </FormControl>
               </Grid>
@@ -615,10 +386,7 @@ export default function AdminInstructors() {
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
                   <Select
-                    value={form.status}
-                    onChange={e =>
-                      setForm({ ...form, status: e.target.value as any })
-                    }
+                   
                     label='Status'
                   >
                     <MenuItem value='ATIVO'>Ativo</MenuItem>
@@ -629,10 +397,7 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Biografia do Instrutor'
-                  value={form.biografia}
-                  onChange={e =>
-                    setForm({ ...form, biografia: e.target.value })
-                  }
+                
                   fullWidth
                   multiline
                   minRows={3}
@@ -646,16 +411,14 @@ export default function AdminInstructors() {
             <Button
               variant='outlined'
               onClick={() => setEditingInstructor(null)}
-              disabled={atualizarUsuario.isPending}
-            >
+             >
               Cancelar
             </Button>
             <Button
               variant='contained'
-              onClick={handleUpdate}
-              disabled={atualizarUsuario.isPending}
+              
             >
-              {atualizarUsuario.isPending ? 'Atualizando...' : 'Atualizar'}
+     'Atualizar'
             </Button>
           </DialogActions>
         </Dialog>

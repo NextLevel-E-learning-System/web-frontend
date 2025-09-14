@@ -66,21 +66,12 @@ import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
 import { useMeuPerfil } from '@/hooks/users'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useCatalogoCursos,
-  useCategorias,
-  useCriarCurso,
-  useDuplicarCurso,
-  useAlterarStatusCurso,
-  useValidacoesCurso,
-  type Curso,
-  type CriarCurso,
-  type FiltrosCatalogo,
-} from '@/hooks/courses'
-import {
-  useProgressoCompleto,
-  useCriarInscricao,
-  useVerificarInscricao,
-} from '@/hooks/progress'
+  useCourseCatalog,
+  useCategories,
+  type Course as Curso,
+  type CreateCourseInput as CriarCurso,
+  type CatalogFilters as FiltrosCatalogo,
+} from '@/api/courses'
 
 export default function CoursesPage() {
   const theme = useTheme()
@@ -89,7 +80,6 @@ export default function CoursesPage() {
   const {
     navigationItems,
     canManageCourses,
-    isFuncionario,
     isInstrutor,
     isAdmin,
   } = useNavigation()
@@ -112,17 +102,12 @@ export default function CoursesPage() {
   })
 
   // Hooks
-  const { data: categorias, isLoading: loadingCategorias } = useCategorias()
-  const { data: cursos, isLoading: loadingCursos } = useCatalogoCursos(filtros)
-  const { inscricoes } = useProgressoCompleto(user?.id || '', !!user?.id)
-  const criarCursoMutation = useCriarCurso()
-  const duplicarCursoMutation = useDuplicarCurso()
-  const alterarStatusMutation = useAlterarStatusCurso()
-  const criarInscricaoMutation = useCriarInscricao()
-  const { validarCodigo, validarTitulo } = useValidacoesCurso()
+  const { data: categorias, isLoading: loadingCategorias } = useCategories()
+  const { data: cursos, isLoading: loadingCursos } = useCourseCatalog(filtros)
+
 
   // Hook para buscar todos os cursos (sem filtros) para contagem por categoria
-  const { data: todosCursos } = useCatalogoCursos()
+  const { data: todosCursos } = useCourseCatalog()
 
   // Função para contar cursos por categoria
   const getContagemCursosPorCategoria = (categoriaId: string): number => {
@@ -145,48 +130,6 @@ export default function CoursesPage() {
     }))
   }, [selectedCategory])
 
-  const handleCriarCurso = async () => {
-    try {
-      await criarCursoMutation.mutateAsync(dadosNovoCurso)
-      setMensagem('Curso criado com sucesso!')
-      setDialogCriarCurso(false)
-      resetFormCurso()
-    } catch (error) {
-      setMensagem('Erro ao criar curso')
-    }
-  }
-
-  const handleDuplicarCurso = async (codigo: string) => {
-    try {
-      await duplicarCursoMutation.mutateAsync(codigo)
-      setMensagem('Curso duplicado com sucesso!')
-    } catch (error) {
-      setMensagem('Erro ao duplicar curso')
-    }
-  }
-
-  const handleToggleStatus = async (codigo: string, ativo: boolean) => {
-    try {
-      await alterarStatusMutation.mutateAsync({ codigo, active: !ativo })
-      setMensagem(`Curso ${!ativo ? 'ativado' : 'desativado'} com sucesso!`)
-    } catch (error) {
-      setMensagem('Erro ao alterar status do curso')
-    }
-  }
-
-  const handleInscrever = async (cursoId: string) => {
-    if (!user?.id) return
-
-    try {
-      await criarInscricaoMutation.mutateAsync({
-        funcionario_id: user.id,
-        curso_id: cursoId,
-      })
-      setMensagem('Inscrição realizada com sucesso!')
-    } catch (error) {
-      setMensagem('Erro ao realizar inscrição')
-    }
-  }
 
   const resetFormCurso = () => {
     setDadosNovoCurso({
@@ -201,9 +144,6 @@ export default function CoursesPage() {
     })
   }
 
-  const getInscricaoStatus = (cursoId: string) => {
-    return inscricoes?.find(i => i.curso_id === cursoId)
-  }
 
   // Função para buscar categoria por ID
   const getCategoriaById = (categoriaId: string) => {
@@ -296,10 +236,6 @@ export default function CoursesPage() {
   )
 
   const renderCursoCard = (curso: Curso) => {
-    const inscricao = getInscricaoStatus(curso.codigo)
-    const isInscrito = !!inscricao
-    const isCompleto = inscricao?.status === 'CONCLUIDO'
-    const progresso = inscricao?.progresso_percentual || 0
 
     // Buscar dados da categoria
     const categoria = getCategoriaById(curso.categoria_id || '')
@@ -343,7 +279,7 @@ export default function CoursesPage() {
             </Box>
 
             <Chip
-              label={categoria?.nome || curso.categoria_nome || 'Categoria'}
+              label={categoria?.nome || 'Categoria'}
               sx={{
                 position: 'absolute',
                 top: 16,
@@ -379,7 +315,7 @@ export default function CoursesPage() {
             )}
 
             {/* Status de progresso */}
-            {isInscrito && (
+      
               <Box
                 sx={{
                   position: 'absolute',
@@ -394,16 +330,7 @@ export default function CoursesPage() {
                   gap: 0.5,
                 }}
               >
-                {isCompleto ? (
-                  <CheckCircleIcon sx={{ fontSize: 16, color: '#4caf50' }} />
-                ) : (
-                  <PlayArrowIcon sx={{ fontSize: 16, color: '#2196f3' }} />
-                )}
-                <Typography sx={{ fontSize: '12px', color: 'white' }}>
-                  {isCompleto ? 'Concluído' : `${progresso}%`}
-                </Typography>
-              </Box>
-            )}
+              
           </Box>
 
           <CardContent
@@ -429,7 +356,7 @@ export default function CoursesPage() {
               >
                 por{' '}
                 <span style={{ color: '#000' }}>
-                  {curso.instrutor_nome || 'Instrutor'}
+                  {'Instrutor'}
                 </span>
               </Typography>
               <Typography
@@ -495,7 +422,7 @@ export default function CoursesPage() {
             </Box>
 
             {/* Progresso para usuários inscritos */}
-            {isInscrito && !isCompleto && (
+            
               <Box sx={{ mb: 2 }}>
                 <Typography
                   variant='body2'
@@ -505,7 +432,6 @@ export default function CoursesPage() {
                 </Typography>
                 <LinearProgress
                   variant='determinate'
-                  value={progresso}
                   sx={{
                     height: 6,
                     borderRadius: 3,
@@ -515,7 +441,7 @@ export default function CoursesPage() {
                   }}
                 />
               </Box>
-            )}
+          
 
             <Box sx={{ borderTop: '1px solid #EAEAEA', pt: 2, mt: 'auto' }}>
               <Box
@@ -526,30 +452,18 @@ export default function CoursesPage() {
                 }}
               >
                 {/* Botões para funcionários */}
-                {isFuncionario && (
                   <Button
-                    variant={isInscrito ? 'outlined' : 'contained'}
                     size='small'
-                    disabled={isCompleto || criarInscricaoMutation.isPending}
-                    onClick={e => {
-                      e.stopPropagation()
-                      if (!isInscrito) {
-                        handleInscrever(curso.codigo)
-                      }
-                    }}
+           
                     sx={{
                       borderRadius: '20px',
                       textTransform: 'none',
                       fontSize: '14px',
                     }}
                   >
-                    {isCompleto
-                      ? 'Concluído'
-                      : isInscrito
-                        ? 'Continuar'
-                        : 'Inscrever-se'}
+                    'Inscrever-se'
                   </Button>
-                )}
+                
 
                 {/* Botões para instrutores/admins */}
                 {canManageCourses && (
@@ -567,11 +481,7 @@ export default function CoursesPage() {
                     <Tooltip title='Duplicar'>
                       <IconButton
                         size='small'
-                        onClick={e => {
-                          e.stopPropagation()
-                          handleDuplicarCurso(curso.codigo)
-                        }}
-                        disabled={duplicarCursoMutation.isPending}
+                       
                       >
                         <CopyIcon fontSize='small' />
                       </IconButton>
@@ -605,7 +515,7 @@ export default function CoursesPage() {
 
   return (
     <DashboardLayout
-      title={isFuncionario ? 'Catálogo de Cursos' : 'Gerenciar Cursos'}
+      title={'Gerenciar Cursos'}
       items={navigationItems}
     >
       <Box>
@@ -785,16 +695,7 @@ export default function CoursesPage() {
               onChange={e =>
                 setDadosNovoCurso(prev => ({ ...prev, codigo: e.target.value }))
               }
-              error={
-                dadosNovoCurso.codigo.length > 0 &&
-                !validarCodigo(dadosNovoCurso.codigo)
-              }
-              helperText={
-                dadosNovoCurso.codigo.length > 0 &&
-                !validarCodigo(dadosNovoCurso.codigo)
-                  ? 'Código deve ter pelo menos 3 caracteres e conter apenas letras, números, _ ou -'
-                  : ''
-              }
+             
               required
             />
 
@@ -804,16 +705,7 @@ export default function CoursesPage() {
               onChange={e =>
                 setDadosNovoCurso(prev => ({ ...prev, titulo: e.target.value }))
               }
-              error={
-                dadosNovoCurso.titulo.length > 0 &&
-                !validarTitulo(dadosNovoCurso.titulo)
-              }
-              helperText={
-                dadosNovoCurso.titulo.length > 0 &&
-                !validarTitulo(dadosNovoCurso.titulo)
-                  ? 'Título deve ter pelo menos 5 caracteres'
-                  : ''
-              }
+            
               required
             />
 
@@ -903,15 +795,9 @@ export default function CoursesPage() {
         <DialogActions>
           <Button onClick={() => setDialogCriarCurso(false)}>Cancelar</Button>
           <Button
-            onClick={handleCriarCurso}
-            variant='contained'
-            disabled={
-              criarCursoMutation.isPending ||
-              !validarCodigo(dadosNovoCurso.codigo) ||
-              !validarTitulo(dadosNovoCurso.titulo)
-            }
+            
           >
-            {criarCursoMutation.isPending ? 'Criando...' : 'Criar'}
+            { 'Criar'}
           </Button>
         </DialogActions>
       </Dialog>

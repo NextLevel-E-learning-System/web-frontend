@@ -82,8 +82,8 @@ export default function AdminUsers() {
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<PerfilUsuario | null>(null)
-  const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '')
   const excluirUsuario = useDeleteFuncionario()
+  const atualizarUsuario = useUpdateFuncionarioRole()
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -202,7 +202,10 @@ export default function AdminUsers() {
         role: form.tipo_usuario,
       }
 
-      await atualizarUsuario.mutateAsync(input)
+      await atualizarUsuario.mutateAsync({ 
+        id: editingUser.id, 
+        input: input 
+      })
 
       toast.success('Role do funcionário atualizada com sucesso!')
       setEditingUser(null)
