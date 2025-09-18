@@ -179,7 +179,7 @@ export function useRegisterFuncionario() {
   return useMutation({
     mutationKey: ['users', 'funcionarios', 'register'],
     mutationFn: (input: FuncionarioRegister) =>
-      authPost<Funcionario>(`${API_ENDPOINTS.USERS}/funcionarios/register`, input)
+      authPost<Funcionario>(`${API_ENDPOINTS.USERS}/register`, input)
   });
 }
 
@@ -196,7 +196,7 @@ export function useUpdateFuncionarioRole(funcionarioId: string) {
   return useMutation({
     mutationKey: ['users', 'funcionarios', 'role', funcionarioId],
     mutationFn: (input: UpdateRoleInput) =>
-      authPut<Funcionario>(`${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}/role`, input),
+      authPut<Funcionario>(`${API_ENDPOINTS.USERS}/${funcionarioId}/role`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] });
     }
@@ -207,6 +207,6 @@ export function useResetPassword() {
   return useMutation({
     mutationKey: ['users', 'funcionarios', 'reset-password'],
     mutationFn: (input: ResetPasswordInput) =>
-      authPost<ResetPasswordResponse>(`${API_ENDPOINTS.USERS}/funcionarios/reset-password`, input)
+      authPost<ResetPasswordResponse>(`${API_ENDPOINTS.USERS}/reset-password`, input)
   });
 }
