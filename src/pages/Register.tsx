@@ -55,14 +55,8 @@ const Register = () => {
       cargo_nome: selectedCargo.nome,
     }
 
-    try {
       await register.mutateAsync(submitData as any)
-      showToast.success('Conta criada com sucesso! Senha enviada por email.')
       navigate('/login')
-    } catch (err) {
-      console.error(err)
-      showToast.error('Falha ao criar conta. Tente novamente.')
-    }
   }
 
   const handleChange =
