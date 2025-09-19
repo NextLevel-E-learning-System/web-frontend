@@ -196,27 +196,41 @@ export function useDeleteFuncionario() {
   })
 }
 
-// Perfil do usuário autenticado
+// Perfil do usuário autenticado (usa dados do dashboard)
 export function useMeuPerfil() {
-  return useQuery<PerfilUsuario>({
-    queryKey: ['users', 'me'],
-    queryFn: () => authGet<PerfilUsuario>(`${API_ENDPOINTS.USERS}/funcionarios/me`),
-  })
+  const dashboard = useDashboard()
+  
+  return {
+    data: dashboard.data ? {
+      id: dashboard.data.usuario.id,
+      nome: dashboard.data.usuario.nome,
+      email: dashboard.data.usuario.email,
+      departamento_id: dashboard.data.usuario.departamento,
+      cargo_nome: dashboard.data.usuario.cargo,
+      xp_total: dashboard.data.usuario.xp_total,
+      nivel: dashboard.data.usuario.nivel,
+      ativo: true, // Se chegou até aqui, está ativo
+      tipo_usuario: (dashboard.data.usuario.roles[0] || 'ALUNO') as UserRole
+    } as PerfilUsuario : undefined,
+    isLoading: dashboard.isLoading,
+    error: dashboard.error,
+    refetch: dashboard.refetch
+  }
 }
 
 // Hook combinado para dashboard + perfil do usuário
 export function useDashboardCompleto() {
   const dashboard = useDashboard()
-  const perfil = useMeuPerfil()
 
   return {
-    dashboard: dashboard.data,
-    perfil: perfil.data,
-    isLoading: dashboard.isLoading || perfil.isLoading,
-    error: dashboard.error || perfil.error,
+    dashboard: dashboard.data?.dashboard,
+    perfil: dashboard.data?.usuario,
+    notificacoes: dashboard.data?.notificacoes,
+    notificacoes_nao_lidas: dashboard.data?.notificacoes_nao_lidas,
+    isLoading: dashboard.isLoading,
+    error: dashboard.error,
     refetch: () => {
       dashboard.refetch()
-      perfil.refetch()
     },
   }
 }

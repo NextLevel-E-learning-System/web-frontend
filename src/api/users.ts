@@ -163,6 +163,23 @@ export interface DashboardAdmin {
 
 export type DashboardData = DashboardAluno | DashboardInstrutor | DashboardGerente | DashboardAdmin;
 
+// Estrutura de resposta completa do endpoint /funcionarios/dashboard
+export interface DashboardResponse {
+  usuario: {
+    id: string;
+    nome: string;
+    email: string;
+    departamento?: string;
+    cargo?: string;
+    nivel: string;
+    xp_total: number;
+    roles: string[];
+  };
+  notificacoes_nao_lidas: number;
+  notificacoes: any[];
+  dashboard: DashboardData;
+}
+
 // Hooks para Departamentos
 export function useDepartamentos() {
   return useQuery<Departamento[]>({
@@ -296,8 +313,8 @@ export function useResetPassword() {
 
 // Hook para Dashboard
 export function useDashboard() {
-  return useQuery<DashboardData>({
+  return useQuery<DashboardResponse>({
     queryKey: ['users', 'dashboard'],
-    queryFn: () => authGet<DashboardData>(`${API_ENDPOINTS.USERS}/funcionarios/dashboard`)
+    queryFn: () => authGet<DashboardResponse>(`${API_ENDPOINTS.USERS}/funcionarios/dashboard`)
   });
 }
