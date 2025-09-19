@@ -14,7 +14,8 @@ import {
   FuncionarioRegister,
   UpdateRoleInput,
   ResetPasswordInput,
-  ResetPasswordResponse
+  ResetPasswordResponse,
+  useDashboard
 } from '@/api/users'
 
 // Re-exportar tipos importantes para uso nos componentes
@@ -203,26 +204,9 @@ export function useMeuPerfil() {
   })
 }
 
-// Dashboard baseado na role do usuário
-export function useDashboard(departamento_id?: string) {
-  return useQuery<{ dashboard_data: DashboardData }>({
-    queryKey: ['users', 'dashboard', departamento_id],
-    queryFn: () => {
-      const params = new URLSearchParams()
-      if (departamento_id) {
-        params.append('departamento_id', departamento_id)
-      }
-      const url = `${API_ENDPOINTS.USERS}/dashboard${params.toString() ? `?${params.toString()}` : ''}`
-      return authGet<{ dashboard_data: DashboardData }>(url)
-    },
-    staleTime: 0,
-    retry: false,
-  })
-}
-
 // Hook combinado para dashboard + perfil do usuário
-export function useDashboardCompleto(departamento_id?: string) {
-  const dashboard = useDashboard(departamento_id)
+export function useDashboardCompleto() {
+  const dashboard = useDashboard()
   const perfil = useMeuPerfil()
 
   return {

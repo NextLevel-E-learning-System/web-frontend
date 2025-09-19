@@ -18,16 +18,17 @@ import {
 } from '@mui/material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
-import { useDashboard, DashboardAluno } from '@/api/users'
+import { DashboardAluno } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
+import { useDashboardCompleto } from '@/hooks/users'
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
-  const { data: dashboardData, isLoading, error } = useDashboard()
+  const { dashboard, isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useNavigation()
 
   // Type guard para garantir que é um dashboard de aluno
-  const alunoData = dashboardData?.tipo_dashboard === 'aluno' ? (dashboardData as DashboardAluno) : null
+  const alunoData = dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
 
   if (isLoading) {
     return (

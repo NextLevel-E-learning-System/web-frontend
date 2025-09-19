@@ -18,7 +18,7 @@ import { useMeuPerfil } from './users'
 export function useNavigation() {
   const { data: user } = useMeuPerfil()
 
-  // Mapear as 4 roles do sistema
+  // Mapear as 4 roles do sistema (usando tipo_usuario do backend)
   const isAluno = user?.tipo_usuario === 'ALUNO'
   const isInstrutor = user?.tipo_usuario === 'INSTRUTOR'
   const isAdmin = user?.tipo_usuario === 'ADMIN'
@@ -31,7 +31,7 @@ export function useNavigation() {
         {
           label: 'Dashboard',
           icon: React.createElement(DashboardIcon),
-          href: '/dashboard/aluno',
+          href: '/dashboard/funcionario', // Rota correta para ALUNO
         },
         {
           label: 'Cursos',
