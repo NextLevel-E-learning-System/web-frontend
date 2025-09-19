@@ -200,7 +200,7 @@ export function useDeleteFuncionario() {
 export function useMeuPerfil() {
   return useQuery<PerfilUsuario>({
     queryKey: ['users', 'me'],
-    queryFn: () => authGet<PerfilUsuario>(`${API_ENDPOINTS.USERS}/me`),
+    queryFn: () => authGet<PerfilUsuario>(`${API_ENDPOINTS.USERS}/funcionarios/me`),
   })
 }
 

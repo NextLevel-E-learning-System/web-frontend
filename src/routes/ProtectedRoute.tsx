@@ -1,7 +1,7 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
-import { useDashboard, useDashboardCompleto } from '@/hooks/users'
+import {  useDashboardCompleto } from '@/hooks/users'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -37,7 +37,7 @@ export function ProtectedRoute({
   }
 
   // Extrair tipo_dashboard da estrutura da resposta
-  const tipoDashboard = dashboard?.dashboard_data?.tipo_dashboard
+  const tipoDashboard = dashboard?.tipo_dashboard
 
   // Se não conseguiu carregar dashboard, redirecionar para login
   if (!dashboard || !tipoDashboard) {

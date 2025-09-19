@@ -9,10 +9,8 @@ import {
   useRegisterFuncionario, 
   useResetPassword as useResetPasswordAPI 
 } from '@/api/users';
-import { setAccessToken, clearAccessToken, isTokenPersistent, authGet } from '@/api/http';
+import { setAccessToken, clearAccessToken, isTokenPersistent } from '@/api/http';
 import { showToast } from '@/utils/toast';
-import { API_ENDPOINTS } from '@/api/config';
-import type { DashboardData } from '@/hooks/users';
 
 // Types
 export interface LoginCredentials {
@@ -50,39 +48,14 @@ export function useLogin() {
       
       return result;
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       showToast.success('Login realizado com sucesso!');
       
-      try {
-        // Buscar dashboard para identificar a role do usuário
-        const dashboardResponse = await authGet<{ dashboard_data: DashboardData }>(`${API_ENDPOINTS.USERS}/dashboard`);
-        const dashboardType = dashboardResponse.dashboard_data.tipo_dashboard;
-        
-        // Redirecionar baseado na role
-        switch (dashboardType) {
-          case 'aluno':
-            navigate('/dashboard/funcionario'); // ALUNO usa dashboard de funcionário
-            break;
-          case 'instrutor':
-            navigate('/dashboard/instrutor');
-            break;
-          case 'admin':
-          case 'gerente':
-            navigate('/dashboard/admin'); // ADMIN e GERENTE usam o mesmo dashboard
-            break;
-          default:
-            console.warn(`Tipo de dashboard desconhecido: ${dashboardType}`);
-            navigate('/dashboard/funcionario'); // Fallback para funcionário
-        }
-        
-        // Invalidar cache para forçar nova busca dos dados
-        queryClient.invalidateQueries({ queryKey: ['users'] });
-        
-      } catch (error) {
-        console.error('[useLogin] Erro ao buscar dashboard:', error);
-        // Fallback: redirecionar para dashboard padrão
-        navigate('/dashboard/funcionario');
-      }
+      // Invalidar cache para forçar nova busca dos dados
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      
+      // Redirecionar para a página principal - o ProtectedRoute vai redirecioná-lo para o dashboard correto
+      navigate('/dashboard/funcionario');
     },
     onError: (error: any) => {
       console.error('[useLogin] Erro:', error);
