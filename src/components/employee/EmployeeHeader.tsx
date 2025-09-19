@@ -20,25 +20,30 @@ import {
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
-import { PerfilUsuario, DashboardData } from '@/hooks/users'
 
 interface EmployeeHeaderProps {
-  perfil: PerfilUsuario
-  dashboardData: DashboardData
+  dashboardData: {
+    tipo_dashboard?: string;
+    xp_atual: number;
+    nivel_atual: number;
+    progresso_nivel: number;
+    ranking_departamento?: number;
+    xp_proximo_nivel?: number;
+    badges_conquistados?: any[];
+  }
 }
 
 export default function EmployeeHeader({
-  perfil,
   dashboardData,
 }: EmployeeHeaderProps) {
   const nivelAtual = dashboardData?.nivel_atual || 1
   const xpAtual = dashboardData?.xp_atual || 0
-  const xp_proximo_nivel = dashboardData?.xp_proximo_nivel || 1000
-  const progresso_nivel = dashboardData?.progresso_nivel || 0
+  const xpProximoNivel = dashboardData?.xp_proximo_nivel || ((nivelAtual + 1) * 1000)
+  const progressoNivel = dashboardData?.progresso_nivel || 0
   const badges = dashboardData?.badges_conquistados || []
 
   // Calcular quantos XP faltam para o próximo nível
-  const xpFaltante = xp_proximo_nivel - xpAtual
+  const xpFaltante = xpProximoNivel - xpAtual
 
   return (
     <Card
@@ -69,11 +74,10 @@ export default function EmployeeHeader({
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Olá, {perfil?.nome?.split(' ')[0]}!
+            Olá, Usuário!
           </Typography>
           <Typography color='text.secondary' sx={{ mt: 0.5 }}>
-            {' '}
-            Nível {nivelAtual} - {perfil?.nivel}
+            Nível {nivelAtual}
           </Typography>
         </Box>
       </Box>
@@ -89,7 +93,7 @@ export default function EmployeeHeader({
             }}
           >
             <Typography variant='body2' fontWeight={600}>
-              Progresso
+              Progresso para o Nível {nivelAtual + 1}
             </Typography>
             <Typography variant='body2' color='text.secondary'>
               {xpAtual} XP
@@ -97,7 +101,7 @@ export default function EmployeeHeader({
           </Box>
           <LinearProgress
             variant='determinate'
-            value={xpAtual}
+            value={progressoNivel}
             sx={{ height: 8, borderRadius: 999 }}
           />
           <Typography
@@ -117,15 +121,20 @@ export default function EmployeeHeader({
       <Box
         sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
       >
-        {badges.slice(0, 3).map((badge, i) => (
-          <Chip key={i} variant='outlined' size='small' label={`🏆 ${badge}`} />
+        {badges.slice(0, 3).map((badge: any, i: number) => (
+          <Chip key={i} variant='outlined' size='small' label={`🏆 ${badge.nome || badge}`} />
         ))}
         {badges.length > 3 && (
           <Chip
             variant='outlined'
             size='small'
-            label={`+${badges.length - 3} more`}
+            label={`+${badges.length - 3} mais`}
           />
+        )}
+        {badges.length === 0 && (
+          <Typography variant='caption' color='text.secondary'>
+            Nenhum badge conquistado ainda
+          </Typography>
         )}
       </Box>
     </Card>

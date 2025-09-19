@@ -13,26 +13,57 @@ import {
   Tabs,
   Typography,
   Grid,
+  Alert,
+  CircularProgress,
 } from '@mui/material'
-import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
-import { useDashboardCompleto } from '@/hooks/users'
+import { useDashboard, DashboardAluno } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
-  const { dashboard, perfil, isLoading } = useDashboardCompleto()
+  const { data: dashboardData, isLoading, error } = useDashboard()
   const { navigationItems } = useNavigation()
 
-  // Extrair dados do dashboard (suporta estrutura com dashboard_data)
-  const dashboardData = dashboard?.dashboard_data
-  const cursosEmAndamento = dashboardData?.cursos_em_andamento || []
-  const cursosConcluidos = dashboardData?.cursos_concluidos || []
-  const timeline = dashboardData?.timeline || []
+  // Type guard para garantir que é um dashboard de aluno
+  const alunoData = dashboardData?.tipo_dashboard === 'aluno' ? (dashboardData as DashboardAluno) : null
+
+  if (isLoading) {
+    return (
+      <DashboardLayout title='Página Inicial' items={navigationItems}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
+      </DashboardLayout>
+    )
+  }
+
+  if (error || !alunoData) {
+    return (
+      <DashboardLayout title='Página Inicial' items={navigationItems}>
+        <Alert severity="error">
+          Erro ao carregar dados do dashboard. Tente novamente.
+        </Alert>
+      </DashboardLayout>
+    )
+  }
+
+  const { progressao, cursos, ranking, atividades_recentes } = alunoData
 
   return (
     <DashboardLayout title='Página Inicial' items={navigationItems}>
-      <EmployeeHeader perfil={perfil} dashboardData={dashboardData} />
+      <EmployeeHeader 
+        dashboardData={{
+          tipo_dashboard: alunoData.tipo_dashboard,
+          xp_atual: progressao.xp_atual,
+          nivel_atual: progressao.nivel_atual,
+          progresso_nivel: progressao.progresso_nivel,
+          ranking_departamento: ranking.posicao_departamento,
+          xp_proximo_nivel: progressao.xp_proximo_nivel,
+          badges_conquistados: progressao.badges_conquistados
+        }} 
+      />
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ overflow: 'hidden' }}>
@@ -48,17 +79,17 @@ export default function EmployeeDashboard() {
             <CardContent>
               {tab === 0 && (
                 <List>
-                  {cursosEmAndamento.length > 0 ? (
-                    cursosEmAndamento.map((c: any) => (
+                  {cursos.em_andamento.length > 0 ? (
+                    cursos.em_andamento.map((c: any, index: number) => (
                       <ListItem
-                        key={c.id}
+                        key={c.id || index}
                         sx={{
                           flexDirection: 'column',
                           alignItems: 'flex-start',
                         }}
                       >
                         <Typography fontWeight={700}>
-                          {c.titulo || c.title || c.nome}
+                          {c.titulo || c.title || c.nome || 'Curso sem título'}
                         </Typography>
                         <Box
                           sx={{
@@ -79,7 +110,7 @@ export default function EmployeeDashboard() {
                           >
                             <Box
                               sx={{
-                                width: `${c.progress || c.progresso || 0}%`,
+                                width: `${c.progress || c.progresso || c.progresso_percentual || 0}%`,
                                 height: 8,
                                 bgcolor: 'primary.main',
                                 borderRadius: 5,
@@ -87,7 +118,7 @@ export default function EmployeeDashboard() {
                             />
                           </Box>
                           <Typography variant='body2' color='text.secondary'>
-                            {c.progress || c.progresso || 0}%
+                            {c.progress || c.progresso || c.progresso_percentual || 0}%
                           </Typography>
                           <Button size='small' variant='outlined'>
                             Continuar
@@ -107,11 +138,11 @@ export default function EmployeeDashboard() {
               )}
               {tab === 1 && (
                 <List>
-                  {cursosConcluidos.length > 0 ? (
-                    cursosConcluidos.map((c: any) => (
-                      <ListItem key={c.id}>
+                  {cursos.concluidos.length > 0 ? (
+                    cursos.concluidos.map((c: any, index: number) => (
+                      <ListItem key={c.id || index}>
                         <ListItemText
-                          primary={c.titulo || c.title || c.nome}
+                          primary={c.titulo || c.title || c.nome || 'Curso sem título'}
                           secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
                         />
                         <Chip label='Concluído' color='success' size='small' />
@@ -138,12 +169,12 @@ export default function EmployeeDashboard() {
                 Atividades Recentes
               </Typography>
               <List dense>
-                {timeline.length > 0 ? (
-                  timeline.map((a: any) => (
-                    <ListItem key={a.id}>
+                {atividades_recentes.length > 0 ? (
+                  atividades_recentes.map((a: any, index: number) => (
+                    <ListItem key={a.id || index}>
                       <ListItemText
-                        primary={a.text || a.descricao}
-                        secondary={a.time || a.data || 'Recente'}
+                        primary={a.text || a.descricao || a.titulo || 'Atividade'}
+                        secondary={a.time || a.data || a.data_criacao || 'Recente'}
                       />
                     </ListItem>
                   ))
@@ -158,15 +189,25 @@ export default function EmployeeDashboard() {
               </List>
               <Divider sx={{ my: 1.5 }} />
               <Typography fontWeight={700} gutterBottom>
-                Alertas
+                Cursos Recomendados
               </Typography>
               <List dense>
-                <ListItem>
-                  <ListItemText
-                    primary='Avaliação pendente: Módulo 2'
-                    secondary='Prazo: hoje'
-                  />
-                </ListItem>
+                {cursos.recomendados.slice(0, 3).map((c: any, index: number) => (
+                  <ListItem key={c.id || index}>
+                    <ListItemText
+                      primary={c.titulo || c.title || c.nome || 'Curso recomendado'}
+                      secondary={c.categoria || 'Recomendado para você'}
+                    />
+                  </ListItem>
+                ))}
+                {cursos.recomendados.length === 0 && (
+                  <Typography
+                    color='text.secondary'
+                    sx={{ p: 1, textAlign: 'center' }}
+                  >
+                    Nenhuma recomendação disponível
+                  </Typography>
+                )}
               </List>
             </CardContent>
           </Card>

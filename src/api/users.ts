@@ -80,6 +80,89 @@ export interface ResetPasswordResponse {
   sucesso: boolean;
 }
 
+// Dashboard Types
+export interface DashboardAluno {
+  tipo_dashboard: 'aluno';
+  progressao: {
+    xp_atual: number;
+    nivel_atual: number;
+    xp_proximo_nivel: number;
+    progresso_nivel: number;
+    badges_conquistados: any[];
+  };
+  cursos: {
+    em_andamento: any[];
+    concluidos: any[];
+    recomendados: any[];
+    populares: any[];
+  };
+  ranking: {
+    posicao_departamento?: number;
+    total_departamento?: number;
+    posicao_geral?: number;
+  };
+  atividades_recentes: any[];
+}
+
+export interface DashboardInstrutor {
+  tipo_dashboard: 'instrutor';
+  metricas: {
+    total_cursos: number;
+    total_alunos: number;
+    taxa_conclusao_geral: number;
+    avaliacao_media_geral: number;
+    pendentes_correcao: number;
+  };
+  cursos: {
+    codigo: string;
+    titulo: string;
+    inscritos: number;
+    concluidos: number;
+    taxa_conclusao: number;
+    avaliacao_media?: number;
+    status: string;
+  }[];
+  alertas: any[];
+  atividades_recentes: any[];
+}
+
+export interface DashboardGerente {
+  tipo_dashboard: 'gerente';
+  departamento: {
+    nome: string;
+    total_funcionarios: number;
+    funcionarios_ativos: number;
+    taxa_conclusao_cursos: number;
+    xp_medio_funcionarios: number;
+  };
+  top_performers: any[];
+  cursos_departamento: any[];
+  alertas: any[];
+}
+
+export interface DashboardAdmin {
+  tipo_dashboard: 'administrador';
+  metricas_gerais: {
+    total_usuarios: number;
+    usuarios_ativos_30d: number;
+    total_instrutores: number;
+    total_cursos: number;
+    taxa_conclusao_geral: number;
+    inscricoes_30d: number;
+    avaliacao_media_plataforma: number;
+  };
+  engajamento_departamentos: {
+    departamento: string;
+    total_funcionarios: number;
+    xp_medio: number;
+    funcionarios_ativos: number;
+  }[];
+  cursos_populares: any[];
+  alertas: any[];
+}
+
+export type DashboardData = DashboardAluno | DashboardInstrutor | DashboardGerente | DashboardAdmin;
+
 // Hooks para Departamentos
 export function useDepartamentos() {
   return useQuery<Departamento[]>({
@@ -208,5 +291,13 @@ export function useResetPassword() {
     mutationKey: ['users', 'funcionarios', 'reset-password'],
     mutationFn: (input: ResetPasswordInput) =>
       authPost<ResetPasswordResponse>(`${API_ENDPOINTS.USERS}/reset-password`, input)
+  });
+}
+
+// Hook para Dashboard
+export function useDashboard() {
+  return useQuery<DashboardData>({
+    queryKey: ['users', 'dashboard'],
+    queryFn: () => authGet<DashboardData>(`${API_ENDPOINTS.USERS}/funcionarios/dashboard`)
   });
 }
