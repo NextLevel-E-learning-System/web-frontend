@@ -124,7 +124,8 @@ export function useCategories() {
 export function useCategory(codigo: string) {
   return useQuery<Category>({
     queryKey: ['courses', 'categories', codigo],
-    queryFn: () => authGet<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`),
+    queryFn: () =>
+      authGet<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`),
     enabled: !!codigo,
   })
 }
@@ -151,7 +152,9 @@ export function useUpdateCategory(codigo: string) {
       authPut<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
-      queryClient.invalidateQueries({ queryKey: ['courses', 'categories', codigo] })
+      queryClient.invalidateQueries({
+        queryKey: ['courses', 'categories', codigo],
+      })
     },
   })
 }

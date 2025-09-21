@@ -227,13 +227,19 @@ export default function AdminUsers() {
     }
   }
 
-  const handleToggleAtivo = async (id: string, nome: string, ativo: boolean) => {
+  const handleToggleAtivo = async (
+    id: string,
+    nome: string,
+    ativo: boolean
+  ) => {
     const acao = ativo ? 'desativar' : 'ativar'
     if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
       try {
         // Aqui você precisa implementar a API para ativar/desativar usuário
         // Por enquanto, só mostro o toast de sucesso
-        toast.success(`Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`)
+        toast.success(
+          `Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
+        )
         refetchUsers()
       } catch (error) {
         toast.error(`Erro ao ${acao} usuário`)
@@ -401,7 +407,9 @@ export default function AdminUsers() {
                           />
                           <Typography
                             variant='body2'
-                            color={user.ativo ? 'success.main' : 'text.disabled'}
+                            color={
+                              user.ativo ? 'success.main' : 'text.disabled'
+                            }
                             fontWeight={500}
                           >
                             {user.ativo ? 'ATIVO' : 'INATIVO'}

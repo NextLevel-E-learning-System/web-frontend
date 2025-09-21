@@ -205,7 +205,8 @@ export default function AdminDepartments() {
           })
           refetch()
         } catch (error: any) {
-          const errorMessage = error?.response?.data?.message || 'Erro ao excluir departamento'
+          const errorMessage =
+            error?.response?.data?.message || 'Erro ao excluir departamento'
           toast.error(errorMessage)
           console.error(error)
           setConfirmDialog(prev => ({ ...prev, isLoading: false }))
@@ -252,7 +253,8 @@ export default function AdminDepartments() {
           <CardContent>
             {departamentosFiltrados.length === 0 ? (
               <Alert severity='info'>
-                Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.
+                Nenhum departamento cadastrado. Clique em "Adicionar
+                Departamento" para começar.
               </Alert>
             ) : (
               <TableContainer
@@ -338,7 +340,11 @@ export default function AdminDepartments() {
                           </TableCell>
                         )}
                         <TableCell align='right'>
-                          <Stack direction='row' spacing={1} justifyContent='flex-end'>
+                          <Stack
+                            direction='row'
+                            spacing={1}
+                            justifyContent='flex-end'
+                          >
                             <IconButton
                               size='small'
                               onClick={() => handleEdit(dept)}
@@ -349,10 +355,15 @@ export default function AdminDepartments() {
                             </IconButton>
                             <IconButton
                               size='small'
-                              onClick={() => handleDelete(dept.codigo, dept.nome)}
+                              onClick={() =>
+                                handleDelete(dept.codigo, dept.nome)
+                              }
                               aria-label='excluir'
                               color='error'
-                              disabled={deleteDepartamento.isPending || confirmDialog.isLoading}
+                              disabled={
+                                deleteDepartamento.isPending ||
+                                confirmDialog.isLoading
+                              }
                             >
                               <DeleteIcon />
                             </IconButton>

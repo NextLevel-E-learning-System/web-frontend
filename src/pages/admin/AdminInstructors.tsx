@@ -81,13 +81,19 @@ export default function AdminInstructors() {
     setIsAddOpen(true)
   }
 
-  const handleToggleAtivo = async (id: string, nome: string, ativo: boolean) => {
+  const handleToggleAtivo = async (
+    id: string,
+    nome: string,
+    ativo: boolean
+  ) => {
     const acao = ativo ? 'desativar' : 'ativar'
     if (confirm(`Tem certeza que deseja ${acao} o instrutor "${nome}"?`)) {
       try {
         // Aqui você precisa implementar a API para ativar/desativar instrutor
         // Por enquanto, só mostro o toast de sucesso
-        toast.success(`Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`)
+        toast.success(
+          `Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
+        )
       } catch (error) {
         toast.error(`Erro ao ${acao} instrutor`)
         console.error(error)
@@ -170,11 +176,11 @@ export default function AdminInstructors() {
                       </TableCell>
                       <TableCell>{instrutor.email}</TableCell>
                       <TableCell>
-                        {departamentos.find(d => d.codigo === instrutor.departamento_id)?.nome || instrutor.departamento_id}
+                        {departamentos.find(
+                          d => d.codigo === instrutor.departamento_id
+                        )?.nome || instrutor.departamento_id}
                       </TableCell>
-                      <TableCell>
-                        {instrutor.cargo_nome || '—'}
-                      </TableCell>
+                      <TableCell>{instrutor.cargo_nome || '—'}</TableCell>
                       <TableCell>
                         <Box
                           sx={{
@@ -196,7 +202,9 @@ export default function AdminInstructors() {
                           />
                           <Typography
                             variant='body2'
-                            color={instrutor.ativo ? 'success.main' : 'text.disabled'}
+                            color={
+                              instrutor.ativo ? 'success.main' : 'text.disabled'
+                            }
                             fontWeight={500}
                           >
                             {instrutor.ativo ? 'Ativo' : 'Inativo'}

@@ -38,13 +38,13 @@ import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
 import { useListarDepartamentosAdmin } from '@/api/users'
-import { 
-  useCategories, 
-  useCreateCategory, 
-  useUpdateCategory, 
+import {
+  useCategories,
+  useCreateCategory,
+  useUpdateCategory,
   useDeleteCategory,
   type Category,
-  type CreateCategoryInput 
+  type CreateCategoryInput,
 } from '@/api/courses'
 import { authPut } from '@/api/http'
 import { API_ENDPOINTS } from '@/api/config'
@@ -63,8 +63,9 @@ export default function AdminCategories() {
 
   const { data: departamentos = [], isLoading: loadingDepartamentos } =
     useListarDepartamentosAdmin()
-  const { data: categorias = [], isLoading: loadingCategorias } = useCategories()
-  
+  const { data: categorias = [], isLoading: loadingCategorias } =
+    useCategories()
+
   const createCategoryMutation = useCreateCategory()
   const deleteCategoryMutation = useDeleteCategory()
 
@@ -73,9 +74,11 @@ export default function AdminCategories() {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null)
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null
+  )
   const [isUpdating, setIsUpdating] = useState(false)
-  
+
   const [form, setForm] = useState<CategoryForm>({
     codigo: '',
     nome: '',
@@ -117,7 +120,7 @@ export default function AdminCategories() {
         descricao: form.descricao || undefined,
         cor_hex: form.cor_hex || undefined,
       })
-      
+
       toast.success('Categoria criada com sucesso!')
       setIsAddOpen(false)
       resetForm()
@@ -146,22 +149,27 @@ export default function AdminCategories() {
 
     setIsUpdating(true)
     try {
-      await authPut(`${API_ENDPOINTS.COURSES}/categorias/${editingCategory.codigo}`, {
-        nome: form.nome,
-        departamento_codigo: form.departamento_codigo,
-        descricao: form.descricao || undefined,
-        cor_hex: form.cor_hex || undefined,
-      })
-      
+      await authPut(
+        `${API_ENDPOINTS.COURSES}/categorias/${editingCategory.codigo}`,
+        {
+          nome: form.nome,
+          departamento_codigo: form.departamento_codigo,
+          descricao: form.descricao || undefined,
+          cor_hex: form.cor_hex || undefined,
+        }
+      )
+
       toast.success('Categoria atualizada com sucesso!')
       setIsEditOpen(false)
       setEditingCategory(null)
       resetForm()
-      
+
       // Refetch categorias
       window.location.reload() // Temporário até implementarmos invalidação manual
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || 'Erro ao atualizar categoria')
+      toast.error(
+        error?.response?.data?.message || 'Erro ao atualizar categoria'
+      )
     } finally {
       setIsUpdating(false)
     }
@@ -218,13 +226,13 @@ export default function AdminCategories() {
               </MenuItem>
               {departamentos.map(dept => (
                 <MenuItem key={dept.codigo} value={dept.codigo}>
-                   {dept.codigo} - {dept.nome}
+                  {dept.codigo} - {dept.nome}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <Button 
-            startIcon={<AddIcon />} 
+          <Button
+            startIcon={<AddIcon />}
             variant='contained'
             onClick={() => setIsAddOpen(true)}
           >
@@ -249,8 +257,8 @@ export default function AdminCategories() {
                   Nenhuma categoria encontrada
                 </Typography>
                 <Typography variant='body2' color='textSecondary'>
-                  {selectedDept === 'all' 
-                    ? 'Não há categorias cadastradas' 
+                  {selectedDept === 'all'
+                    ? 'Não há categorias cadastradas'
                     : 'Não há categorias para este departamento'}
                 </Typography>
               </Box>
@@ -265,7 +273,7 @@ export default function AdminCategories() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {categoriasFiltradas.map((categoria) => (
+                  {categoriasFiltradas.map(categoria => (
                     <TableRow key={categoria.codigo} hover>
                       <TableCell>
                         <Box
@@ -275,11 +283,19 @@ export default function AdminCategories() {
                             gap: 1.5,
                           }}
                         >
-                          <Avatar 
-                            sx={{ 
+                          <Avatar
+                            sx={{
                               bgcolor: categoria.cor_hex,
-                                                         }}
-                          />
+                              width: 36,
+                              height: 36,
+                              fontSize: '0.875rem',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {(categoria.departamento_codigo || '')
+                              .substring(0, 2)
+                              .toUpperCase()}
+                          </Avatar>
                           <Typography fontWeight={500}>
                             {categoria.nome}
                           </Typography>
@@ -288,12 +304,11 @@ export default function AdminCategories() {
                       <TableCell>
                         <Box>
                           <Typography variant='body2' fontWeight={500}>
-                            {getDepartmentName(categoria.departamento_codigo || '')}
+                            {getDepartmentName(
+                              categoria.departamento_codigo || ''
+                            )}
                           </Typography>
-                          <Typography
-                            variant='caption'
-                            color='text.secondary'
-                          >
+                          <Typography variant='caption' color='text.secondary'>
                             {categoria.departamento_codigo}
                           </Typography>
                         </Box>
@@ -312,8 +327,8 @@ export default function AdminCategories() {
                         </Typography>
                       </TableCell>
                       <TableCell align='right'>
-                        <IconButton 
-                          size='small' 
+                        <IconButton
+                          size='small'
                           aria-label='editar'
                           onClick={() => handleEdit(categoria)}
                         >
@@ -422,8 +437,8 @@ export default function AdminCategories() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button 
-              variant='outlined' 
+            <Button
+              variant='outlined'
               onClick={() => {
                 setIsAddOpen(false)
                 resetForm()
@@ -431,20 +446,22 @@ export default function AdminCategories() {
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               variant='contained'
               onClick={handleCreate}
               disabled={createCategoryMutation.isPending}
             >
-              {createCategoryMutation.isPending ? 'Criando...' : 'Criar Categoria'}
+              {createCategoryMutation.isPending
+                ? 'Criando...'
+                : 'Criar Categoria'}
             </Button>
           </DialogActions>
         </Dialog>
 
         {/* Dialog Editar Categoria */}
-        <Dialog 
-          maxWidth='sm' 
-          fullWidth 
+        <Dialog
+          maxWidth='sm'
+          fullWidth
           open={isEditOpen}
           onClose={() => {
             setIsEditOpen(false)
@@ -526,7 +543,7 @@ export default function AdminCategories() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button 
+            <Button
               variant='outlined'
               onClick={() => {
                 setIsEditOpen(false)
@@ -536,7 +553,7 @@ export default function AdminCategories() {
             >
               Cancelar
             </Button>
-            <Button 
+            <Button
               variant='contained'
               onClick={handleUpdate}
               disabled={isUpdating}

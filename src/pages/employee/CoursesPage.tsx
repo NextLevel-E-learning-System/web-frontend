@@ -108,7 +108,9 @@ export default function CoursesPage() {
   // Filtrar categorias por departamento selecionado
   const categoriasFiltradas = useMemo(() => {
     if (!selectedDepartment) return categorias || []
-    return (categorias || []).filter(cat => cat.departamento_codigo === selectedDepartment)
+    return (categorias || []).filter(
+      cat => cat.departamento_codigo === selectedDepartment
+    )
   }, [categorias, selectedDepartment])
 
   // Função para contar cursos por categoria
@@ -227,8 +229,7 @@ export default function CoursesPage() {
               textAlign: 'center',
             }}
           >
-            {getContagemCursosPorCategoria(categoria.codigo)}{' '}
-            Cursos
+            {getContagemCursosPorCategoria(categoria.codigo)} Cursos
           </Typography>
         </CardContent>
       </Card>
