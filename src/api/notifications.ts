@@ -102,7 +102,7 @@ export function useNotifications(params: NotificationsParams = {}) {
     searchParams.append('unread', params.unread.toString())
 
   const queryString = searchParams.toString()
-  const url = `${API_ENDPOINTS.NOTIFICATIONS}/notificacoes${queryString ? `?${queryString}` : ''}`
+  const url = `${API_ENDPOINTS.NOTIFICATIONS}${queryString ? `?${queryString}` : ''}`
 
   return useQuery<NotificationsPagination>({
     queryKey: ['notifications', 'list', params],
@@ -115,7 +115,7 @@ export function useUnreadNotificationsCount() {
     queryKey: ['notifications', 'unread-count'],
     queryFn: () =>
       authGet<UnreadCountResponse>(
-        `${API_ENDPOINTS.NOTIFICATIONS}/notificacoes/count`
+        `${API_ENDPOINTS.NOTIFICATIONS}/count`
       ),
     refetchInterval: 30000, // Refetch every 30 seconds
   })
@@ -128,7 +128,7 @@ export function useCreateNotification() {
     mutationKey: ['notifications', 'create'],
     mutationFn: (input: CreateNotificationInput) =>
       authPost<Notification>(
-        `${API_ENDPOINTS.NOTIFICATIONS}/notificacoes`,
+        `${API_ENDPOINTS.NOTIFICATIONS}`,
         input
       ),
     onSuccess: () => {
@@ -147,7 +147,7 @@ export function useMarkNotificationAsRead() {
     mutationKey: ['notifications', 'mark-read'],
     mutationFn: (notificationId: number) =>
       authPut(
-        `${API_ENDPOINTS.NOTIFICATIONS}/notificacoes/${notificationId}/read`
+        `${API_ENDPOINTS.NOTIFICATIONS}/${notificationId}/read`
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
@@ -165,7 +165,7 @@ export function useMarkAllNotificationsAsRead() {
     mutationKey: ['notifications', 'mark-all-read'],
     mutationFn: () =>
       authPut<MarkAllAsReadResponse>(
-        `${API_ENDPOINTS.NOTIFICATIONS}/notificacoes/read-all`
+        `${API_ENDPOINTS.NOTIFICATIONS}/read-all`
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
@@ -173,15 +173,5 @@ export function useMarkAllNotificationsAsRead() {
         queryKey: ['notifications', 'unread-count'],
       })
     },
-  })
-}
-
-// Hook para notificações de um usuário específico (rota legada)
-export function useUserNotifications(usuarioId: string) {
-  return useQuery({
-    queryKey: ['notifications', 'user', usuarioId],
-    queryFn: () =>
-      authGet(`${API_ENDPOINTS.NOTIFICATIONS}/notificacoes/${usuarioId}`),
-    enabled: !!usuarioId,
   })
 }

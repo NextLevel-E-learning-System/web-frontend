@@ -21,6 +21,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 import { useMeuPerfil } from '@/api/users'
+import NotificationDropdown from '@/components/notifications/NotificationDropdown'
 
 interface EmployeeHeaderProps {
   dashboardData: {
@@ -95,9 +96,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
             <LocalFireDepartmentIcon sx={{ color: '#F97316' }} />
             <Typography fontWeight={600}>{cursosConcluido}</Typography>
           </Box>
-          <IconButton color='inherit' aria-label='notifications'>
-            <NotificationsNoneIcon sx={{ color: 'text.secondary' }} />
-          </IconButton>
+          <NotificationDropdown />
         </Box>
       </Box>
 

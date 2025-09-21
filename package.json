@@ -19,6 +19,7 @@
     "@mui/material": "^7.3.2",
     "@types/echarts": "^5.0.0",
     "axios": "^1.7.9",
+    "date-fns": "^4.1.0",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.4",
     "jwt-decode": "^4.0.0",
