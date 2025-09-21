@@ -20,6 +20,11 @@ import {
   Alert,
   Skeleton,
   Grid,
+  Chip,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -33,10 +38,13 @@ import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarDepartamentos,
+  useListarDepartamentosAdmin,
+  useFuncionarios,
   useCriarDepartamento,
   useAtualizarDepartamento,
+  useExcluirDepartamento,
   type Departamento,
+  type Funcionario,
 } from '@/api/users'
 
 interface DepartmentForm {
@@ -52,8 +60,10 @@ export default function AdminDepartments() {
     data: departamentos = [],
     isLoading,
     refetch,
-  } = useListarDepartamentos()
+  } = useListarDepartamentosAdmin()
+  const { data: funcionarios = [] } = useFuncionarios()
   const criarDepartamento = useCriarDepartamento()
+  const excluirDepartamento = useExcluirDepartamento()
   const [editingDept, setEditingDept] = useState<Departamento | null>(null)
   const atualizarDepartamento = useAtualizarDepartamento(
     editingDept?.codigo || ''
@@ -70,6 +80,18 @@ export default function AdminDepartments() {
   const title = useMemo(
     () => (editingDept ? 'Editar Departamento' : 'Gerenciar Departamentos'),
     [editingDept]
+  )
+
+  // Função para buscar o nome do gestor
+  const getGestorNome = (gestorId: string | null) => {
+    if (!gestorId) return null
+    const gestor = funcionarios.find(f => f.id === gestorId)
+    return gestor ? gestor.nome : `ID: ${gestorId}`
+  }
+
+  // Filtrar apenas funcionários que podem ser gestores (GERENTE, ADMIN)
+  const funcionariosGestores = funcionarios.filter(f => 
+    f.role === 'GERENTE' || f.role === 'ADMIN'
   )
 
   const resetForm = () => {
@@ -146,6 +168,25 @@ export default function AdminDepartments() {
     }
   }
 
+  const handleDelete = async (codigo: string, nome: string) => {
+    if (
+      !confirm(
+        `Tem certeza que deseja excluir o departamento "${nome}"? Esta ação não pode ser desfeita.`
+      )
+    ) {
+      return
+    }
+
+    try {
+      await excluirDepartamento.mutateAsync(codigo)
+      toast.success('Departamento excluído com sucesso!')
+      refetch()
+    } catch (error) {
+      toast.error('Erro ao excluir departamento')
+      console.error(error)
+    }
+  }
+
   const DepartmentAvatar = ({
     codigo,
     nome,
@@ -217,7 +258,8 @@ export default function AdminDepartments() {
                     <TableCell>Código</TableCell>
                     <TableCell>Departamento</TableCell>
                     <TableCell>Descrição</TableCell>
-                    <TableCell>Gestor ID</TableCell>
+                    <TableCell>Gestor</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell align='right'>Ações</TableCell>
                   </TableRow>
                 </TableHead>
@@ -258,8 +300,15 @@ export default function AdminDepartments() {
                       </TableCell>
                       <TableCell>
                         <Typography variant='body2' color='text.secondary'>
-                          {dept.gestor_funcionario_id || '—'}
+                          {getGestorNome(dept.gestor_funcionario_id) || '—'}
                         </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={dept.ativo ? 'Ativo' : 'Inativo'}
+                          color={dept.ativo ? 'success' : 'default'}
+                          size='small'
+                        />
                       </TableCell>
                       <TableCell align='right'>
                         <IconButton
@@ -271,20 +320,10 @@ export default function AdminDepartments() {
                         </IconButton>
                         <IconButton
                           size='small'
-                          onClick={() => {
-                            if (
-                              confirm(
-                                `Tem certeza que deseja excluir o departamento "${dept.nome}"?`
-                              )
-                            ) {
-                              // TODO: Implementar exclusão quando endpoint estiver disponível
-                              toast.info(
-                                'Funcionalidade de exclusão será implementada em breve'
-                              )
-                            }
-                          }}
+                          onClick={() => handleDelete(dept.codigo, dept.nome)}
                           aria-label='excluir'
                           color='error'
+                          disabled={excluirDepartamento.isPending}
                         >
                           <DeleteIcon />
                         </IconButton>
@@ -326,15 +365,25 @@ export default function AdminDepartments() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='ID do Gestor'
-                  value={form.gestor_id}
-                  onChange={e =>
-                    setForm({ ...form, gestor_id: e.target.value })
-                  }
-                  placeholder='ID do usuário gestor (opcional)'
-                  fullWidth
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Gestor do Departamento</InputLabel>
+                  <Select
+                    value={form.gestor_id}
+                    onChange={e =>
+                      setForm({ ...form, gestor_id: e.target.value })
+                    }
+                    label="Gestor do Departamento"
+                  >
+                    <MenuItem value="">
+                      <em>Nenhum gestor</em>
+                    </MenuItem>
+                    {funcionariosGestores.map(funcionario => (
+                      <MenuItem key={funcionario.id} value={funcionario.id}>
+                        {funcionario.nome} ({funcionario.role})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
@@ -405,15 +454,25 @@ export default function AdminDepartments() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='ID do Gestor'
-                  value={form.gestor_id}
-                  onChange={e =>
-                    setForm({ ...form, gestor_id: e.target.value })
-                  }
-                  placeholder='ID do usuário gestor (opcional)'
-                  fullWidth
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Gestor do Departamento</InputLabel>
+                  <Select
+                    value={form.gestor_id}
+                    onChange={e =>
+                      setForm({ ...form, gestor_id: e.target.value })
+                    }
+                    label="Gestor do Departamento"
+                  >
+                    <MenuItem value="">
+                      <em>Nenhum gestor</em>
+                    </MenuItem>
+                    {funcionariosGestores.map(funcionario => (
+                      <MenuItem key={funcionario.id} value={funcionario.id}>
+                        {funcionario.nome} ({funcionario.role})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField

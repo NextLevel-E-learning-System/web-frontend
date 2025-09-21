@@ -222,6 +222,23 @@ export function useListarDepartamentos() {
   })
 }
 
+export function useListarDepartamentosAdmin() {
+  return useQuery<Departamento[]>({
+    queryKey: ['users', 'departamentos', 'admin'],
+    queryFn: () =>
+      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos`),
+  })
+}
+
+export function useBuscarDepartamento(codigo: string) {
+  return useQuery<Departamento>({
+    queryKey: ['users', 'departamentos', codigo],
+    queryFn: () =>
+      authGet<Departamento>(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`),
+    enabled: !!codigo,
+  })
+}
+
 export function useCriarDepartamento() {
   const queryClient = useQueryClient()
 
