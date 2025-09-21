@@ -144,8 +144,9 @@ export interface DashboardGerente {
 export interface DashboardAdmin {
   tipo_dashboard: 'administrador';
   metricas_gerais: {
-    total_usuarios: number;
-    usuarios_ativos_30d: number;
+    total_funcionarios: number;
+    funcionarios_ativos: number;
+    alunos_ativos: number;
     total_instrutores: number;
     total_cursos: number;
     taxa_conclusao_geral: number;
@@ -153,7 +154,8 @@ export interface DashboardAdmin {
     avaliacao_media_plataforma: number;
   };
   engajamento_departamentos: {
-    departamento: string;
+    codigo: string;
+    nome: string;
     total_funcionarios: number;
     xp_medio: number;
     funcionarios_ativos: number;

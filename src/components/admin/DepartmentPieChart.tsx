@@ -40,28 +40,31 @@ export default function DepartmentPieChart({
 
     const myChart = echarts.init(chartRef.current)
 
-    // Filtrar apenas departamentos com dados > 0 para o gráfico pizza
-    const chartData = data
-      .map((value, index) => ({
-        value,
-        name: `${departmentNames[index]} (${labels[index]})`,
-        label: labels[index],
-        fullName: departmentNames[index],
-      }))
-      .filter(item => item.value > 0)
+    // Criar dados do gráfico - sempre mostrar todos os departamentos na legenda
+    const chartData = data.map((value, index) => ({
+      value,
+      name: labels[index], // Usar código do departamento ao invés do nome completo
+      label: labels[index],
+      fullName: departmentNames[index],
+    }))
 
     const option: EChartsOption = {
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b}: {c} ({d}%)',
+        formatter: (params: any) => {
+          const item = chartData.find(d => d.name === params.name)
+          const fullName = item ? item.fullName : params.name
+          return `${fullName}<br/>XP Médio: ${params.value} (${params.percent}%)`
+        },
       },
       legend: {
         orient: 'horizontal',
         left: 'center',
         bottom: '0%',
         formatter: (name: string) => {
+          // Mostrar nome do departamento com o valor do XP médio
           const item = chartData.find(d => d.name === name)
-          return item ? `${item.label}: ${item.value}` : name
+          return item ? `${name}: ${item.value} XP` : name
         },
       },
       series: [

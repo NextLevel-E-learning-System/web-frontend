@@ -48,24 +48,24 @@ export default function AdminDashboard() {
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <StatCard
-                    title='Total de Usuários'
-                    value={metricas_gerais.total_usuarios}
+                    title='Total de Funcionários'
+                    value={metricas_gerais.total_funcionarios}
                     icon={<People />}
                     positive={true}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <StatCard
-                    title='Usuários Ativos (30d)'
-                    value={metricas_gerais.usuarios_ativos_30d}
+                    title='Funcionários Ativos'
+                    value={metricas_gerais.funcionarios_ativos}
                     icon={<CheckCircle />}
                     positive={true}
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <StatCard
-                    title='Total de Cursos'
-                    value={metricas_gerais.total_cursos}
+                    title='Alunos Ativos'
+                    value={metricas_gerais.alunos_ativos}
                     icon={<School />}
                     positive={true}
                   />
@@ -119,11 +119,11 @@ export default function AdminDashboard() {
                     overflow: 'auto'
                   }}>
                     <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                      Funcionários Ativos por Departamento
+                      Alunos Ativos por Departamento
                     </Typography>
                     <DepartmentBarChart
                       data={engajamento_departamentos.map(d => d.funcionarios_ativos)}
-                      labels={engajamento_departamentos.map(d => d.departamento)}
+                      labels={engajamento_departamentos.map(d => d.codigo)}
                     />
                   </Paper>
                 </Grid>
@@ -140,9 +140,9 @@ export default function AdminDashboard() {
                     </Typography>
                     <DepartmentPieChart
                       data={engajamento_departamentos.map(d => d.xp_medio)}
-                      labels={engajamento_departamentos.map(d => d.departamento)}
-                      departmentNames={engajamento_departamentos.map(d => d.departamento)}
-                     />
+                      labels={engajamento_departamentos.map(d => d.codigo)}
+                      departmentNames={engajamento_departamentos.map(d => d.nome)}
+                    />
                   </Paper>
                 </Grid>
               </Grid>
@@ -166,16 +166,19 @@ export default function AdminDashboard() {
                           <TableRow>
                             <TableCell>Departamento</TableCell>
                             <TableCell align='right'>Total Funcionários</TableCell>
-                            <TableCell align='right'>Funcionários Ativos</TableCell>
+                            <TableCell align='right'>Alunos Ativos</TableCell>
                             <TableCell align='right'>XP Médio</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {engajamento_departamentos.map(dept => (
-                            <TableRow key={dept.departamento} hover>
+                            <TableRow key={dept.codigo} hover>
                               <TableCell>
                                 <Typography variant='body2' fontWeight={500}>
-                                  {dept.departamento}
+                                  {dept.nome}
+                                </Typography>
+                                <Typography variant='caption' color='text.secondary'>
+                                  {dept.codigo}
                                 </Typography>
                               </TableCell>
                               <TableCell align='right'>
