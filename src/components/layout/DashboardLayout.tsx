@@ -1,4 +1,4 @@
-import { PropsWithChildren, useMemo, useState } from 'react'
+import { PropsWithChildren, useMemo, useState, useEffect } from 'react'
 import {
   AppBar,
   Avatar,
@@ -14,8 +14,9 @@ import {
   Toolbar,
   Typography,
   useMediaQuery,
+  useTheme,
   Collapse,
-  Tooltip,
+  Tooltip
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -42,14 +43,37 @@ export default function DashboardLayout({
   items,
   children,
 }: PropsWithChildren<{ title: string; items: NavItem[] }>) {
+  const theme = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
-  const isMdUp = useMediaQuery('(min-width:900px)')
+  
+  // Melhor detecção de breakpoints para responsividade
+  const isLgUp = useMediaQuery(theme.breakpoints.up('lg')) // 1200px+
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md')) // 900px+
+  const isSmUp = useMediaQuery(theme.breakpoints.up('sm')) // 600px+
+  
   const location = useLocation()
   const { mutate } = useLogout()
   const currentPath = typeof location !== 'undefined' ? location.pathname : ''
   const { data: perfil } = useMeuPerfil()
+  
+  // Auto-collapse sidebar em telas menores
+  useEffect(() => {
+    if (!isLgUp && !isCollapsed) {
+      setIsCollapsed(true)
+    } else if (isLgUp && isCollapsed) {
+      setIsCollapsed(false)
+    }
+  }, [isLgUp, isCollapsed])
+  
+  // Fechar sidebar mobile ao redimensionar
+  useEffect(() => {
+    if (isMdUp && mobileOpen) {
+      setMobileOpen(false)
+    }
+  }, [isMdUp, mobileOpen])
+  
   const avatarText = useMemo(() => {
     if (!perfil?.nome) return ''
     const partes = perfil.nome.trim().split(' ')
@@ -260,6 +284,17 @@ export default function DashboardLayout({
             <MenuIcon />
           </IconButton>
         )}
+        {!isMdUp && (
+          <IconButton
+            size='small'
+            color='inherit'
+            onClick={() => setMobileOpen(true)}
+            aria-label='open drawer'
+            sx={{ alignSelf: 'center' }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255,255,255,.12)' }} />
       <Box sx={{ flex: 1, overflow: 'auto' }}>{renderItems(items)}</Box>
@@ -267,11 +302,23 @@ export default function DashboardLayout({
   )
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#F5F7FB' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      minHeight: '100vh', 
+      bgcolor: '#F5F7FB',
+      // Evitar overflow horizontal
+      maxWidth: '100vw',
+      overflow: 'hidden'
+    }}>
       <CssBaseline />
       <Box
         component='nav'
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        sx={{ 
+          width: { md: drawerWidth }, 
+          flexShrink: { md: 0 },
+          // Garantir que não cause overflow
+          minWidth: 0
+        }}
         aria-label='sidebar'
       >
         <Drawer
@@ -284,6 +331,11 @@ export default function DashboardLayout({
               width: drawerWidth,
               boxSizing: 'border-box',
               border: 0,
+              // Transição suave para mudanças de largura
+              transition: theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
             },
           }}
         >
@@ -291,7 +343,18 @@ export default function DashboardLayout({
         </Drawer>
       </Box>
 
-      <Box component='main' sx={{ flexGrow: 1, p: 0 }}>
+      <Box 
+        component='main' 
+        sx={{ 
+          flexGrow: 1, 
+          p: 0,
+          // Garantir que o conteúdo se ajuste adequadamente
+          minWidth: 0,
+          width: `calc(100vw - ${isMdUp ? drawerWidth : 0}px)`,
+          // Melhor controle de overflow
+          overflow: 'auto',
+        }}
+      >
         <AppBar
           position='sticky'
           color='inherit'
@@ -300,10 +363,37 @@ export default function DashboardLayout({
             borderBottom: t => `1px solid ${t.palette.divider}`,
             bgcolor: 'rgba(255,255,255,.9)',
             backdropFilter: 'saturate(120%) blur(6px)',
+            // Ajustar largura baseado na sidebar
+            width: '100%',
           }}
         >
-          <Toolbar sx={{ gap: 2 }}>
-            <Typography variant='h6' fontWeight={800} sx={{ flexGrow: 1 }}>
+          <Toolbar sx={{ 
+            gap: 2,
+            minHeight: { xs: 56, sm: 64 },
+            px: { xs: 2, sm: 3 }
+          }}>
+            {!isMdUp && (
+              <IconButton
+                color='inherit'
+                aria-label='open drawer'
+                edge='start'
+                onClick={() => setMobileOpen(true)}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+            <Typography 
+              variant='h6' 
+              fontWeight={800} 
+              sx={{ 
+                flexGrow: 1,
+                // Evitar quebra em telas pequenas
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}
+            >
               {title}
             </Typography>
             <Avatar sx={{ width: 32, height: 32 }}>{avatarText}</Avatar>
@@ -317,7 +407,14 @@ export default function DashboardLayout({
           </Toolbar>
         </AppBar>
 
-        <Box sx={{ p: 3 }}>{children}</Box>
+        <Box sx={{ 
+          p: { xs: 2, sm: 3 },
+          // Garantir que o conteúdo se ajuste bem
+          maxWidth: '100%',
+          overflow: 'auto'
+        }}>
+          {children}
+        </Box>
       </Box>
     </Box>
   )

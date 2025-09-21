@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { People, School, Assignment, CheckCircle } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { useNavigation } from '@/hooks/useNavigation'
+import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import StatCard from '@/components/admin/StatCard'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
@@ -23,7 +23,7 @@ import { DashboardAdmin, DashboardGerente } from '@/api/users'
 import { useDashboardCompleto } from '@/api/users'
 
 export default function AdminDashboard() {
-  const { navigationItems } = useNavigation()
+  const { title, navigationItems } = useDashboardLayout()
   const { dashboard, isLoading, error } = useDashboardCompleto()
 
   // Type guards para diferentes tipos de dashboard
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title='Dashboard do Administrador' items={navigationItems}>
+      <DashboardLayout title={title} items={navigationItems}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
   if (error || (!adminData && !gerenteData)) {
     return (
-      <DashboardLayout title='Dashboard do Administrador' items={navigationItems}>
+      <DashboardLayout title={title} items={navigationItems}>
         <Alert severity="error">
           Erro ao carregar dados do dashboard. Tente novamente.
           {error && <div>Erro: {error.toString()}</div>}
@@ -60,8 +60,11 @@ export default function AdminDashboard() {
     const departamentoRestrito = (adminData as any)._departamento_restrito
 
     return (
-    <DashboardLayout title='Dashboard do Administrador' items={navigationItems}>
-        <Box>
+    <DashboardLayout title={title} items={navigationItems}>
+        <Box sx={{ 
+          maxWidth: '100%',
+          overflow: 'hidden'
+        }}>
           {/* Alert para GERENTE indicando departamento restrito */}
           {departamentoRestrito && (
             <Alert severity="info" sx={{ mb: 3 }}>
@@ -109,7 +112,13 @@ export default function AdminDashboard() {
           {alertas.length > 0 && (
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid size={{ xs: 12 }}>
-                <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                <Paper sx={{ 
+                  p: 3, 
+                  borderRadius: 3, 
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  maxWidth: '100%',
+                  overflow: 'auto'
+                }}>
                   <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                     Alertas do Sistema ({alertas.length})
                   </Typography>
@@ -129,8 +138,14 @@ export default function AdminDashboard() {
 
           {/* Gráficos */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <Grid size={{ xs: 12, lg: 6 }}>
+              <Paper sx={{ 
+                p: 3, 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                maxWidth: '100%',
+                overflow: 'auto'
+              }}>
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   Funcionários Ativos por Departamento
                 </Typography>
@@ -141,8 +156,14 @@ export default function AdminDashboard() {
                 />
               </Paper>
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <Grid size={{ xs: 12, lg: 6 }}>
+              <Paper sx={{ 
+                p: 3, 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                maxWidth: '100%',
+                overflow: 'auto'
+              }}>
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   XP Médio por Departamento
                 </Typography>
@@ -159,11 +180,17 @@ export default function AdminDashboard() {
           {/* Tabela de Engajamento por Departamento */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12 }}>
-              <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+              <Paper sx={{ 
+                p: 3, 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                maxWidth: '100%',
+                overflow: 'auto'
+              }}>
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   Engajamento por Departamento
                 </Typography>
-                <TableContainer>
+                <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -211,12 +238,18 @@ export default function AdminDashboard() {
           {/* Cursos Populares */}
           <Grid container spacing={3}>
             <Grid size={{ xs: 12 }}>
-              <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+              <Paper sx={{ 
+                p: 3, 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                maxWidth: '100%',
+                overflow: 'auto'
+              }}>
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   Cursos Populares
                 </Typography>
                 {cursos_populares.length > 0 ? (
-                  <TableContainer>
+                  <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -275,8 +308,11 @@ export default function AdminDashboard() {
     const { departamento, top_performers, cursos_departamento, alertas } = gerenteData
 
     return (
-    <DashboardLayout title='Página Inicial' items={navigationItems}>
-        <Box>
+    <DashboardLayout title={title} items={navigationItems}>
+        <Box sx={{ 
+          maxWidth: '100%',
+          overflow: 'hidden'
+        }}>
           <Alert severity="info" sx={{ mb: 3 }}>
             Visualizando dados do departamento: {departamento.nome}
           </Alert>
@@ -321,7 +357,13 @@ export default function AdminDashboard() {
           {alertas.length > 0 && (
             <Grid container spacing={3} sx={{ mb: 3 }}>
               <Grid size={{ xs: 12 }}>
-                <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                <Paper sx={{ 
+                  p: 3, 
+                  borderRadius: 3, 
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  maxWidth: '100%',
+                  overflow: 'auto'
+                }}>
                   <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                     Alertas do Departamento ({alertas.length})
                   </Typography>
@@ -341,13 +383,19 @@ export default function AdminDashboard() {
 
           {/* Top Performers e Cursos do Departamento */}
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <Grid size={{ xs: 12, lg: 6 }}>
+              <Paper sx={{ 
+                p: 3, 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                maxWidth: '100%',
+                overflow: 'auto'
+              }}>
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   Top Performers
                 </Typography>
                 {top_performers.length > 0 ? (
-                  <TableContainer>
+                  <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -390,13 +438,19 @@ export default function AdminDashboard() {
               </Paper>
             </Grid>
 
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <Grid size={{ xs: 12, lg: 6 }}>
+              <Paper sx={{ 
+                p: 3, 
+                borderRadius: 3, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                maxWidth: '100%',
+                overflow: 'auto'
+              }}>
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   Cursos do Departamento
                 </Typography>
                 {cursos_departamento.length > 0 ? (
-                  <TableContainer>
+                  <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                     <Table>
                       <TableHead>
                         <TableRow>

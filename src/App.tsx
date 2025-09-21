@@ -24,7 +24,7 @@ import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
 
 // NextLevel brand theme (Material UI)
-const theme = createTheme({
+export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: { main: '#1283E6' },
