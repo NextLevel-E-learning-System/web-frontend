@@ -23,24 +23,21 @@ import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import { useDashboard, DashboardAdmin, DashboardGerente } from '@/api/users'
 import { useState } from 'react'
+import { useDashboardCompleto } from '@/hooks/users'
 
 export default function AdminDashboard() {
   const { navigationItems, user, isGerente, isAdmin } = useNavigation()
   const [rankingTab, setRankingTab] = useState(0)
-  const { data: dashboardData, isLoading, error } = useDashboard()
+  const { dashboard, isLoading, error } = useDashboardCompleto()
 
   // Type guards para diferentes tipos de dashboard
-  const adminData = dashboardData?.tipo_dashboard === 'administrador' ? (dashboardData as DashboardAdmin) : null
-  const gerenteData = dashboardData?.tipo_dashboard === 'gerente' ? (dashboardData as DashboardGerente) : null
-
-  // Título dinâmico baseado na role
-  const pageTitle = isGerente 
-    ? `Dashboard - Departamento ${gerenteData?.departamento?.nome || user?.departamento_id || ''}` 
-    : 'Dashboard Administrativo'
+  const adminData = dashboard?.tipo_dashboard === 'administrador' ? (dashboard as DashboardAdmin) : null
+  const isGerenteUser = adminData && (adminData as any)._departamento_restrito
+  const gerenteData = dashboard?.tipo_dashboard === 'gerente' ? (dashboard as DashboardGerente) : null
 
   if (isLoading) {
     return (
-      <DashboardLayout title={pageTitle} items={navigationItems}>
+      <DashboardLayout title='Página Inicial' items={navigationItems}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
@@ -50,22 +47,34 @@ export default function AdminDashboard() {
 
   if (error || (!adminData && !gerenteData)) {
     return (
-      <DashboardLayout title={pageTitle} items={navigationItems}>
+      <DashboardLayout title='Página Inicial' items={navigationItems}>
         <Alert severity="error">
           Erro ao carregar dados do dashboard. Tente novamente.
+          {error && <div>Erro: {error.toString()}</div>}
+          <div>Dashboard type: {dashboard?.tipo_dashboard}</div>
+          <div>Admin data: {adminData ? 'present' : 'missing'}</div>
+          <div>Gerente data: {gerenteData ? 'present' : 'missing'}</div>
         </Alert>
       </DashboardLayout>
     )
   }
 
-  // Dados para ADMIN
+  // Dados para ADMIN ou GERENTE (ambos usam o mesmo dashboard agora)
   if (adminData) {
     const { metricas_gerais, engajamento_departamentos, cursos_populares, alertas } = adminData
+    const departamentoRestrito = (adminData as any)._departamento_restrito
 
     return (
-      <DashboardLayout title={pageTitle} items={navigationItems}>
+    <DashboardLayout title='Página Inicial' items={navigationItems}>
         <Box>
-          {/* Métricas Principais - ADMIN */}
+          {/* Alert para GERENTE indicando departamento restrito */}
+          {departamentoRestrito && (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              Visualizando dados do departamento: {departamentoRestrito.departamento_nome}
+            </Alert>
+          )}
+
+          {/* Métricas Principais - ADMIN/GERENTE */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
@@ -271,7 +280,7 @@ export default function AdminDashboard() {
     const { departamento, top_performers, cursos_departamento, alertas } = gerenteData
 
     return (
-      <DashboardLayout title={pageTitle} items={navigationItems}>
+    <DashboardLayout title='Página Inicial' items={navigationItems}>
         <Box>
           <Alert severity="info" sx={{ mb: 3 }}>
             Visualizando dados do departamento: {departamento.nome}
