@@ -45,27 +45,19 @@ export default function DashboardLayout({
 }: PropsWithChildren<{ title: string; items: NavItem[] }>) {
   const theme = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
   
   // Melhor detecção de breakpoints para responsividade
   const isLgUp = useMediaQuery(theme.breakpoints.up('lg')) // 1200px+
   const isMdUp = useMediaQuery(theme.breakpoints.up('md')) // 900px+
   const isSmUp = useMediaQuery(theme.breakpoints.up('sm')) // 600px+
   
+  // Inicializar collapsed baseado no tamanho da tela
+  const [isCollapsed, setIsCollapsed] = useState(() => !isLgUp)
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
   const location = useLocation()
   const { mutate } = useLogout()
   const currentPath = typeof location !== 'undefined' ? location.pathname : ''
   const { data: perfil } = useMeuPerfil()
-  
-  // Auto-collapse sidebar em telas menores
-  useEffect(() => {
-    if (!isLgUp && !isCollapsed) {
-      setIsCollapsed(true)
-    } else if (isLgUp && isCollapsed) {
-      setIsCollapsed(false)
-    }
-  }, [isLgUp, isCollapsed])
   
   // Fechar sidebar mobile ao redimensionar
   useEffect(() => {
