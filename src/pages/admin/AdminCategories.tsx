@@ -45,8 +45,6 @@ import {
   type Category,
   type CreateCategoryInput,
 } from '@/api/courses'
-import { authPut } from '@/api/http'
-import { API_ENDPOINTS } from '@/api/config'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 
 interface CategoryForm {
@@ -66,6 +64,7 @@ export default function AdminCategories() {
     useCategories()
 
   const createCategoryMutation = useCreateCategory()
+  const updateCategoryMutation = useUpdateCategory()
   const deleteCategoryMutation = useDeleteCategory()
 
   const [selectedDept, setSelectedDept] = useState<string>('all')
@@ -76,7 +75,6 @@ export default function AdminCategories() {
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null
   )
-  const [isUpdating, setIsUpdating] = useState(false)
 
   const [form, setForm] = useState<CategoryForm>({
     codigo: '',
@@ -146,29 +144,23 @@ export default function AdminCategories() {
       return
     }
 
-    setIsUpdating(true)
     try {
-      await authPut(
-        `${API_ENDPOINTS.COURSES}/categorias/${editingCategory.codigo}`,
-        {
-          nome: form.nome,
-          departamento_codigo: form.departamento_codigo,
-          descricao: form.descricao || undefined,
-          cor_hex: form.cor_hex || undefined,
-        }
-      )
+      await updateCategoryMutation.mutateAsync({
+        codigo: editingCategory.codigo,
+        nome: form.nome,
+        departamento_codigo: form.departamento_codigo,
+        descricao: form.descricao || undefined,
+        cor_hex: form.cor_hex || undefined,
+      })
 
       toast.success('Categoria atualizada com sucesso!')
       setIsEditOpen(false)
       setEditingCategory(null)
       resetForm()
-
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || 'Erro ao atualizar categoria'
       )
-    } finally {
-      setIsUpdating(false)
     }
   }
 
@@ -608,9 +600,9 @@ export default function AdminCategories() {
             <Button
               variant='contained'
               onClick={handleUpdate}
-              disabled={isUpdating}
+              disabled={updateCategoryMutation.isPending}
             >
-              {isUpdating ? 'Salvando...' : 'Salvar Alterações'}
+              {updateCategoryMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </DialogActions>
         </Dialog>

@@ -143,18 +143,15 @@ export function useCreateCategory() {
   })
 }
 
-export function useUpdateCategory(codigo: string) {
+export function useUpdateCategory() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['courses', 'categories', 'update', codigo],
-    mutationFn: (input: Partial<CreateCategoryInput>) =>
+    mutationKey: ['courses', 'categories', 'update'],
+    mutationFn: ({ codigo, ...input }: { codigo: string } & Partial<CreateCategoryInput>) =>
       authPut<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
-      queryClient.invalidateQueries({
-        queryKey: ['courses', 'categories', codigo],
-      })
     },
   })
 }
