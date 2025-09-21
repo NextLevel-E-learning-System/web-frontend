@@ -24,6 +24,7 @@ import {
   Grid,
   FormControl,
   InputLabel,
+  Avatar,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -217,7 +218,7 @@ export default function AdminCategories() {
               </MenuItem>
               {departamentos.map(dept => (
                 <MenuItem key={dept.codigo} value={dept.codigo}>
-                  {dept.nome} ({dept.codigo})
+                   {dept.codigo} - {dept.nome}
                 </MenuItem>
               ))}
             </Select>
@@ -274,21 +275,13 @@ export default function AdminCategories() {
                             gap: 1.5,
                           }}
                         >
-                          <Chip 
-                            size='small' 
+                          <Avatar 
                             sx={{ 
-                              bgcolor: categoria.cor_hex || '#3B82F6',
-                              color: 'white',
-                              minWidth: '20px',
-                              '& .MuiChip-label': { px: 1 }
-                            }}
-                            label=' '
+                              bgcolor: categoria.cor_hex,
+                                                         }}
                           />
                           <Typography fontWeight={500}>
                             {categoria.nome}
-                          </Typography>
-                          <Typography variant='caption' color='text.secondary'>
-                            ({categoria.codigo})
                           </Typography>
                         </Box>
                       </TableCell>
@@ -310,7 +303,6 @@ export default function AdminCategories() {
                           variant='body2'
                           color='text.secondary'
                           sx={{
-                            maxWidth: 250,
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',

@@ -8,10 +8,12 @@ export interface Departamento {
   nome: string
   descricao?: string | null
   gestor_funcionario_id?: string | null
-  ativo: boolean
-  inactivated_at?: string | null
+  gestor_nome?: string | null
+  gestor_email?: string | null
   criado_em: string
   atualizado_em: string
+  total_funcionarios?: number
+  total_categorias?: number
 }
 
 export interface DepartamentoCreate {
@@ -25,7 +27,6 @@ export interface DepartamentoUpdate {
   nome?: string
   descricao?: string | null
   gestor_funcionario_id?: string | null
-  ativo?: boolean
 }
 
 export interface Cargo {
@@ -269,11 +270,11 @@ export function useAtualizarDepartamento(codigo: string) {
   })
 }
 
-export function useInativarDepartamento() {
+export function useDeleteDepartamento() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['users', 'departamentos', 'inativar'],
+    mutationKey: ['users', 'departamentos', 'delete'],
     mutationFn: (codigo: string) =>
       authDelete(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`),
     onSuccess: () => {

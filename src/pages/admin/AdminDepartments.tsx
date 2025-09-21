@@ -18,8 +18,6 @@ import {
   Alert,
   Skeleton,
   Grid,
-  Chip,
-  Switch,
   MenuItem,
   FormControl,
   InputLabel,
@@ -33,26 +31,22 @@ import {
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Block as BlockIcon,
-  CheckCircle as ActivateIcon,
+  Delete as DeleteIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
-import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useListarDepartamentosAdmin,
   useFuncionarios,
   useCriarDepartamento,
   useAtualizarDepartamento,
-  useInativarDepartamento,
+  useDeleteDepartamento,
   type Departamento,
 } from '@/api/users'
-import { authPut } from '@/api/http'
-import { API_ENDPOINTS } from '@/api/config'
 
 interface DepartmentForm {
   codigo: string
@@ -72,16 +66,13 @@ export default function AdminDepartments() {
   } = useListarDepartamentosAdmin()
   const { data: funcionarios = [] } = useFuncionarios()
   const criarDepartamento = useCriarDepartamento()
-  const inativarDepartamento = useInativarDepartamento()
+  const deleteDepartamento = useDeleteDepartamento()
   const [editingDept, setEditingDept] = useState<Departamento | null>(null)
   const atualizarDepartamento = useAtualizarDepartamento(
     editingDept?.codigo || ''
   )
 
   const [isAddOpen, setIsAddOpen] = useState(false)
-  const [statusFilter, setStatusFilter] = useState<
-    'active' | 'disabled' | 'all'
-  >('all')
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     titulo: '',
@@ -116,21 +107,8 @@ export default function AdminDepartments() {
   )
 
   // Filtrar departamentos por status
-  const departamentosFiltrados = useMemo(() => {
-    switch (statusFilter) {
-      case 'active':
-        return departamentos.filter(dept => dept.ativo)
-      case 'disabled':
-        return departamentos.filter(dept => !dept.ativo)
-      case 'all':
-      default:
-        return departamentos
-    }
-  }, [departamentos, statusFilter])
-
-  // Contadores para as abas
-  const departamentosAtivos = departamentos.filter(dept => dept.ativo).length
-  const departamentosInativos = departamentos.filter(dept => !dept.ativo).length
+  // Usar todos os departamentos diretamente (sem filtro de status)
+  const departamentosFiltrados = departamentos
 
   const resetForm = () => {
     setForm({
@@ -206,19 +184,19 @@ export default function AdminDepartments() {
     }
   }
 
-  const handleInativar = (codigo: string, nome: string) => {
+  const handleDelete = (codigo: string, nome: string) => {
     setConfirmDialog({
       open: true,
-      titulo: 'Inativar Departamento',
-      mensagem: `Tem certeza que deseja inativar o departamento "${nome}"? Esta ação pode ser revertida posteriormente.`,
-      confirmText: 'Inativar',
+      titulo: 'Excluir Departamento',
+      mensagem: `Tem certeza que deseja excluir permanentemente o departamento "${nome}"? Esta ação não pode ser revertida e só é possível se não houver categorias ou funcionários associados.`,
+      confirmText: 'Excluir',
       isLoading: false,
-      severity: 'warning',
+      severity: 'error',
       onConfirm: async () => {
         try {
           setConfirmDialog(prev => ({ ...prev, isLoading: true }))
-          await inativarDepartamento.mutateAsync(codigo)
-          toast.success('Departamento inativado com sucesso!')
+          await deleteDepartamento.mutateAsync(codigo)
+          toast.success('Departamento excluído com sucesso!')
           setConfirmDialog({
             ...confirmDialog,
             open: false,
@@ -226,64 +204,14 @@ export default function AdminDepartments() {
             severity: 'warning',
           })
           refetch()
-        } catch (error) {
-          toast.error('Erro ao inativar departamento')
+        } catch (error: any) {
+          const errorMessage = error?.response?.data?.message || 'Erro ao excluir departamento'
+          toast.error(errorMessage)
           console.error(error)
           setConfirmDialog(prev => ({ ...prev, isLoading: false }))
         }
       },
     })
-  }
-
-  const handleAtivar = (codigo: string, nome: string) => {
-    setConfirmDialog({
-      open: true,
-      titulo: 'Ativar Departamento',
-      mensagem: `Tem certeza que deseja ativar o departamento "${nome}"?`,
-      confirmText: 'Ativar',
-      isLoading: false,
-      severity: 'info',
-      onConfirm: async () => {
-        try {
-          setConfirmDialog(prev => ({ ...prev, isLoading: true }))
-
-          const departamento = departamentos.find(d => d.codigo === codigo)
-          if (!departamento) {
-            throw new Error('Departamento não encontrado')
-          }
-
-          await authPut(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`, {
-            nome: departamento.nome,
-            descricao: departamento.descricao,
-            gestor_funcionario_id: departamento.gestor_funcionario_id,
-            ativo: true,
-          })
-
-          toast.success('Departamento ativado com sucesso!')
-          setConfirmDialog({
-            ...confirmDialog,
-            open: false,
-            isLoading: false,
-            severity: 'warning',
-          })
-          refetch()
-        } catch (error) {
-          toast.error('Erro ao ativar departamento')
-          console.error(error)
-          setConfirmDialog(prev => ({ ...prev, isLoading: false }))
-        }
-      },
-    })
-  }
-
-  const handleToggleAtivo = (codigo: string, nome: string, ativo: boolean) => {
-    if (ativo) {
-      // Se está ativo, desativar
-      handleInativar(codigo, nome)
-    } else {
-      // Se está inativo, ativar
-      handleAtivar(codigo, nome)
-    }
   }
 
   if (isLoading) {
@@ -304,16 +232,12 @@ export default function AdminDepartments() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            mb: 3,
           }}
         >
-          <StatusFilterTabs
-            value={statusFilter}
-            onChange={setStatusFilter}
-            activeCount={departamentosAtivos}
-            inactiveCount={departamentosInativos}
-            activeLabel='Ativos'
-            inactiveLabel='Inativos'
-          />
+          <Typography variant='h6' fontWeight={600}>
+            Lista de Departamentos ({departamentosFiltrados.length})
+          </Typography>
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -328,9 +252,7 @@ export default function AdminDepartments() {
           <CardContent>
             {departamentosFiltrados.length === 0 ? (
               <Alert severity='info'>
-                {statusFilter === 'all'
-                  ? 'Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.'
-                  : `Nenhum departamento ${statusFilter === 'active' ? 'ativo' : 'inativo'} encontrado.`}
+                Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.
               </Alert>
             ) : (
               <TableContainer
@@ -348,9 +270,8 @@ export default function AdminDepartments() {
                       {!isMobile && (
                         <TableCell sx={{ minWidth: 150 }}>Gestor</TableCell>
                       )}
-                      <TableCell sx={{ minWidth: 100 }}>Status</TableCell>
-                      <TableCell align='right' sx={{ minWidth: 80 }}>
-                        Editar
+                      <TableCell align='right' sx={{ minWidth: 120 }}>
+                        Ações
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -416,46 +337,26 @@ export default function AdminDepartments() {
                             </Typography>
                           </TableCell>
                         )}
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                            }}
-                          >
-                            <Switch
-                              checked={dept.ativo}
-                              onChange={() =>
-                                handleToggleAtivo(
-                                  dept.codigo,
-                                  dept.nome,
-                                  dept.ativo
-                                )
-                              }
-                              size='small'
-                              disabled={
-                                inativarDepartamento.isPending ||
-                                confirmDialog.isLoading
-                              }
-                            />
-                            <Typography
-                              variant='body2'
-                              color={dept.ativo ? 'success.main' : 'text.disabled'}
-                              fontWeight={500}
-                            >
-                              {dept.ativo ? 'Ativo' : 'Inativo'}
-                            </Typography>
-                          </Box>
-                        </TableCell>
                         <TableCell align='right'>
-                          <IconButton
-                            size='small'
-                            onClick={() => handleEdit(dept)}
-                            aria-label='editar'
-                          >
-                            <EditIcon />
-                          </IconButton>
+                          <Stack direction='row' spacing={1} justifyContent='flex-end'>
+                            <IconButton
+                              size='small'
+                              onClick={() => handleEdit(dept)}
+                              aria-label='editar'
+                              color='primary'
+                            >
+                              <EditIcon />
+                            </IconButton>
+                            <IconButton
+                              size='small'
+                              onClick={() => handleDelete(dept.codigo, dept.nome)}
+                              aria-label='excluir'
+                              color='error'
+                              disabled={deleteDepartamento.isPending || confirmDialog.isLoading}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Stack>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -647,7 +548,7 @@ export default function AdminDepartments() {
           </DialogActions>
         </Dialog>
 
-        {/* Modal de Confirmação de Inativação */}
+        {/* Modal de Confirmação de Exclusão */}
         <ConfirmationDialog
           open={confirmDialog.open}
           onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
