@@ -44,7 +44,7 @@ import {
   useCategories,
   type Course as Curso,
 } from '@/api/courses'
-import { useListarDepartamentos, useFuncionarios } from '@/api/users'
+import { useListarDepartamentosAdmin, useFuncionarios } from '@/api/users'
 
 interface CursoMetricas extends Curso {
   total_inscritos: number
@@ -103,7 +103,7 @@ export default function AdminCourses() {
     useCourseCatalog()
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
-  const { data: departamentos = [] } = useListarDepartamentos()
+  const { data: departamentos = [] } = useListarDepartamentosAdmin()
   const { data: usuarios = [] } = useFuncionarios()
 
   // Usar dados mock por enquanto

@@ -41,7 +41,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarDepartamentos,
+  useListarDepartamentosAdmin,
   useListarCargos,
   useFuncionarios,
   useRegisterFuncionario,
@@ -78,7 +78,7 @@ export default function AdminUsers() {
     refetch: refetchUsers,
   } = useFuncionarios()
   const { data: departamentos = [], isLoading: loadingDepartments } =
-    useListarDepartamentos()
+    useListarDepartamentosAdmin()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<PerfilUsuario | null>(null)

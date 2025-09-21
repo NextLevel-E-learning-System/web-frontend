@@ -226,7 +226,7 @@ export function useListarDepartamentosAdmin() {
   return useQuery<Departamento[]>({
     queryKey: ['users', 'departamentos', 'admin'],
     queryFn: () =>
-      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos`),
+      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos/admin`),
   })
 }
 

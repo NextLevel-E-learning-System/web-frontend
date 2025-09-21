@@ -36,7 +36,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
-import { useListarDepartamentos } from '@/api/users'
+import { useListarDepartamentosAdmin } from '@/api/users'
 
 interface CategoryForm {
   nome: string
@@ -48,7 +48,7 @@ export default function AdminCategories() {
   const { navigationItems } = useNavigation()
 
   const { data: departamentos = [], isLoading: loadingDepartamentos } =
-    useListarDepartamentos()
+    useListarDepartamentosAdmin()
 
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)

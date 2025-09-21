@@ -43,10 +43,15 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarDepartamentos,
+  useListarDepartamentosAdmin,
   useListarCargos,
   useFuncionarios,
-  UsuarioResumo,
+  useRegisterFuncionario,
+  useUpdateFuncionarioRole,
+  type Funcionario,
+  type UsuarioResumo,
+  type FuncionarioRegister,
+  type UserRole,
 } from '@/api/users'
 
 export default function AdminInstructors() {
@@ -55,7 +60,7 @@ export default function AdminInstructors() {
   const { data: funcionarios = [], isLoading: loadingFuncionarios } =
     useFuncionarios()
   const { data: departamentos = [], isLoading: loadingDepartments } =
-    useListarDepartamentos()
+    useListarDepartamentosAdmin()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
   const [editingInstructor, setEditingInstructor] =
     useState<UsuarioResumo | null>(null)
