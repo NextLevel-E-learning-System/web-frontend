@@ -24,14 +24,13 @@ import {
   Grid,
   FormControl,
   InputLabel,
-  Avatar,
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
   Category as CategoryIcon,
+  Circle as CircleIcon,
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -242,13 +241,6 @@ export default function AdminCategories() {
 
         {/* Lista de Categorias */}
         <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                Lista de Categorias ({categoriasFiltradas.length})
-              </Typography>
-            }
-          />
           <CardContent>
             {categoriasFiltradas.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -283,19 +275,12 @@ export default function AdminCategories() {
                             gap: 1.5,
                           }}
                         >
-                          <Avatar
+                          <CircleIcon
                             sx={{
-                              bgcolor: categoria.cor_hex,
-                              width: 36,
-                              height: 36,
-                              fontSize: '0.875rem',
-                              fontWeight: 'bold',
+                              color: categoria.cor_hex || '#3B82F6',
+                              fontSize: 24,
                             }}
-                          >
-                            {(categoria.departamento_codigo || '')
-                              .substring(0, 2)
-                              .toUpperCase()}
-                          </Avatar>
+                          />
                           <Typography fontWeight={500}>
                             {categoria.nome}
                           </Typography>
@@ -367,8 +352,8 @@ export default function AdminCategories() {
               Nova Categoria
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Código da Categoria'
@@ -472,11 +457,11 @@ export default function AdminCategories() {
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EditIcon />
-              Editar Categoria: {editingCategory?.nome}
+              Editar Categoria
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Código da Categoria'
@@ -542,7 +527,7 @@ export default function AdminCategories() {
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
               onClick={() => {
