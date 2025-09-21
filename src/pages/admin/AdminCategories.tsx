@@ -163,8 +163,6 @@ export default function AdminCategories() {
       setEditingCategory(null)
       resetForm()
 
-      // Refetch categorias
-      window.location.reload() // Temporário até implementarmos invalidação manual
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || 'Erro ao atualizar categoria'
@@ -365,7 +363,7 @@ export default function AdminCategories() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', justifyContent: 'center' }}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                   <TextField
                     label='Cor (Hexadecimal)'
                     value={form.cor_hex}
@@ -384,14 +382,25 @@ export default function AdminCategories() {
                     fullWidth
                   />
                   <Box
+                    component="input"
+                    type="color"
+                    value={form.cor_hex || '#3B82F6'}
+                    onChange={(e: any) => setForm({ ...form, cor_hex: e.target.value })}
                     sx={{
-                      width: 40,
-                      height: 40,
+                      width: 56,
+                      height: 56,
                       borderRadius: 1,
-                      alignItems:'center',
-                      backgroundColor: form.cor_hex || '#3B82F6',
-                      border: '1px solid #000',
-                      flexShrink: 0,
+                      border: '1px solid #ddd',
+                      cursor: 'pointer',
+                      backgroundColor: 'transparent',
+                      '&::-webkit-color-swatch-wrapper': {
+                        padding: 0,
+                        borderRadius: '4px',
+                      },
+                      '&::-webkit-color-swatch': {
+                        border: 'none',
+                        borderRadius: '4px',
+                      },
                     }}
                   />
                 </Box>
@@ -494,7 +503,7 @@ export default function AdminCategories() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                   <TextField
                     label='Cor (Hexadecimal)'
                     value={form.cor_hex}
@@ -514,20 +523,27 @@ export default function AdminCategories() {
                     }}
                     placeholder='#3B82F6'
                     fullWidth
-                    inputProps={{ 
-                      maxLength: 7,
-                      style: { fontFamily: 'monospace' }
-                    }}
-                    helperText='Digite ou cole uma cor em formato hexadecimal'
                   />
                   <Box
+                    component="input"
+                    type="color"
+                    value={form.cor_hex || '#3B82F6'}
+                    onChange={(e: any) => setForm({ ...form, cor_hex: e.target.value })}
                     sx={{
-                      width: 40,
-                      height: 40,
+                      width: 56,
+                      height: 56,
                       borderRadius: 1,
-                      backgroundColor: form.cor_hex || '#3B82F6',
                       border: '1px solid #ddd',
-                      flexShrink: 0,
+                      cursor: 'pointer',
+                      backgroundColor: 'transparent',
+                      '&::-webkit-color-swatch-wrapper': {
+                        padding: 0,
+                        borderRadius: '4px',
+                      },
+                      '&::-webkit-color-swatch': {
+                        border: 'none',
+                        borderRadius: '4px',
+                      },
                     }}
                   />
                 </Box>
