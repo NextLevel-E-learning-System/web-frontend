@@ -22,25 +22,39 @@ import { DashboardAdmin, DashboardGerente } from '@/api/users'
 export default function AdminDashboard() {
   return (
     <DashboardWrapper allowedTypes={['administrador', 'gerente']}>
-      {(dashboard) => {
+      {dashboard => {
         // Type guards para diferentes tipos de dashboard
-        const adminData = dashboard?.tipo_dashboard === 'administrador' ? (dashboard as DashboardAdmin) : null
-        const gerenteData = dashboard?.tipo_dashboard === 'gerente' ? (dashboard as DashboardGerente) : null
+        const adminData =
+          dashboard?.tipo_dashboard === 'administrador'
+            ? (dashboard as DashboardAdmin)
+            : null
+        const gerenteData =
+          dashboard?.tipo_dashboard === 'gerente'
+            ? (dashboard as DashboardGerente)
+            : null
 
         // Dados para ADMIN ou GERENTE (ambos usam o mesmo dashboard agora)
         if (adminData) {
-          const { metricas_gerais, engajamento_departamentos, cursos_populares, alertas } = adminData
+          const {
+            metricas_gerais,
+            engajamento_departamentos,
+            cursos_populares,
+            alertas,
+          } = adminData
           const departamentoRestrito = (adminData as any)._departamento_restrito
 
           return (
-            <Box sx={{ 
-              maxWidth: '100%',
-              overflow: 'hidden'
-            }}>
+            <Box
+              sx={{
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
               {/* Alert para GERENTE indicando departamento restrito */}
               {departamentoRestrito && (
-                <Alert severity="info" sx={{ mb: 3 }}>
-                  Visualizando dados do departamento: {departamentoRestrito.departamento_nome}
+                <Alert severity='info' sx={{ mb: 3 }}>
+                  Visualizando dados do departamento:{' '}
+                  {departamentoRestrito.departamento_nome}
                 </Alert>
               )}
 
@@ -84,20 +98,32 @@ export default function AdminDashboard() {
               {alertas.length > 0 && (
                 <Grid container spacing={3} sx={{ mb: 3 }}>
                   <Grid size={{ xs: 12 }}>
-                    <Paper sx={{ 
-                      p: 3, 
-                      borderRadius: 3, 
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                      maxWidth: '100%',
-                      overflow: 'auto'
-                    }}>
-                      <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                    <Paper
+                      sx={{
+                        p: 3,
+                        borderRadius: 3,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        maxWidth: '100%',
+                        overflow: 'auto',
+                      }}
+                    >
+                      <Typography
+                        variant='h6'
+                        gutterBottom
+                        sx={{ fontWeight: 600 }}
+                      >
                         Alertas do Sistema ({alertas.length})
                       </Typography>
                       {alertas.map((alerta: any, index: number) => (
-                        <Alert 
-                          key={index} 
-                          severity={alerta.prioridade === 'alta' ? 'error' : alerta.prioridade === 'media' ? 'warning' : 'info'}
+                        <Alert
+                          key={index}
+                          severity={
+                            alerta.prioridade === 'alta'
+                              ? 'error'
+                              : alerta.prioridade === 'media'
+                                ? 'warning'
+                                : 'info'
+                          }
                           sx={{ mb: 1 }}
                         >
                           <strong>{alerta.tipo}:</strong> {alerta.descricao}
@@ -111,37 +137,53 @@ export default function AdminDashboard() {
               {/* Gráficos */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid size={{ xs: 12, lg: 6 }}>
-                  <Paper sx={{ 
-                    p: 3, 
-                    borderRadius: 3, 
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      maxWidth: '100%',
+                      overflow: 'auto',
+                    }}
+                  >
+                    <Typography
+                      variant='h6'
+                      gutterBottom
+                      sx={{ fontWeight: 600 }}
+                    >
                       Alunos Ativos por Departamento
                     </Typography>
                     <DepartmentBarChart
-                      data={engajamento_departamentos.map(d => d.funcionarios_ativos)}
+                      data={engajamento_departamentos.map(
+                        d => d.funcionarios_ativos
+                      )}
                       labels={engajamento_departamentos.map(d => d.codigo)}
                     />
                   </Paper>
                 </Grid>
                 <Grid size={{ xs: 12, lg: 6 }}>
-                  <Paper sx={{ 
-                    p: 3, 
-                    borderRadius: 3, 
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      maxWidth: '100%',
+                      overflow: 'auto',
+                    }}
+                  >
+                    <Typography
+                      variant='h6'
+                      gutterBottom
+                      sx={{ fontWeight: 600 }}
+                    >
                       XP Médio por Departamento
                     </Typography>
                     <DepartmentPieChart
                       data={engajamento_departamentos.map(d => d.xp_medio)}
                       labels={engajamento_departamentos.map(d => d.codigo)}
-                      departmentNames={engajamento_departamentos.map(d => d.nome)}
+                      departmentNames={engajamento_departamentos.map(
+                        d => d.nome
+                      )}
                     />
                   </Paper>
                 </Grid>
@@ -150,14 +192,20 @@ export default function AdminDashboard() {
               {/* Tabela de Engajamento por Departamento */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid size={{ xs: 12 }}>
-                  <Paper sx={{ 
-                    p: 3, 
-                    borderRadius: 3, 
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      maxWidth: '100%',
+                      overflow: 'auto',
+                    }}
+                  >
+                    <Typography
+                      variant='h6'
+                      gutterBottom
+                      sx={{ fontWeight: 600 }}
+                    >
                       Engajamento por Departamento
                     </Typography>
                     <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
@@ -165,7 +213,9 @@ export default function AdminDashboard() {
                         <TableHead>
                           <TableRow>
                             <TableCell>Departamento</TableCell>
-                            <TableCell align='right'>Total Funcionários</TableCell>
+                            <TableCell align='right'>
+                              Total Funcionários
+                            </TableCell>
                             <TableCell align='right'>Alunos Ativos</TableCell>
                             <TableCell align='right'>XP Médio</TableCell>
                           </TableRow>
@@ -177,7 +227,10 @@ export default function AdminDashboard() {
                                 <Typography variant='body2' fontWeight={500}>
                                   {dept.nome}
                                 </Typography>
-                                <Typography variant='caption' color='text.secondary'>
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
                                   {dept.codigo}
                                 </Typography>
                               </TableCell>
@@ -190,7 +243,11 @@ export default function AdminDashboard() {
                                 <Chip
                                   label={dept.funcionarios_ativos.toString()}
                                   size='small'
-                                  color={dept.funcionarios_ativos > 0 ? 'success' : 'default'}
+                                  color={
+                                    dept.funcionarios_ativos > 0
+                                      ? 'success'
+                                      : 'default'
+                                  }
                                   variant='outlined'
                                 />
                               </TableCell>
@@ -211,60 +268,89 @@ export default function AdminDashboard() {
               {/* Cursos Populares */}
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12 }}>
-                  <Paper sx={{ 
-                    p: 3, 
-                    borderRadius: 3, 
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      maxWidth: '100%',
+                      overflow: 'auto',
+                    }}
+                  >
+                    <Typography
+                      variant='h6'
+                      gutterBottom
+                      sx={{ fontWeight: 600 }}
+                    >
                       Cursos Populares
                     </Typography>
                     {cursos_populares.length > 0 ? (
-                      <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
+                      <TableContainer
+                        sx={{ maxWidth: '100%', overflow: 'auto' }}
+                      >
                         <Table>
                           <TableHead>
                             <TableRow>
                               <TableCell>Curso</TableCell>
                               <TableCell align='right'>Inscrições</TableCell>
-                              <TableCell align='right'>Taxa Conclusão</TableCell>
+                              <TableCell align='right'>
+                                Taxa Conclusão
+                              </TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {cursos_populares.map((curso: any, index: number) => (
-                              <TableRow key={curso.codigo || index} hover>
-                                <TableCell>
-                                  <Typography variant='body2' fontWeight={500}>
-                                    {curso.titulo || curso.nome || 'Curso sem título'}
-                                  </Typography>
-                                  <Typography variant='caption' color='text.secondary'>
-                                    {curso.codigo}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align='right'>
-                                  <Typography variant='body2'>
-                                    {curso.inscricoes || curso.total_inscricoes || 0}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align='right'>
-                                  <Chip
-                                    label={`${((curso.taxa_conclusao || 0) * 100).toFixed(1)}%`}
-                                    size='small'
-                                    color={
-                                      (curso.taxa_conclusao || 0) > 0.7 ? 'success' :
-                                      (curso.taxa_conclusao || 0) > 0.4 ? 'warning' : 'error'
-                                    }
-                                    variant='filled'
-                                  />
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {cursos_populares.map(
+                              (curso: any, index: number) => (
+                                <TableRow key={curso.codigo || index} hover>
+                                  <TableCell>
+                                    <Typography
+                                      variant='body2'
+                                      fontWeight={500}
+                                    >
+                                      {curso.titulo ||
+                                        curso.nome ||
+                                        'Curso sem título'}
+                                    </Typography>
+                                    <Typography
+                                      variant='caption'
+                                      color='text.secondary'
+                                    >
+                                      {curso.codigo}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align='right'>
+                                    <Typography variant='body2'>
+                                      {curso.inscricoes ||
+                                        curso.total_inscricoes ||
+                                        0}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align='right'>
+                                    <Chip
+                                      label={`${((curso.taxa_conclusao || 0) * 100).toFixed(1)}%`}
+                                      size='small'
+                                      color={
+                                        (curso.taxa_conclusao || 0) > 0.7
+                                          ? 'success'
+                                          : (curso.taxa_conclusao || 0) > 0.4
+                                            ? 'warning'
+                                            : 'error'
+                                      }
+                                      variant='filled'
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            )}
                           </TableBody>
                         </Table>
                       </TableContainer>
                     ) : (
-                      <Typography color='text.secondary' align='center' sx={{ py: 3 }}>
+                      <Typography
+                        color='text.secondary'
+                        align='center'
+                        sx={{ py: 3 }}
+                      >
                         Nenhum curso encontrado
                       </Typography>
                     )}
@@ -277,14 +363,17 @@ export default function AdminDashboard() {
 
         // Dados para GERENTE
         if (gerenteData) {
-          const { departamento, top_performers, cursos_departamento, alertas } = gerenteData
+          const { departamento, top_performers, cursos_departamento, alertas } =
+            gerenteData
 
           return (
-            <Box sx={{ 
-              maxWidth: '100%',
-              overflow: 'hidden'
-            }}>
-              <Alert severity="info" sx={{ mb: 3 }}>
+            <Box
+              sx={{
+                maxWidth: '100%',
+                overflow: 'hidden',
+              }}
+            >
+              <Alert severity='info' sx={{ mb: 3 }}>
                 Visualizando dados do departamento: {departamento.nome}
               </Alert>
 
@@ -328,20 +417,32 @@ export default function AdminDashboard() {
               {alertas.length > 0 && (
                 <Grid container spacing={3} sx={{ mb: 3 }}>
                   <Grid size={{ xs: 12 }}>
-                    <Paper sx={{ 
-                      p: 3, 
-                      borderRadius: 3, 
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                      maxWidth: '100%',
-                      overflow: 'auto'
-                    }}>
-                      <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                    <Paper
+                      sx={{
+                        p: 3,
+                        borderRadius: 3,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        maxWidth: '100%',
+                        overflow: 'auto',
+                      }}
+                    >
+                      <Typography
+                        variant='h6'
+                        gutterBottom
+                        sx={{ fontWeight: 600 }}
+                      >
                         Alertas do Departamento ({alertas.length})
                       </Typography>
                       {alertas.map((alerta: any, index: number) => (
-                        <Alert 
-                          key={index} 
-                          severity={alerta.prioridade === 'alta' ? 'error' : alerta.prioridade === 'media' ? 'warning' : 'info'}
+                        <Alert
+                          key={index}
+                          severity={
+                            alerta.prioridade === 'alta'
+                              ? 'error'
+                              : alerta.prioridade === 'media'
+                                ? 'warning'
+                                : 'info'
+                          }
                           sx={{ mb: 1 }}
                         >
                           <strong>{alerta.tipo}:</strong> {alerta.descricao}
@@ -355,18 +456,26 @@ export default function AdminDashboard() {
               {/* Top Performers e Cursos do Departamento */}
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, lg: 6 }}>
-                  <Paper sx={{ 
-                    p: 3, 
-                    borderRadius: 3, 
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      maxWidth: '100%',
+                      overflow: 'auto',
+                    }}
+                  >
+                    <Typography
+                      variant='h6'
+                      gutterBottom
+                      sx={{ fontWeight: 600 }}
+                    >
                       Top Performers
                     </Typography>
                     {top_performers.length > 0 ? (
-                      <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
+                      <TableContainer
+                        sx={{ maxWidth: '100%', overflow: 'auto' }}
+                      >
                         <Table>
                           <TableHead>
                             <TableRow>
@@ -376,33 +485,48 @@ export default function AdminDashboard() {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {top_performers.map((funcionario: any, index: number) => (
-                              <TableRow key={funcionario.id || index} hover>
-                                <TableCell>
-                                  <Typography variant='body2' fontWeight={500}>
-                                    {funcionario.nome}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align='right'>
-                                  <Typography variant='body2' color='primary'>
-                                    {funcionario.xp_total || 0} XP
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align='right'>
-                                  <Chip
-                                    label={`#${index + 1}`}
-                                    size='small'
-                                    color={index === 0 ? 'error' : index === 1 ? 'warning' : 'success'}
-                                    variant='filled'
-                                  />
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {top_performers.map(
+                              (funcionario: any, index: number) => (
+                                <TableRow key={funcionario.id || index} hover>
+                                  <TableCell>
+                                    <Typography
+                                      variant='body2'
+                                      fontWeight={500}
+                                    >
+                                      {funcionario.nome}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align='right'>
+                                    <Typography variant='body2' color='primary'>
+                                      {funcionario.xp_total || 0} XP
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align='right'>
+                                    <Chip
+                                      label={`#${index + 1}`}
+                                      size='small'
+                                      color={
+                                        index === 0
+                                          ? 'error'
+                                          : index === 1
+                                            ? 'warning'
+                                            : 'success'
+                                      }
+                                      variant='filled'
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            )}
                           </TableBody>
                         </Table>
                       </TableContainer>
                     ) : (
-                      <Typography color='text.secondary' align='center' sx={{ py: 3 }}>
+                      <Typography
+                        color='text.secondary'
+                        align='center'
+                        sx={{ py: 3 }}
+                      >
                         Nenhum dado disponível
                       </Typography>
                     )}
@@ -410,18 +534,26 @@ export default function AdminDashboard() {
                 </Grid>
 
                 <Grid size={{ xs: 12, lg: 6 }}>
-                  <Paper sx={{ 
-                    p: 3, 
-                    borderRadius: 3, 
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    overflow: 'auto'
-                  }}>
-                    <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                      maxWidth: '100%',
+                      overflow: 'auto',
+                    }}
+                  >
+                    <Typography
+                      variant='h6'
+                      gutterBottom
+                      sx={{ fontWeight: 600 }}
+                    >
                       Cursos do Departamento
                     </Typography>
                     {cursos_departamento.length > 0 ? (
-                      <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
+                      <TableContainer
+                        sx={{ maxWidth: '100%', overflow: 'auto' }}
+                      >
                         <Table>
                           <TableHead>
                             <TableRow>
@@ -430,25 +562,38 @@ export default function AdminDashboard() {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {cursos_departamento.map((curso: any, index: number) => (
-                              <TableRow key={curso.codigo || index} hover>
-                                <TableCell>
-                                  <Typography variant='body2' fontWeight={500}>
-                                    {curso.titulo || curso.nome || 'Curso sem título'}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align='right'>
-                                  <Typography variant='body2'>
-                                    {curso.inscricoes || curso.total_inscricoes || 0}
-                                  </Typography>
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {cursos_departamento.map(
+                              (curso: any, index: number) => (
+                                <TableRow key={curso.codigo || index} hover>
+                                  <TableCell>
+                                    <Typography
+                                      variant='body2'
+                                      fontWeight={500}
+                                    >
+                                      {curso.titulo ||
+                                        curso.nome ||
+                                        'Curso sem título'}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align='right'>
+                                    <Typography variant='body2'>
+                                      {curso.inscricoes ||
+                                        curso.total_inscricoes ||
+                                        0}
+                                    </Typography>
+                                  </TableCell>
+                                </TableRow>
+                              )
+                            )}
                           </TableBody>
                         </Table>
                       </TableContainer>
                     ) : (
-                      <Typography color='text.secondary' align='center' sx={{ py: 3 }}>
+                      <Typography
+                        color='text.secondary'
+                        align='center'
+                        sx={{ py: 3 }}
+                      >
                         Nenhum curso encontrado
                       </Typography>
                     )}

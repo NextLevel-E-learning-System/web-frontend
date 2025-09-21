@@ -44,10 +44,7 @@ import {
   useCategories,
   type Course as Curso,
 } from '@/api/courses'
-import {
-  useListarDepartamentos,
-  useFuncionarios,
-} from '@/api/users'
+import { useListarDepartamentos, useFuncionarios } from '@/api/users'
 
 interface CursoMetricas extends Curso {
   total_inscritos: number
@@ -62,8 +59,6 @@ interface CursoMetricas extends Curso {
 
 // Mock data para demonstração
 const mockMetricas: CursoMetricas[] = [
-
-  
   {
     codigo: 'MKT-002',
     total_inscritos: 0,
@@ -77,9 +72,8 @@ const mockMetricas: CursoMetricas[] = [
     titulo: '',
     ativo: false,
     criado_em: '',
-    atualizado_em: ''
-  }
-  
+    atualizado_em: '',
+  },
 ]
 
 interface Filtros {
@@ -91,10 +85,12 @@ interface Filtros {
 
 export default function AdminCourses() {
   const { navigationItems } = useNavigation()
-  
+
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
-  const [selectedCourse, setSelectedCourse] = useState<CursoMetricas | null>(null)
+  const [selectedCourse, setSelectedCourse] = useState<CursoMetricas | null>(
+    null
+  )
   const [filtros, setFiltros] = useState<Filtros>({
     categoria: 'all',
     instrutor: 'all',
@@ -103,8 +99,10 @@ export default function AdminCourses() {
   })
 
   // Hooks de dados reais (quando disponíveis)
-  const { data: cursosReais = [], isLoading: loadingCursos } = useCourseCatalog()
-  const { data: categorias = [], isLoading: loadingCategorias } = useCategories()
+  const { data: cursosReais = [], isLoading: loadingCursos } =
+    useCourseCatalog()
+  const { data: categorias = [], isLoading: loadingCategorias } =
+    useCategories()
   const { data: departamentos = [] } = useListarDepartamentos()
   const { data: usuarios = [] } = useFuncionarios()
 
@@ -115,13 +113,14 @@ export default function AdminCourses() {
   // Filtros aplicados
   const cursosAtivos = cursos.filter(c => c.ativo === true)
   const cursosInativos = cursos.filter(c => c.ativo === false)
-  
+
   const filtered = cursos.filter(curso => {
     if (tab === 'active' && !curso.ativo) return false
     if (tab === 'disabled' && curso.ativo) return false
-    
+
     return (
-      (filtros.instrutor === 'all' || curso.instrutor_id === filtros.instrutor) &&
+      (filtros.instrutor === 'all' ||
+        curso.instrutor_id === filtros.instrutor) &&
       (filtros.nivel === 'all' || curso.nivel_dificuldade === filtros.nivel)
     )
   })
@@ -129,10 +128,19 @@ export default function AdminCourses() {
   // Estatísticas gerais
   const estatisticas = useMemo(() => {
     const totalCursos = cursos.length
-    const totalInscritos = cursos.reduce((acc, curso) => acc + curso.total_inscritos, 0)
-    const totalConcluidos = cursos.reduce((acc, curso) => acc + curso.total_concluidos, 0)
-    const taxaMediaConclusao = totalInscritos > 0 ? (totalConcluidos / totalInscritos) * 100 : 0
-    const avaliacaoMedia = cursos.reduce((acc, curso) => acc + curso.avaliacao_media, 0) / totalCursos
+    const totalInscritos = cursos.reduce(
+      (acc, curso) => acc + curso.total_inscritos,
+      0
+    )
+    const totalConcluidos = cursos.reduce(
+      (acc, curso) => acc + curso.total_concluidos,
+      0
+    )
+    const taxaMediaConclusao =
+      totalInscritos > 0 ? (totalConcluidos / totalInscritos) * 100 : 0
+    const avaliacaoMedia =
+      cursos.reduce((acc, curso) => acc + curso.avaliacao_media, 0) /
+      totalCursos
 
     return {
       totalCursos,
@@ -145,10 +153,14 @@ export default function AdminCourses() {
 
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
-      case 'Básico': return 'success'
-      case 'Intermediário': return 'warning'
-      case 'Avançado': return 'error'
-      default: return 'default'
+      case 'Básico':
+        return 'success'
+      case 'Intermediário':
+        return 'warning'
+      case 'Avançado':
+        return 'error'
+      default:
+        return 'default'
     }
   }
 
@@ -158,76 +170,81 @@ export default function AdminCourses() {
 
   if (loadingCursos || loadingCategorias) {
     return (
-      <DashboardLayout title="Cursos" items={navigationItems}>
+      <DashboardLayout title='Cursos' items={navigationItems}>
         <Box>
-          <Skeleton variant="rectangular" height={300} />
+          <Skeleton variant='rectangular' height={300} />
         </Box>
       </DashboardLayout>
     )
   }
 
   return (
-    <DashboardLayout title="Cursos" items={navigationItems}>
+    <DashboardLayout title='Cursos' items={navigationItems}>
       <Box>
-
         {/* Filtros */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid size={{ xs: 12, md: 3 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Categoria</InputLabel>
-                  <Select
-                    value={filtros.categoria}
-                    onChange={(e) => setFiltros({ ...filtros, categoria: e.target.value })}
-                    label="Categoria"
-                  >
-                    <MenuItem value="all">
-                      <em>Todas as Categorias</em>
-                    </MenuItem>
-                    {categorias.map((cat) => (
-                      <MenuItem key={cat.codigo} value={cat.nome}>
-                        {cat.nome}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 3 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Instrutor</InputLabel>
-                  <Select
-                    value={filtros.instrutor}
-                    onChange={(e) => setFiltros({ ...filtros, instrutor: e.target.value })}
-                    label="Instrutor"
-                  >
-                    <MenuItem value="all">
-                      <em>Todos os Instrutores</em>
-                    </MenuItem>
-                    {instrutores.map((instrutor) => (
-                      <MenuItem key={instrutor.id} value={instrutor.id}>
-                        {instrutor.nome}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 3 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Nível</InputLabel>
-                  <Select
-                    value={filtros.nivel}
-                    onChange={(e) => setFiltros({ ...filtros, nivel: e.target.value })}
-                    label="Nível"
-                  >
-                    <MenuItem value="all">
-                      <em>Todos os Níveis</em>
-                    </MenuItem>
-                    <MenuItem value="Básico">Básico</MenuItem>
-                    <MenuItem value="Intermediário">Intermediário</MenuItem>
-                    <MenuItem value="Avançado">Avançado</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <FormControl fullWidth>
+              <InputLabel>Categoria</InputLabel>
+              <Select
+                value={filtros.categoria}
+                onChange={e =>
+                  setFiltros({ ...filtros, categoria: e.target.value })
+                }
+                label='Categoria'
+              >
+                <MenuItem value='all'>
+                  <em>Todas as Categorias</em>
+                </MenuItem>
+                {categorias.map(cat => (
+                  <MenuItem key={cat.codigo} value={cat.nome}>
+                    {cat.nome}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <FormControl fullWidth>
+              <InputLabel>Instrutor</InputLabel>
+              <Select
+                value={filtros.instrutor}
+                onChange={e =>
+                  setFiltros({ ...filtros, instrutor: e.target.value })
+                }
+                label='Instrutor'
+              >
+                <MenuItem value='all'>
+                  <em>Todos os Instrutores</em>
+                </MenuItem>
+                {instrutores.map(instrutor => (
+                  <MenuItem key={instrutor.id} value={instrutor.id}>
+                    {instrutor.nome}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid size={{ xs: 12, md: 3 }}>
+            <FormControl fullWidth>
+              <InputLabel>Nível</InputLabel>
+              <Select
+                value={filtros.nivel}
+                onChange={e =>
+                  setFiltros({ ...filtros, nivel: e.target.value })
+                }
+                label='Nível'
+              >
+                <MenuItem value='all'>
+                  <em>Todos os Níveis</em>
+                </MenuItem>
+                <MenuItem value='Básico'>Básico</MenuItem>
+                <MenuItem value='Intermediário'>Intermediário</MenuItem>
+                <MenuItem value='Avançado'>Avançado</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
 
         {/* Tabs de Status */}
         <StatusFilterTabs
@@ -235,131 +252,168 @@ export default function AdminCourses() {
           onChange={setTab}
           activeCount={cursosAtivos.length}
           inactiveCount={cursosInativos.length}
-          activeLabel="Cursos Ativos"
-          inactiveLabel="Cursos Inativos"
+          activeLabel='Cursos Ativos'
+          inactiveLabel='Cursos Inativos'
         />
 
         {/* Tabela de Cursos */}
         <Card>
           <CardHeader
             title={
-              <Typography variant="h6" fontWeight={600}>
-                {tab === 'active' ? 'Cursos Ativos' : tab === 'disabled' ? 'Cursos Inativos' : 'Todos os Cursos'}
+              <Typography variant='h6' fontWeight={600}>
+                {tab === 'active'
+                  ? 'Cursos Ativos'
+                  : tab === 'disabled'
+                    ? 'Cursos Inativos'
+                    : 'Todos os Cursos'}
               </Typography>
             }
             subheader={`${filtered.length} cursos encontrados`}
           />
           <CardContent>
             {filtered.length === 0 ? (
-              <Alert severity="info">
-                {tab === 'all' 
+              <Alert severity='info'>
+                {tab === 'all'
                   ? 'Nenhum curso encontrado com os filtros selecionados.'
                   : `Nenhum curso ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
               </Alert>
             ) : (
-              <Table size="small">
+              <Table size='small'>
                 <TableHead>
                   <TableRow>
                     <TableCell>Curso</TableCell>
                     <TableCell>Categoria</TableCell>
                     <TableCell>Instrutor</TableCell>
                     <TableCell>Nível</TableCell>
-                    <TableCell align="center">Inscritos</TableCell>
-                    <TableCell align="center">Taxa Conclusão</TableCell>
-                    <TableCell align="center">Avaliação</TableCell>
-                    <TableCell align="center">Status</TableCell>
+                    <TableCell align='center'>Inscritos</TableCell>
+                    <TableCell align='center'>Taxa Conclusão</TableCell>
+                    <TableCell align='center'>Avaliação</TableCell>
+                    <TableCell align='center'>Status</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filtered.map((curso) => (
-                    <TableRow 
-                      hover 
+                  {filtered.map(curso => (
+                    <TableRow
+                      hover
                       sx={{ cursor: 'pointer' }}
                       onClick={() => setSelectedCourse(curso)}
                     >
                       <TableCell>
                         <Box>
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography variant='body2' fontWeight={500}>
                             {curso.titulo}
                           </Typography>
                           <Typography
-                            variant="caption"
+                            variant='caption'
                             sx={{
-                              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                               color: 'text.secondary',
                             }}
                           >
                             {curso.codigo}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                            <ScheduleIcon fontSize="small" color="action" />
-                            <Typography variant="caption" color="text.secondary">
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              mt: 0.5,
+                            }}
+                          >
+                            <ScheduleIcon fontSize='small' color='action' />
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
                               {curso.duracao_estimada}h
                             </Typography>
-                            <TrendingUpIcon fontSize="small" color="action" />
-                            <Typography variant="caption" color="text.secondary">
+                            <TrendingUpIcon fontSize='small' color='action' />
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
                               {curso.xp_oferecido} XP
                             </Typography>
                           </Box>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Chip variant="outlined"  size="small" />
+                        <Chip variant='outlined' size='small' />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-                          </Avatar>
-                          <Typography variant="body2">
-                          </Typography>
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                        >
+                          <Avatar
+                            sx={{ width: 24, height: 24, fontSize: '0.75rem' }}
+                          ></Avatar>
+                          <Typography variant='body2'></Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Chip
-                          size="small"
+                          size='small'
                           label={curso.nivel_dificuldade}
-                          color={getNivelColor(curso.nivel_dificuldade || 'Básico') as any}
+                          color={
+                            getNivelColor(
+                              curso.nivel_dificuldade || 'Básico'
+                            ) as any
+                          }
                         />
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell align='center'>
                         <Box>
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography variant='body2' fontWeight={500}>
                             {curso.total_inscritos}
                           </Typography>
-                          <Typography variant="caption" color="success.main">
+                          <Typography variant='caption' color='success.main'>
                             {curso.total_concluidos} concluídos
                           </Typography>
                         </Box>
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell align='center'>
                         <Box sx={{ minWidth: 80 }}>
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography variant='body2' fontWeight={500}>
                             {curso.taxa_conclusao.toFixed(1)}%
                           </Typography>
                           <LinearProgress
-                            variant="determinate"
+                            variant='determinate'
                             value={curso.taxa_conclusao}
                             sx={{ mt: 0.5 }}
-                            color={curso.taxa_conclusao > 70 ? 'success' : curso.taxa_conclusao > 40 ? 'warning' : 'error'}
+                            color={
+                              curso.taxa_conclusao > 70
+                                ? 'success'
+                                : curso.taxa_conclusao > 40
+                                  ? 'warning'
+                                  : 'error'
+                            }
                           />
                         </Box>
                       </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <TableCell align='center'>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                          }}
+                        >
                           <Rating
                             value={curso.avaliacao_media}
                             readOnly
-                            size="small"
+                            size='small'
                             precision={0.1}
                           />
-                          <Typography variant="caption" color="text.secondary">
-                            {curso.avaliacao_media.toFixed(1)} ({curso.total_avaliacoes})
+                          <Typography variant='caption' color='text.secondary'>
+                            {curso.avaliacao_media.toFixed(1)} (
+                            {curso.total_avaliacoes})
                           </Typography>
                         </Box>
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell align='center'>
                         <Chip
-                          size="small"
+                          size='small'
                           label={curso.ativo ? 'Ativo' : 'Inativo'}
                           color={getStatusColor(curso.ativo)}
                         />

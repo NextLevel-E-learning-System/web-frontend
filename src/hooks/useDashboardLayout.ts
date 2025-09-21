@@ -2,7 +2,8 @@ import { useNavigation } from './useNavigation'
 import { useMeuPerfil } from '@/api/users'
 
 export function useDashboardLayout() {
-  const { navigationItems, user, isAluno, isInstrutor, isAdmin, isGerente } = useNavigation()
+  const { navigationItems, user, isAluno, isInstrutor, isAdmin, isGerente } =
+    useNavigation()
   const { data: perfil } = useMeuPerfil()
 
   // Definir títulos baseados no papel do usuário

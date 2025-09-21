@@ -47,14 +47,13 @@ import {
   useListarCargos,
   useFuncionarios,
   UsuarioResumo,
-
 } from '@/api/users'
-
 
 export default function AdminInstructors() {
   const { navigationItems } = useNavigation()
 
-  const { data: funcionarios = [], isLoading: loadingFuncionarios } = useFuncionarios()
+  const { data: funcionarios = [], isLoading: loadingFuncionarios } =
+    useFuncionarios()
   const { data: departamentos = [], isLoading: loadingDepartments } =
     useListarDepartamentos()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
@@ -65,7 +64,9 @@ export default function AdminInstructors() {
   const [isAddOpen, setIsAddOpen] = useState(false)
 
   // Filtrar apenas instrutores e aplicar filtro de status
-  const instrutores = funcionarios.filter(f => (f as any).tipo_usuario === 'INSTRUTOR')
+  const instrutores = funcionarios.filter(
+    f => (f as any).tipo_usuario === 'INSTRUTOR'
+  )
   const filtered = instrutores.filter(i => {
     if (tab === 'all') return true
     if (tab === 'active') return i.ativo === true
@@ -75,7 +76,6 @@ export default function AdminInstructors() {
   const openAdd = () => {
     setIsAddOpen(true)
   }
-
 
   if (loadingDepartments || loadingCargos || loadingFuncionarios) {
     return (
@@ -101,15 +101,11 @@ export default function AdminInstructors() {
             value={tab}
             onChange={setTab}
             activeLabel='Instrutores Ativos'
-            inactiveLabel='Instrutores Inativos' 
-            activeCount={instrutores.filter(i => i.ativo === true).length} 
+            inactiveLabel='Instrutores Inativos'
+            activeCount={instrutores.filter(i => i.ativo === true).length}
             inactiveCount={instrutores.filter(i => i.ativo === false).length}
           />
-          <Button
-            onClick={openAdd}
-            startIcon={<AddIcon />}
-            variant='contained'
-           >
+          <Button onClick={openAdd} startIcon={<AddIcon />} variant='contained'>
             Adicionar Instrutor
           </Button>
         </Box>
@@ -125,7 +121,7 @@ export default function AdminInstructors() {
                     : 'Todos os Instrutores'}
               </Typography>
             }
-           />
+          />
           <CardContent>
             {filtered.length === 0 ? (
               <Alert severity='info'>
@@ -147,64 +143,48 @@ export default function AdminInstructors() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                     <TableRow   hover>
-                      <TableCell>
-                        <Typography
-                          component='span'
-                          sx={{
-                            fontFamily:
-                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                          }}
-                        >
-                           
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography fontWeight={500}>
-                           
-                        </Typography>
-                      </TableCell>
-                      <TableCell>{ }</TableCell>
-                      <TableCell>
-                        
-                      </TableCell>
-                      <TableCell>
-                        
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                          }}
-                        >
-                          <Switch
-                            />
-                          <Chip
-                            size='small'
-                             
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell align='right'>
-                        <IconButton
-                          size='small'
-                           aria-label='editar'
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size='small'
-                         
-                          aria-label='excluir'
-                          color='error'
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                 </TableBody>
+                  <TableRow hover>
+                    <TableCell>
+                      <Typography
+                        component='span'
+                        sx={{
+                          fontFamily:
+                            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                        }}
+                      ></Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography fontWeight={500}></Typography>
+                    </TableCell>
+                    <TableCell>{}</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1.5,
+                        }}
+                      >
+                        <Switch />
+                        <Chip size='small' />
+                      </Box>
+                    </TableCell>
+                    <TableCell align='right'>
+                      <IconButton size='small' aria-label='editar'>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size='small'
+                        aria-label='excluir'
+                        color='error'
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
               </Table>
             )}
           </CardContent>
@@ -226,24 +206,15 @@ export default function AdminInstructors() {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='Nome completo'
-                    fullWidth
-                  required
-                />
+                <TextField label='Nome completo' fullWidth required />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='Email'
-                  type='email'
-                   fullWidth
-                  required
-                />
+                <TextField label='Email' type='email' fullWidth required />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='CPF'
-                   placeholder='000.000.000-00'
+                  placeholder='000.000.000-00'
                   fullWidth
                   required
                 />
@@ -251,10 +222,7 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
-                  <Select
-                  
-                    label='Status'
-                  >
+                  <Select label='Status'>
                     <MenuItem value='ATIVO'>Ativo</MenuItem>
                     <MenuItem value='INATIVO'>Inativo</MenuItem>
                   </Select>
@@ -263,10 +231,7 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Departamento</InputLabel>
-                  <Select
-                    
-                    label='Departamento'
-                  >
+                  <Select label='Departamento'>
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
@@ -281,21 +246,16 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Cargo</InputLabel>
-                  <Select
-                  
-                    label='Cargo'
-                  >
+                  <Select label='Cargo'>
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                   
                   </Select>
                 </FormControl>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Biografia do Instrutor'
-                  
                   fullWidth
                   multiline
                   minRows={3}
@@ -306,18 +266,10 @@ export default function AdminInstructors() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button
-              variant='outlined'
-              onClick={() => setIsAddOpen(false)}
-            >
+            <Button variant='outlined' onClick={() => setIsAddOpen(false)}>
               Cancelar
             </Button>
-            <Button
-              variant='contained'
-             
-            >
-              'Adicionar'
-            </Button>
+            <Button variant='contained'>'Adicionar'</Button>
           </DialogActions>
         </Dialog>
 
@@ -337,27 +289,15 @@ export default function AdminInstructors() {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='Nome completo'
-                   fullWidth
-                  required
-                />
+                <TextField label='Nome completo' fullWidth required />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='Email'
-                  type='email'
-                   fullWidth
-                  required
-                />
+                <TextField label='Email' type='email' fullWidth required />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Departamento</InputLabel>
-                  <Select
-                    
-                    label='Departamento'
-                  >
+                  <Select label='Departamento'>
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
@@ -372,23 +312,17 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Cargo</InputLabel>
-                  <Select
-                     label='Cargo'
-                  >
+                  <Select label='Cargo'>
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    
                   </Select>
                 </FormControl>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
-                  <Select
-                   
-                    label='Status'
-                  >
+                  <Select label='Status'>
                     <MenuItem value='ATIVO'>Ativo</MenuItem>
                     <MenuItem value='INATIVO'>Inativo</MenuItem>
                   </Select>
@@ -397,7 +331,6 @@ export default function AdminInstructors() {
               <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Biografia do Instrutor'
-                
                   fullWidth
                   multiline
                   minRows={3}
@@ -411,15 +344,10 @@ export default function AdminInstructors() {
             <Button
               variant='outlined'
               onClick={() => setEditingInstructor(null)}
-             >
+            >
               Cancelar
             </Button>
-            <Button
-              variant='contained'
-              
-            >
-     'Atualizar'
-            </Button>
+            <Button variant='contained'>'Atualizar'</Button>
           </DialogActions>
         </Dialog>
       </Box>

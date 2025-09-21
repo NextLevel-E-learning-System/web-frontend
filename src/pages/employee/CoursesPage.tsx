@@ -77,12 +77,8 @@ export default function CoursesPage() {
   const theme = useTheme()
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const { data: user } = useMeuPerfil()
-  const {
-    navigationItems,
-    canManageCourses,
-    isInstrutor,
-    isAdmin,
-  } = useNavigation()
+  const { navigationItems, canManageCourses, isInstrutor, isAdmin } =
+    useNavigation()
 
   // Estados locais
   const [filtros, setFiltros] = useState<FiltrosCatalogo>({})
@@ -104,7 +100,6 @@ export default function CoursesPage() {
   // Hooks
   const { data: categorias, isLoading: loadingCategorias } = useCategories()
   const { data: cursos, isLoading: loadingCursos } = useCourseCatalog(filtros)
-
 
   // Hook para buscar todos os cursos (sem filtros) para contagem por categoria
   const { data: todosCursos } = useCourseCatalog()
@@ -130,7 +125,6 @@ export default function CoursesPage() {
     }))
   }, [selectedCategory])
 
-
   const resetFormCurso = () => {
     setDadosNovoCurso({
       codigo: '',
@@ -143,7 +137,6 @@ export default function CoursesPage() {
       nivel_dificuldade: 'Básico',
     })
   }
-
 
   // Função para buscar categoria por ID
   const getCategoriaById = (categoriaId: string) => {
@@ -236,7 +229,6 @@ export default function CoursesPage() {
   )
 
   const renderCursoCard = (curso: Curso) => {
-
     // Buscar dados da categoria
     const categoria = getCategoriaById(curso.categoria_id || '')
 
@@ -315,114 +307,113 @@ export default function CoursesPage() {
             )}
 
             {/* Status de progresso */}
-      
-              <Box
-                sx={{
-                  position: 'absolute',
-                  bottom: 16,
-                  right: 16,
-                  bgcolor: 'rgba(0,0,0,0.8)',
-                  borderRadius: '12px',
-                  px: 1,
-                  py: 0.5,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                }}
-              >
-              
-          </Box>
 
-          <CardContent
-            sx={{
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              flexGrow: 1,
-            }}
-          >
-            <Box sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 16,
+                right: 16,
+                bgcolor: 'rgba(0,0,0,0.8)',
+                borderRadius: '12px',
+                px: 1,
+                py: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            ></Box>
+
+            <CardContent
+              sx={{
+                p: 2.5,
+                display: 'flex',
+                flexDirection: 'column',
+                flexGrow: 1,
+              }}
+            >
+              <Box sx={{ mb: 2 }}>
+                <Typography
+                  variant='body2'
+                  sx={{
+                    fontFamily:
+                      'Jost, -apple-system, Roboto, Helvetica, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    lineHeight: 1.5,
+                    color: '#555',
+                    mb: 1,
+                  }}
+                >
+                  por <span style={{ color: '#000' }}>{'Instrutor'}</span>
+                </Typography>
+                <Typography
+                  variant='h6'
+                  sx={{
+                    fontFamily:
+                      'Exo, -apple-system, Roboto, Helvetica, sans-serif',
+                    fontSize: '18px',
+                    fontWeight: 700,
+                    lineHeight: 1.2,
+                    color: '#000',
+                    textTransform: 'capitalize',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {curso.titulo}
+                </Typography>
+              </Box>
+
               <Typography
                 variant='body2'
                 sx={{
                   fontFamily:
                     'Jost, -apple-system, Roboto, Helvetica, sans-serif',
                   fontSize: '14px',
-                  fontWeight: 400,
-                  lineHeight: 1.5,
-                  color: '#555',
-                  mb: 1,
-                }}
-              >
-                por{' '}
-                <span style={{ color: '#000' }}>
-                  {'Instrutor'}
-                </span>
-              </Typography>
-              <Typography
-                variant='h6'
-                sx={{
-                  fontFamily:
-                    'Exo, -apple-system, Roboto, Helvetica, sans-serif',
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  lineHeight: 1.2,
-                  color: '#000',
-                  textTransform: 'capitalize',
+                  color: '#666',
+                  mb: 2,
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical',
                   overflow: 'hidden',
                 }}
               >
-                {curso.titulo}
+                {curso.descricao || 'Descrição do curso...'}
               </Typography>
-            </Box>
 
-            <Typography
-              variant='body2'
-              sx={{
-                fontFamily:
-                  'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                fontSize: '14px',
-                color: '#666',
-                mb: 2,
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}
-            >
-              {curso.descricao || 'Descrição do curso...'}
-            </Typography>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
+              >
+                {curso.duracao_estimada && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <AccessTimeIcon
+                      sx={{ fontSize: '16px', color: '#FF782D' }}
+                    />
+                    <Typography
+                      variant='body2'
+                      sx={{ fontSize: '14px', color: '#555' }}
+                    >
+                      {curso.duracao_estimada}h
+                    </Typography>
+                  </Box>
+                )}
+                {curso.xp_oferecido && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <StarIcon sx={{ fontSize: '16px', color: '#FF782D' }} />
+                    <Typography
+                      variant='body2'
+                      sx={{ fontSize: '14px', color: '#555' }}
+                    >
+                      {curso.xp_oferecido} XP
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              {curso.duracao_estimada && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <AccessTimeIcon sx={{ fontSize: '16px', color: '#FF782D' }} />
-                  <Typography
-                    variant='body2'
-                    sx={{ fontSize: '14px', color: '#555' }}
-                  >
-                    {curso.duracao_estimada}h
-                  </Typography>
-                </Box>
-              )}
-              {curso.xp_oferecido && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <StarIcon sx={{ fontSize: '16px', color: '#FF782D' }} />
-                  <Typography
-                    variant='body2'
-                    sx={{ fontSize: '14px', color: '#555' }}
-                  >
-                    {curso.xp_oferecido} XP
-                  </Typography>
-                </Box>
-              )}
-            </Box>
+              {/* Progresso para usuários inscritos */}
 
-            {/* Progresso para usuários inscritos */}
-            
               <Box sx={{ mb: 2 }}>
                 <Typography
                   variant='body2'
@@ -441,20 +432,18 @@ export default function CoursesPage() {
                   }}
                 />
               </Box>
-          
 
-            <Box sx={{ borderTop: '1px solid #EAEAEA', pt: 2, mt: 'auto' }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                {/* Botões para funcionários */}
+              <Box sx={{ borderTop: '1px solid #EAEAEA', pt: 2, mt: 'auto' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  {/* Botões para funcionários */}
                   <Button
                     size='small'
-           
                     sx={{
                       borderRadius: '20px',
                       textTransform: 'none',
@@ -463,51 +452,47 @@ export default function CoursesPage() {
                   >
                     'Inscrever-se'
                   </Button>
-                
 
-                {/* Botões para instrutores/admins */}
-                {canManageCourses && (
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Tooltip title='Visualizar'>
-                      <IconButton size='small'>
-                        <VisibilityIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title='Editar'>
-                      <IconButton size='small'>
-                        <EditIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title='Duplicar'>
-                      <IconButton
-                        size='small'
-                       
-                      >
-                        <CopyIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                )}
+                  {/* Botões para instrutores/admins */}
+                  {canManageCourses && (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Tooltip title='Visualizar'>
+                        <IconButton size='small'>
+                          <VisibilityIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title='Editar'>
+                        <IconButton size='small'>
+                          <EditIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title='Duplicar'>
+                        <IconButton size='small'>
+                          <CopyIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  )}
 
-                <Typography
-                  variant='body2'
-                  sx={{
-                    fontFamily:
-                      'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: '#FF782D',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      color: '#e64a19',
-                    },
-                  }}
-                >
-                  Ver mais
-                </Typography>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      fontFamily:
+                        'Jost, -apple-system, Roboto, Helvetica, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: '#FF782D',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: '#e64a19',
+                      },
+                    }}
+                  >
+                    Ver mais
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
-          </CardContent>
+            </CardContent>
           </Box>
         </Card>
       </Box>
@@ -515,10 +500,7 @@ export default function CoursesPage() {
   }
 
   return (
-    <DashboardLayout
-      title={'Gerenciar Cursos'}
-      items={navigationItems}
-    >
+    <DashboardLayout title={'Gerenciar Cursos'} items={navigationItems}>
       <Box>
         {canManageCourses && (
           <Box
@@ -696,7 +678,6 @@ export default function CoursesPage() {
               onChange={e =>
                 setDadosNovoCurso(prev => ({ ...prev, codigo: e.target.value }))
               }
-             
               required
             />
 
@@ -706,7 +687,6 @@ export default function CoursesPage() {
               onChange={e =>
                 setDadosNovoCurso(prev => ({ ...prev, titulo: e.target.value }))
               }
-            
               required
             />
 
@@ -795,11 +775,7 @@ export default function CoursesPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogCriarCurso(false)}>Cancelar</Button>
-          <Button
-            
-          >
-            { 'Criar'}
-          </Button>
+          <Button>{'Criar'}</Button>
         </DialogActions>
       </Dialog>
 

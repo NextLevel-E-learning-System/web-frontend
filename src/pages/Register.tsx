@@ -55,8 +55,8 @@ const Register = () => {
       cargo_nome: selectedCargo.nome,
     }
 
-      await register.mutateAsync(submitData as any)
-      navigate('/login')
+    await register.mutateAsync(submitData as any)
+    navigate('/login')
   }
 
   const handleChange =

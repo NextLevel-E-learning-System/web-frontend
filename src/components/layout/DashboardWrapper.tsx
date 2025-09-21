@@ -10,10 +10,10 @@ interface DashboardWrapperProps {
   allowedTypes?: string[] // Tipos de dashboard permitidos
 }
 
-export default function DashboardWrapper({ 
-  children, 
+export default function DashboardWrapper({
+  children,
   customTitle,
-  allowedTypes 
+  allowedTypes,
 }: DashboardWrapperProps) {
   const { title, navigationItems } = useDashboardLayout()
   const { dashboard, isLoading, error } = useDashboardCompleto()
@@ -21,17 +21,22 @@ export default function DashboardWrapper({
   return (
     <DashboardLayout title={customTitle || title} items={navigationItems}>
       {isLoading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Box
+          display='flex'
+          justifyContent='center'
+          alignItems='center'
+          minHeight='400px'
+        >
           <CircularProgress />
         </Box>
       ) : error || !dashboard ? (
-        <Alert severity="error">
+        <Alert severity='error'>
           Erro ao carregar dados do dashboard. Tente novamente.
           {error && <div>Erro: {error.toString()}</div>}
           <div>Dashboard type: {dashboard?.tipo_dashboard}</div>
         </Alert>
       ) : allowedTypes && !allowedTypes.includes(dashboard.tipo_dashboard) ? (
-        <Alert severity="warning">
+        <Alert severity='warning'>
           Dashboard não disponível para seu tipo de usuário.
         </Alert>
       ) : (

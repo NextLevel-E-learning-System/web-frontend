@@ -24,23 +24,22 @@ import { useMeuPerfil } from '@/api/users'
 
 interface EmployeeHeaderProps {
   dashboardData: {
-    tipo_dashboard?: string;
-    xp_atual: number;
-    nivel_atual: number;
-    progresso_nivel: number;
-    ranking_departamento?: number;
-    xp_proximo_nivel?: number;
-    badges_conquistados?: any[];
-    cursos_concluidos?: number;
+    tipo_dashboard?: string
+    xp_atual: number
+    nivel_atual: number
+    progresso_nivel: number
+    ranking_departamento?: number
+    xp_proximo_nivel?: number
+    badges_conquistados?: any[]
+    cursos_concluidos?: number
   }
 }
 
-export default function EmployeeHeader({
-  dashboardData,
-}: EmployeeHeaderProps) {
+export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
   const nivelAtual = dashboardData?.nivel_atual || 1
   const xpAtual = dashboardData?.xp_atual || 0
-  const xpProximoNivel = dashboardData?.xp_proximo_nivel || ((nivelAtual + 1) * 1000)
+  const xpProximoNivel =
+    dashboardData?.xp_proximo_nivel || (nivelAtual + 1) * 1000
   const progressoNivel = dashboardData?.progresso_nivel || 0
   const badges = dashboardData?.badges_conquistados || []
   const cursosConcluido = dashboardData?.cursos_concluidos || 0
@@ -49,11 +48,11 @@ export default function EmployeeHeader({
   // Calcular quantos XP faltam para o próximo nível
   const xpFaltante = xpProximoNivel - xpAtual
 
-    const name = useMemo(() => {
-      if (!perfil?.nome) return ''
-      const partes = perfil.nome.trim().split(' ')
-      return `${partes[0]}`.toUpperCase()
-    }, [perfil?.nome])
+  const name = useMemo(() => {
+    if (!perfil?.nome) return ''
+    const partes = perfil.nome.trim().split(' ')
+    return `${partes[0]}`.toUpperCase()
+  }, [perfil?.nome])
 
   return (
     <Card
@@ -66,8 +65,15 @@ export default function EmployeeHeader({
         boxShadow: '0 10px 30px rgba(2,6,23,.06)',
       }}
     >
-  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-          <Box>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+        }}
+      >
+        <Box>
           <Typography
             variant='h4'
             sx={{
@@ -76,20 +82,24 @@ export default function EmployeeHeader({
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
-          >              Olá {name}!
-            </Typography>
+          >
+            {' '}
+            Olá {name}!
+          </Typography>
           <Typography color='text.secondary' sx={{ mt: 0.5 }}>
             Nível {nivelAtual}
           </Typography>
-           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <LocalFireDepartmentIcon sx={{ color: "#F97316" }} />
-              <Typography fontWeight={600}>{cursosConcluido}</Typography>
-            </Box>
-            <IconButton color="inherit" aria-label="notifications"><NotificationsNoneIcon sx={{ color: "text.secondary" }} /></IconButton>
-          </Box>
         </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <LocalFireDepartmentIcon sx={{ color: '#F97316' }} />
+            <Typography fontWeight={600}>{cursosConcluido}</Typography>
+          </Box>
+          <IconButton color='inherit' aria-label='notifications'>
+            <NotificationsNoneIcon sx={{ color: 'text.secondary' }} />
+          </IconButton>
+        </Box>
+      </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <Box sx={{ flex: 1 }}>
@@ -131,7 +141,12 @@ export default function EmployeeHeader({
         sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
       >
         {badges.slice(0, 3).map((badge: any, i: number) => (
-          <Chip key={i} variant='outlined' size='small' label={`🏆 ${badge.nome || badge}`} />
+          <Chip
+            key={i}
+            variant='outlined'
+            size='small'
+            label={`🏆 ${badge.nome || badge}`}
+          />
         ))}
         {badges.length > 3 && (
           <Chip

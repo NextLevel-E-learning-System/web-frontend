@@ -28,12 +28,18 @@ export default function EmployeeDashboard() {
   const { title, navigationItems } = useDashboardLayout()
 
   // Type guard para garantir que é um dashboard de aluno
-  const alunoData = dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
+  const alunoData =
+    dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
 
   if (isLoading) {
     return (
       <DashboardLayout title={title} items={navigationItems}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Box
+          display='flex'
+          justifyContent='center'
+          alignItems='center'
+          minHeight='400px'
+        >
           <CircularProgress />
         </Box>
       </DashboardLayout>
@@ -43,7 +49,7 @@ export default function EmployeeDashboard() {
   if (error || !alunoData) {
     return (
       <DashboardLayout title={title} items={navigationItems}>
-        <Alert severity="error">
+        <Alert severity='error'>
           Erro ao carregar dados do dashboard. Tente novamente.
         </Alert>
       </DashboardLayout>
@@ -54,11 +60,13 @@ export default function EmployeeDashboard() {
 
   return (
     <DashboardLayout title={title} items={navigationItems}>
-      <Box sx={{ 
-        maxWidth: '100%',
-        overflow: 'hidden'
-      }}>
-        <EmployeeHeader 
+      <Box
+        sx={{
+          maxWidth: '100%',
+          overflow: 'hidden',
+        }}
+      >
+        <EmployeeHeader
           dashboardData={{
             tipo_dashboard: alunoData.tipo_dashboard,
             xp_atual: progressao.xp_atual,
@@ -66,15 +74,17 @@ export default function EmployeeDashboard() {
             progresso_nivel: progressao.progresso_nivel,
             ranking_departamento: ranking.posicao_departamento,
             xp_proximo_nivel: progressao.xp_proximo_nivel,
-            badges_conquistados: progressao.badges_conquistados
-          }} 
+            badges_conquistados: progressao.badges_conquistados,
+          }}
         />
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, lg: 8 }}>
-            <Card sx={{ 
-              overflow: 'hidden',
-              maxWidth: '100%'
-            }}>
+            <Card
+              sx={{
+                overflow: 'hidden',
+                maxWidth: '100%',
+              }}
+            >
               <Tabs
                 value={tab}
                 onChange={(_, v) => setTab(v)}
@@ -84,10 +94,12 @@ export default function EmployeeDashboard() {
                 <Tab label='Em andamento' />
                 <Tab label='Concluídos' />
               </Tabs>
-              <CardContent sx={{ 
-                maxWidth: '100%',
-                overflow: 'auto'
-              }}>
+              <CardContent
+                sx={{
+                  maxWidth: '100%',
+                  overflow: 'auto',
+                }}
+              >
                 {tab === 0 && (
                   <List>
                     {cursos.em_andamento.length > 0 ? (
@@ -100,7 +112,10 @@ export default function EmployeeDashboard() {
                           }}
                         >
                           <Typography fontWeight={700}>
-                            {c.titulo || c.title || c.nome || 'Curso sem título'}
+                            {c.titulo ||
+                              c.title ||
+                              c.nome ||
+                              'Curso sem título'}
                           </Typography>
                           <Box
                             sx={{
@@ -109,7 +124,7 @@ export default function EmployeeDashboard() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: 2,
-                              flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                              flexWrap: { xs: 'wrap', sm: 'nowrap' },
                             }}
                           >
                             <Box
@@ -118,7 +133,7 @@ export default function EmployeeDashboard() {
                                 height: 8,
                                 bgcolor: 'grey.200',
                                 borderRadius: 5,
-                                minWidth: '120px'
+                                minWidth: '120px',
                               }}
                             >
                               <Box
@@ -131,7 +146,11 @@ export default function EmployeeDashboard() {
                               />
                             </Box>
                             <Typography variant='body2' color='text.secondary'>
-                              {c.progress || c.progresso || c.progresso_percentual || 0}%
+                              {c.progress ||
+                                c.progresso ||
+                                c.progresso_percentual ||
+                                0}
+                              %
                             </Typography>
                             <Button size='small' variant='outlined'>
                               Continuar
@@ -155,10 +174,19 @@ export default function EmployeeDashboard() {
                       cursos.concluidos.map((c: any, index: number) => (
                         <ListItem key={c.id || index}>
                           <ListItemText
-                            primary={c.titulo || c.title || c.nome || 'Curso sem título'}
+                            primary={
+                              c.titulo ||
+                              c.title ||
+                              c.nome ||
+                              'Curso sem título'
+                            }
                             secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
                           />
-                          <Chip label='Concluído' color='success' size='small' />
+                          <Chip
+                            label='Concluído'
+                            color='success'
+                            size='small'
+                          />
                         </ListItem>
                       ))
                     ) : (
@@ -176,10 +204,12 @@ export default function EmployeeDashboard() {
           </Grid>
 
           <Grid size={{ xs: 12, lg: 4 }}>
-            <Card sx={{ 
-              overflow: 'hidden',
-              maxWidth: '100%'
-            }}>
+            <Card
+              sx={{
+                overflow: 'hidden',
+                maxWidth: '100%',
+              }}
+            >
               <CardContent>
                 <Typography fontWeight={700} gutterBottom>
                   Atividades Recentes
@@ -189,8 +219,12 @@ export default function EmployeeDashboard() {
                     atividades_recentes.map((a: any, index: number) => (
                       <ListItem key={a.id || index}>
                         <ListItemText
-                          primary={a.text || a.descricao || a.titulo || 'Atividade'}
-                          secondary={a.time || a.data || a.data_criacao || 'Recente'}
+                          primary={
+                            a.text || a.descricao || a.titulo || 'Atividade'
+                          }
+                          secondary={
+                            a.time || a.data || a.data_criacao || 'Recente'
+                          }
                         />
                       </ListItem>
                     ))
@@ -208,14 +242,18 @@ export default function EmployeeDashboard() {
                   Cursos Recomendados
                 </Typography>
                 <List dense>
-                  {cursos.recomendados.slice(0, 3).map((c: any, index: number) => (
-                    <ListItem key={c.id || index}>
-                      <ListItemText
-                        primary={c.titulo || c.title || c.nome || 'Curso recomendado'}
-                        secondary={c.categoria || 'Recomendado para você'}
-                      />
-                    </ListItem>
-                  ))}
+                  {cursos.recomendados
+                    .slice(0, 3)
+                    .map((c: any, index: number) => (
+                      <ListItem key={c.id || index}>
+                        <ListItemText
+                          primary={
+                            c.titulo || c.title || c.nome || 'Curso recomendado'
+                          }
+                          secondary={c.categoria || 'Recomendado para você'}
+                        />
+                      </ListItem>
+                    ))}
                   {cursos.recomendados.length === 0 && (
                     <Typography
                       color='text.secondary'

@@ -101,18 +101,19 @@ export default function AdminUsers() {
   // Título dinâmico baseado na role
   const title = useMemo(() => {
     if (editingUser) return 'Editar Usuário'
-    if (isGerente) return `Funcionários - Departamento ${user?.departamento_id || ''}`
+    if (isGerente)
+      return `Funcionários - Departamento ${user?.departamento_id || ''}`
     return 'Gerenciar Usuários'
   }, [editingUser, isGerente, user?.departamento_id])
 
   // Filtrar usuários: GERENTE vê apenas do seu departamento, ADMIN vê todos
   const allUsers = useMemo(() => {
     if (!usuarios) return []
-    
+
     if (isGerente && user?.departamento_id) {
       return usuarios.filter(u => u.departamento_id === user.departamento_id)
     }
-    
+
     return usuarios
   }, [usuarios, isGerente, user?.departamento_id])
 
@@ -364,13 +365,18 @@ export default function AdminUsers() {
                       <TableCell>
                         <Chip
                           icon={getUserTypeIcon(
-                            (user as FuncionarioWithRole).tipo_usuario || 'FUNCIONARIO'
+                            (user as FuncionarioWithRole).tipo_usuario ||
+                              'FUNCIONARIO'
                           )}
                           variant='outlined'
-                          label={(user as FuncionarioWithRole).tipo_usuario || 'FUNCIONARIO'}
+                          label={
+                            (user as FuncionarioWithRole).tipo_usuario ||
+                            'FUNCIONARIO'
+                          }
                           color={
                             getUserTypeColor(
-                              (user as FuncionarioWithRole).tipo_usuario || 'FUNCIONARIO'
+                              (user as FuncionarioWithRole).tipo_usuario ||
+                                'FUNCIONARIO'
                             ) as any
                           }
                           size='small'
@@ -379,9 +385,7 @@ export default function AdminUsers() {
                       <TableCell>
                         <Chip
                           size='small'
-                          color={
-                            user.ativo ? 'success' : 'default'
-                          }
+                          color={user.ativo ? 'success' : 'default'}
                           label={user.ativo ? 'ATIVO' : 'INATIVO'}
                         />
                       </TableCell>
@@ -480,7 +484,9 @@ export default function AdminUsers() {
                   <InputLabel>Cargo</InputLabel>
                   <Select
                     value={form.cargo_nome}
-                    onChange={e => setForm({ ...form, cargo_nome: e.target.value })}
+                    onChange={e =>
+                      setForm({ ...form, cargo_nome: e.target.value })
+                    }
                     label='Cargo'
                   >
                     <MenuItem value=''>
@@ -621,7 +627,9 @@ export default function AdminUsers() {
                   <InputLabel>Cargo</InputLabel>
                   <Select
                     value={form.cargo_nome}
-                    onChange={e => setForm({ ...form, cargo_nome: e.target.value })}
+                    onChange={e =>
+                      setForm({ ...form, cargo_nome: e.target.value })
+                    }
                     label='Cargo'
                   >
                     <MenuItem value=''>

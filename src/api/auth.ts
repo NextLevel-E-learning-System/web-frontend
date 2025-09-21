@@ -1,21 +1,21 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiPost, authPost, setAccessToken, clearAccessToken } from './http';
-import { API_ENDPOINTS } from './config';
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiPost, authPost, setAccessToken, clearAccessToken } from './http'
+import { API_ENDPOINTS } from './config'
 
 // Types
 export interface LoginRequest {
-  email: string;
-  senha: string;
+  email: string
+  senha: string
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  tokenType: string;
-  expiresInHours: number;
+  accessToken: string
+  tokenType: string
+  expiresInHours: number
 }
 
 export interface LogoutResponse {
-  sucesso: boolean;
+  sucesso: boolean
 }
 
 // Auth Hooks
@@ -26,24 +26,24 @@ export function useLogin() {
       apiPost<LoginResponse>(`${API_ENDPOINTS.AUTH}/login`, credentials),
     onSuccess: (data: LoginResponse) => {
       // Store token using http utility
-      setAccessToken(data.accessToken);
-    }
-  });
+      setAccessToken(data.accessToken)
+    },
+  })
 }
 
 export function useLogout() {
-  const queryClient = useQueryClient();
-  
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationKey: ['auth', 'logout'],
     mutationFn: () =>
       authPost<LogoutResponse>(`${API_ENDPOINTS.AUTH}/logout`, {}),
     onSuccess: () => {
       // Clear token and invalidate all queries
-      clearAccessToken();
-      queryClient.clear();
-    }
-  });
+      clearAccessToken()
+      queryClient.clear()
+    },
+  })
 }
 
 export function useRefreshToken() {
@@ -53,7 +53,7 @@ export function useRefreshToken() {
       apiPost<LoginResponse>(`${API_ENDPOINTS.AUTH}/refresh`, {}),
     onSuccess: (data: LoginResponse) => {
       // Update token using http utility
-      setAccessToken(data.accessToken);
-    }
-  });
+      setAccessToken(data.accessToken)
+    },
+  })
 }

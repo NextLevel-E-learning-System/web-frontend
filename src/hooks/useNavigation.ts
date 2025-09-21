@@ -123,7 +123,7 @@ export function useNavigation() {
           icon: React.createElement(DashboardIcon),
           href: '/dashboard/admin', // Mesmo dashboard que ADMIN
         },
-         {
+        {
           label: 'Cursos',
           icon: React.createElement(SchoolIcon),
           children: [
@@ -153,18 +153,18 @@ export function useNavigation() {
               icon: React.createElement(PeopleIcon),
               href: '/admin/users', // Mesma página, mas filtrada
             },
-             {
+            {
               label: 'Instrutores',
               icon: React.createElement(BadgeIcon),
               href: '/admin/instructors',
-            }            
+            },
           ],
         },
         {
           label: 'Relatórios',
           icon: React.createElement(AssignmentIcon),
           href: '/admin/relatorios', // Mesma página, mas filtrada
-        }
+        },
       ]
     }
 

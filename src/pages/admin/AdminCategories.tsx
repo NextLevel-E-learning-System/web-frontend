@@ -36,10 +36,7 @@ import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
-import {
-  useListarDepartamentos,
-
-} from '@/api/users'
+import { useListarDepartamentos } from '@/api/users'
 
 interface CategoryForm {
   nome: string
@@ -60,8 +57,6 @@ export default function AdminCategories() {
     departamento_codigo: '',
     descricao: '',
   })
-
-
 
   const getDepartmentName = (codigo: string) => {
     return departamentos.find(d => d.codigo === codigo)?.nome || codigo
@@ -105,10 +100,7 @@ export default function AdminCategories() {
               ))}
             </Select>
           </FormControl>
-          <Button
-            startIcon={<AddIcon />}
-            variant='contained'
-          >
+          <Button startIcon={<AddIcon />} variant='contained'>
             Adicionar Categoria
           </Button>
         </Box>
@@ -123,84 +115,73 @@ export default function AdminCategories() {
             }
           />
           <CardContent>
-       
-              <Table size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Categoria</TableCell>
-                    <TableCell>Departamento</TableCell>
-                    <TableCell>Descrição</TableCell>
-                    <TableCell align='right'>Ações</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                    <TableRow hover>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                          }}
-                        >
-                          <Chip
-                            size='small'
-                            color='primary'
-                            variant='outlined'
-                          />
-                          <Typography fontWeight={500}></Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant='body2' fontWeight={500}>
-                          </Typography>
-                          <Typography variant='caption' color='text.secondary'>
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{
-                            maxWidth: 250,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                        </Typography>
-                      </TableCell>
-                      <TableCell align='right'>
-                        <IconButton
-                          size='small'
-                          aria-label='editar'
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size='small'
-                          onClick={() => {
-                            if (
-                              confirm(
-                              )
-                            ) {
-                              // TODO: Implementar exclusão quando endpoint estiver disponível
-                              toast.info(
-                                'Funcionalidade de exclusão será implementada em breve'
-                              )
-                            }
-                          }}
-                          aria-label='excluir'
-                          color='error'
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                </TableBody>
-              </Table>
+            <Table size='small'>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Categoria</TableCell>
+                  <TableCell>Departamento</TableCell>
+                  <TableCell>Descrição</TableCell>
+                  <TableCell align='right'>Ações</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow hover>
+                  <TableCell>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                      }}
+                    >
+                      <Chip size='small' color='primary' variant='outlined' />
+                      <Typography fontWeight={500}></Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant='body2' fontWeight={500}></Typography>
+                      <Typography
+                        variant='caption'
+                        color='text.secondary'
+                      ></Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{
+                        maxWidth: 250,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    ></Typography>
+                  </TableCell>
+                  <TableCell align='right'>
+                    <IconButton size='small' aria-label='editar'>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      size='small'
+                      onClick={() => {
+                        if (confirm()) {
+                          // TODO: Implementar exclusão quando endpoint estiver disponível
+                          toast.info(
+                            'Funcionalidade de exclusão será implementada em breve'
+                          )
+                        }
+                      }}
+                      aria-label='excluir'
+                      color='error'
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 
@@ -267,25 +248,15 @@ export default function AdminCategories() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button
-              variant='outlined'
-              onClick={() => setIsAddOpen(false)}
-            >
+            <Button variant='outlined' onClick={() => setIsAddOpen(false)}>
               Cancelar
             </Button>
-            <Button
-              variant='contained'
-             
-            >
-            </Button>
+            <Button variant='contained'></Button>
           </DialogActions>
         </Dialog>
 
         {/* Dialog Editar Categoria */}
-        <Dialog
-          
-          maxWidth='sm'
-          fullWidth open={false}        >
+        <Dialog maxWidth='sm' fullWidth open={false}>
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EditIcon />
@@ -341,17 +312,8 @@ export default function AdminCategories() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button
-              variant='outlined'
-            
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant='contained'
-            
-            >
-            </Button>
+            <Button variant='outlined'>Cancelar</Button>
+            <Button variant='contained'></Button>
           </DialogActions>
         </Dialog>
       </Box>
