@@ -42,7 +42,7 @@ export default function EmployeeDashboard() {
 
   if (error || !alunoData) {
     return (
-      <DashboardLayout title='Página Inicial' items={navigationItems}>
+      <DashboardLayout title='Dashboard do Aluno' items={navigationItems}>
         <Alert severity="error">
           Erro ao carregar dados do dashboard. Tente novamente.
         </Alert>
@@ -53,7 +53,7 @@ export default function EmployeeDashboard() {
   const { progressao, cursos, ranking, atividades_recentes } = alunoData
 
   return (
-    <DashboardLayout title='Página Inicial' items={navigationItems}>
+    <DashboardLayout title='Dashboard do Aluno' items={navigationItems}>
       <EmployeeHeader 
         dashboardData={{
           tipo_dashboard: alunoData.tipo_dashboard,

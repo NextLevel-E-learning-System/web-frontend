@@ -32,7 +32,7 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title='Página Inicial' items={navigationItems}>
+      <DashboardLayout title='Dashboard do Administrador' items={navigationItems}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
   if (error || (!adminData && !gerenteData)) {
     return (
-      <DashboardLayout title='Página Inicial' items={navigationItems}>
+      <DashboardLayout title='Dashboard do Administrador' items={navigationItems}>
         <Alert severity="error">
           Erro ao carregar dados do dashboard. Tente novamente.
           {error && <div>Erro: {error.toString()}</div>}
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     const departamentoRestrito = (adminData as any)._departamento_restrito
 
     return (
-    <DashboardLayout title='Página Inicial' items={navigationItems}>
+    <DashboardLayout title='Dashboard do Administrador' items={navigationItems}>
         <Box>
           {/* Alert para GERENTE indicando departamento restrito */}
           {departamentoRestrito && (

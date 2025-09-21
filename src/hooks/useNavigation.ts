@@ -13,7 +13,7 @@ import {
   Apartment as ApartmentIcon,
 } from '@mui/icons-material'
 import { NavItem } from '@/components/layout/DashboardLayout'
-import { useMeuPerfil } from './users'
+import { useMeuPerfil } from '@/api/users'
 
 export function useNavigation() {
   const { data: user } = useMeuPerfil()
@@ -123,28 +123,7 @@ export function useNavigation() {
           icon: React.createElement(DashboardIcon),
           href: '/dashboard/admin', // Mesmo dashboard que ADMIN
         },
-        {
-          label: 'Meu Departamento',
-          icon: React.createElement(ApartmentIcon),
-          children: [
-            {
-              label: 'Funcionários',
-              icon: React.createElement(PeopleIcon),
-              href: '/admin/users', // Mesma página, mas filtrada
-            },
-            {
-              label: 'Relatórios',
-              icon: React.createElement(AssignmentIcon),
-              href: '/admin/relatorios', // Mesma página, mas filtrada
-            },
-            {
-              label: 'Progresso da Equipe',
-              icon: React.createElement(GradeIcon),
-              href: '/admin/courses', // Mesma página, mas filtrada
-            },
-          ],
-        },
-        {
+         {
           label: 'Cursos',
           icon: React.createElement(SchoolIcon),
           children: [
@@ -158,8 +137,34 @@ export function useNavigation() {
               icon: React.createElement(BookIcon),
               href: '/admin/courses', // Filtrado por departamento
             },
+            {
+              label: 'Progresso da Equipe',
+              icon: React.createElement(GradeIcon),
+              href: '/admin/courses', // Mesma página, mas filtrada
+            },
           ],
         },
+        {
+          label: 'Usuários',
+          icon: React.createElement(ApartmentIcon),
+          children: [
+            {
+              label: 'Alunos',
+              icon: React.createElement(PeopleIcon),
+              href: '/admin/users', // Mesma página, mas filtrada
+            },
+             {
+              label: 'Instrutores',
+              icon: React.createElement(BadgeIcon),
+              href: '/admin/instructors',
+            }            
+          ],
+        },
+        {
+          label: 'Relatórios',
+          icon: React.createElement(AssignmentIcon),
+          href: '/admin/relatorios', // Mesma página, mas filtrada
+        }
       ]
     }
 
