@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   Avatar,
   Box,
@@ -20,6 +20,7 @@ import {
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
+import { useMeuPerfil } from '@/api/users'
 
 interface EmployeeHeaderProps {
   dashboardData: {
@@ -30,6 +31,7 @@ interface EmployeeHeaderProps {
     ranking_departamento?: number;
     xp_proximo_nivel?: number;
     badges_conquistados?: any[];
+    cursos_concluidos?: number;
   }
 }
 
@@ -41,9 +43,17 @@ export default function EmployeeHeader({
   const xpProximoNivel = dashboardData?.xp_proximo_nivel || ((nivelAtual + 1) * 1000)
   const progressoNivel = dashboardData?.progresso_nivel || 0
   const badges = dashboardData?.badges_conquistados || []
+  const cursosConcluido = dashboardData?.cursos_concluidos || 0
+  const { data: perfil } = useMeuPerfil()
 
   // Calcular quantos XP faltam para o próximo nível
   const xpFaltante = xpProximoNivel - xpAtual
+
+    const name = useMemo(() => {
+      if (!perfil?.nome) return ''
+      const partes = perfil.nome.trim().split(' ')
+      return `${partes[0]}`.toUpperCase()
+    }, [perfil?.nome])
 
   return (
     <Card
@@ -56,15 +66,8 @@ export default function EmployeeHeader({
         boxShadow: '0 10px 30px rgba(2,6,23,.06)',
       }}
     >
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-        }}
-      >
-        <Box>
+  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <Box>
           <Typography
             variant='h4'
             sx={{
@@ -73,14 +76,20 @@ export default function EmployeeHeader({
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
-          >
-            Olá, Usuário!
-          </Typography>
+          >              Olá {name}!
+            </Typography>
           <Typography color='text.secondary' sx={{ mt: 0.5 }}>
             Nível {nivelAtual}
           </Typography>
+           </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <LocalFireDepartmentIcon sx={{ color: "#F97316" }} />
+              <Typography fontWeight={600}>{cursosConcluido}</Typography>
+            </Box>
+            <IconButton color="inherit" aria-label="notifications"><NotificationsNoneIcon sx={{ color: "text.secondary" }} /></IconButton>
+          </Box>
         </Box>
-      </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <Box sx={{ flex: 1 }}>
