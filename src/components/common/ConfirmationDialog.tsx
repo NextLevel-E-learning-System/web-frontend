@@ -9,7 +9,11 @@ import {
   Box,
   CircularProgress,
 } from '@mui/material'
-import { Warning as WarningIcon } from '@mui/icons-material'
+import { 
+  Warning as WarningIcon,
+  Info as InfoIcon,
+  Error as ErrorIcon,
+} from '@mui/icons-material'
 
 interface ConfirmationDialogProps {
   open: boolean
@@ -34,6 +38,19 @@ export default function ConfirmationDialog({
   isLoading = false,
   severity = 'warning',
 }: ConfirmationDialogProps) {
+  const getIcon = () => {
+    switch (severity) {
+      case 'error':
+        return <ErrorIcon sx={{ color: getColor(), fontSize: 28 }} />
+      case 'warning':
+        return <WarningIcon sx={{ color: getColor(), fontSize: 28 }} />
+      case 'info':
+        return <InfoIcon sx={{ color: getColor(), fontSize: 28 }} />
+      default:
+        return <WarningIcon sx={{ color: getColor(), fontSize: 28 }} />
+    }
+  }
+
   const getColor = () => {
     switch (severity) {
       case 'error':
@@ -74,7 +91,7 @@ export default function ConfirmationDialog({
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <WarningIcon sx={{ color: getColor(), fontSize: 28 }} />
+          {getIcon()}
           <Typography variant='h6' fontWeight={600}>
             {title}
           </Typography>

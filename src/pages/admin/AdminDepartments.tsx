@@ -25,12 +25,17 @@ import {
   FormControl,
   InputLabel,
   Select,
+  TableContainer,
+  Paper,
+  useMediaQuery,
+  useTheme,
+  Stack,
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
+  Block as BlockIcon,
+  CheckCircle as ActivateIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
@@ -46,8 +51,9 @@ import {
   useAtualizarDepartamento,
   useInativarDepartamento,
   type Departamento,
-  type Funcionario,
 } from '@/api/users'
+import { authPut } from '@/api/http'
+import { API_ENDPOINTS } from '@/api/config'
 
 interface DepartmentForm {
   codigo: string
@@ -57,6 +63,8 @@ interface DepartmentForm {
 }
 
 export default function AdminDepartments() {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const { navigationItems } = useNavigation()
   const {
     data: departamentos = [],
@@ -79,6 +87,9 @@ export default function AdminDepartments() {
     open: false,
     titulo: '',
     mensagem: '',
+    confirmText: 'Confirmar',
+    isLoading: false,
+    severity: 'warning' as 'error' | 'warning' | 'info',
     onConfirm: () => {},
   })
   const [form, setForm] = useState<DepartmentForm>({
@@ -201,15 +212,46 @@ export default function AdminDepartments() {
       open: true,
       titulo: 'Inativar Departamento',
       mensagem: `Tem certeza que deseja inativar o departamento "${nome}"? Esta ação pode ser revertida posteriormente.`,
+      confirmText: 'Inativar',
+      isLoading: false,
+      severity: 'warning',
       onConfirm: async () => {
         try {
+          setConfirmDialog(prev => ({ ...prev, isLoading: true }))
           await inativarDepartamento.mutateAsync(codigo)
           toast.success('Departamento inativado com sucesso!')
-          setConfirmDialog({ ...confirmDialog, open: false })
+          setConfirmDialog({ ...confirmDialog, open: false, isLoading: false, severity: 'warning' })
           refetch()
         } catch (error) {
           toast.error('Erro ao inativar departamento')
           console.error(error)
+          setConfirmDialog(prev => ({ ...prev, isLoading: false }))
+        }
+      },
+    })
+  }
+
+  const handleAtivar = (codigo: string, nome: string) => {
+    setConfirmDialog({
+      open: true,
+      titulo: 'Ativar Departamento',
+      mensagem: `Tem certeza que deseja ativar o departamento "${nome}"?`,
+      confirmText: 'Ativar',
+      isLoading: false,
+      severity: 'info',
+      onConfirm: async () => {
+        try {
+          setConfirmDialog(prev => ({ ...prev, isLoading: true }))
+          await authPut(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`, {
+            ativo: true,
+          })
+          toast.success('Departamento ativado com sucesso!')
+          setConfirmDialog({ ...confirmDialog, open: false, isLoading: false, severity: 'warning' })
+          refetch()
+        } catch (error) {
+          toast.error('Erro ao ativar departamento')
+          console.error(error)
+          setConfirmDialog(prev => ({ ...prev, isLoading: false }))
         }
       },
     })
@@ -293,17 +335,18 @@ export default function AdminDepartments() {
                   'Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.'}
               </Alert>
             ) : (
-              <Table size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Código</TableCell>
-                    <TableCell>Departamento</TableCell>
-                    <TableCell>Descrição</TableCell>
-                    <TableCell>Gestor</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell align='right'>Ações</TableCell>
-                  </TableRow>
-                </TableHead>
+              <TableContainer component={Paper} sx={{ maxHeight: 600, overflow: 'auto' }}>
+                <Table size='small' stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ minWidth: 80 }}>Código</TableCell>
+                      <TableCell sx={{ minWidth: 150 }}>Departamento</TableCell>
+                      {!isMobile && <TableCell sx={{ minWidth: 200 }}>Descrição</TableCell>}
+                      {!isMobile && <TableCell sx={{ minWidth: 150 }}>Gestor</TableCell>}
+                      <TableCell sx={{ minWidth: 100 }}>Status</TableCell>
+                      <TableCell align='right' sx={{ minWidth: 120 }}>Ações</TableCell>
+                    </TableRow>
+                  </TableHead>
                 <TableBody>
                   {departamentosFiltrados.map(dept => (
                     <TableRow key={dept.codigo} hover>
@@ -311,39 +354,43 @@ export default function AdminDepartments() {
                         <Typography fontWeight={500}>{dept.codigo}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                          }}
-                        >
-                          <DepartmentAvatar
-                            codigo={dept.codigo}
-                            nome={dept.nome}
-                          />
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                           <Typography fontWeight={500}>{dept.nome}</Typography>
+                          {isMobile && dept.descricao && (
+                            <Typography variant='caption' color='text.secondary'>
+                              {dept.descricao}
+                            </Typography>
+                          )}
+                          {isMobile && getGestorNome(dept.gestor_funcionario_id) && (
+                            <Typography variant='caption' color='text.secondary'>
+                              Gestor: {getGestorNome(dept.gestor_funcionario_id)}
+                            </Typography>
+                          )}
                         </Box>
                       </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{
-                            maxWidth: 400,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {dept.descricao || '—'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant='body2' color='text.secondary'>
-                          {getGestorNome(dept.gestor_funcionario_id) || '—'}
-                        </Typography>
-                      </TableCell>
+                      {!isMobile && (
+                        <TableCell>
+                          <Typography
+                            variant='body2'
+                            color='text.secondary'
+                            sx={{
+                              maxWidth: 300,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {dept.descricao || '—'}
+                          </Typography>
+                        </TableCell>
+                      )}
+                      {!isMobile && (
+                        <TableCell>
+                          <Typography variant='body2' color='text.secondary'>
+                            {getGestorNome(dept.gestor_funcionario_id) || '—'}
+                          </Typography>
+                        </TableCell>
+                      )}
                       <TableCell>
                         <Chip
                           label={dept.ativo ? 'Ativo' : 'Inativo'}
@@ -352,31 +399,46 @@ export default function AdminDepartments() {
                         />
                       </TableCell>
                       <TableCell align='right'>
-                        <IconButton
-                          size='small'
-                          onClick={() => handleEdit(dept)}
-                          aria-label='editar'
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        {dept.ativo && (
+                        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
                           <IconButton
                             size='small'
-                            onClick={() =>
-                              handleInativar(dept.codigo, dept.nome)
-                            }
-                            aria-label='inativar'
-                            color='error'
-                            disabled={inativarDepartamento.isPending}
+                            onClick={() => handleEdit(dept)}
+                            aria-label='editar'
                           >
-                            <DeleteIcon />
+                            <EditIcon />
                           </IconButton>
-                        )}
+                          {dept.ativo ? (
+                            <IconButton
+                              size='small'
+                              onClick={() =>
+                                handleInativar(dept.codigo, dept.nome)
+                              }
+                              aria-label='inativar'
+                              color='error'
+                              disabled={inativarDepartamento.isPending}
+                            >
+                              <BlockIcon />
+                            </IconButton>
+                          ) : (
+                            <IconButton
+                              size='small'
+                              onClick={() =>
+                                handleAtivar(dept.codigo, dept.nome)
+                              }
+                              aria-label='ativar'
+                              color='success'
+                              disabled={atualizarDepartamento.isPending}
+                            >
+                              <ActivateIcon />
+                            </IconButton>
+                          )}
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+              </TableContainer>
             )}
           </CardContent>
         </Card>
@@ -569,10 +631,10 @@ export default function AdminDepartments() {
           onConfirm={confirmDialog.onConfirm}
           title={confirmDialog.titulo}
           message={confirmDialog.mensagem}
-          confirmText='Inativar'
+          confirmText={confirmDialog.confirmText}
           cancelText='Cancelar'
-          isLoading={inativarDepartamento.isPending}
-          severity='warning'
+          isLoading={confirmDialog.isLoading}
+          severity={confirmDialog.severity}
         />
       </Box>
     </DashboardLayout>

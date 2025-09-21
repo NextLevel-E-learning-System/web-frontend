@@ -25,6 +25,7 @@ export interface DepartamentoUpdate {
   nome?: string
   descricao?: string | null
   gestor_funcionario_id?: string | null
+  ativo?: boolean
 }
 
 export interface Cargo {
