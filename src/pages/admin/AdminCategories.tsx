@@ -37,11 +37,24 @@ import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useNavigation } from '@/hooks/useNavigation'
 import { useListarDepartamentosAdmin } from '@/api/users'
+import { 
+  useCategories, 
+  useCreateCategory, 
+  useUpdateCategory, 
+  useDeleteCategory,
+  type Category,
+  type CreateCategoryInput 
+} from '@/api/courses'
+import { authPut } from '@/api/http'
+import { API_ENDPOINTS } from '@/api/config'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 
 interface CategoryForm {
+  codigo: string
   nome: string
   departamento_codigo: string
   descricao: string
+  cor_hex: string
 }
 
 export default function AdminCategories() {
@@ -49,20 +62,129 @@ export default function AdminCategories() {
 
   const { data: departamentos = [], isLoading: loadingDepartamentos } =
     useListarDepartamentosAdmin()
+  const { data: categorias = [], isLoading: loadingCategorias } = useCategories()
+  
+  const createCategoryMutation = useCreateCategory()
+  const deleteCategoryMutation = useDeleteCategory()
 
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+  
   const [form, setForm] = useState<CategoryForm>({
+    codigo: '',
     nome: '',
     departamento_codigo: '',
     descricao: '',
+    cor_hex: '#3B82F6',
   })
+
+  const categoriasFiltradas = useMemo(() => {
+    if (selectedDept === 'all') return categorias
+    return categorias.filter(cat => cat.departamento_codigo === selectedDept)
+  }, [categorias, selectedDept])
 
   const getDepartmentName = (codigo: string) => {
     return departamentos.find(d => d.codigo === codigo)?.nome || codigo
   }
 
-  if (loadingDepartamentos) {
+  const resetForm = () => {
+    setForm({
+      codigo: '',
+      nome: '',
+      departamento_codigo: '',
+      descricao: '',
+      cor_hex: '#3B82F6',
+    })
+  }
+
+  const handleCreate = async () => {
+    if (!form.codigo || !form.nome || !form.departamento_codigo) {
+      toast.error('Código, nome e departamento são obrigatórios')
+      return
+    }
+
+    try {
+      await createCategoryMutation.mutateAsync({
+        codigo: form.codigo,
+        nome: form.nome,
+        departamento_codigo: form.departamento_codigo,
+        descricao: form.descricao || undefined,
+        cor_hex: form.cor_hex || undefined,
+      })
+      
+      toast.success('Categoria criada com sucesso!')
+      setIsAddOpen(false)
+      resetForm()
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Erro ao criar categoria')
+    }
+  }
+
+  const handleEdit = (category: Category) => {
+    setEditingCategory(category)
+    setForm({
+      codigo: category.codigo,
+      nome: category.nome,
+      departamento_codigo: category.departamento_codigo || '',
+      descricao: category.descricao || '',
+      cor_hex: category.cor_hex || '#3B82F6',
+    })
+    setIsEditOpen(true)
+  }
+
+  const handleUpdate = async () => {
+    if (!editingCategory || !form.nome || !form.departamento_codigo) {
+      toast.error('Nome e departamento são obrigatórios')
+      return
+    }
+
+    setIsUpdating(true)
+    try {
+      await authPut(`${API_ENDPOINTS.COURSES}/categorias/${editingCategory.codigo}`, {
+        nome: form.nome,
+        departamento_codigo: form.departamento_codigo,
+        descricao: form.descricao || undefined,
+        cor_hex: form.cor_hex || undefined,
+      })
+      
+      toast.success('Categoria atualizada com sucesso!')
+      setIsEditOpen(false)
+      setEditingCategory(null)
+      resetForm()
+      
+      // Refetch categorias
+      window.location.reload() // Temporário até implementarmos invalidação manual
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Erro ao atualizar categoria')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleDelete = (category: Category) => {
+    setCategoryToDelete(category)
+    setDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!categoryToDelete) return
+
+    try {
+      await deleteCategoryMutation.mutateAsync(categoryToDelete.codigo)
+      toast.success('Categoria excluída com sucesso!')
+      setDeleteDialogOpen(false)
+      setCategoryToDelete(null)
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Erro ao excluir categoria')
+    }
+  }
+
+  if (loadingDepartamentos || loadingCategorias) {
     return (
       <DashboardLayout title='Gerenciar Categorias' items={navigationItems}>
         <Box>
@@ -100,7 +222,11 @@ export default function AdminCategories() {
               ))}
             </Select>
           </FormControl>
-          <Button startIcon={<AddIcon />} variant='contained'>
+          <Button 
+            startIcon={<AddIcon />} 
+            variant='contained'
+            onClick={() => setIsAddOpen(true)}
+          >
             Adicionar Categoria
           </Button>
         </Box>
@@ -110,85 +236,121 @@ export default function AdminCategories() {
           <CardHeader
             title={
               <Typography variant='h6' fontWeight={600}>
-                Lista de Categorias
+                Lista de Categorias ({categoriasFiltradas.length})
               </Typography>
             }
           />
           <CardContent>
-            <Table size='small'>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Categoria</TableCell>
-                  <TableCell>Departamento</TableCell>
-                  <TableCell>Descrição</TableCell>
-                  <TableCell align='right'>Ações</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow hover>
-                  <TableCell>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                      }}
-                    >
-                      <Chip size='small' color='primary' variant='outlined' />
-                      <Typography fontWeight={500}></Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Box>
-                      <Typography variant='body2' fontWeight={500}></Typography>
-                      <Typography
-                        variant='caption'
-                        color='text.secondary'
-                      ></Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{
-                        maxWidth: 250,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    ></Typography>
-                  </TableCell>
-                  <TableCell align='right'>
-                    <IconButton size='small' aria-label='editar'>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      size='small'
-                      onClick={() => {
-                        if (confirm()) {
-                          // TODO: Implementar exclusão quando endpoint estiver disponível
-                          toast.info(
-                            'Funcionalidade de exclusão será implementada em breve'
-                          )
-                        }
-                      }}
-                      aria-label='excluir'
-                      color='error'
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
+            {categoriasFiltradas.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CategoryIcon sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
+                <Typography variant='h6' color='textSecondary'>
+                  Nenhuma categoria encontrada
+                </Typography>
+                <Typography variant='body2' color='textSecondary'>
+                  {selectedDept === 'all' 
+                    ? 'Não há categorias cadastradas' 
+                    : 'Não há categorias para este departamento'}
+                </Typography>
+              </Box>
+            ) : (
+              <Table size='small'>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Categoria</TableCell>
+                    <TableCell>Departamento</TableCell>
+                    <TableCell>Descrição</TableCell>
+                    <TableCell align='right'>Ações</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {categoriasFiltradas.map((categoria) => (
+                    <TableRow key={categoria.codigo} hover>
+                      <TableCell>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                          }}
+                        >
+                          <Chip 
+                            size='small' 
+                            sx={{ 
+                              bgcolor: categoria.cor_hex || '#3B82F6',
+                              color: 'white',
+                              minWidth: '20px',
+                              '& .MuiChip-label': { px: 1 }
+                            }}
+                            label=' '
+                          />
+                          <Typography fontWeight={500}>
+                            {categoria.nome}
+                          </Typography>
+                          <Typography variant='caption' color='text.secondary'>
+                            ({categoria.codigo})
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box>
+                          <Typography variant='body2' fontWeight={500}>
+                            {getDepartmentName(categoria.departamento_codigo || '')}
+                          </Typography>
+                          <Typography
+                            variant='caption'
+                            color='text.secondary'
+                          >
+                            {categoria.departamento_codigo}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography
+                          variant='body2'
+                          color='text.secondary'
+                          sx={{
+                            maxWidth: 250,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {categoria.descricao || '—'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align='right'>
+                        <IconButton 
+                          size='small' 
+                          aria-label='editar'
+                          onClick={() => handleEdit(categoria)}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          size='small'
+                          onClick={() => handleDelete(categoria)}
+                          aria-label='excluir'
+                          color='error'
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
         {/* Dialog Adicionar Categoria */}
         <Dialog
           open={isAddOpen}
-          onClose={() => setIsAddOpen(false)}
+          onClose={() => {
+            setIsAddOpen(false)
+            resetForm()
+          }}
           maxWidth='sm'
           fullWidth
         >
@@ -200,6 +362,26 @@ export default function AdminCategories() {
           </DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Código da Categoria'
+                  value={form.codigo}
+                  onChange={e => setForm({ ...form, codigo: e.target.value })}
+                  placeholder='ex.: DEV-001'
+                  fullWidth
+                  required
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Cor (Hexadecimal)'
+                  value={form.cor_hex}
+                  onChange={e => setForm({ ...form, cor_hex: e.target.value })}
+                  placeholder='#3B82F6'
+                  fullWidth
+                  type='color'
+                />
+              </Grid>
               <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Departamento</InputLabel>
@@ -248,23 +430,63 @@ export default function AdminCategories() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button variant='outlined' onClick={() => setIsAddOpen(false)}>
+            <Button 
+              variant='outlined' 
+              onClick={() => {
+                setIsAddOpen(false)
+                resetForm()
+              }}
+            >
               Cancelar
             </Button>
-            <Button variant='contained'></Button>
+            <Button 
+              variant='contained'
+              onClick={handleCreate}
+              disabled={createCategoryMutation.isPending}
+            >
+              {createCategoryMutation.isPending ? 'Criando...' : 'Criar Categoria'}
+            </Button>
           </DialogActions>
         </Dialog>
 
         {/* Dialog Editar Categoria */}
-        <Dialog maxWidth='sm' fullWidth open={false}>
+        <Dialog 
+          maxWidth='sm' 
+          fullWidth 
+          open={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false)
+            setEditingCategory(null)
+            resetForm()
+          }}
+        >
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <EditIcon />
-              Editar Categoria
+              Editar Categoria: {editingCategory?.nome}
             </Box>
           </DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Código da Categoria'
+                  value={form.codigo}
+                  fullWidth
+                  disabled
+                  helperText='O código não pode ser alterado'
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Cor (Hexadecimal)'
+                  value={form.cor_hex}
+                  onChange={e => setForm({ ...form, cor_hex: e.target.value })}
+                  placeholder='#3B82F6'
+                  fullWidth
+                  type='color'
+                />
+              </Grid>
               <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Departamento</InputLabel>
@@ -312,10 +534,41 @@ export default function AdminCategories() {
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button variant='outlined'>Cancelar</Button>
-            <Button variant='contained'></Button>
+            <Button 
+              variant='outlined'
+              onClick={() => {
+                setIsEditOpen(false)
+                setEditingCategory(null)
+                resetForm()
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant='contained'
+              onClick={handleUpdate}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Dialog Confirmação de Exclusão */}
+        <ConfirmationDialog
+          open={deleteDialogOpen}
+          onClose={() => {
+            setDeleteDialogOpen(false)
+            setCategoryToDelete(null)
+          }}
+          onConfirm={confirmDelete}
+          title='Excluir Categoria'
+          message={`Tem certeza que deseja excluir a categoria "${categoryToDelete?.nome}"?`}
+          severity='error'
+          confirmText='Excluir'
+          cancelText='Cancelar'
+          isLoading={deleteCategoryMutation.isPending}
+        />
       </Box>
     </DashboardLayout>
   )

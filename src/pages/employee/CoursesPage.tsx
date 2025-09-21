@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import {
   Box,
   Typography,
@@ -84,6 +84,7 @@ export default function CoursesPage() {
   const [filtros, setFiltros] = useState<FiltrosCatalogo>({})
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedDepartment, setSelectedDepartment] = useState('')
   const [dialogCriarCurso, setDialogCriarCurso] = useState(false)
   const [mensagem, setMensagem] = useState('')
   const [dadosNovoCurso, setDadosNovoCurso] = useState<CriarCurso>({
@@ -103,6 +104,12 @@ export default function CoursesPage() {
 
   // Hook para buscar todos os cursos (sem filtros) para contagem por categoria
   const { data: todosCursos } = useCourseCatalog()
+
+  // Filtrar categorias por departamento selecionado
+  const categoriasFiltradas = useMemo(() => {
+    if (!selectedDepartment) return categorias || []
+    return (categorias || []).filter(cat => cat.departamento_codigo === selectedDepartment)
+  }, [categorias, selectedDepartment])
 
   // Função para contar cursos por categoria
   const getContagemCursosPorCategoria = (categoriaId: string): number => {
@@ -220,7 +227,7 @@ export default function CoursesPage() {
               textAlign: 'center',
             }}
           >
-            {getContagemCursosPorCategoria(categoria.id || categoria.codigo)}{' '}
+            {getContagemCursosPorCategoria(categoria.codigo)}{' '}
             Cursos
           </Typography>
         </CardContent>
@@ -568,7 +575,7 @@ export default function CoursesPage() {
                 justifyContent: 'center',
               }}
             >
-              {categorias?.map(renderCategoriaCard)}
+              {categoriasFiltradas?.map(renderCategoriaCard)}
             </Box>
           </Box>
         )}

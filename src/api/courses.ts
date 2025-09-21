@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { authGet, authPost, authPatch, authPut } from './http'
+import { authGet, authPost, authPatch, authPut, authDelete } from './http'
 import { API_ENDPOINTS } from './config'
 
 // Types alinhados com schema do banco
@@ -117,7 +117,15 @@ export interface CatalogFilters {
 export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ['courses', 'categories'],
-    queryFn: () => authGet<Category[]>(`${API_ENDPOINTS.COURSES}/categories`),
+    queryFn: () => authGet<Category[]>(`${API_ENDPOINTS.COURSES}/categorias`),
+  })
+}
+
+export function useCategory(codigo: string) {
+  return useQuery<Category>({
+    queryKey: ['courses', 'categories', codigo],
+    queryFn: () => authGet<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`),
+    enabled: !!codigo,
   })
 }
 
@@ -127,7 +135,34 @@ export function useCreateCategory() {
   return useMutation({
     mutationKey: ['courses', 'categories', 'create'],
     mutationFn: (input: CreateCategoryInput) =>
-      authPost<Category>(`${API_ENDPOINTS.COURSES}/categories`, input),
+      authPost<Category>(`${API_ENDPOINTS.COURSES}/categorias`, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
+    },
+  })
+}
+
+export function useUpdateCategory(codigo: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['courses', 'categories', 'update', codigo],
+    mutationFn: (input: Partial<CreateCategoryInput>) =>
+      authPut<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
+      queryClient.invalidateQueries({ queryKey: ['courses', 'categories', codigo] })
+    },
+  })
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['courses', 'categories', 'delete'],
+    mutationFn: (codigo: string) =>
+      authDelete(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
     },
