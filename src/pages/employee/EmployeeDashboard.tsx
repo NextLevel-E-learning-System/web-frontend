@@ -20,7 +20,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
 import { DashboardAluno } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
-import { useDashboardCompleto } from '@/hooks/users'
+import { useDashboardCompleto } from '@/api/users'
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)

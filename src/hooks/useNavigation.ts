@@ -18,11 +18,12 @@ import { useMeuPerfil } from './users'
 export function useNavigation() {
   const { data: user } = useMeuPerfil()
 
-  // Mapear as 4 roles do sistema (usando tipo_usuario do backend)
-  const isAluno = user?.tipo_usuario === 'ALUNO'
-  const isInstrutor = user?.tipo_usuario === 'INSTRUTOR'
-  const isAdmin = user?.tipo_usuario === 'ADMIN'
-  const isGerente = user?.tipo_usuario === 'GERENTE'
+  // Cada usuário tem apenas 1 role - simples assim
+  const userRole = user?.tipo_usuario
+  const isAluno = userRole === 'ALUNO'
+  const isInstrutor = userRole === 'INSTRUTOR'
+  const isAdmin = userRole === 'ADMIN'
+  const isGerente = userRole === 'GERENTE'
 
   const getNavigationItems = (): NavItem[] => {
     // ALUNO - Acesso básico aos cursos e gamificação

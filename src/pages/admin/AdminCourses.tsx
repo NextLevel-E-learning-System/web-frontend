@@ -47,7 +47,7 @@ import {
 import {
   useListarDepartamentos,
   useFuncionarios,
-} from '@/hooks/users'
+} from '@/api/users'
 
 interface CursoMetricas extends Curso {
   total_inscritos: number

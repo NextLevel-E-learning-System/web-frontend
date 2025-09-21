@@ -180,15 +180,41 @@ export interface DashboardResponse {
   dashboard: DashboardData;
 }
 
+// Tipos adicionais para compatibilidade
+export type UserRole = 'ALUNO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE';
+
+export interface UsuarioResumo {
+  id: string
+  nome: string
+  email: string
+  departamento_id?: string
+  cargo_nome?: string
+  ativo: boolean
+  xp_total?: number
+  nivel?: string
+}
+
+export interface PerfilUsuario extends UsuarioResumo {
+  auth_user_id?: string
+  cpf?: string
+  inactivated_at?: string | null
+  criado_em?: string
+  atualizado_em?: string
+  tipo_usuario?: UserRole
+  cargo_nome?: string
+  xp_total?: number
+  nivel?: string
+}
+
 // Hooks para Departamentos
-export function useDepartamentos() {
+export function useListarDepartamentos() {
   return useQuery<Departamento[]>({
     queryKey: ['users', 'departamentos'],
     queryFn: () => authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos`)
   });
 }
 
-export function useCreateDepartamento() {
+export function useCriarDepartamento() {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -201,7 +227,7 @@ export function useCreateDepartamento() {
   });
 }
 
-export function useUpdateDepartamento(codigo: string) {
+export function useAtualizarDepartamento(codigo: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -214,7 +240,7 @@ export function useUpdateDepartamento(codigo: string) {
   });
 }
 
-export function useDeleteDepartamento() {
+export function useExcluirDepartamento() {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -228,14 +254,14 @@ export function useDeleteDepartamento() {
 }
 
 // Hooks para Cargos
-export function useCargos() {
+export function useListarCargos() {
   return useQuery<Cargo[]>({
     queryKey: ['users', 'cargos'],
     queryFn: () => authGet<Cargo[]>(`${API_ENDPOINTS.USERS}/cargos`)
   });
 }
 
-export function useCreateCargo() {
+export function useCriarCargo() {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -248,7 +274,7 @@ export function useCreateCargo() {
   });
 }
 
-export function useUpdateCargo(codigo: string) {
+export function useAtualizarCargo(codigo: string) {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -261,7 +287,7 @@ export function useUpdateCargo(codigo: string) {
   });
 }
 
-export function useDeleteCargo() {
+export function useExcluirCargo() {
   const queryClient = useQueryClient();
   
   return useMutation({
@@ -317,4 +343,56 @@ export function useDashboard() {
     queryKey: ['users', 'dashboard'],
     queryFn: () => authGet<DashboardResponse>(`${API_ENDPOINTS.USERS}/funcionarios/dashboard`)
   });
+}
+
+// Hook combinado para dashboard + perfil do usuário
+export function useDashboardCompleto() {
+  const dashboard = useDashboard()
+
+  return {
+    dashboard: dashboard.data?.dashboard,
+    perfil: dashboard.data?.usuario,
+    notificacoes: dashboard.data?.notificacoes,
+    notificacoes_nao_lidas: dashboard.data?.notificacoes_nao_lidas,
+    isLoading: dashboard.isLoading,
+    error: dashboard.error,
+    refetch: () => {
+      dashboard.refetch()
+    },
+  }
+}
+
+// Perfil do usuário autenticado (usa dados do dashboard)
+export function useMeuPerfil() {
+  const dashboard = useDashboard()
+  
+  return {
+    data: dashboard.data ? {
+      id: dashboard.data.usuario.id,
+      nome: dashboard.data.usuario.nome,
+      email: dashboard.data.usuario.email,
+      departamento_id: dashboard.data.usuario.departamento,
+      cargo_nome: dashboard.data.usuario.cargo,
+      xp_total: dashboard.data.usuario.xp_total,
+      nivel: dashboard.data.usuario.nivel,
+      ativo: true, // Se chegou até aqui, está ativo
+      tipo_usuario: (dashboard.data.usuario.roles[0] || 'ALUNO') as UserRole
+    } as PerfilUsuario : undefined,
+    isLoading: dashboard.isLoading,
+    error: dashboard.error,
+    refetch: dashboard.refetch
+  }
+}
+
+// Hook para excluir funcionário
+export function useExcluirFuncionario() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['users', 'funcionarios', 'delete'],
+    mutationFn: (funcionarioId: string) =>
+      authDelete(`${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
+    }
+  })
 }

@@ -21,7 +21,7 @@ export default function InstrutorDashboard() {
   const { data: dashboardData, isLoading, error } = useDashboard()
 
   // Type guard para garantir que é um dashboard de instrutor
-  const instrutorData = dashboardData?.tipo_dashboard === 'instrutor' ? (dashboardData as DashboardInstrutor) : null
+  const instrutorData = dashboardData?.dashboard?.tipo_dashboard === 'instrutor' ? dashboardData.dashboard as DashboardInstrutor : null
 
   if (isLoading) {
     return (

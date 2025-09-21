@@ -63,7 +63,7 @@ import {
   Apartment as ApartmentIcon,
 } from '@mui/icons-material'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
-import { useMeuPerfil } from '@/hooks/users'
+import { useMeuPerfil } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCourseCatalog,

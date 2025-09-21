@@ -25,7 +25,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
 
 import { useLogout } from '@/hooks/auth'
-import { useMeuPerfil } from '@/hooks/users'
+import { useMeuPerfil } from '@/api/users'
 
 export type NavItem = {
   label: string

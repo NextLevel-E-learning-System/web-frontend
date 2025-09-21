@@ -39,7 +39,7 @@ import { useNavigation } from '@/hooks/useNavigation'
 import {
   useListarDepartamentos,
 
-} from '@/hooks/users'
+} from '@/api/users'
 
 interface CategoryForm {
   nome: string

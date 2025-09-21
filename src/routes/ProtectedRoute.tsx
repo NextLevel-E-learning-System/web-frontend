@@ -1,7 +1,7 @@
 import React from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
-import { Box, CircularProgress, Typography } from '@mui/material'
-import {  useDashboardCompleto } from '@/hooks/users'
+import { Navigate } from 'react-router-dom'
+import { Box, CircularProgress } from '@mui/material'
+import { useDashboardCompleto } from '@/api/users'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -15,10 +15,9 @@ export function ProtectedRoute({
   allowedRoles = [],
   fallback,
 }: ProtectedRouteProps) {
-  const { dashboard, isLoading } = useDashboardCompleto()
-  const location = useLocation()
+  const { dashboard, isLoading, perfil } = useDashboardCompleto()
 
-  // Mostrar loading enquanto carrega dados de auth OU dashboard
+  // Mostrar loading enquanto carrega dados
   if (isLoading) {
     return (
       fallback || (
@@ -36,11 +35,8 @@ export function ProtectedRoute({
     )
   }
 
-  // Extrair tipo_dashboard da estrutura da resposta
-  const tipoDashboard = dashboard?.tipo_dashboard
-
-  // Se não conseguiu carregar dashboard, redirecionar para login
-  if (!dashboard || !tipoDashboard) {
+  // Se não conseguiu carregar dados, redirecionar para login
+  if (!dashboard || !perfil) {
     return <Navigate to='/login' replace />
   }
 
@@ -49,11 +45,11 @@ export function ProtectedRoute({
     return <>{children}</>
   }
 
-  // Mapear tipo_dashboard para role do sistema
-  const userRole = tipoDashboard?.toUpperCase() // 'aluno' -> 'ALUNO', etc.
+  // Pegar role diretamente dos dados do usuário (vem do JWT)
+  const userRole = perfil.roles?.[0] || 'ALUNO'
 
   // Verificar se o usuário tem uma das roles permitidas
-  const hasPermission = allowedRoles.some(role => role === userRole)
+  const hasPermission = allowedRoles.includes(userRole)
 
   if (!hasPermission) {
     // Redirecionar para dashboard apropriado baseado na role do usuário

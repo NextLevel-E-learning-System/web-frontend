@@ -46,13 +46,13 @@ import {
   useFuncionarios,
   useRegisterFuncionario,
   useUpdateFuncionarioRole,
-  useDeleteFuncionario,
+  useExcluirFuncionario,
   type PerfilUsuario,
   type FuncionarioRegister,
   type UpdateRoleInput,
   type UserRole,
   type Funcionario,
-} from '@/hooks/users'
+} from '@/api/users'
 
 interface UserForm {
   nome: string
@@ -82,8 +82,8 @@ export default function AdminUsers() {
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<PerfilUsuario | null>(null)
-  const excluirUsuario = useDeleteFuncionario()
-  const atualizarUsuario = useUpdateFuncionarioRole()
+  const excluirUsuario = useExcluirFuncionario()
+  const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -202,10 +202,7 @@ export default function AdminUsers() {
         role: form.tipo_usuario,
       }
 
-      await atualizarUsuario.mutateAsync({ 
-        id: editingUser.id, 
-        input: input 
-      })
+      await atualizarUsuario.mutateAsync(input)
 
       toast.success('Role do funcionário atualizada com sucesso!')
       setEditingUser(null)

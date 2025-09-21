@@ -3,19 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { 
   useLogin as useLoginAPI, 
   useLogout as useLogoutAPI, 
-  useRefreshToken as useRefreshTokenAPI 
+  useRefreshToken as useRefreshTokenAPI,
+  LoginRequest
 } from '@/api/auth';
 import { 
   useRegisterFuncionario, 
-  useResetPassword as useResetPasswordAPI 
+  useResetPassword as useResetPasswordAPI,
+  ResetPasswordInput 
 } from '@/api/users';
 import { setAccessToken, clearAccessToken, isTokenPersistent } from '@/api/http';
 import { showToast } from '@/utils/toast';
 
-// Types
-export interface LoginCredentials {
-  email: string;
-  senha: string;
+// Types específicos para hooks (estendendo os da API)
+export interface LoginCredentials extends LoginRequest {
   rememberMe?: boolean;
 }
 
@@ -25,10 +25,6 @@ export interface RegisterData {
   email: string;
   departamento_id?: string | null;
   cargo_nome?: string | null;
-}
-
-export interface ResetPasswordData {
-  email: string;
 }
 
 // Hook para login
@@ -48,14 +44,40 @@ export function useLogin() {
       
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       showToast.success('Login realizado com sucesso!');
       
       // Invalidar cache para forçar nova busca dos dados
       queryClient.invalidateQueries({ queryKey: ['users'] });
       
-      // Redirecionar para a página principal - o ProtectedRoute vai redirecioná-lo para o dashboard correto
-      navigate('/dashboard/funcionario');
+      // Extrair role do token JWT para redirecionamento correto
+      try {
+        const tokenPayload = JSON.parse(atob(result.accessToken.split('.')[1]));
+        const userRole = tokenPayload.roles?.[0] || 'ALUNO';
+        
+        console.log('[useLogin] User role from token:', userRole);
+        
+        // Redirecionar baseado na role
+        switch (userRole) {
+          case 'ADMIN':
+          case 'GERENTE':
+            console.log('[useLogin] Redirecting to /dashboard/admin');
+            navigate('/dashboard/admin');
+            break;
+          case 'INSTRUTOR':
+            console.log('[useLogin] Redirecting to /dashboard/instrutor');
+            navigate('/dashboard/instrutor');
+            break;
+          default: // ALUNO ou qualquer outra
+            console.log('[useLogin] Redirecting to /dashboard/funcionario');
+            navigate('/dashboard/funcionario');
+            break;
+        }
+      } catch (error) {
+        console.error('[useLogin] Erro ao extrair role do token:', error);
+        // Fallback para dashboard padrão
+        navigate('/dashboard/funcionario');
+      }
     },
     onError: (error: any) => {
       console.error('[useLogin] Erro:', error);
@@ -123,7 +145,7 @@ export function useResetPassword() {
   
   return useMutation({
     mutationKey: ['auth', 'reset-password'],
-    mutationFn: async (data: ResetPasswordData) => {
+    mutationFn: async (data: ResetPasswordInput) => {
       return await resetAPI.mutateAsync(data);
     },
     onSuccess: () => {

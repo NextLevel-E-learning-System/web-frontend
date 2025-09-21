@@ -48,7 +48,7 @@ import {
   useFuncionarios,
   UsuarioResumo,
 
-} from '@/hooks/users'
+} from '@/api/users'
 
 
 export default function AdminInstructors() {

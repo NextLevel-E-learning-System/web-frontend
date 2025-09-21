@@ -10,8 +10,6 @@ import {
   TableHead,
   TableRow,
   Chip,
-  Tabs,
-  Tab,
   Alert,
   CircularProgress,
 } from '@mui/material'
@@ -21,18 +19,15 @@ import { useNavigation } from '@/hooks/useNavigation'
 import StatCard from '@/components/admin/StatCard'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
-import { useDashboard, DashboardAdmin, DashboardGerente } from '@/api/users'
-import { useState } from 'react'
-import { useDashboardCompleto } from '@/hooks/users'
+import { DashboardAdmin, DashboardGerente } from '@/api/users'
+import { useDashboardCompleto } from '@/api/users'
 
 export default function AdminDashboard() {
-  const { navigationItems, user, isGerente, isAdmin } = useNavigation()
-  const [rankingTab, setRankingTab] = useState(0)
+  const { navigationItems } = useNavigation()
   const { dashboard, isLoading, error } = useDashboardCompleto()
 
   // Type guards para diferentes tipos de dashboard
   const adminData = dashboard?.tipo_dashboard === 'administrador' ? (dashboard as DashboardAdmin) : null
-  const isGerenteUser = adminData && (adminData as any)._departamento_restrito
   const gerenteData = dashboard?.tipo_dashboard === 'gerente' ? (dashboard as DashboardGerente) : null
 
   if (isLoading) {

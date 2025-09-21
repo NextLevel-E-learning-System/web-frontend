@@ -37,7 +37,7 @@ import {
   useCriarDepartamento,
   useAtualizarDepartamento,
   type Departamento,
-} from '@/hooks/users'
+} from '@/api/users'
 
 interface DepartmentForm {
   codigo: string
@@ -98,7 +98,7 @@ export default function AdminDepartments() {
         codigo: form.codigo.trim().toUpperCase(),
         nome: form.nome.trim(),
         descricao: form.descricao.trim() || undefined,
-        gestor_id: form.gestor_id.trim() || undefined,
+        gestor_funcionario_id: form.gestor_id.trim() || undefined,
       })
 
       toast.success('Departamento criado com sucesso!')
@@ -117,7 +117,7 @@ export default function AdminDepartments() {
       codigo: dept.codigo,
       nome: dept.nome,
       descricao: dept.descricao || '',
-      gestor_id: dept.gestor_id || '',
+      gestor_id: dept.gestor_funcionario_id || '',
     })
   }
 
@@ -133,7 +133,7 @@ export default function AdminDepartments() {
       await atualizarDepartamento.mutateAsync({
         nome: form.nome.trim(),
         descricao: form.descricao.trim() || undefined,
-        gestor_id: form.gestor_id.trim() || undefined,
+        gestor_funcionario_id: form.gestor_id.trim() || undefined,
       })
 
       toast.success('Departamento atualizado com sucesso!')
@@ -258,7 +258,7 @@ export default function AdminDepartments() {
                       </TableCell>
                       <TableCell>
                         <Typography variant='body2' color='text.secondary'>
-                          {dept.gestor_id || '—'}
+                          {dept.gestor_funcionario_id || '—'}
                         </Typography>
                       </TableCell>
                       <TableCell align='right'>

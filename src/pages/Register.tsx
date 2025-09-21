@@ -15,7 +15,7 @@ import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useRegister } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
-import { useListarDepartamentos, useListarCargos } from '@/hooks/users'
+import { useListarDepartamentos, useListarCargos } from '@/api/users'
 import { useState } from 'react'
 import { showToast } from '@/utils/toast'
 
