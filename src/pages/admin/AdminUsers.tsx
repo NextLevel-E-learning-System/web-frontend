@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
@@ -297,18 +296,6 @@ export default function AdminUsers() {
         </Box>
 
         <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                {tab === 'active'
-                  ? 'Usuários Ativos'
-                  : tab === 'disabled'
-                    ? 'Usuários Inativos'
-                    : 'Todos os Usuários'}
-              </Typography>
-            }
-            subheader={`${filtered.length} usuários encontrados`}
-          />
           <CardContent>
             {filtered.length === 0 ? (
               <Alert severity='info'>

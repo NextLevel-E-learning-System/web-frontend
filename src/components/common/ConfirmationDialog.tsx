@@ -9,7 +9,7 @@ import {
   Box,
   CircularProgress,
 } from '@mui/material'
-import { 
+import {
   Warning as WarningIcon,
   Info as InfoIcon,
   Error as ErrorIcon,

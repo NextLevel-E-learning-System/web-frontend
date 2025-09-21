@@ -1,10 +1,8 @@
 import {
-  Avatar,
   Box,
   Button,
   Card,
   CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
@@ -220,7 +218,12 @@ export default function AdminDepartments() {
           setConfirmDialog(prev => ({ ...prev, isLoading: true }))
           await inativarDepartamento.mutateAsync(codigo)
           toast.success('Departamento inativado com sucesso!')
-          setConfirmDialog({ ...confirmDialog, open: false, isLoading: false, severity: 'warning' })
+          setConfirmDialog({
+            ...confirmDialog,
+            open: false,
+            isLoading: false,
+            severity: 'warning',
+          })
           refetch()
         } catch (error) {
           toast.error('Erro ao inativar departamento')
@@ -242,11 +245,26 @@ export default function AdminDepartments() {
       onConfirm: async () => {
         try {
           setConfirmDialog(prev => ({ ...prev, isLoading: true }))
+
+          const departamento = departamentos.find(d => d.codigo === codigo)
+          if (!departamento) {
+            throw new Error('Departamento não encontrado')
+          }
+
           await authPut(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`, {
+            nome: departamento.nome,
+            descricao: departamento.descricao,
+            gestor_funcionario_id: departamento.gestor_funcionario_id,
             ativo: true,
           })
+
           toast.success('Departamento ativado com sucesso!')
-          setConfirmDialog({ ...confirmDialog, open: false, isLoading: false, severity: 'warning' })
+          setConfirmDialog({
+            ...confirmDialog,
+            open: false,
+            isLoading: false,
+            severity: 'warning',
+          })
           refetch()
         } catch (error) {
           toast.error('Erro ao ativar departamento')
@@ -256,26 +274,6 @@ export default function AdminDepartments() {
       },
     })
   }
-
-  const DepartmentAvatar = ({
-    codigo,
-    nome,
-  }: {
-    codigo: string
-    nome: string
-  }) => (
-    <Avatar
-      sx={{
-        width: 40,
-        height: 40,
-        bgcolor: 'primary.main',
-        color: 'white',
-        fontWeight: 'bold',
-      }}
-    >
-      {codigo.slice(0, 2).toUpperCase()}
-    </Avatar>
-  )
 
   if (isLoading) {
     return (
@@ -293,10 +291,18 @@ export default function AdminDepartments() {
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'end',
-            mb: 3,
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
+          <StatusFilterTabs
+            value={statusFilter}
+            onChange={setStatusFilter}
+            activeCount={departamentosAtivos}
+            inactiveCount={departamentosInativos}
+            activeLabel='Ativos'
+            inactiveLabel='Inativos'
+          />
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -308,136 +314,148 @@ export default function AdminDepartments() {
         </Box>
 
         <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                Todos os Departamentos
-              </Typography>
-            }
-          />
           <CardContent>
-            <StatusFilterTabs
-              value={statusFilter}
-              onChange={setStatusFilter}
-              activeCount={departamentosAtivos}
-              inactiveCount={departamentosInativos}
-              activeLabel='Ativos'
-              inactiveLabel='Inativos'
-            />
-
             {departamentosFiltrados.length === 0 ? (
-              <Alert severity='info' sx={{ mt: 2 }}>
-                {statusFilter === 'active' &&
-                  'Nenhum departamento ativo encontrado.'}
-                {statusFilter === 'disabled' &&
-                  'Nenhum departamento inativo encontrado.'}
-                {statusFilter === 'all' &&
-                  'Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.'}
+              <Alert severity='info'>
+                {statusFilter === 'all'
+                  ? 'Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.'
+                  : `Nenhum departamento ${statusFilter === 'active' ? 'ativo' : 'inativo'} encontrado.`}
               </Alert>
             ) : (
-              <TableContainer component={Paper} sx={{ maxHeight: 600, overflow: 'auto' }}>
+              <TableContainer
+                component={Paper}
+                sx={{ maxHeight: 600, overflow: 'auto' }}
+              >
                 <Table size='small' stickyHeader>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ minWidth: 80 }}>Código</TableCell>
                       <TableCell sx={{ minWidth: 150 }}>Departamento</TableCell>
-                      {!isMobile && <TableCell sx={{ minWidth: 200 }}>Descrição</TableCell>}
-                      {!isMobile && <TableCell sx={{ minWidth: 150 }}>Gestor</TableCell>}
+                      {!isMobile && (
+                        <TableCell sx={{ minWidth: 200 }}>Descrição</TableCell>
+                      )}
+                      {!isMobile && (
+                        <TableCell sx={{ minWidth: 150 }}>Gestor</TableCell>
+                      )}
                       <TableCell sx={{ minWidth: 100 }}>Status</TableCell>
-                      <TableCell align='right' sx={{ minWidth: 120 }}>Ações</TableCell>
+                      <TableCell align='right' sx={{ minWidth: 120 }}>
+                        Ações
+                      </TableCell>
                     </TableRow>
                   </TableHead>
-                <TableBody>
-                  {departamentosFiltrados.map(dept => (
-                    <TableRow key={dept.codigo} hover>
-                      <TableCell>
-                        <Typography fontWeight={500}>{dept.codigo}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                          <Typography fontWeight={500}>{dept.nome}</Typography>
-                          {isMobile && dept.descricao && (
-                            <Typography variant='caption' color='text.secondary'>
-                              {dept.descricao}
-                            </Typography>
-                          )}
-                          {isMobile && getGestorNome(dept.gestor_funcionario_id) && (
-                            <Typography variant='caption' color='text.secondary'>
-                              Gestor: {getGestorNome(dept.gestor_funcionario_id)}
-                            </Typography>
-                          )}
-                        </Box>
-                      </TableCell>
-                      {!isMobile && (
+                  <TableBody>
+                    {departamentosFiltrados.map(dept => (
+                      <TableRow key={dept.codigo} hover>
                         <TableCell>
-                          <Typography
-                            variant='body2'
-                            color='text.secondary'
+                          <Typography fontWeight={500}>
+                            {dept.codigo}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Box
                             sx={{
-                              maxWidth: 300,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: 0.5,
                             }}
                           >
-                            {dept.descricao || '—'}
-                          </Typography>
+                            <Typography fontWeight={500}>
+                              {dept.nome}
+                            </Typography>
+                            {isMobile && dept.descricao && (
+                              <Typography
+                                variant='caption'
+                                color='text.secondary'
+                              >
+                                {dept.descricao}
+                              </Typography>
+                            )}
+                            {isMobile &&
+                              getGestorNome(dept.gestor_funcionario_id) && (
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
+                                  Gestor:{' '}
+                                  {getGestorNome(dept.gestor_funcionario_id)}
+                                </Typography>
+                              )}
+                          </Box>
                         </TableCell>
-                      )}
-                      {!isMobile && (
+                        {!isMobile && (
+                          <TableCell>
+                            <Typography
+                              variant='body2'
+                              color='text.secondary'
+                              sx={{
+                                maxWidth: 300,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {dept.descricao || '—'}
+                            </Typography>
+                          </TableCell>
+                        )}
+                        {!isMobile && (
+                          <TableCell>
+                            <Typography variant='body2' color='text.secondary'>
+                              {getGestorNome(dept.gestor_funcionario_id) || '—'}
+                            </Typography>
+                          </TableCell>
+                        )}
                         <TableCell>
-                          <Typography variant='body2' color='text.secondary'>
-                            {getGestorNome(dept.gestor_funcionario_id) || '—'}
-                          </Typography>
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        <Chip
-                          label={dept.ativo ? 'Ativo' : 'Inativo'}
-                          color={dept.ativo ? 'success' : 'default'}
-                          size='small'
-                        />
-                      </TableCell>
-                      <TableCell align='right'>
-                        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                          <IconButton
+                          <Chip
+                            label={dept.ativo ? 'Ativo' : 'Inativo'}
+                            color={dept.ativo ? 'success' : 'default'}
                             size='small'
-                            onClick={() => handleEdit(dept)}
-                            aria-label='editar'
+                          />
+                        </TableCell>
+                        <TableCell align='right'>
+                          <Stack
+                            direction='row'
+                            spacing={0.5}
+                            justifyContent='flex-end'
                           >
-                            <EditIcon />
-                          </IconButton>
-                          {dept.ativo ? (
                             <IconButton
                               size='small'
-                              onClick={() =>
-                                handleInativar(dept.codigo, dept.nome)
-                              }
-                              aria-label='inativar'
-                              color='error'
-                              disabled={inativarDepartamento.isPending}
+                              onClick={() => handleEdit(dept)}
+                              aria-label='editar'
                             >
-                              <BlockIcon />
+                              <EditIcon />
                             </IconButton>
-                          ) : (
-                            <IconButton
-                              size='small'
-                              onClick={() =>
-                                handleAtivar(dept.codigo, dept.nome)
-                              }
-                              aria-label='ativar'
-                              color='success'
-                              disabled={atualizarDepartamento.isPending}
-                            >
-                              <ActivateIcon />
-                            </IconButton>
-                          )}
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                            {dept.ativo ? (
+                              <IconButton
+                                size='small'
+                                onClick={() =>
+                                  handleInativar(dept.codigo, dept.nome)
+                                }
+                                aria-label='inativar'
+                                color='error'
+                                disabled={inativarDepartamento.isPending}
+                              >
+                                <BlockIcon />
+                              </IconButton>
+                            ) : (
+                              <IconButton
+                                size='small'
+                                onClick={() =>
+                                  handleAtivar(dept.codigo, dept.nome)
+                                }
+                                aria-label='ativar'
+                                color='success'
+                                disabled={atualizarDepartamento.isPending}
+                              >
+                                <ActivateIcon />
+                              </IconButton>
+                            )}
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </TableContainer>
             )}
           </CardContent>

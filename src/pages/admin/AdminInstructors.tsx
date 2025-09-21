@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
@@ -116,17 +115,6 @@ export default function AdminInstructors() {
         </Box>
 
         <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                {tab === 'active'
-                  ? 'Instrutores Ativos'
-                  : tab === 'disabled'
-                    ? 'Instrutores Inativos'
-                    : 'Todos os Instrutores'}
-              </Typography>
-            }
-          />
           <CardContent>
             {filtered.length === 0 ? (
               <Alert severity='info'>
