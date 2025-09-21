@@ -19,7 +19,6 @@ interface DepartmentBarChartProps {
 export default function DepartmentBarChart({
   data,
   labels,
-  title = 'Funcionários Ativos',
 }: DepartmentBarChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -49,7 +48,6 @@ export default function DepartmentBarChart({
       },
       series: [
         {
-          name: title,
           data: data,
           type: 'bar',
           itemStyle: {
@@ -72,7 +70,7 @@ export default function DepartmentBarChart({
     return () => {
       myChart.dispose()
     }
-  }, [data, labels, title])
+  }, [data, labels])
 
   return <div ref={chartRef} style={{ width: '100%', height: '300px' }} />
 }

@@ -124,7 +124,6 @@ export default function AdminDashboard() {
                     <DepartmentBarChart
                       data={engajamento_departamentos.map(d => d.funcionarios_ativos)}
                       labels={engajamento_departamentos.map(d => d.departamento)}
-                      title='Funcionários Ativos'
                     />
                   </Paper>
                 </Grid>
@@ -143,8 +142,7 @@ export default function AdminDashboard() {
                       data={engajamento_departamentos.map(d => d.xp_medio)}
                       labels={engajamento_departamentos.map(d => d.departamento)}
                       departmentNames={engajamento_departamentos.map(d => d.departamento)}
-                      title='XP Médio'
-                    />
+                     />
                   </Paper>
                 </Grid>
               </Grid>

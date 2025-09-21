@@ -26,14 +26,12 @@ interface DepartmentPieChartProps {
   data: number[]
   labels: string[]
   departmentNames: string[]
-  title?: string
 }
 
 export default function DepartmentPieChart({
   data,
   labels,
   departmentNames,
-  title = 'Distribuição por Departamento',
 }: DepartmentPieChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -52,16 +50,6 @@ export default function DepartmentPieChart({
       }))
       .filter(item => item.value > 0)
 
-    // Se não há dados, mostrar mensagem
-    if (chartData.length === 0) {
-      chartData.push({
-        value: 1,
-        name: 'Nenhum dado disponível',
-        label: 'N/A',
-        fullName: 'Sem dados',
-      })
-    }
-
     const option: EChartsOption = {
       tooltip: {
         trigger: 'item',
@@ -78,7 +66,6 @@ export default function DepartmentPieChart({
       },
       series: [
         {
-          name: title,
           type: 'pie',
           radius: ['40%', '70%'],
           center: ['50%', '45%'],
@@ -116,7 +103,7 @@ export default function DepartmentPieChart({
     return () => {
       myChart.dispose()
     }
-  }, [data, labels, departmentNames, title])
+  }, [data, labels, departmentNames])
 
   return <div ref={chartRef} style={{ width: '100%', height: '300px' }} />
 }
