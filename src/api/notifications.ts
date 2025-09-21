@@ -5,7 +5,7 @@ import { API_ENDPOINTS } from './config'
 // Types
 export interface Notification {
   id: number
-  usuario_id: string
+  funcionario_id: string
   titulo: string
   mensagem: string
   tipo: string | null
@@ -24,7 +24,7 @@ export interface NotificationsPagination {
 }
 
 export interface CreateNotificationInput {
-  usuario_id: string
+  funcionario_id: string
   titulo: string
   mensagem: string
   tipo?: string
