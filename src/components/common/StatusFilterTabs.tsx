@@ -23,8 +23,11 @@ export default function StatusFilterTabs({
   inactiveLabel = 'Inativos',
   sx,
 }: StatusFilterTabsProps) {
+  const totalCount = activeCount + inactiveCount
+
   return (
     <Tabs value={value} onChange={(_, v) => onChange(v)} sx={{ mb: 2, ...sx }}>
+      <Tab value='all' label={`Todos (${totalCount})`} />
       <Tab
         value='active'
         label={
@@ -43,7 +46,6 @@ export default function StatusFilterTabs({
           </Box>
         }
       />
-      <Tab value='all' label='Todos' />
     </Tabs>
   )
 }

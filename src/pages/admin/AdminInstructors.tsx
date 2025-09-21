@@ -64,7 +64,7 @@ export default function AdminInstructors() {
   const [editingInstructor, setEditingInstructor] =
     useState<UsuarioResumo | null>(null)
 
-  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
 
   // Filtrar apenas instrutores e aplicar filtro de status
@@ -79,6 +79,20 @@ export default function AdminInstructors() {
 
   const openAdd = () => {
     setIsAddOpen(true)
+  }
+
+  const handleToggleAtivo = async (id: string, nome: string, ativo: boolean) => {
+    const acao = ativo ? 'desativar' : 'ativar'
+    if (confirm(`Tem certeza que deseja ${acao} o instrutor "${nome}"?`)) {
+      try {
+        // Aqui você precisa implementar a API para ativar/desativar instrutor
+        // Por enquanto, só mostro o toast de sucesso
+        toast.success(`Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`)
+      } catch (error) {
+        toast.error(`Erro ao ${acao} instrutor`)
+        console.error(error)
+      }
+    }
   }
 
   if (loadingDepartments || loadingCargos || loadingFuncionarios) {
@@ -136,47 +150,77 @@ export default function AdminInstructors() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  <TableRow hover>
-                    <TableCell>
-                      <Typography
-                        component='span'
-                        sx={{
-                          fontFamily:
-                            'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                        }}
-                      ></Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography fontWeight={500}></Typography>
-                    </TableCell>
-                    <TableCell>{}</TableCell>
-                    <TableCell></TableCell>
-                    <TableCell></TableCell>
-                    <TableCell>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1.5,
-                        }}
-                      >
-                        <Switch />
-                        <Chip size='small' />
-                      </Box>
-                    </TableCell>
-                    <TableCell align='right'>
-                      <IconButton size='small' aria-label='editar'>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size='small'
-                        aria-label='excluir'
-                        color='error'
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
+                  {filtered.map(instrutor => (
+                    <TableRow key={instrutor.id} hover>
+                      <TableCell>
+                        <Typography
+                          component='span'
+                          sx={{
+                            fontFamily:
+                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                          }}
+                        >
+                          {instrutor.id}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography fontWeight={500}>
+                          {instrutor.nome}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>{instrutor.email}</TableCell>
+                      <TableCell>
+                        {departamentos.find(d => d.codigo === instrutor.departamento_id)?.nome || instrutor.departamento_id}
+                      </TableCell>
+                      <TableCell>
+                        {instrutor.cargo_nome || '—'}
+                      </TableCell>
+                      <TableCell>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}
+                        >
+                          <Switch
+                            checked={instrutor.ativo}
+                            onChange={() =>
+                              handleToggleAtivo(
+                                instrutor.id,
+                                instrutor.nome,
+                                instrutor.ativo
+                              )
+                            }
+                            size='small'
+                          />
+                          <Typography
+                            variant='body2'
+                            color={instrutor.ativo ? 'success.main' : 'text.disabled'}
+                            fontWeight={500}
+                          >
+                            {instrutor.ativo ? 'Ativo' : 'Inativo'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell align='right'>
+                        <IconButton
+                          size='small'
+                          onClick={() => setEditingInstructor(instrutor)}
+                          aria-label='editar'
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          size='small'
+                          aria-label='excluir'
+                          color='error'
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             )}

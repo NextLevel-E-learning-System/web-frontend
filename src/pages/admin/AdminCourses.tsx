@@ -87,7 +87,7 @@ export default function AdminCourses() {
   const { navigationItems } = useNavigation()
 
   // Estados
-  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [selectedCourse, setSelectedCourse] = useState<CursoMetricas | null>(
     null
   )

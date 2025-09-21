@@ -19,6 +19,7 @@ import {
   Skeleton,
   Grid,
   Chip,
+  Switch,
   MenuItem,
   FormControl,
   InputLabel,
@@ -80,7 +81,7 @@ export default function AdminDepartments() {
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState<
     'active' | 'disabled' | 'all'
-  >('active')
+  >('all')
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
     titulo: '',
@@ -275,6 +276,16 @@ export default function AdminDepartments() {
     })
   }
 
+  const handleToggleAtivo = (codigo: string, nome: string, ativo: boolean) => {
+    if (ativo) {
+      // Se está ativo, desativar
+      handleInativar(codigo, nome)
+    } else {
+      // Se está inativo, ativar
+      handleAtivar(codigo, nome)
+    }
+  }
+
   if (isLoading) {
     return (
       <DashboardLayout title='Gerenciar Departamentos' items={navigationItems}>
@@ -338,8 +349,8 @@ export default function AdminDepartments() {
                         <TableCell sx={{ minWidth: 150 }}>Gestor</TableCell>
                       )}
                       <TableCell sx={{ minWidth: 100 }}>Status</TableCell>
-                      <TableCell align='right' sx={{ minWidth: 120 }}>
-                        Ações
+                      <TableCell align='right' sx={{ minWidth: 80 }}>
+                        Editar
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -406,51 +417,45 @@ export default function AdminDepartments() {
                           </TableCell>
                         )}
                         <TableCell>
-                          <Chip
-                            label={dept.ativo ? 'Ativo' : 'Inativo'}
-                            color={dept.ativo ? 'success' : 'default'}
-                            size='small'
-                          />
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                            }}
+                          >
+                            <Switch
+                              checked={dept.ativo}
+                              onChange={() =>
+                                handleToggleAtivo(
+                                  dept.codigo,
+                                  dept.nome,
+                                  dept.ativo
+                                )
+                              }
+                              size='small'
+                              disabled={
+                                inativarDepartamento.isPending ||
+                                confirmDialog.isLoading
+                              }
+                            />
+                            <Typography
+                              variant='body2'
+                              color={dept.ativo ? 'success.main' : 'text.disabled'}
+                              fontWeight={500}
+                            >
+                              {dept.ativo ? 'Ativo' : 'Inativo'}
+                            </Typography>
+                          </Box>
                         </TableCell>
                         <TableCell align='right'>
-                          <Stack
-                            direction='row'
-                            spacing={0.5}
-                            justifyContent='flex-end'
+                          <IconButton
+                            size='small'
+                            onClick={() => handleEdit(dept)}
+                            aria-label='editar'
                           >
-                            <IconButton
-                              size='small'
-                              onClick={() => handleEdit(dept)}
-                              aria-label='editar'
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            {dept.ativo ? (
-                              <IconButton
-                                size='small'
-                                onClick={() =>
-                                  handleInativar(dept.codigo, dept.nome)
-                                }
-                                aria-label='inativar'
-                                color='error'
-                                disabled={inativarDepartamento.isPending}
-                              >
-                                <BlockIcon />
-                              </IconButton>
-                            ) : (
-                              <IconButton
-                                size='small'
-                                onClick={() =>
-                                  handleAtivar(dept.codigo, dept.nome)
-                                }
-                                aria-label='ativar'
-                                color='success'
-                                disabled={atualizarDepartamento.isPending}
-                              >
-                                <ActivateIcon />
-                              </IconButton>
-                            )}
-                          </Stack>
+                            <EditIcon />
+                          </IconButton>
                         </TableCell>
                       </TableRow>
                     ))}

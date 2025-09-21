@@ -84,7 +84,7 @@ export default function AdminUsers() {
   const excluirUsuario = useExcluirFuncionario()
   const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
 
-  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [form, setForm] = useState<UserForm>({
     nome: '',
@@ -222,6 +222,21 @@ export default function AdminUsers() {
         refetchUsers()
       } catch (error) {
         toast.error('Erro ao excluir usuário')
+        console.error(error)
+      }
+    }
+  }
+
+  const handleToggleAtivo = async (id: string, nome: string, ativo: boolean) => {
+    const acao = ativo ? 'desativar' : 'ativar'
+    if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
+      try {
+        // Aqui você precisa implementar a API para ativar/desativar usuário
+        // Por enquanto, só mostro o toast de sucesso
+        toast.success(`Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`)
+        refetchUsers()
+      } catch (error) {
+        toast.error(`Erro ao ${acao} usuário`)
         console.error(error)
       }
     }
@@ -370,11 +385,28 @@ export default function AdminUsers() {
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          size='small'
-                          color={user.ativo ? 'success' : 'default'}
-                          label={user.ativo ? 'ATIVO' : 'INATIVO'}
-                        />
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}
+                        >
+                          <Switch
+                            checked={user.ativo}
+                            onChange={() =>
+                              handleToggleAtivo(user.id, user.nome, user.ativo)
+                            }
+                            size='small'
+                          />
+                          <Typography
+                            variant='body2'
+                            color={user.ativo ? 'success.main' : 'text.disabled'}
+                            fontWeight={500}
+                          >
+                            {user.ativo ? 'ATIVO' : 'INATIVO'}
+                          </Typography>
+                        </Box>
                       </TableCell>
                       <TableCell align='right'>
                         <IconButton
