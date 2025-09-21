@@ -43,15 +43,15 @@ export interface CargoUpdate {
   nome?: string;
 }
 
-// Schema do banco: funcionarios referencia cargo_nome, não cargo_id
+// Schema do banco: funcionarios com role simplificado
 export interface Funcionario {
   id: string;
-  auth_user_id?: string;
   cpf?: string;
   nome: string;
   email: string;
   departamento_id?: string | null;  // references departamentos(codigo)
   cargo_nome?: string | null;       // references cargos(nome) - não cargo_id!
+  role: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'ALUNO';  // Role simplificado
   xp_total: number;
   nivel: string;
   ativo: boolean;
@@ -66,10 +66,11 @@ export interface FuncionarioRegister {
   email: string;
   departamento_id?: string | null;
   cargo_nome?: string | null;      // Corrigido para cargo_nome
+  role?: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'ALUNO';  // Role opcional (default: ALUNO)
 }
 
 export interface UpdateRoleInput {
-  role: 'ALUNO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE';
+  role: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'ALUNO';  // Atualizado
 }
 
 export interface ResetPasswordInput {
