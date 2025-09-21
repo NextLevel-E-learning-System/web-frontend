@@ -268,11 +268,11 @@ export function useAtualizarDepartamento(codigo: string) {
   })
 }
 
-export function useExcluirDepartamento() {
+export function useInativarDepartamento() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['users', 'departamentos', 'delete'],
+    mutationKey: ['users', 'departamentos', 'inativar'],
     mutationFn: (codigo: string) =>
       authDelete(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`),
     onSuccess: () => {

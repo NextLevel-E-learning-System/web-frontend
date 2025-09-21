@@ -36,13 +36,15 @@ import {
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
+import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useListarDepartamentosAdmin,
   useFuncionarios,
   useCriarDepartamento,
   useAtualizarDepartamento,
-  useExcluirDepartamento,
+  useInativarDepartamento,
   type Departamento,
   type Funcionario,
 } from '@/api/users'
@@ -63,13 +65,22 @@ export default function AdminDepartments() {
   } = useListarDepartamentosAdmin()
   const { data: funcionarios = [] } = useFuncionarios()
   const criarDepartamento = useCriarDepartamento()
-  const excluirDepartamento = useExcluirDepartamento()
+  const inativarDepartamento = useInativarDepartamento()
   const [editingDept, setEditingDept] = useState<Departamento | null>(null)
   const atualizarDepartamento = useAtualizarDepartamento(
     editingDept?.codigo || ''
   )
 
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [statusFilter, setStatusFilter] = useState<
+    'active' | 'disabled' | 'all'
+  >('active')
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    titulo: '',
+    mensagem: '',
+    onConfirm: () => {},
+  })
   const [form, setForm] = useState<DepartmentForm>({
     codigo: '',
     nome: '',
@@ -90,9 +101,26 @@ export default function AdminDepartments() {
   }
 
   // Filtrar apenas funcionários que podem ser gestores (GERENTE, ADMIN)
-  const funcionariosGestores = funcionarios.filter(f => 
-    f.role === 'GERENTE' || f.role === 'ADMIN'
+  const funcionariosGestores = funcionarios.filter(
+    f => f.role === 'GERENTE' || f.role === 'ADMIN'
   )
+
+  // Filtrar departamentos por status
+  const departamentosFiltrados = useMemo(() => {
+    switch (statusFilter) {
+      case 'active':
+        return departamentos.filter(dept => dept.ativo)
+      case 'disabled':
+        return departamentos.filter(dept => !dept.ativo)
+      case 'all':
+      default:
+        return departamentos
+    }
+  }, [departamentos, statusFilter])
+
+  // Contadores para as abas
+  const departamentosAtivos = departamentos.filter(dept => dept.ativo).length
+  const departamentosInativos = departamentos.filter(dept => !dept.ativo).length
 
   const resetForm = () => {
     setForm({
@@ -168,23 +196,23 @@ export default function AdminDepartments() {
     }
   }
 
-  const handleDelete = async (codigo: string, nome: string) => {
-    if (
-      !confirm(
-        `Tem certeza que deseja excluir o departamento "${nome}"? Esta ação não pode ser desfeita.`
-      )
-    ) {
-      return
-    }
-
-    try {
-      await excluirDepartamento.mutateAsync(codigo)
-      toast.success('Departamento excluído com sucesso!')
-      refetch()
-    } catch (error) {
-      toast.error('Erro ao excluir departamento')
-      console.error(error)
-    }
+  const handleInativar = (codigo: string, nome: string) => {
+    setConfirmDialog({
+      open: true,
+      titulo: 'Inativar Departamento',
+      mensagem: `Tem certeza que deseja inativar o departamento "${nome}"? Esta ação pode ser revertida posteriormente.`,
+      onConfirm: async () => {
+        try {
+          await inativarDepartamento.mutateAsync(codigo)
+          toast.success('Departamento inativado com sucesso!')
+          setConfirmDialog({ ...confirmDialog, open: false })
+          refetch()
+        } catch (error) {
+          toast.error('Erro ao inativar departamento')
+          console.error(error)
+        }
+      },
+    })
   }
 
   const DepartmentAvatar = ({
@@ -246,10 +274,23 @@ export default function AdminDepartments() {
             }
           />
           <CardContent>
-            {departamentos.length === 0 ? (
+            <StatusFilterTabs
+              value={statusFilter}
+              onChange={setStatusFilter}
+              activeCount={departamentosAtivos}
+              inactiveCount={departamentosInativos}
+              activeLabel='Ativos'
+              inactiveLabel='Inativos'
+            />
+
+            {departamentosFiltrados.length === 0 ? (
               <Alert severity='info' sx={{ mt: 2 }}>
-                Nenhum departamento cadastrado. Clique em "Adicionar
-                Departamento" para começar.
+                {statusFilter === 'active' &&
+                  'Nenhum departamento ativo encontrado.'}
+                {statusFilter === 'disabled' &&
+                  'Nenhum departamento inativo encontrado.'}
+                {statusFilter === 'all' &&
+                  'Nenhum departamento cadastrado. Clique em "Adicionar Departamento" para começar.'}
               </Alert>
             ) : (
               <Table size='small'>
@@ -264,7 +305,7 @@ export default function AdminDepartments() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {departamentos.map(dept => (
+                  {departamentosFiltrados.map(dept => (
                     <TableRow key={dept.codigo} hover>
                       <TableCell>
                         <Typography fontWeight={500}>{dept.codigo}</Typography>
@@ -318,15 +359,19 @@ export default function AdminDepartments() {
                         >
                           <EditIcon />
                         </IconButton>
-                        <IconButton
-                          size='small'
-                          onClick={() => handleDelete(dept.codigo, dept.nome)}
-                          aria-label='excluir'
-                          color='error'
-                          disabled={excluirDepartamento.isPending}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
+                        {dept.ativo && (
+                          <IconButton
+                            size='small'
+                            onClick={() =>
+                              handleInativar(dept.codigo, dept.nome)
+                            }
+                            aria-label='inativar'
+                            color='error'
+                            disabled={inativarDepartamento.isPending}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -372,9 +417,9 @@ export default function AdminDepartments() {
                     onChange={e =>
                       setForm({ ...form, gestor_id: e.target.value })
                     }
-                    label="Gestor do Departamento"
+                    label='Gestor do Departamento'
                   >
-                    <MenuItem value="">
+                    <MenuItem value=''>
                       <em>Nenhum gestor</em>
                     </MenuItem>
                     {funcionariosGestores.map(funcionario => (
@@ -461,9 +506,9 @@ export default function AdminDepartments() {
                     onChange={e =>
                       setForm({ ...form, gestor_id: e.target.value })
                     }
-                    label="Gestor do Departamento"
+                    label='Gestor do Departamento'
                   >
-                    <MenuItem value="">
+                    <MenuItem value=''>
                       <em>Nenhum gestor</em>
                     </MenuItem>
                     {funcionariosGestores.map(funcionario => (
@@ -516,6 +561,19 @@ export default function AdminDepartments() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Modal de Confirmação de Inativação */}
+        <ConfirmationDialog
+          open={confirmDialog.open}
+          onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.titulo}
+          message={confirmDialog.mensagem}
+          confirmText='Inativar'
+          cancelText='Cancelar'
+          isLoading={inativarDepartamento.isPending}
+          severity='warning'
+        />
       </Box>
     </DashboardLayout>
   )
