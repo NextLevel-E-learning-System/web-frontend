@@ -365,14 +365,36 @@ export default function AdminCategories() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='Cor (Hexadecimal)'
-                  value={form.cor_hex}
-                  onChange={e => setForm({ ...form, cor_hex: e.target.value })}
-                  placeholder='#3B82F6'
-                  fullWidth
-                  type='color'
-                />
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', justifyContent: 'center' }}>
+                  <TextField
+                    label='Cor (Hexadecimal)'
+                    value={form.cor_hex}
+                    onChange={e => {
+                      let value = e.target.value
+                      if (value && !value.startsWith('#')) {
+                        value = '#' + value
+                      }
+                      value = value.replace(/[^#0-9A-Fa-f]/g, '')
+                      if (value.length > 7) {
+                        value = value.substring(0, 7)
+                      }
+                      setForm({ ...form, cor_hex: value })
+                    }}
+                    placeholder='#3B82F6'
+                    fullWidth
+                  />
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 1,
+                      alignItems:'center',
+                      backgroundColor: form.cor_hex || '#3B82F6',
+                      border: '1px solid #000',
+                      flexShrink: 0,
+                    }}
+                  />
+                </Box>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth required>
@@ -472,14 +494,43 @@ export default function AdminCategories() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='Cor (Hexadecimal)'
-                  value={form.cor_hex}
-                  onChange={e => setForm({ ...form, cor_hex: e.target.value })}
-                  placeholder='#3B82F6'
-                  fullWidth
-                  type='color'
-                />
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+                  <TextField
+                    label='Cor (Hexadecimal)'
+                    value={form.cor_hex}
+                    onChange={e => {
+                      let value = e.target.value
+                      // Adiciona # se não tiver
+                      if (value && !value.startsWith('#')) {
+                        value = '#' + value
+                      }
+                      // Remove caracteres inválidos (manter apenas 0-9, A-F, a-f)
+                      value = value.replace(/[^#0-9A-Fa-f]/g, '')
+                      // Limita a 7 caracteres (#RRGGBB)
+                      if (value.length > 7) {
+                        value = value.substring(0, 7)
+                      }
+                      setForm({ ...form, cor_hex: value })
+                    }}
+                    placeholder='#3B82F6'
+                    fullWidth
+                    inputProps={{ 
+                      maxLength: 7,
+                      style: { fontFamily: 'monospace' }
+                    }}
+                    helperText='Digite ou cole uma cor em formato hexadecimal'
+                  />
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 1,
+                      backgroundColor: form.cor_hex || '#3B82F6',
+                      border: '1px solid #ddd',
+                      flexShrink: 0,
+                    }}
+                  />
+                </Box>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth required>
