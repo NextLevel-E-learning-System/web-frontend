@@ -337,14 +337,14 @@ export default function AdminCategories() {
         </Card>
 
         {/* Dialog Adicionar Categoria */}
-        <Dialog
+      <Dialog
+          maxWidth='sm'
+          fullWidth
           open={isAddOpen}
           onClose={() => {
             setIsAddOpen(false)
             resetForm()
           }}
-          maxWidth='sm'
-          fullWidth
         >
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -421,7 +421,7 @@ export default function AdminCategories() {
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
               onClick={() => {
