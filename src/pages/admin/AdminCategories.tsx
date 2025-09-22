@@ -327,7 +327,7 @@ export default function AdminCategories() {
         </Card>
 
         {/* Dialog Adicionar Categoria */}
-      <Dialog
+        <Dialog
           maxWidth='sm'
           fullWidth
           open={isAddOpen}
@@ -374,10 +374,12 @@ export default function AdminCategories() {
                     fullWidth
                   />
                   <Box
-                    component="input"
-                    type="color"
+                    component='input'
+                    type='color'
                     value={form.cor_hex || '#3B82F6'}
-                    onChange={(e: any) => setForm({ ...form, cor_hex: e.target.value })}
+                    onChange={(e: any) =>
+                      setForm({ ...form, cor_hex: e.target.value })
+                    }
                     sx={{
                       width: 56,
                       height: 56,
@@ -517,10 +519,12 @@ export default function AdminCategories() {
                     fullWidth
                   />
                   <Box
-                    component="input"
-                    type="color"
+                    component='input'
+                    type='color'
                     value={form.cor_hex || '#3B82F6'}
-                    onChange={(e: any) => setForm({ ...form, cor_hex: e.target.value })}
+                    onChange={(e: any) =>
+                      setForm({ ...form, cor_hex: e.target.value })
+                    }
                     sx={{
                       width: 56,
                       height: 56,
@@ -602,7 +606,9 @@ export default function AdminCategories() {
               onClick={handleUpdate}
               disabled={updateCategoryMutation.isPending}
             >
-              {updateCategoryMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+              {updateCategoryMutation.isPending
+                ? 'Salvando...'
+                : 'Salvar Alterações'}
             </Button>
           </DialogActions>
         </Dialog>

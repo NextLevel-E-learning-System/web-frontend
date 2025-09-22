@@ -26,6 +26,10 @@ import {
   Tooltip,
   LinearProgress,
   Avatar,
+  Grid,
+  Rating,
+  Collapse,
+  Divider,
 } from '@mui/material'
 import {
   Dashboard as DashboardIcon,
@@ -85,6 +89,12 @@ export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedDepartment, setSelectedDepartment] = useState('')
+  const [selectedInstructor, setSelectedInstructor] = useState('')
+  const [selectedLevel, setSelectedLevel] = useState('')
+  const [minDuration, setMinDuration] = useState<number | ''>('')
+  const [maxDuration, setMaxDuration] = useState<number | ''>('')
+  const [minRating, setMinRating] = useState<number | ''>('')
+  const [showFilters, setShowFilters] = useState(false)
   const [dialogCriarCurso, setDialogCriarCurso] = useState(false)
   const [mensagem, setMensagem] = useState('')
   const [dadosNovoCurso, setDadosNovoCurso] = useState<CriarCurso>({
@@ -128,11 +138,24 @@ export default function CoursesPage() {
 
   // Atualizar filtros automaticamente quando categoria é selecionada
   useEffect(() => {
-    setFiltros(prev => ({
-      ...prev,
-      categoria: selectedCategory || undefined,
-    }))
-  }, [selectedCategory])
+    const newFilters: FiltrosCatalogo = {}
+
+    if (searchTerm) newFilters.q = searchTerm
+    if (selectedCategory) newFilters.categoria = selectedCategory
+    if (selectedInstructor) newFilters.instrutor = selectedInstructor
+    if (selectedLevel) newFilters.nivel = selectedLevel
+    if (maxDuration) newFilters.duracaoMax = maxDuration
+
+    setFiltros(newFilters)
+  }, [
+    searchTerm,
+    selectedCategory,
+    selectedInstructor,
+    selectedLevel,
+    minDuration,
+    maxDuration,
+    minRating,
+  ])
 
   const resetFormCurso = () => {
     setDadosNovoCurso({
@@ -145,6 +168,18 @@ export default function CoursesPage() {
       xp_oferecido: 0,
       nivel_dificuldade: 'Básico',
     })
+  }
+
+  const resetAllFilters = () => {
+    setSearchTerm('')
+    setSelectedCategory('')
+    setSelectedDepartment('')
+    setSelectedInstructor('')
+    setSelectedLevel('')
+    setMinDuration('')
+    setMaxDuration('')
+    setMinRating('')
+    setFiltros({})
   }
 
   // Função para buscar categoria por ID
@@ -420,6 +455,52 @@ export default function CoursesPage() {
                 )}
               </Box>
 
+              {/* Avaliação do curso */}
+              {curso.avaliacao_media && (
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {[...Array(5)].map((_, index) => (
+                      <StarIcon
+                        key={index}
+                        sx={{
+                          fontSize: '16px',
+                          color:
+                            index < Math.round(curso.avaliacao_media || 0)
+                              ? '#FFD700'
+                              : '#E0E0E0',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                  <Typography
+                    variant='body2'
+                    sx={{ fontSize: '14px', color: '#555' }}
+                  >
+                    {curso.avaliacao_media.toFixed(1)} (
+                    {curso.total_avaliacoes || 0} avaliações)
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Indicador de pré-requisitos */}
+              {curso.pre_requisitos && curso.pre_requisitos.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Chip
+                    size='small'
+                    icon={<LockIcon />}
+                    label={`${curso.pre_requisitos.length} pré-requisito(s)`}
+                    variant='outlined'
+                    sx={{
+                      borderColor: '#FF9800',
+                      color: '#FF9800',
+                      fontSize: '12px',
+                    }}
+                  />
+                </Box>
+              )}
+
               {/* Progresso para usuários inscritos */}
 
               <Box sx={{ mb: 2 }}>
@@ -508,8 +589,178 @@ export default function CoursesPage() {
   }
 
   return (
-    <DashboardLayout title={'Gerenciar Cursos'} items={navigationItems}>
+    <DashboardLayout title={'Catálogo de Cursos'} items={navigationItems}>
       <Box>
+        {/* Seção de Busca e Filtros */}
+        <Box sx={{ mb: 4 }}>
+          {/* Busca principal */}
+          <Box sx={{ mb: 3 }}>
+            <TextField
+              fullWidth
+              placeholder='Buscar cursos por título, descrição ou palavras-chave...'
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position='start'>
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                },
+              }}
+            />
+          </Box>
+
+          {/* Toggle para mostrar/ocultar filtros avançados */}
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Button
+              variant='outlined'
+              onClick={() => setShowFilters(!showFilters)}
+              sx={{ borderRadius: '8px' }}
+            >
+              {showFilters ? 'Ocultar Filtros' : 'Filtros Avançados'}
+            </Button>
+
+            {Object.keys(filtros).length > 0 && (
+              <Button
+                variant='text'
+                onClick={resetAllFilters}
+                color='secondary'
+                size='small'
+              >
+                Limpar todos os filtros
+              </Button>
+            )}
+          </Box>
+
+          {/* Filtros avançados */}
+          {showFilters && (
+            <Card sx={{ p: 3, borderRadius: '12px' }}>
+              <Typography variant='h6' sx={{ mb: 2, fontWeight: 600 }}>
+                Filtros Avançados
+              </Typography>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    xs: '1fr',
+                    sm: '1fr 1fr',
+                    md: '1fr 1fr 1fr',
+                  },
+                  gap: 2,
+                  mb: 3,
+                }}
+              >
+                {/* Filtro por Categoria */}
+                <FormControl>
+                  <InputLabel>Categoria</InputLabel>
+                  <Select
+                    value={selectedCategory}
+                    label='Categoria'
+                    onChange={e => setSelectedCategory(e.target.value)}
+                    sx={{ borderRadius: '8px' }}
+                  >
+                    <MenuItem value=''>Todas as categorias</MenuItem>
+                    {categorias?.map(categoria => (
+                      <MenuItem key={categoria.codigo} value={categoria.codigo}>
+                        {categoria.nome}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* Filtro por Nível */}
+                <FormControl>
+                  <InputLabel>Nível de Dificuldade</InputLabel>
+                  <Select
+                    value={selectedLevel}
+                    label='Nível de Dificuldade'
+                    onChange={e => setSelectedLevel(e.target.value)}
+                    sx={{ borderRadius: '8px' }}
+                  >
+                    <MenuItem value=''>Todos os níveis</MenuItem>
+                    <MenuItem value='Básico'>Básico</MenuItem>
+                    <MenuItem value='Intermediário'>Intermediário</MenuItem>
+                    <MenuItem value='Avançado'>Avançado</MenuItem>
+                  </Select>
+                </FormControl>
+
+                {/* Filtro por Avaliação Mínima */}
+                <FormControl>
+                  <InputLabel>Avaliação Mínima</InputLabel>
+                  <Select
+                    value={minRating}
+                    label='Avaliação Mínima'
+                    onChange={e => setMinRating(e.target.value as number)}
+                    sx={{ borderRadius: '8px' }}
+                  >
+                    <MenuItem value=''>Qualquer avaliação</MenuItem>
+                    <MenuItem value={4}>4+ estrelas</MenuItem>
+                    <MenuItem value={3}>3+ estrelas</MenuItem>
+                    <MenuItem value={2}>2+ estrelas</MenuItem>
+                    <MenuItem value={1}>1+ estrelas</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {/* Filtros de Duração */}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                  gap: 2,
+                }}
+              >
+                <TextField
+                  label='Duração Mínima (horas)'
+                  type='number'
+                  value={minDuration}
+                  onChange={e =>
+                    setMinDuration(e.target.value ? Number(e.target.value) : '')
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position='start'>
+                        <AccessTimeIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                />
+                <TextField
+                  label='Duração Máxima (horas)'
+                  type='number'
+                  value={maxDuration}
+                  onChange={e =>
+                    setMaxDuration(e.target.value ? Number(e.target.value) : '')
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position='start'>
+                        <AccessTimeIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
+                />
+              </Box>
+            </Card>
+          )}
+        </Box>
+
         {canManageCourses && (
           <Box
             sx={{
@@ -606,7 +857,9 @@ export default function CoursesPage() {
                   mb: 1,
                 }}
               >
-                {selectedCategory ? 'Cursos Filtrados' : 'Todos os Cursos'}
+                {Object.keys(filtros).length > 0 || selectedCategory
+                  ? 'Cursos Filtrados'
+                  : 'Todos os Cursos'}
               </Typography>
               <Typography
                 variant='body1'
@@ -618,19 +871,18 @@ export default function CoursesPage() {
                 }}
               >
                 {cursos?.length || 0} curso(s) encontrado(s)
+                {selectedCategory && ` na categoria selecionada`}
+                {searchTerm && ` para "${searchTerm}"`}
               </Typography>
             </Box>
 
-            {selectedCategory && (
+            {(Object.keys(filtros).length > 0 || selectedCategory) && (
               <Button
                 variant='outlined'
-                onClick={() => {
-                  setSelectedCategory('')
-                  setFiltros({})
-                }}
+                onClick={resetAllFilters}
                 sx={{ borderRadius: '20px', textTransform: 'none' }}
               >
-                Limpar filtros
+                Limpar todos os filtros
               </Button>
             )}
           </Box>

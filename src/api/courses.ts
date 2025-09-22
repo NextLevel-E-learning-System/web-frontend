@@ -34,6 +34,10 @@ export interface Course {
   pre_requisitos?: string[]
   criado_em: string
   atualizado_em: string
+  avaliacao_media?: number
+  total_avaliacoes?: number
+  total_concluidos?: number
+  total_inscritos?: number
 }
 
 export interface CreateCourseInput {
@@ -107,10 +111,19 @@ export interface UploadMaterialResponse {
 }
 
 export interface CatalogFilters {
+  q?: string // Busca por título/descrição
   categoria?: string
+  categoria_id?: string // Alias para categoria
   instrutor?: string
   nivel?: string
   duracaoMax?: number
+  departamento?: string // Para GERENTE filtrar por departamento
+  ativo?: boolean // Para INSTRUTOR filtrar por status
+}
+
+export interface CoursesResponse {
+  items: Course[]
+  total: number
 }
 
 // Hooks para Categorias
@@ -148,7 +161,10 @@ export function useUpdateCategory() {
 
   return useMutation({
     mutationKey: ['courses', 'categories', 'update'],
-    mutationFn: ({ codigo, ...input }: { codigo: string } & Partial<CreateCategoryInput>) =>
+    mutationFn: ({
+      codigo,
+      ...input
+    }: { codigo: string } & Partial<CreateCategoryInput>) =>
       authPut<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
@@ -305,7 +321,7 @@ export function useUploadMaterial(moduloId: string) {
   })
 }
 
-// Hooks para Catálogo
+// Hooks para Catálogo/Listagem Unificada
 export function useCourseCatalog(filters: CatalogFilters = {}) {
   const searchParams = new URLSearchParams()
 
@@ -316,11 +332,57 @@ export function useCourseCatalog(filters: CatalogFilters = {}) {
   })
 
   const queryString = searchParams.toString()
-  const url = `${API_ENDPOINTS.COURSES}/catalogo${queryString ? `?${queryString}` : ''}`
+  const url = `${API_ENDPOINTS.COURSES}${queryString ? `?${queryString}` : ''}`
 
   return useQuery<Course[]>({
     queryKey: ['courses', 'catalog', filters],
-    queryFn: () => authGet<Course[]>(url),
+    queryFn: async () => {
+      const response = await authGet<CoursesResponse>(url)
+      return response.items || (response as unknown as Course[])
+    },
+  })
+}
+
+// Hook específico para buscar cursos com resposta estruturada
+export function useCourses(filters: CatalogFilters = {}) {
+  const searchParams = new URLSearchParams()
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, value.toString())
+    }
+  })
+
+  const queryString = searchParams.toString()
+  const url = `${API_ENDPOINTS.COURSES}${queryString ? `?${queryString}` : ''}`
+
+  return useQuery<CoursesResponse>({
+    queryKey: ['courses', 'list', filters],
+    queryFn: () => authGet<CoursesResponse>(url),
+  })
+}
+
+// Hook para buscar cursos por categoria
+export function useCoursesByCategory(categoriaId: string) {
+  return useQuery<CoursesResponse>({
+    queryKey: ['courses', 'by-category', categoriaId],
+    queryFn: () =>
+      authGet<CoursesResponse>(
+        `${API_ENDPOINTS.COURSES}/categoria/${categoriaId}`
+      ),
+    enabled: !!categoriaId,
+  })
+}
+
+// Hook para buscar cursos por departamento
+export function useCoursesByDepartment(departmentCode: string) {
+  return useQuery<CoursesResponse>({
+    queryKey: ['courses', 'by-department', departmentCode],
+    queryFn: () =>
+      authGet<CoursesResponse>(
+        `${API_ENDPOINTS.COURSES}/departamento/${departmentCode}`
+      ),
+    enabled: !!departmentCode,
   })
 }
 
@@ -337,11 +399,11 @@ export function useInstructorCourses(filters: InstructorCoursesFilters = {}) {
   }
 
   const queryString = searchParams.toString()
-  const url = `${API_ENDPOINTS.COURSES}/me${queryString ? `?${queryString}` : ''}`
+  const url = `${API_ENDPOINTS.COURSES}/me/cursos${queryString ? `?${queryString}` : ''}`
 
-  return useQuery<Course[]>({
+  return useQuery<CoursesResponse>({
     queryKey: ['courses', 'instructor', filters],
-    queryFn: () => authGet<Course[]>(url),
+    queryFn: () => authGet<CoursesResponse>(url),
   })
 }
 
@@ -355,7 +417,7 @@ export function useReactivateCourses() {
   return useMutation({
     mutationKey: ['courses', 'reactivate'],
     mutationFn: (input: ReactivateCoursesInput = {}) =>
-      authPatch(`${API_ENDPOINTS.COURSES}/me/reativar`, input),
+      authPatch(`${API_ENDPOINTS.COURSES}/me/cursos/reativar`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'instructor'] })
       queryClient.invalidateQueries({ queryKey: ['courses'] })
