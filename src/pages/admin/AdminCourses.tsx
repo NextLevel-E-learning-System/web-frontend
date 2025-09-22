@@ -130,8 +130,9 @@ export default function AdminCourses() {
     xp_oferecido: 0,
     nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
-    ativo: true,
+    ativo: true
   })
+  const [departamentoSelecionado, setDepartamentoSelecionado] = useState<string>('')
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
@@ -788,24 +789,24 @@ export default function AdminCourses() {
                   <FormControl fullWidth>
                     <InputLabel>Departamento</InputLabel>
                     <Select
-                      value={form.departamento_id || ''}
+                      value={departamentoSelecionado}
                       label='Departamento'
                       onChange={e => {
-                        setForm({
-                          ...form,
-                          departamento_id: e.target.value,
-                          categoria_id: '',
-                        })
+                        setDepartamentoSelecionado(e.target.value)
+                        setForm({ ...form, categoria_id: '' })
                       }}
                     >
                       <MenuItem value=''>
                         <em>— Selecione o departamento —</em>
                       </MenuItem>
-                      {departamentos?.map(dep => (
-                        <MenuItem key={dep.id} value={dep.id}>
-                          {dep.nome}
-                        </MenuItem>
-                      ))}
+                      {categorias
+                        .map(cat => cat.departamento_codigo)
+                        .filter((v, i, arr) => v && arr.indexOf(v) === i)
+                        .map(depCodigo => (
+                          <MenuItem key={depCodigo} value={depCodigo!}>
+                            {depCodigo}
+                          </MenuItem>
+                        ))}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -815,19 +816,13 @@ export default function AdminCourses() {
                     <Select
                       value={form.categoria_id || ''}
                       label='Categoria'
-                      onChange={e =>
-                        setForm({ ...form, categoria_id: e.target.value })
-                      }
+                      onChange={e => setForm({ ...form, categoria_id: e.target.value })}
                     >
                       <MenuItem value=''>
                         <em>— Selecione a categoria —</em>
                       </MenuItem>
                       {categorias
-                        .filter(
-                          cat =>
-                            !form.departamento_id ||
-                            cat.departamento_id === form.departamento_id
-                        )
+                        .filter(cat => !departamentoSelecionado || cat.departamento_codigo === departamentoSelecionado)
                         .map(cat => (
                           <MenuItem key={cat.codigo} value={cat.codigo}>
                             {cat.nome}
@@ -842,9 +837,7 @@ export default function AdminCourses() {
                     <Select
                       value={form.instrutor_id || ''}
                       label='Instrutor'
-                      onChange={e =>
-                        setForm({ ...form, instrutor_id: e.target.value })
-                      }
+                      onChange={e => setForm({ ...form, instrutor_id: e.target.value })}
                     >
                       <MenuItem value=''>
                         <em>— Selecione o instrutor —</em>
