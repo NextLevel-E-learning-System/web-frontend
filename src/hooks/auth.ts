@@ -53,7 +53,10 @@ export function useLogin() {
       // Extrair role do token JWT para redirecionamento correto
       try {
         const tokenPayload = JSON.parse(atob(result.accessToken.split('.')[1]))
-        const userRole = tokenPayload.roles?.[0] || 'ALUNO'
+        // Tratar tanto string quanto array para roles
+        const userRole = Array.isArray(tokenPayload.roles) 
+          ? tokenPayload.roles[0] 
+          : tokenPayload.roles || 'ALUNO'
 
         console.log('[useLogin] User role from token:', userRole)
 

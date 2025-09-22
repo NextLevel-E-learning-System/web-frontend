@@ -34,10 +34,11 @@ export interface AuthContextType {
 interface JWTPayload {
   sub: string // user id
   email: string
-  nome: string
-  role: UserRole
+  nome?: string
+  roles: UserRole | UserRole[] // Pode ser string ou array
   departamento_id?: string
   cargo_nome?: string
+  ativo: boolean
   exp: number
   iat: number
 }
@@ -65,11 +66,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return null
       }
 
+      // Extrair role (pode ser string ou array)
+      const userRole = Array.isArray(decoded.roles) 
+        ? decoded.roles[0] 
+        : decoded.roles
+
       return {
         id: decoded.sub,
         email: decoded.email,
-        nome: decoded.nome,
-        role: decoded.role,
+        nome: decoded.nome || decoded.email, // Fallback se não tiver nome
+        role: userRole,
         departamento_id: decoded.departamento_id,
         cargo_nome: decoded.cargo_nome,
       }

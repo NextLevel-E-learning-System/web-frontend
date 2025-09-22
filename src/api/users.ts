@@ -125,7 +125,6 @@ export interface DashboardInstrutor {
     avaliacao_media?: number
     status: string
   }[]
-  alertas: any[]
   atividades_recentes: any[]
 }
 
@@ -140,7 +139,6 @@ export interface DashboardGerente {
   }
   top_performers: any[]
   cursos_departamento: any[]
-  alertas: any[]
 }
 
 export interface DashboardAdmin {
@@ -151,9 +149,8 @@ export interface DashboardAdmin {
     alunos_ativos: number
     total_instrutores: number
     total_cursos: number
-    taxa_conclusao_geral: number
+    taxa_conclusao_media: number
     inscricoes_30d: number
-    avaliacao_media_plataforma: number
   }
   engajamento_departamentos: {
     codigo: string
@@ -163,7 +160,6 @@ export interface DashboardAdmin {
     funcionarios_ativos: number
   }[]
   cursos_populares: any[]
-  alertas: any[]
 }
 
 export type DashboardData =

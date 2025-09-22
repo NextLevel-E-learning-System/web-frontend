@@ -51,7 +51,7 @@ export default function InstrutorDashboard() {
     )
   }
 
-  const { metricas, cursos, alertas, atividades_recentes } = instrutorData
+  const { metricas, cursos, atividades_recentes } = instrutorData
 
   return (
     <DashboardLayout title={title} items={navigationItems}>
@@ -188,52 +188,8 @@ export default function InstrutorDashboard() {
             </Card>
           </Grid>
 
-          {/* Alertas e Atividades */}
+          {/* Atividades Recentes */}
           <Grid size={{ xs: 12, lg: 4 }}>
-            <Card
-              sx={{
-                mb: 2,
-                maxWidth: '100%',
-                overflow: 'auto',
-              }}
-            >
-              <CardContent>
-                <Typography fontWeight={700} gutterBottom>
-                  Alertas ({alertas.length})
-                </Typography>
-                {alertas.length > 0 ? (
-                  <List dense>
-                    {alertas.map((alerta: any, index: number) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={alerta.tipo || 'Alerta'}
-                          secondary={alerta.descricao || alerta.mensagem}
-                        />
-                        <Chip
-                          label={alerta.prioridade || 'Normal'}
-                          size='small'
-                          color={
-                            alerta.prioridade === 'alta'
-                              ? 'error'
-                              : alerta.prioridade === 'media'
-                                ? 'warning'
-                                : 'default'
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography
-                    color='text.secondary'
-                    sx={{ textAlign: 'center', py: 2 }}
-                  >
-                    Nenhum alerta no momento.
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-
             <Card
               sx={{
                 maxWidth: '100%',

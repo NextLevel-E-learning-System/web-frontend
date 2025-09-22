@@ -39,7 +39,6 @@ export default function AdminDashboard() {
             metricas_gerais,
             engajamento_departamentos,
             cursos_populares,
-            alertas,
           } = adminData
           const departamentoRestrito = (adminData as any)._departamento_restrito
 
@@ -87,52 +86,12 @@ export default function AdminDashboard() {
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <StatCard
                     title='Taxa de Conclusão'
-                    value={`${metricas_gerais.taxa_conclusao_geral.toFixed(1)}%`}
+                    value={`${(metricas_gerais.taxa_conclusao_media || 0).toFixed(1)}%`}
                     icon={<Assignment />}
                     positive={false}
                   />
                 </Grid>
               </Grid>
-
-              {/* Alertas */}
-              {alertas.length > 0 && (
-                <Grid container spacing={3} sx={{ mb: 3 }}>
-                  <Grid size={{ xs: 12 }}>
-                    <Paper
-                      sx={{
-                        p: 3,
-                        borderRadius: 3,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                        maxWidth: '100%',
-                        overflow: 'auto',
-                      }}
-                    >
-                      <Typography
-                        variant='h6'
-                        gutterBottom
-                        sx={{ fontWeight: 600 }}
-                      >
-                        Alertas do Sistema ({alertas.length})
-                      </Typography>
-                      {alertas.map((alerta: any, index: number) => (
-                        <Alert
-                          key={index}
-                          severity={
-                            alerta.prioridade === 'alta'
-                              ? 'error'
-                              : alerta.prioridade === 'media'
-                                ? 'warning'
-                                : 'info'
-                          }
-                          sx={{ mb: 1 }}
-                        >
-                          <strong>{alerta.tipo}:</strong> {alerta.descricao}
-                        </Alert>
-                      ))}
-                    </Paper>
-                  </Grid>
-                </Grid>
-              )}
 
               {/* Gráficos */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -363,7 +322,7 @@ export default function AdminDashboard() {
 
         // Dados para GERENTE
         if (gerenteData) {
-          const { departamento, top_performers, cursos_departamento, alertas } =
+          const { departamento, top_performers, cursos_departamento } =
             gerenteData
 
           return (
@@ -412,46 +371,6 @@ export default function AdminDashboard() {
                   />
                 </Grid>
               </Grid>
-
-              {/* Alertas do Departamento */}
-              {alertas.length > 0 && (
-                <Grid container spacing={3} sx={{ mb: 3 }}>
-                  <Grid size={{ xs: 12 }}>
-                    <Paper
-                      sx={{
-                        p: 3,
-                        borderRadius: 3,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                        maxWidth: '100%',
-                        overflow: 'auto',
-                      }}
-                    >
-                      <Typography
-                        variant='h6'
-                        gutterBottom
-                        sx={{ fontWeight: 600 }}
-                      >
-                        Alertas do Departamento ({alertas.length})
-                      </Typography>
-                      {alertas.map((alerta: any, index: number) => (
-                        <Alert
-                          key={index}
-                          severity={
-                            alerta.prioridade === 'alta'
-                              ? 'error'
-                              : alerta.prioridade === 'media'
-                                ? 'warning'
-                                : 'info'
-                          }
-                          sx={{ mb: 1 }}
-                        >
-                          <strong>{alerta.tipo}:</strong> {alerta.descricao}
-                        </Alert>
-                      ))}
-                    </Paper>
-                  </Grid>
-                </Grid>
-              )}
 
               {/* Top Performers e Cursos do Departamento */}
               <Grid container spacing={3}>

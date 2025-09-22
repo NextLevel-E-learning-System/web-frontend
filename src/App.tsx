@@ -148,6 +148,15 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          {/* Rota para instrutores gerenciarem seus cursos */}
+          <Route
+            path='/instrutor/cursos'
+            element={
+              <ProtectedRoute allowedRoles={['INSTRUTOR']}>
+                <AdminCourses />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path='/cursos'
             element={
