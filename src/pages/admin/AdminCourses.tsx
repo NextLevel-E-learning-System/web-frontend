@@ -120,9 +120,10 @@ export default function AdminCourses() {
     xp_oferecido: 0,
     nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
-    ativo: true
+    ativo: true,
   })
-  const [departamentoSelecionado, setDepartamentoSelecionado] = useState<string>('')
+  const [departamentoSelecionado, setDepartamentoSelecionado] =
+    useState<string>('')
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
@@ -202,7 +203,7 @@ export default function AdminCourses() {
   }
 
   const handleCloseSnackbar = () => {
-  // removido, não usa mais snackbar
+    // removido, não usa mais snackbar
   }
 
   // Filtragem de cursos
@@ -630,7 +631,7 @@ export default function AdminCourses() {
         <Dialog
           open={dialogCreateCourse}
           onClose={() => setDialogCreateCourse(false)}
-          maxWidth='md'
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>Adicionar Curso</DialogTitle>
@@ -676,57 +677,23 @@ export default function AdminCourses() {
                       <MenuItem value={'false'}>Inativo</MenuItem>
                     </Select>
                   </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='Título'
-                      value={form.titulo}
-                      onChange={e =>
-                        setForm({ ...form, titulo: e.target.value })
-                      }
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='Descrição'
-                      value={form.descricao}
-                      onChange={e =>
-                        setForm({ ...form, descricao: e.target.value })
-                      }
-                      fullWidth
-                      multiline
-                      minRows={3}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='Duração Estimada (horas)'
-                      type='number'
-                      value={form.duracao_estimada}
-                      onChange={e =>
-                        setForm({
-                          ...form,
-                          duracao_estimada: Number(e.target.value),
-                        })
-                      }
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='XP Oferecido'
-                      type='number'
-                      value={form.xp_oferecido}
-                      onChange={e =>
-                        setForm({
-                          ...form,
-                          xp_oferecido: Number(e.target.value),
-                        })
-                      }
-                      fullWidth
-                    />
-                  </Grid>
                 </Grid>
+                <TextField
+                  label='Título'
+                  value={form.titulo}
+                  onChange={e => setForm({ ...form, titulo: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label='Descrição'
+                  value={form.descricao}
+                  onChange={e =>
+                    setForm({ ...form, descricao: e.target.value })
+                  }
+                  fullWidth
+                  multiline
+                  minRows={3}
+                />
               </Box>
             )}
 
@@ -763,13 +730,19 @@ export default function AdminCourses() {
                     <Select
                       value={form.categoria_id || ''}
                       label='Categoria'
-                      onChange={e => setForm({ ...form, categoria_id: e.target.value })}
+                      onChange={e =>
+                        setForm({ ...form, categoria_id: e.target.value })
+                      }
                     >
                       <MenuItem value=''>
                         <em>— Selecione a categoria —</em>
                       </MenuItem>
                       {categorias
-                        .filter(cat => !departamentoSelecionado || cat.departamento_codigo === departamentoSelecionado)
+                        .filter(
+                          cat =>
+                            !departamentoSelecionado ||
+                            cat.departamento_codigo === departamentoSelecionado
+                        )
                         .map(cat => (
                           <MenuItem key={cat.codigo} value={cat.codigo}>
                             {cat.nome}
@@ -778,13 +751,15 @@ export default function AdminCourses() {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12 }}>
                   <FormControl fullWidth>
                     <InputLabel>Instrutor</InputLabel>
                     <Select
                       value={form.instrutor_id || ''}
                       label='Instrutor'
-                      onChange={e => setForm({ ...form, instrutor_id: e.target.value })}
+                      onChange={e =>
+                        setForm({ ...form, instrutor_id: e.target.value })
+                      }
                     >
                       <MenuItem value=''>
                         <em>— Selecione o instrutor —</em>
@@ -801,17 +776,35 @@ export default function AdminCourses() {
             )}
 
             {tabModal === 'content' && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                  label='Sobre o curso'
-                  value={form.descricao}
-                  onChange={e =>
-                    setForm({ ...form, descricao: e.target.value })
-                  }
-                  fullWidth
-                  multiline
-                  minRows={4}
-                />
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label='Duração Estimada (horas)'
+                    type='number'
+                    value={form.duracao_estimada}
+                    onChange={e =>
+                      setForm({
+                        ...form,
+                        duracao_estimada: Number(e.target.value),
+                      })
+                    }
+                    fullWidth
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label='XP Oferecido'
+                    type='number'
+                    value={form.xp_oferecido}
+                    onChange={e =>
+                      setForm({
+                        ...form,
+                        xp_oferecido: Number(e.target.value),
+                      })
+                    }
+                    fullWidth
+                  />
+                </Grid>
                 <FormControl fullWidth>
                   <InputLabel>Pré-requisitos</InputLabel>
                   <Select
@@ -821,14 +814,14 @@ export default function AdminCourses() {
                       const value = e.target.value
                       setForm({
                         ...form,
-                        pre_requisitos: Array.isArray(value) ? value : [value]
+                        pre_requisitos: Array.isArray(value) ? value : [value],
                       })
                     }}
                     renderValue={selected =>
                       (Array.isArray(selected) ? selected : [selected])
                         .map(cod => {
                           const curso = cursos.find(c => c.codigo === cod)
-                          return curso ? curso.titulo : cod
+                          return curso ? curso.codigo : cod
                         })
                         .join(', ')
                     }
@@ -843,7 +836,7 @@ export default function AdminCourses() {
                     ))}
                   </Select>
                 </FormControl>
-              </Box>
+              </Grid>
             )}
           </DialogContent>
           <DialogActions>
