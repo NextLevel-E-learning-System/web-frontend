@@ -232,13 +232,10 @@ export default function AdminDepartments() {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'end',
             mb: 3,
           }}
         >
-          <Typography variant='h6' fontWeight={600}>
-            Lista de Departamentos ({departamentosFiltrados.length})
-          </Typography>
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}

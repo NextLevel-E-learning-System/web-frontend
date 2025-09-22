@@ -322,73 +322,55 @@ export default function AdminCourses() {
   return (
     <DashboardLayout title='Gerenciar Cursos' items={navigationItems}>
       <Box>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            mb: 3,
-            gap: 2,
-          }}
-        >
-          {/* Filtros */}
-          <FormControl fullWidth>
-            <InputLabel>Categoria</InputLabel>
-            <Select
-              value={filtros.categoria}
-              onChange={e =>
-                setFiltros({ ...filtros, categoria: e.target.value })
-              }
-              label='Categoria'
-            >
-              <MenuItem value='all'>
-                <em>Todas as Categorias</em>
-              </MenuItem>
-              {categorias.map(cat => (
-                <MenuItem key={cat.codigo} value={cat.codigo}>
-                  {cat.nome}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel>Instrutor</InputLabel>
-            <Select
-              value={filtros.instrutor}
-              onChange={e =>
-                setFiltros({ ...filtros, instrutor: e.target.value })
-              }
-              label='Instrutor'
-            >
-              <MenuItem value='all'>
-                <em>Todos os Instrutores</em>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel>Nível</InputLabel>
-            <Select
-              value={filtros.nivel}
-              onChange={e => setFiltros({ ...filtros, nivel: e.target.value })}
-              label='Nível'
-            >
-              <MenuItem value='all'>
-                <em>Todos os Níveis</em>
-              </MenuItem>
-              <MenuItem value='Básico'>Básico</MenuItem>
-              <MenuItem value='Intermediário'>Intermediário</MenuItem>
-              <MenuItem value='Avançado'>Avançado</MenuItem>
-            </Select>
-          </FormControl>
-          <Button
-            sx={{ width: '70%' }}
-            startIcon={<AddIcon />}
-            variant='contained'
-            onClick={() => setDialogCreateCourse(true)}
-          >
-            Adicionar Categoria
-          </Button>
-        </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, gap: 2, flexWrap: 'wrap' }}>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <FormControl sx={{ minWidth: 180 }}>
+                  <InputLabel>Categoria</InputLabel>
+                  <Select
+                    value={filtros.categoria}
+                    onChange={e => setFiltros({ ...filtros, categoria: e.target.value })}
+                    label='Categoria'
+                  >
+                    <MenuItem value='all'><em>Todas as Categorias</em></MenuItem>
+                    {categorias.map(cat => (
+                      <MenuItem key={cat.codigo} value={cat.codigo}>{cat.nome}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl sx={{ minWidth: 180 }}>
+                  <InputLabel>Instrutor</InputLabel>
+                  <Select
+                    value={filtros.instrutor}
+                    onChange={e => setFiltros({ ...filtros, instrutor: e.target.value })}
+                    label='Instrutor'
+                  >
+                    <MenuItem value='all'><em>Todos os Instrutores</em></MenuItem>
+                    {/* Adicione instrutores se necessário */}
+                  </Select>
+                </FormControl>
+                <FormControl sx={{ minWidth: 180 }}>
+                  <InputLabel>Nível</InputLabel>
+                  <Select
+                    value={filtros.nivel}
+                    onChange={e => setFiltros({ ...filtros, nivel: e.target.value })}
+                    label='Nível'
+                  >
+                    <MenuItem value='all'><em>Todos os Níveis</em></MenuItem>
+                    <MenuItem value='Básico'>Básico</MenuItem>
+                    <MenuItem value='Intermediário'>Intermediário</MenuItem>
+                    <MenuItem value='Avançado'>Avançado</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              <Button
+                variant='contained'
+                startIcon={<AddIcon />}
+                onClick={() => setDialogCreateCourse(true)}
+                sx={{ minWidth: 160 }}
+              >
+                Novo Curso
+              </Button>
+            </Box>
 
         {/* Tabs de Status */}
         <StatusFilterTabs
