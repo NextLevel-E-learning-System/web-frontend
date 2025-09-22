@@ -20,24 +20,15 @@ import {
   LinearProgress,
   Rating,
   Paper,
-  TextField,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Menu,
   ListItemIcon,
   ListItemText,
   Fab,
   useMediaQuery,
   useTheme,
-  CircularProgress,
   TableContainer,
-  Checkbox,
   FormControlLabel,
-  Tab,
-  Tabs,
   Switch,
 } from '@mui/material'
 import {
@@ -57,6 +48,7 @@ import { Visibility } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
+import CourseModal from '@/components/admin/CourseModal'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCourses,
@@ -80,20 +72,6 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
-  const [editForm, setEditForm] = useState<UpdateCourseInput>({})
-  const openEditModal = (curso: Curso) => {
-    const cursoAtual = cursos.find(c => c.codigo === curso.codigo) || curso
-    setCourseToEdit(cursoAtual)
-    setEditForm({
-      titulo: cursoAtual.titulo || '',
-      descricao: cursoAtual.descricao || '',
-      categoria_id: cursoAtual.categoria_id || '',
-      duracao_estimada: cursoAtual.duracao_estimada || 0,
-      xp_oferecido: cursoAtual.xp_oferecido || 0,
-      nivel_dificuldade: cursoAtual.nivel_dificuldade || 'Iniciante',
-    })
-    setDialogEditCourse(true)
-  }
   const theme = useTheme()
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const { navigationItems } = useNavigation()
@@ -108,40 +86,20 @@ export default function AdminCourses() {
     nivel: 'all',
   })
 
-  // Estados para ações
-  const [dialogCreateCourse, setDialogCreateCourse] = useState(false)
-  const [dialogEditCourse, setDialogEditCourse] = useState(false)
+  // Estados para modal
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [courseToEdit, setCourseToEdit] = useState<Curso | null>(null)
-  const [editTabModal, setEditTabModal] = useState<'general' | 'content'>(
-    'general'
-  )
+
+  // Estados para ações
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedCourseForMenu, setSelectedCourseForMenu] =
     useState<Curso | null>(null)
-  const [tabModal, setTabModal] = useState<
-    'general' | 'assignment' | 'content'
-  >('general')
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     action: 'duplicate' | 'toggle' | null
     curso: Curso | null
   }>({ open: false, action: null, curso: null })
-
-  // Form states
-  const [form, setForm] = useState<CreateCourseInput>({
-    codigo: '',
-    titulo: '',
-    descricao: '',
-    categoria_id: '',
-    instrutor_id: '',
-    duracao_estimada: 0,
-    xp_oferecido: 0,
-    nivel_dificuldade: 'Iniciante',
-    pre_requisitos: [],
-    ativo: true,
-  })
-  const [departamentoSelecionado, setDepartamentoSelecionado] =
-    useState<string>('')
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
@@ -177,13 +135,30 @@ export default function AdminCourses() {
   const cursosAtivos = cursos.filter(c => c.ativo === true)
   const cursosInativos = cursos.filter(c => c.ativo === false)
 
-  // Funções para ações
-  const handleCreateCourse = async () => {
+  // Handlers do modal
+  const handleOpenCreateModal = () => {
+    setModalMode('create')
+    setCourseToEdit(null)
+    setModalOpen(true)
+  }
+
+  const handleOpenEditModal = (curso: Curso) => {
+    setModalMode('edit')
+    setCourseToEdit(curso)
+    setModalOpen(true)
+  }
+
+  const handleModalSubmit = async (data: CreateCourseInput | UpdateCourseInput) => {
     try {
-      await createCourseMutation.mutateAsync(form)
-      setDialogCreateCourse(false)
+      if (modalMode === 'create') {
+        await createCourseMutation.mutateAsync(data as CreateCourseInput)
+      } else if (courseToEdit) {
+        await updateCourseMutation.mutateAsync(data as UpdateCourseInput)
+      }
+      setModalOpen(false)
     } catch (error) {
-      // erro ao criar curso
+      // Erro será exibido pela mutation
+      throw error
     }
   }
 
@@ -202,31 +177,6 @@ export default function AdminCourses() {
       setAnchorEl(null)
     } catch (error) {
       // erro ao alterar status do curso
-    }
-  }
-
-  // Preenche o formulário de edição ao abrir o modal
-  const handleOpenEditDialog = (curso: Curso) => {
-    setCourseToEdit(curso)
-    setEditForm({
-      titulo: curso.titulo,
-      descricao: curso.descricao || '',
-      categoria_id: curso.categoria_id || '',
-      duracao_estimada: curso.duracao_estimada || 0,
-      xp_oferecido: curso.xp_oferecido || 0,
-      nivel_dificuldade: curso.nivel_dificuldade || 'Iniciante',
-    })
-    setDialogEditCourse(true)
-  }
-
-  // Atualização de curso
-  const handleUpdateCourse = async () => {
-    if (!courseToEdit?.codigo) return
-    try {
-      await updateCourseMutation.mutateAsync({ ...editForm })
-      setDialogEditCourse(false)
-    } catch (error) {
-      // erro ao atualizar curso
     }
   }
 
@@ -362,7 +312,7 @@ export default function AdminCourses() {
           <Button
             variant='contained'
             startIcon={<AddIcon />}
-            onClick={() => setDialogCreateCourse(true)}
+            onClick={handleOpenCreateModal}
             sx={{ minWidth: 160 }}
           >
             Adicionar Curso
@@ -591,7 +541,7 @@ export default function AdminCourses() {
             onClick={() => {
               handleCloseMenu()
               if (selectedCourseForMenu) {
-                openEditModal(selectedCourseForMenu)
+                handleOpenEditModal(selectedCourseForMenu)
               }
             }}
           >
@@ -677,381 +627,22 @@ export default function AdminCourses() {
           severity={confirmDialog.action === 'duplicate' ? 'info' : 'warning'}
         />
 
-        <Dialog
-          open={dialogCreateCourse}
-          onClose={() => setDialogCreateCourse(false)}
-          maxWidth='sm'
-          fullWidth
-        >
-          <DialogTitle>Adicionar Curso</DialogTitle>
-          <DialogContent>
-            <Box
-              sx={{
-                borderBottom: t => `1px solid ${t.palette.divider}`,
-                mb: 2,
-              }}
-            >
-              <Tabs value={tabModal} onChange={(_, v) => setTabModal(v)}>
-                <Tab value='general' label='Geral' />
-                <Tab value='assignment' label='Atribuição' />
-                <Tab value='content' label='Conteúdo' />
-              </Tabs>
-            </Box>
-
-            {tabModal === 'general' && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='Código'
-                      value={form.codigo}
-                      onChange={e =>
-                        setForm({ ...form, codigo: e.target.value })
-                      }
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Select
-                      fullWidth
-                      value={form.ativo}
-                      onChange={e =>
-                        setForm({
-                          ...form,
-                          ativo: e.target.value === 'true',
-                        })
-                      }
-                    >
-                      <MenuItem value={'true'}>Ativo</MenuItem>
-                      <MenuItem value={'false'}>Inativo</MenuItem>
-                    </Select>
-                  </Grid>
-                </Grid>
-                <TextField
-                  label='Título'
-                  value={form.titulo}
-                  onChange={e => setForm({ ...form, titulo: e.target.value })}
-                  fullWidth
-                />
-                <TextField
-                  label='Descrição'
-                  value={form.descricao}
-                  onChange={e =>
-                    setForm({ ...form, descricao: e.target.value })
-                  }
-                  fullWidth
-                  multiline
-                  minRows={3}
-                />
-              </Box>
-            )}
-
-            {tabModal === 'assignment' && (
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Departamento</InputLabel>
-                    <Select
-                      value={departamentoSelecionado}
-                      label='Departamento'
-                      onChange={e => {
-                        setDepartamentoSelecionado(e.target.value)
-                        setForm({ ...form, categoria_id: '' })
-                      }}
-                    >
-                      <MenuItem value=''>
-                        <em>— Selecione o departamento —</em>
-                      </MenuItem>
-                      {categorias
-                        .map(cat => cat.departamento_codigo)
-                        .filter((v, i, arr) => v && arr.indexOf(v) === i)
-                        .map(depCodigo => (
-                          <MenuItem key={depCodigo} value={depCodigo!}>
-                            {depCodigo}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Categoria</InputLabel>
-                    <Select
-                      value={form.categoria_id || ''}
-                      label='Categoria'
-                      onChange={e =>
-                        setForm({ ...form, categoria_id: e.target.value })
-                      }
-                    >
-                      <MenuItem value=''>
-                        <em>— Selecione a categoria —</em>
-                      </MenuItem>
-                      {categorias
-                        .filter(
-                          cat =>
-                            !departamentoSelecionado ||
-                            cat.departamento_codigo === departamentoSelecionado
-                        )
-                        .map(cat => (
-                          <MenuItem key={cat.codigo} value={cat.codigo}>
-                            {cat.nome}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Instrutor</InputLabel>
-                    <Select
-                      value={form.instrutor_id || ''}
-                      label='Instrutor'
-                      onChange={e =>
-                        setForm({ ...form, instrutor_id: e.target.value })
-                      }
-                    >
-                      <MenuItem value=''>
-                        <em>— Selecione o instrutor —</em>
-                      </MenuItem>
-                      {funcionarios?.map(func => (
-                        <MenuItem key={func.id} value={func.id}>
-                          {func.nome}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            )}
-
-            {tabModal === 'content' && (
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label='Duração Estimada (horas)'
-                    type='number'
-                    value={form.duracao_estimada}
-                    onChange={e =>
-                      setForm({
-                        ...form,
-                        duracao_estimada: Number(e.target.value),
-                      })
-                    }
-                    fullWidth
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label='XP Oferecido'
-                    type='number'
-                    value={form.xp_oferecido}
-                    onChange={e =>
-                      setForm({
-                        ...form,
-                        xp_oferecido: Number(e.target.value),
-                      })
-                    }
-                    fullWidth
-                  />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Pré-requisitos</InputLabel>
-                    <Select
-                      multiple
-                      value={form.pre_requisitos || []}
-                      onChange={e => {
-                        const value = e.target.value
-                        setForm({
-                          ...form,
-                          pre_requisitos: Array.isArray(value)
-                            ? value
-                            : [value],
-                        })
-                      }}
-                      renderValue={selected =>
-                        (Array.isArray(selected) ? selected : [selected])
-                          .map(cod => {
-                            const curso = cursos.find(c => c.codigo === cod)
-                            return curso ? curso.codigo : cod
-                          })
-                          .join(', ')
-                      }
-                    >
-                      {cursos.map(curso => (
-                        <MenuItem key={curso.codigo} value={curso.codigo}>
-                          <Checkbox
-                            checked={form.pre_requisitos?.includes(
-                              curso.codigo
-                            )}
-                          />
-                          <ListItemText primary={curso.titulo} />
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              variant='outlined'
-              onClick={() => setDialogCreateCourse(false)}
-            >
-              Cancelar
-            </Button>
-            <Button variant='contained' onClick={handleCreateCourse}>
-              Adicionar
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Dialog de Edição de Curso */}
-        <Dialog
-          open={dialogEditCourse}
-          onClose={() => setDialogEditCourse(false)}
-          maxWidth='sm'
-          fullWidth
-        >
-          <DialogTitle>
-            Editar Curso{courseToEdit ? ` — ${courseToEdit.titulo}` : ''}
-          </DialogTitle>
-          <DialogContent>
-            <Box
-              sx={{
-                borderBottom: t => `1px solid ${t.palette.divider}`,
-                mb: 2,
-              }}
-            >
-              <Tabs value={editTabModal} onChange={(_, v) => setEditTabModal(v)}>
-                <Tab value='general' label='Geral' />
-                <Tab value='content' label='Conteúdo' />
-              </Tabs>
-            </Box>
-
-            {editTabModal === 'general' && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label='Título'
-                      value={editForm.titulo || ''}
-                      onChange={e =>
-                        setEditForm({ ...editForm, titulo: e.target.value })
-                      }
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label='Descrição'
-                      value={editForm.descricao || ''}
-                      onChange={e =>
-                        setEditForm({ ...editForm, descricao: e.target.value })
-                      }
-                      fullWidth
-                      multiline
-                      minRows={3}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Categoria</InputLabel>
-                      <Select
-                        value={editForm.categoria_id || ''}
-                        label='Categoria'
-                        onChange={e =>
-                          setEditForm({
-                            ...editForm,
-                            categoria_id: e.target.value,
-                          })
-                        }
-                      >
-                        <MenuItem value=''>
-                          <em>— Selecione a categoria —</em>
-                        </MenuItem>
-                        {categorias.map(cat => (
-                          <MenuItem key={cat.codigo} value={cat.codigo}>
-                            {cat.nome}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-              </Box>
-            )}
-
-            {editTabModal === 'content' && (
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label='Duração Estimada (horas)'
-                    type='number'
-                    value={editForm.duracao_estimada ?? 0}
-                    onChange={e =>
-                      setEditForm({
-                        ...editForm,
-                        duracao_estimada: Number(e.target.value),
-                      })
-                    }
-                    fullWidth
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    label='XP Oferecido'
-                    type='number'
-                    value={editForm.xp_oferecido ?? 0}
-                    onChange={e =>
-                      setEditForm({
-                        ...editForm,
-                        xp_oferecido: Number(e.target.value),
-                      })
-                    }
-                    fullWidth
-                  />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Nível</InputLabel>
-                    <Select
-                      value={editForm.nivel_dificuldade || ''}
-                      label='Nível'
-                      onChange={e =>
-                        setEditForm({
-                          ...editForm,
-                          nivel_dificuldade: e.target.value,
-                        })
-                      }
-                    >
-                      <MenuItem value=''>
-                        <em>— Selecione o nível —</em>
-                      </MenuItem>
-                      <MenuItem value='Iniciante'>Iniciante</MenuItem>
-                      <MenuItem value='Intermediário'>Intermediário</MenuItem>
-                      <MenuItem value='Avançado'>Avançado</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button variant='outlined' onClick={() => setDialogEditCourse(false)}>
-              Cancelar
-            </Button>
-            <Button
-              variant='contained'
-              onClick={handleUpdateCourse}
-              disabled={updateCourseMutation.isPending}
-              startIcon={updateCourseMutation.isPending ? <CircularProgress size={18} /> : undefined}
-            >
-              Salvar alterações
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {/* Modal de Curso (Criar/Editar) */}
+        <CourseModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleModalSubmit}
+          isLoading={
+            modalMode === 'create' 
+              ? createCourseMutation.isPending 
+              : updateCourseMutation.isPending
+          }
+          mode={modalMode}
+          courseToEdit={courseToEdit}
+          categorias={categorias}
+          funcionarios={funcionarios}
+          cursos={cursos}
+        />
       </Box>
     </DashboardLayout>
   )
