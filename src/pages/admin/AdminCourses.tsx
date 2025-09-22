@@ -258,15 +258,6 @@ export default function AdminCourses() {
     })
   }
 
-  // Loading e error handling
-  if (loadingCursos || loadingCategorias) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <CircularProgress />
-      </Box>
-    )
-  }
-
   // Menu handlers
   const handleOpenMenu = (
     event: React.MouseEvent<HTMLElement>,
