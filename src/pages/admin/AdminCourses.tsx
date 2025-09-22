@@ -61,7 +61,6 @@ import { Visibility } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
-import CourseDetailsDialog from '@/components/admin/CourseDetailsDialog'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCourses,
@@ -111,9 +110,9 @@ export default function AdminCourses() {
     message: '',
     severity: 'success' as 'success' | 'error',
   })
-    const [tabModal, setTabModal] = useState<
-      'general' | 'assignment' | 'content'
-    >('general')
+  const [tabModal, setTabModal] = useState<
+    'general' | 'assignment' | 'content'
+  >('general')
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     action: 'duplicate' | 'toggle' | null
@@ -131,7 +130,7 @@ export default function AdminCourses() {
     xp_oferecido: 0,
     nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
-    ativo: true
+    ativo: true,
   })
 
   // Hooks de dados
@@ -679,8 +678,12 @@ export default function AdminCourses() {
           severity={confirmDialog.action === 'duplicate' ? 'info' : 'warning'}
         />
 
-        <Dialog   open={dialogCreateCourse}
-          onClose={() => setDialogCreateCourse(false)} maxWidth='md' fullWidth>
+        <Dialog
+          open={dialogCreateCourse}
+          onClose={() => setDialogCreateCourse(false)}
+          maxWidth='md'
+          fullWidth
+        >
           <DialogTitle>Adicionar Curso</DialogTitle>
           <DialogContent>
             <Box
@@ -704,7 +707,9 @@ export default function AdminCourses() {
                     <TextField
                       label='Código'
                       value={form.codigo}
-                      onChange={e => setForm({ ...form, codigo: e.target.value })}
+                      onChange={e =>
+                        setForm({ ...form, codigo: e.target.value })
+                      }
                       fullWidth
                     />
                   </Grid>
@@ -715,92 +720,142 @@ export default function AdminCourses() {
                       onChange={e =>
                         setForm({
                           ...form,
-                          ativo: e.target.value as boolean
+                          ativo: e.target.value === 'true',
                         })
                       }
                     >
-                      <MenuItem value='true'>Ativo</MenuItem>
-                      <MenuItem value='false'>Inativo</MenuItem>
+                      <MenuItem value={'true'}>Ativo</MenuItem>
+                      <MenuItem value={'false'}>Inativo</MenuItem>
                     </Select>
                   </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='Título'
+                      value={form.titulo}
+                      onChange={e =>
+                        setForm({ ...form, titulo: e.target.value })
+                      }
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='Descrição'
+                      value={form.descricao}
+                      onChange={e =>
+                        setForm({ ...form, descricao: e.target.value })
+                      }
+                      fullWidth
+                      multiline
+                      minRows={3}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='Duração Estimada (horas)'
+                      type='number'
+                      value={form.duracao_estimada}
+                      onChange={e =>
+                        setForm({
+                          ...form,
+                          duracao_estimada: Number(e.target.value),
+                        })
+                      }
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='XP Oferecido'
+                      type='number'
+                      value={form.xp_oferecido}
+                      onChange={e =>
+                        setForm({
+                          ...form,
+                          xp_oferecido: Number(e.target.value),
+                        })
+                      }
+                      fullWidth
+                    />
+                  </Grid>
                 </Grid>
-                <TextField
-                  label='Título'
-                  value={form.titulo}
-                  onChange={e => setForm({ ...form, titulo: e.target.value })}
-                  fullWidth
-                />
-                <TextField
-                  label='Descrição'
-                  value={form.descricao}
-                  onChange={e =>
-                    setForm({ ...form, descricao: e.target.value })
-                  }
-                  fullWidth
-                  multiline
-                  minRows={3}
-                />
               </Box>
             )}
 
             {tabModal === 'assignment' && (
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Select
-                    fullWidth
-                    displayEmpty
-                    value={form.department}
-                    onChange={e =>
-                      setForm({ ...form, department: e.target.value })
-                    }
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
-                    </MenuItem>
-                    {departments.map(d => (
-                      <MenuItem key={d} value={d}>
-                        {d}
+                  <FormControl fullWidth>
+                    <InputLabel>Departamento</InputLabel>
+                    <Select
+                      value={form.departamento_id || ''}
+                      label='Departamento'
+                      onChange={e => {
+                        setForm({
+                          ...form,
+                          departamento_id: e.target.value,
+                          categoria_id: '',
+                        })
+                      }}
+                    >
+                      <MenuItem value=''>
+                        <em>— Selecione o departamento —</em>
                       </MenuItem>
-                    ))}
-                  </Select>
+                      {departamentos?.map(dep => (
+                        <MenuItem key={dep.id} value={dep.id}>
+                          {dep.nome}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Select
-                    fullWidth
-                    displayEmpty
-                    value={form.category}
-                    onChange={e =>
-                      setForm({ ...form, category: e.target.value })
-                    }
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione a categoria —</em>
-                    </MenuItem>
-                    {categories.map(c => (
-                      <MenuItem key={c} value={c}>
-                        {c}
+                  <FormControl fullWidth>
+                    <InputLabel>Categoria</InputLabel>
+                    <Select
+                      value={form.categoria_id || ''}
+                      label='Categoria'
+                      onChange={e =>
+                        setForm({ ...form, categoria_id: e.target.value })
+                      }
+                    >
+                      <MenuItem value=''>
+                        <em>— Selecione a categoria —</em>
                       </MenuItem>
-                    ))}
-                  </Select>
+                      {categorias
+                        .filter(
+                          cat =>
+                            !form.departamento_id ||
+                            cat.departamento_id === form.departamento_id
+                        )
+                        .map(cat => (
+                          <MenuItem key={cat.codigo} value={cat.codigo}>
+                            {cat.nome}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <Select
-                    fullWidth
-                    displayEmpty
-                    value={form.instructor}
-                    onChange={e =>
-                      setForm({ ...form, instructor: e.target.value })
-                    }
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o instrutor —</em>
-                    </MenuItem>
-                    {instructors.map(i => (
-                      <MenuItem key={i} value={i}>
-                        {i}
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Instrutor</InputLabel>
+                    <Select
+                      value={form.instrutor_id || ''}
+                      label='Instrutor'
+                      onChange={e =>
+                        setForm({ ...form, instrutor_id: e.target.value })
+                      }
+                    >
+                      <MenuItem value=''>
+                        <em>— Selecione o instrutor —</em>
                       </MenuItem>
-                    ))}
-                  </Select>
+                      {funcionarios?.map(func => (
+                        <MenuItem key={func.id} value={func.id}>
+                          {func.nome}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             )}
@@ -809,27 +864,49 @@ export default function AdminCourses() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <TextField
                   label='Sobre o curso'
-                  value={form.about}
-                  onChange={e => setForm({ ...form, about: e.target.value })}
-                  fullWidth
-                  multiline
-                  minRows={4}
-                />
-                <TextField
-                  label='Pré-requisitos'
-                  value={form.prerequisites}
+                  value={form.descricao}
                   onChange={e =>
-                    setForm({ ...form, prerequisites: e.target.value })
+                    setForm({ ...form, descricao: e.target.value })
                   }
                   fullWidth
                   multiline
                   minRows={4}
                 />
+                <FormControl fullWidth>
+                  <InputLabel>Pré-requisitos</InputLabel>
+                  <Select
+                    multiple
+                    value={form.pre_requisitos || []}
+                    onChange={e =>
+                      setForm({ ...form, pre_requisitos: e.target.value })
+                    }
+                    renderValue={selected =>
+                      (selected as string[])
+                        .map(cod => {
+                          const curso = cursos.find(c => c.codigo === cod)
+                          return curso ? curso.titulo : cod
+                        })
+                        .join(', ')
+                    }
+                  >
+                    {cursos.map(curso => (
+                      <MenuItem key={curso.codigo} value={curso.codigo}>
+                        <Checkbox
+                          checked={form.pre_requisitos?.includes(curso.codigo)}
+                        />
+                        <ListItemText primary={curso.titulo} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
             )}
           </DialogContent>
           <DialogActions>
-            <Button variant='outlined' onClick={() => setDialogCreateCourse(false)}>
+            <Button
+              variant='outlined'
+              onClick={() => setDialogCreateCourse(false)}
+            >
               Cancelar
             </Button>
             <Button variant='contained' onClick={handleCreateCourse}>
