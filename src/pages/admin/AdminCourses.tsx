@@ -38,6 +38,7 @@ import {
   useMediaQuery,
   useTheme,
   CircularProgress,
+  TableContainer,
 } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
@@ -337,7 +338,7 @@ export default function AdminCourses() {
                   <em>Todas as Categorias</em>
                 </MenuItem>
                 {categorias.map(cat => (
-                  <MenuItem key={cat.codigo} value={cat.nome}>
+                  <MenuItem key={cat.codigo} value={cat.codigo}>
                     {cat.nome}
                   </MenuItem>
                 ))}
@@ -401,180 +402,195 @@ export default function AdminCourses() {
                   : `Nenhum curso ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
               </Alert>
             ) : (
-              <Table size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Curso</TableCell>
-                    <TableCell align='center'>Categoria</TableCell>
-                    <TableCell align='center'>Instrutor</TableCell>
-                    <TableCell align='center'>Nível</TableCell>
-                    <TableCell align='center'>Inscritos</TableCell>
-                    <TableCell align='center'>Taxa Conclusão</TableCell>
-                    <TableCell align='center'>Avaliação</TableCell>
-                    <TableCell align='center'>Status</TableCell>
-                    <TableCell align='center'>Ações</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filtered.map(curso => {
-                    const categoria = categorias.find(
-                      c => c.codigo === curso.categoria_id
-                    )
-                    const instrutor = funcionarios.find(
-                      f => f.id === curso.instrutor_id
-                    )
+              <TableContainer
+                component={Paper}
+                sx={{ maxHeight: 600, overflow: 'auto' }}
+              >
+                <Table size='small' stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Curso</TableCell>
+                      <TableCell align='center'>Categoria</TableCell>
+                      <TableCell align='center'>Instrutor</TableCell>
+                      <TableCell align='center'>Nível</TableCell>
+                      <TableCell align='center'>Inscritos</TableCell>
+                      <TableCell align='center'>Taxa Conclusão</TableCell>
+                      <TableCell align='center'>Avaliação</TableCell>
+                      <TableCell align='center'>Status</TableCell>
+                      <TableCell align='center'>Ações</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filtered.map(curso => {
+                      const categoria = categorias.find(
+                        c => c.codigo === curso.categoria_id
+                      )
+                      const instrutor = funcionarios.find(
+                        f => f.id === curso.instrutor_id
+                      )
 
-                    return (
-                      <TableRow
-                        key={curso.codigo}
-                        hover
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => setSelectedCourse(curso)}
-                      >
-                        <TableCell>
-                          <Box>
-                            <Typography variant='body2' fontWeight={500}>
-                              {curso.titulo}
+                      return (
+                        <TableRow
+                          key={curso.codigo}
+                          hover
+                          sx={{ cursor: 'pointer' }}
+                          onClick={() => setSelectedCourse(curso)}
+                        >
+                          <TableCell>
+                            <Box>
+                              <Typography variant='body2' fontWeight={500}>
+                                {curso.titulo}
+                              </Typography>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 1,
+                                  mt: 0.5,
+                                }}
+                              >
+                                <ScheduleIcon fontSize='small' color='action' />
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
+                                  {curso.duracao_estimada}h
+                                </Typography>
+                                <TrendingUpIcon
+                                  fontSize='small'
+                                  color='action'
+                                />
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
+                                  {curso.xp_oferecido} XP
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Chip
+                              variant='outlined'
+                              size='small'
+                              label={categoria?.nome || 'N/A'}
+                              sx={{
+                                borderColor: categoria?.cor_hex || '#ccc',
+                                color: categoria?.cor_hex || '#666',
+                                backgroundColor: categoria?.cor_hex
+                                  ? `${categoria.cor_hex}15`
+                                  : 'transparent',
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Typography variant='body2'>
+                              {instrutor?.nome
+                                ? (() => {
+                                    const nomes = instrutor.nome
+                                      .split(' ')
+                                      .filter(n => n.length > 0)
+                                    const primeiro = nomes[0]?.charAt(0) || ''
+                                    const ultimo =
+                                      nomes.length > 1
+                                        ? nomes[nomes.length - 1]?.charAt(0) ||
+                                          ''
+                                        : ''
+                                    return `${primeiro}${ultimo}`.toUpperCase()
+                                  })()
+                                : 'N/A'}
                             </Typography>
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Typography variant='body2' fontWeight={500}>
+                              {curso.nivel_dificuldade}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Box>
+                              <Typography variant='body2' fontWeight={500}>
+                                {curso.total_inscritos || 0}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Box sx={{ minWidth: 80 }}>
+                              <Typography variant='body2' fontWeight={500}>
+                                {(
+                                  ((curso.total_concluidos || 0) /
+                                    Math.max(curso.total_inscritos || 1, 1)) *
+                                  100
+                                ).toFixed(1)}
+                                %
+                              </Typography>
+                              <LinearProgress
+                                variant='determinate'
+                                value={
+                                  ((curso.total_concluidos || 0) /
+                                    Math.max(curso.total_inscritos || 1, 1)) *
+                                  100
+                                }
+                                sx={{ mt: 0.5 }}
+                                color={
+                                  ((curso.total_concluidos || 0) /
+                                    Math.max(curso.total_inscritos || 1, 1)) *
+                                    100 >
+                                  70
+                                    ? 'success'
+                                    : ((curso.total_concluidos || 0) /
+                                          Math.max(
+                                            curso.total_inscritos || 1,
+                                            1
+                                          )) *
+                                          100 >
+                                        40
+                                      ? 'warning'
+                                      : 'error'
+                                }
+                              />
+                            </Box>
+                          </TableCell>
+                          <TableCell align='center'>
                             <Box
                               sx={{
                                 display: 'flex',
+                                flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: 1,
-                                mt: 0.5,
                               }}
                             >
-                              <ScheduleIcon fontSize='small' color='action' />
+                              <Rating
+                                value={0}
+                                readOnly
+                                size='small'
+                                precision={0.1}
+                              />
                               <Typography
                                 variant='caption'
                                 color='text.secondary'
-                              >
-                                {curso.duracao_estimada}h
-                              </Typography>
-                              <TrendingUpIcon fontSize='small' color='action' />
-                              <Typography
-                                variant='caption'
-                                color='text.secondary'
-                              >
-                                {curso.xp_oferecido} XP
-                              </Typography>
+                              ></Typography>
                             </Box>
-                          </Box>
-                        </TableCell>
-                        <TableCell align='center'>
-                          <Chip
-                            variant='outlined'
-                            size='small'
-                            label={categoria?.nome || 'N/A'}
-                            sx={{
-                              borderColor: categoria?.cor_hex || '#ccc',
-                              color: categoria?.cor_hex || '#666',
-                              backgroundColor: categoria?.cor_hex ? `${categoria.cor_hex}15` : 'transparent'
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell align='center'>
-                            <Typography variant='body2'>
-                              {instrutor?.nome ? 
-                                (() => {
-                                  const nomes = instrutor.nome.split(' ').filter(n => n.length > 0)
-                                  const primeiro = nomes[0]?.charAt(0) || ''
-                                  const ultimo = nomes.length > 1 ? nomes[nomes.length - 1]?.charAt(0) || '' : ''
-                                  return `${primeiro}${ultimo}`.toUpperCase()
-                                })() 
-                                : 'N/A'
-                              }
-                            </Typography>
-                        </TableCell>
-                        <TableCell align='center'>
-                           <Typography variant='body2' fontWeight={500}>
-                              {curso.nivel_dificuldade}
-                            </Typography>
-                        </TableCell>
-                        <TableCell align='center'>
-                          <Box>
-                            <Typography variant='body2' fontWeight={500}>
-                              {curso.total_inscritos || 0}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align='center'>
-                          <Box sx={{ minWidth: 80 }}>
-                            <Typography variant='body2' fontWeight={500}>
-                              {(
-                                ((curso.total_concluidos || 0) /
-                                  Math.max(curso.total_inscritos || 1, 1)) *
-                                100
-                              ).toFixed(1)}
-                              %
-                            </Typography>
-                            <LinearProgress
-                              variant='determinate'
-                              value={
-                                ((curso.total_concluidos || 0) /
-                                  Math.max(curso.total_inscritos || 1, 1)) *
-                                100
-                              }
-                              sx={{ mt: 0.5 }}
-                              color={
-                                ((curso.total_concluidos || 0) /
-                                  Math.max(curso.total_inscritos || 1, 1)) *
-                                  100 >
-                                70
-                                  ? 'success'
-                                  : ((curso.total_concluidos || 0) /
-                                        Math.max(
-                                          curso.total_inscritos || 1,
-                                          1
-                                        )) *
-                                        100 >
-                                      40
-                                    ? 'warning'
-                                    : 'error'
-                              }
-                            />
-                          </Box>
-                        </TableCell>
-                        <TableCell align='center'>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                            }}
-                          >
-                            <Rating
-                              value={0}
-                              readOnly
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Chip
                               size='small'
-                              precision={0.1}
+                              label={curso.ativo ? 'Ativo' : 'Inativo'}
+                              color={getStatusColor(curso.ativo) as any}
                             />
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            ></Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align='center'>
-                          <Chip
-                            size='small'
-                            label={curso.ativo ? 'Ativo' : 'Inativo'}
-                            color={getStatusColor(curso.ativo) as any}
-                          />
-                        </TableCell>
-                        <TableCell align='center'>
-                          <IconButton
-                            size='small'
-                            onClick={e => handleOpenMenu(e, curso)}
-                          >
-                            <MoreVertIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
+                          </TableCell>
+                          <TableCell align='center'>
+                            <IconButton
+                              size='small'
+                              onClick={e => handleOpenMenu(e, curso)}
+                            >
+                              <MoreVertIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             )}
           </CardContent>
         </Card>
