@@ -78,7 +78,6 @@ export default function AdminCourses() {
 
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
-  const [selectedCourse, setSelectedCourse] = useState<Curso | null>(null)
   const [filtros, setFiltros] = useState<Filtros>({
     categoria: 'all',
     instrutor: 'all',
@@ -120,16 +119,16 @@ export default function AdminCourses() {
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
   const { data: funcionarios = [] } = useFuncionarios()
+  const cursos = cursosResponse?.items || []
 
   // Mutations
   const createCourseMutation = useCreateCourse()
   const updateCourseMutation = useUpdateCourse(courseToEdit?.codigo || '')
   const duplicateCourseMutation = useDuplicateCourse()
   const toggleStatusMutation = useToggleCourseStatus(
-    selectedCourseForMenu?.codigo || ''
+    cursosResponse?.items[0]?.codigo
   )
 
-  const cursos = cursosResponse?.items || []
 
   // Filtros aplicados
   const cursosAtivos = cursos.filter(c => c.ativo === true)
@@ -195,11 +194,6 @@ export default function AdminCourses() {
     setSelectedCourseForMenu(null)
   }
 
-  const handleCloseSnackbar = () => {
-    // removido, não usa mais snackbar
-  }
-
-  // Filtragem de cursos
   const filtered = cursos.filter(curso => {
     // Filtro de aba
     if (tab === 'active' && !curso.ativo) return false
@@ -215,10 +209,6 @@ export default function AdminCourses() {
 
     return true
   })
-
-  const getStatusColor = (ativo: boolean) => {
-    return ativo ? 'success' : 'default'
-  }
 
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
@@ -368,7 +358,6 @@ export default function AdminCourses() {
                           key={curso.codigo}
                           hover
                           sx={{ cursor: 'pointer' }}
-                          onClick={() => setSelectedCourse(curso)}
                         >
                           <TableCell>
                             <Box>
