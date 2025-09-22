@@ -107,12 +107,8 @@ export default function AdminCourses() {
     if (filtros.instrutor !== 'all') filters.instrutor = filtros.instrutor
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
 
-    // Filtro por status baseado na tab
-    if (tab === 'active') filters.ativo = true
-    if (tab === 'disabled') filters.ativo = false
-
     return filters
-  }, [filtros, tab])
+  }, [filtros])
 
   const { data: cursosResponse, isLoading: loadingCursos } =
     useCourses(coursesFilters)
@@ -130,9 +126,9 @@ export default function AdminCourses() {
   )
 
 
-  // Filtros aplicados
-  const cursosAtivos = cursos.filter(c => c.ativo === true)
-  const cursosInativos = cursos.filter(c => c.ativo === false)
+  // Contadores para as tabs (baseados nos cursos já filtrados pela API, mas sem filtro de status)
+  const cursosAtivos = cursos.filter(c => c.ativo === true).length
+  const cursosInativos = cursos.filter(c => c.ativo === false).length
 
   // Handlers do modal
   const handleOpenCreateModal = () => {
@@ -195,18 +191,11 @@ export default function AdminCourses() {
   }
 
   const filtered = cursos.filter(curso => {
-    // Filtro de aba
+    // Aplicar APENAS o filtro de status da aba
+    // Os outros filtros (categoria, instrutor, nível) já são aplicados pela API
     if (tab === 'active' && !curso.ativo) return false
     if (tab === 'disabled' && curso.ativo) return false
-
-    // Outros filtros
-    if (filtros.instrutor !== 'all' && curso.instrutor_id !== filtros.instrutor)
-      return false
-    if (filtros.nivel !== 'all' && curso.nivel_dificuldade !== filtros.nivel)
-      return false
-    if (filtros.categoria !== 'all' && curso.categoria_id !== filtros.categoria)
-      return false
-
+    
     return true
   })
 
@@ -312,8 +301,8 @@ export default function AdminCourses() {
         <StatusFilterTabs
           value={tab}
           onChange={setTab}
-          activeCount={cursosAtivos.length}
-          inactiveCount={cursosInativos.length}
+          activeCount={cursosAtivos}
+          inactiveCount={cursosInativos}
           activeLabel='Cursos Ativos'
           inactiveLabel='Cursos Inativos'
         />
