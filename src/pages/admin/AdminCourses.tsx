@@ -38,6 +38,7 @@ import {
   FormControlLabel,
   Tab,
   Tabs,
+  Switch,
 } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
@@ -79,6 +80,20 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
+  const [editForm, setEditForm] = useState<UpdateCourseInput>({})
+  const openEditModal = (curso: Curso) => {
+    const cursoAtual = cursos.find(c => c.codigo === curso.codigo) || curso
+    setCourseToEdit(cursoAtual)
+    setEditForm({
+      titulo: cursoAtual.titulo || '',
+      descricao: cursoAtual.descricao || '',
+      categoria_id: cursoAtual.categoria_id || '',
+      duracao_estimada: cursoAtual.duracao_estimada || 0,
+      xp_oferecido: cursoAtual.xp_oferecido || 0,
+      nivel_dificuldade: cursoAtual.nivel_dificuldade || 'Iniciante',
+    })
+    setDialogEditCourse(true)
+  }
   const theme = useTheme()
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const { navigationItems } = useNavigation()
@@ -97,6 +112,9 @@ export default function AdminCourses() {
   const [dialogCreateCourse, setDialogCreateCourse] = useState(false)
   const [dialogEditCourse, setDialogEditCourse] = useState(false)
   const [courseToEdit, setCourseToEdit] = useState<Curso | null>(null)
+  const [editTabModal, setEditTabModal] = useState<'general' | 'content'>(
+    'general'
+  )
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedCourseForMenu, setSelectedCourseForMenu] =
     useState<Curso | null>(null)
@@ -184,6 +202,31 @@ export default function AdminCourses() {
       setAnchorEl(null)
     } catch (error) {
       // erro ao alterar status do curso
+    }
+  }
+
+  // Preenche o formulário de edição ao abrir o modal
+  const handleOpenEditDialog = (curso: Curso) => {
+    setCourseToEdit(curso)
+    setEditForm({
+      titulo: curso.titulo,
+      descricao: curso.descricao || '',
+      categoria_id: curso.categoria_id || '',
+      duracao_estimada: curso.duracao_estimada || 0,
+      xp_oferecido: curso.xp_oferecido || 0,
+      nivel_dificuldade: curso.nivel_dificuldade || 'Iniciante',
+    })
+    setDialogEditCourse(true)
+  }
+
+  // Atualização de curso
+  const handleUpdateCourse = async () => {
+    if (!courseToEdit?.codigo) return
+    try {
+      await updateCourseMutation.mutateAsync({ ...editForm })
+      setDialogEditCourse(false)
+    } catch (error) {
+      // erro ao atualizar curso
     }
   }
 
@@ -439,7 +482,7 @@ export default function AdminCourses() {
                                         : ''
                                     return `${primeiro}${ultimo}`.toUpperCase()
                                   })()
-                                : 'N/A'}
+                                : '-'}
                             </Typography>
                           </TableCell>
 
@@ -508,10 +551,17 @@ export default function AdminCourses() {
                             </Box>
                           </TableCell>
                           <TableCell align='center'>
-                            <Chip
-                              size='small'
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={curso.ativo}
+                                  onChange={async () => {
+                                    await handleToggleStatus(curso)
+                                  }}
+                                  color='primary'
+                                />
+                              }
                               label={curso.ativo ? 'Ativo' : 'Inativo'}
-                              color={getStatusColor(curso.ativo)}
                             />
                           </TableCell>
                           <TableCell align='center'>
@@ -541,8 +591,7 @@ export default function AdminCourses() {
             onClick={() => {
               handleCloseMenu()
               if (selectedCourseForMenu) {
-                setCourseToEdit(selectedCourseForMenu)
-                setDialogEditCourse(true)
+                openEditModal(selectedCourseForMenu)
               }
             }}
           >
@@ -854,6 +903,152 @@ export default function AdminCourses() {
             </Button>
             <Button variant='contained' onClick={handleCreateCourse}>
               Adicionar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog de Edição de Curso */}
+        <Dialog
+          open={dialogEditCourse}
+          onClose={() => setDialogEditCourse(false)}
+          maxWidth='sm'
+          fullWidth
+        >
+          <DialogTitle>
+            Editar Curso{courseToEdit ? ` — ${courseToEdit.titulo}` : ''}
+          </DialogTitle>
+          <DialogContent>
+            <Box
+              sx={{
+                borderBottom: t => `1px solid ${t.palette.divider}`,
+                mb: 2,
+              }}
+            >
+              <Tabs value={editTabModal} onChange={(_, v) => setEditTabModal(v)}>
+                <Tab value='general' label='Geral' />
+                <Tab value='content' label='Conteúdo' />
+              </Tabs>
+            </Box>
+
+            {editTabModal === 'general' && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label='Título'
+                      value={editForm.titulo || ''}
+                      onChange={e =>
+                        setEditForm({ ...editForm, titulo: e.target.value })
+                      }
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label='Descrição'
+                      value={editForm.descricao || ''}
+                      onChange={e =>
+                        setEditForm({ ...editForm, descricao: e.target.value })
+                      }
+                      fullWidth
+                      multiline
+                      minRows={3}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Categoria</InputLabel>
+                      <Select
+                        value={editForm.categoria_id || ''}
+                        label='Categoria'
+                        onChange={e =>
+                          setEditForm({
+                            ...editForm,
+                            categoria_id: e.target.value,
+                          })
+                        }
+                      >
+                        <MenuItem value=''>
+                          <em>— Selecione a categoria —</em>
+                        </MenuItem>
+                        {categorias.map(cat => (
+                          <MenuItem key={cat.codigo} value={cat.codigo}>
+                            {cat.nome}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+
+            {editTabModal === 'content' && (
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label='Duração Estimada (horas)'
+                    type='number'
+                    value={editForm.duracao_estimada ?? 0}
+                    onChange={e =>
+                      setEditForm({
+                        ...editForm,
+                        duracao_estimada: Number(e.target.value),
+                      })
+                    }
+                    fullWidth
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    label='XP Oferecido'
+                    type='number'
+                    value={editForm.xp_oferecido ?? 0}
+                    onChange={e =>
+                      setEditForm({
+                        ...editForm,
+                        xp_oferecido: Number(e.target.value),
+                      })
+                    }
+                    fullWidth
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Nível</InputLabel>
+                    <Select
+                      value={editForm.nivel_dificuldade || ''}
+                      label='Nível'
+                      onChange={e =>
+                        setEditForm({
+                          ...editForm,
+                          nivel_dificuldade: e.target.value,
+                        })
+                      }
+                    >
+                      <MenuItem value=''>
+                        <em>— Selecione o nível —</em>
+                      </MenuItem>
+                      <MenuItem value='Iniciante'>Iniciante</MenuItem>
+                      <MenuItem value='Intermediário'>Intermediário</MenuItem>
+                      <MenuItem value='Avançado'>Avançado</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button variant='outlined' onClick={() => setDialogEditCourse(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant='contained'
+              onClick={handleUpdateCourse}
+              disabled={updateCourseMutation.isPending}
+              startIcon={updateCourseMutation.isPending ? <CircularProgress size={18} /> : undefined}
+            >
+              Salvar alterações
             </Button>
           </DialogActions>
         </Dialog>
