@@ -139,7 +139,7 @@ export default function CourseModal({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
+          <DialogContent sx={{ py: 0 }}>
         <Box sx={{ borderBottom: t => `1px solid ${t.palette.divider}`, mb: 2 }}>
           <Tabs value={tab} onChange={(_, v) => setTab(v)}>
             <Tab value="general" label="Geral" />
@@ -150,7 +150,7 @@ export default function CourseModal({
 
         {tab === 'general' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       label="Código"
@@ -201,7 +201,7 @@ export default function CourseModal({
         )}
 
         {tab === 'assignment' && (
-          <Grid container spacing={2}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Departamento</InputLabel>
@@ -280,7 +280,7 @@ export default function CourseModal({
         )}
 
         {tab === 'content' && (
-          <Grid container spacing={2}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Duração Estimada (horas)"
@@ -333,6 +333,7 @@ export default function CourseModal({
                 <InputLabel>Pré-requisitos</InputLabel>
                 <Select
                   multiple
+                  label="Pré-requisitos"
                   value={form.pre_requisitos || []}
                   onChange={e => {
                     const value = e.target.value
@@ -366,7 +367,7 @@ export default function CourseModal({
           </Grid>
         )}
       </DialogContent>
-      <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
         <Button variant="outlined" onClick={onClose} disabled={isLoading}>
           Cancelar
         </Button>
