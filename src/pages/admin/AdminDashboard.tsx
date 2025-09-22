@@ -168,7 +168,7 @@ export default function AdminDashboard() {
                       Engajamento por Departamento
                     </Typography>
                     <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
-                      <Table>
+                      <Table size='small'>
                         <TableHead>
                           <TableRow>
                             <TableCell>Departamento</TableCell>

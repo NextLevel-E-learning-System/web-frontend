@@ -31,7 +31,7 @@ interface DataTableProps<T = any> {
   showPagination?: boolean
   stickyHeader?: boolean
   maxHeight?: number
-  size?: 'small' | 'medium'
+  size?: 'small'  
   onRowClick?: (row: T, index: number) => void
   getRowId?: (row: T, index: number) => string | number
 }
