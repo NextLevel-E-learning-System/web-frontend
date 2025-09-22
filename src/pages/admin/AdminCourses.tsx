@@ -144,7 +144,6 @@ export default function AdminCourses() {
     useCourses(coursesFilters)
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
-  const { data: departamentos = [] } = useListarDepartamentosAdmin()
   const { data: funcionarios = [] } = useFuncionarios()
 
   // Mutations
@@ -314,19 +313,6 @@ export default function AdminCourses() {
     return true
   })
 
-  const getNivelColor = (nivel: string) => {
-    switch (nivel) {
-      case 'Básico':
-        return 'success'
-      case 'Intermediário':
-        return 'warning'
-      case 'Avançado':
-        return 'error'
-      default:
-        return 'default'
-    }
-  }
-
   const getStatusColor = (ativo: boolean) => {
     return ativo ? 'success' : 'default'
   }
@@ -416,18 +402,6 @@ export default function AdminCourses() {
 
         {/* Tabela de Cursos */}
         <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                {tab === 'active'
-                  ? 'Cursos Ativos'
-                  : tab === 'disabled'
-                    ? 'Cursos Inativos'
-                    : 'Todos os Cursos'}
-              </Typography>
-            }
-            subheader={`${filtered.length} cursos encontrados`}
-          />
           <CardContent>
             {filtered.length === 0 ? (
               <Alert severity='info'>
@@ -440,9 +414,9 @@ export default function AdminCourses() {
                 <TableHead>
                   <TableRow>
                     <TableCell>Curso</TableCell>
-                    <TableCell>Categoria</TableCell>
-                    <TableCell>Instrutor</TableCell>
-                    <TableCell>Nível</TableCell>
+                    <TableCell align='center'>Categoria</TableCell>
+                    <TableCell align='center'>Instrutor</TableCell>
+                    <TableCell align='center'>Nível</TableCell>
                     <TableCell align='center'>Inscritos</TableCell>
                     <TableCell align='center'>Taxa Conclusão</TableCell>
                     <TableCell align='center'>Avaliação</TableCell>
@@ -471,16 +445,6 @@ export default function AdminCourses() {
                             <Typography variant='body2' fontWeight={500}>
                               {curso.titulo}
                             </Typography>
-                            <Typography
-                              variant='caption'
-                              sx={{
-                                fontFamily:
-                                  'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                                color: 'text.secondary',
-                              }}
-                            >
-                              {curso.codigo}
-                            </Typography>
                             <Box
                               sx={{
                                 display: 'flex',
@@ -506,53 +470,27 @@ export default function AdminCourses() {
                             </Box>
                           </Box>
                         </TableCell>
-                        <TableCell>
+                        <TableCell align='center'>
                           <Chip
                             variant='outlined'
                             size='small'
                             label={categoria?.nome || 'N/A'}
                           />
                         </TableCell>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                            }}
-                          >
-                            <Avatar
-                              sx={{
-                                width: 24,
-                                height: 24,
-                                fontSize: '0.75rem',
-                              }}
-                            >
-                              {instrutor?.nome?.charAt(0)}
-                            </Avatar>
+                        <TableCell align='center'>
                             <Typography variant='body2'>
                               {instrutor?.nome || 'N/A'}
                             </Typography>
-                          </Box>
                         </TableCell>
-                        <TableCell>
-                          <Chip
-                            size='small'
-                            label={curso.nivel_dificuldade}
-                            color={
-                              getNivelColor(
-                                curso.nivel_dificuldade || 'Básico'
-                              ) as any
-                            }
-                          />
+                        <TableCell align='center'>
+                           <Typography variant='body2' fontWeight={500}>
+                              {curso.nivel_dificuldade}
+                            </Typography>
                         </TableCell>
                         <TableCell align='center'>
                           <Box>
                             <Typography variant='body2' fontWeight={500}>
                               {curso.total_inscritos || 0}
-                            </Typography>
-                            <Typography variant='caption' color='success.main'>
-                              {curso.total_concluidos || 0} concluídos
                             </Typography>
                           </Box>
                         </TableCell>
