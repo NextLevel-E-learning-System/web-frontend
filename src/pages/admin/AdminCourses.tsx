@@ -475,11 +475,24 @@ export default function AdminCourses() {
                             variant='outlined'
                             size='small'
                             label={categoria?.nome || 'N/A'}
+                            sx={{
+                              borderColor: categoria?.cor_hex || '#ccc',
+                              color: categoria?.cor_hex || '#666',
+                              backgroundColor: categoria?.cor_hex ? `${categoria.cor_hex}15` : 'transparent'
+                            }}
                           />
                         </TableCell>
                         <TableCell align='center'>
                             <Typography variant='body2'>
-                              {instrutor?.nome || 'N/A'}
+                              {instrutor?.nome ? 
+                                (() => {
+                                  const nomes = instrutor.nome.split(' ').filter(n => n.length > 0)
+                                  const primeiro = nomes[0]?.charAt(0) || ''
+                                  const ultimo = nomes.length > 1 ? nomes[nomes.length - 1]?.charAt(0) || '' : ''
+                                  return `${primeiro}${ultimo}`.toUpperCase()
+                                })() 
+                                : 'N/A'
+                              }
                             </Typography>
                         </TableCell>
                         <TableCell align='center'>
