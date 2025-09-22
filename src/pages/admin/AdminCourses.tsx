@@ -81,6 +81,7 @@ export default function AdminCourses() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedCourseForMenu, setSelectedCourseForMenu] =
     useState<Curso | null>(null)
+  const [courseToToggle, setCourseToToggle] = useState<string>('')
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     action: 'duplicate' | 'toggle' | null
@@ -108,9 +109,7 @@ export default function AdminCourses() {
   const createCourseMutation = useCreateCourse()
   const updateCourseMutation = useUpdateCourse(courseToEdit?.codigo || '')
   const duplicateCourseMutation = useDuplicateCourse()
-  const toggleStatusMutation = useToggleCourseStatus(
-    cursosResponse?.items[0]?.codigo
-  )
+  const toggleStatusMutation = useToggleCourseStatus(courseToToggle)
 
   // Contadores para as tabs (baseados nos cursos já filtrados pela API, mas sem filtro de status)
   const cursosAtivos = cursos.filter(c => c.ativo === true).length
@@ -156,10 +155,11 @@ export default function AdminCourses() {
 
   const handleToggleStatus = async (curso: Curso) => {
     try {
+      setCourseToToggle(curso.codigo)
       await toggleStatusMutation.mutateAsync(!curso.ativo)
       setAnchorEl(null)
     } catch (error) {
-      // erro ao alterar status do curso
+      console.error('Erro ao alterar status do curso:', error)
     }
   }
 
@@ -362,9 +362,11 @@ export default function AdminCourses() {
           control={
             <Switch
               checked={curso.ativo}
-              onChange={async () => {
+              onChange={async (e) => {
+                e.stopPropagation()
                 await handleToggleStatus(curso)
               }}
+              onClick={(e) => e.stopPropagation()}
               color='primary'
             />
           }
@@ -377,7 +379,13 @@ export default function AdminCourses() {
       label: 'Ações',
       align: 'center',
       render: (_, curso) => (
-        <IconButton size='small' onClick={e => handleOpenMenu(e, curso)}>
+        <IconButton 
+          size='small' 
+          onClick={e => {
+            e.stopPropagation()
+            handleOpenMenu(e, curso)
+          }}
+        >
           <MoreVertIcon />
         </IconButton>
       ),

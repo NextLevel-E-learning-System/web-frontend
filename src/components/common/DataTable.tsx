@@ -91,8 +91,16 @@ export default function DataTable<T = any>({
             {data
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row, index) => {
+                const actualIndex = page * rowsPerPage + index
+                const rowId = getRowId(row, actualIndex)
                 return (
-                  <TableRow hover role='checkbox' tabIndex={-1} key={index}>
+                  <TableRow 
+                    hover 
+                    tabIndex={-1} 
+                    key={rowId}
+                    onClick={onRowClick ? () => onRowClick(row, actualIndex) : undefined}
+                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                  >
                     {columns.map(column => {
                       const value = row[column.id]
                       return (
@@ -101,7 +109,7 @@ export default function DataTable<T = any>({
                           align={column.align || 'left'}
                         >
                           {column.render
-                            ? column.render(value, row, index)
+                            ? column.render(value, row, actualIndex)
                             : value}
                         </TableCell>
                       )
