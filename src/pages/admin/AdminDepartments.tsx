@@ -225,9 +225,7 @@ export default function AdminDepartments() {
       align: 'left',
       minWidth: 80,
       render: (_, dept) => (
-        <Typography fontWeight={500}>
-          {dept.codigo}
-        </Typography>
+        <Typography fontWeight={500}>{dept.codigo}</Typography>
       ),
     },
     {
@@ -243,73 +241,62 @@ export default function AdminDepartments() {
             gap: 0.5,
           }}
         >
-          <Typography fontWeight={500}>
-            {dept.nome}
-          </Typography>
+          <Typography fontWeight={500}>{dept.nome}</Typography>
           {isMobile && dept.descricao && (
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
+            <Typography variant='caption' color='text.secondary'>
               {dept.descricao}
             </Typography>
           )}
-          {isMobile &&
-            getGestorNome(dept.gestor_funcionario_id) && (
-              <Typography
-                variant='caption'
-                color='text.secondary'
-              >
-                Gestor: {getGestorNome(dept.gestor_funcionario_id)}
-              </Typography>
-            )}
+          {isMobile && getGestorNome(dept.gestor_funcionario_id) && (
+            <Typography variant='caption' color='text.secondary'>
+              Gestor: {getGestorNome(dept.gestor_funcionario_id)}
+            </Typography>
+          )}
         </Box>
       ),
     },
-    ...(isMobile ? [] : [
-      {
-        id: 'descricao',
-        label: 'Descrição',
-        align: 'left',
-        minWidth: 200,
-        render: (_, dept) => (
-          <Typography
-            variant='body2'
-            color='text.secondary'
-            sx={{
-              maxWidth: 300,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {dept.descricao || '—'}
-          </Typography>
-        ),
-      },
-      {
-        id: 'gestor',
-        label: 'Gestor',
-        align: 'left',
-        minWidth: 150,
-        render: (_, dept) => (
-          <Typography variant='body2' color='text.secondary'>
-            {getGestorNome(dept.gestor_funcionario_id) || '—'}
-          </Typography>
-        ),
-      },
-    ] as Column[]),
+    ...(isMobile
+      ? []
+      : ([
+          {
+            id: 'descricao',
+            label: 'Descrição',
+            align: 'left',
+            minWidth: 200,
+            render: (_, dept) => (
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{
+                  maxWidth: 300,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {dept.descricao || '—'}
+              </Typography>
+            ),
+          },
+          {
+            id: 'gestor',
+            label: 'Gestor',
+            align: 'left',
+            minWidth: 150,
+            render: (_, dept) => (
+              <Typography variant='body2' color='text.secondary'>
+                {getGestorNome(dept.gestor_funcionario_id) || '—'}
+              </Typography>
+            ),
+          },
+        ] as Column[])),
     {
       id: 'acoes',
       label: 'Ações',
       align: 'right',
       minWidth: 120,
       render: (_, dept) => (
-        <Stack
-          direction='row'
-          spacing={1}
-          justifyContent='flex-end'
-        >
+        <Stack direction='row' spacing={1} justifyContent='flex-end'>
           <IconButton
             size='small'
             onClick={() => handleEdit(dept)}
@@ -320,15 +307,10 @@ export default function AdminDepartments() {
           </IconButton>
           <IconButton
             size='small'
-            onClick={() =>
-              handleDelete(dept.codigo, dept.nome)
-            }
+            onClick={() => handleDelete(dept.codigo, dept.nome)}
             aria-label='excluir'
             color='error'
-            disabled={
-              deleteDepartamento.isPending ||
-              confirmDialog.isLoading
-            }
+            disabled={deleteDepartamento.isPending || confirmDialog.isLoading}
           >
             <DeleteIcon />
           </IconButton>
@@ -362,8 +344,7 @@ export default function AdminDepartments() {
           data={departamentosFiltrados}
           columns={departmentColumns}
           loading={isLoading}
-          getRowId={(dept) => dept.codigo}
-          rowsPerPage={5}
+          getRowId={dept => dept.codigo}
         />
 
         {/* Dialog Adicionar Departamento */}

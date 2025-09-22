@@ -112,7 +112,6 @@ export default function AdminCourses() {
     cursosResponse?.items[0]?.codigo
   )
 
-
   // Contadores para as tabs (baseados nos cursos já filtrados pela API, mas sem filtro de status)
   const cursosAtivos = cursos.filter(c => c.ativo === true).length
   const cursosInativos = cursos.filter(c => c.ativo === false).length
@@ -130,7 +129,9 @@ export default function AdminCourses() {
     setModalOpen(true)
   }
 
-  const handleModalSubmit = async (data: CreateCourseInput | UpdateCourseInput) => {
+  const handleModalSubmit = async (
+    data: CreateCourseInput | UpdateCourseInput
+  ) => {
     try {
       if (modalMode === 'create') {
         await createCourseMutation.mutateAsync(data as CreateCourseInput)
@@ -182,7 +183,7 @@ export default function AdminCourses() {
     // Os outros filtros (categoria, instrutor, nível) já são aplicados pela API
     if (tab === 'active' && !curso.ativo) return false
     if (tab === 'disabled' && curso.ativo) return false
-    
+
     return true
   })
 
@@ -219,20 +220,11 @@ export default function AdminCourses() {
             }}
           >
             <ScheduleIcon fontSize='small' color='action' />
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
+            <Typography variant='caption' color='text.secondary'>
               {curso.duracao_estimada}h
             </Typography>
-            <TrendingUpIcon
-              fontSize='small'
-              color='action'
-            />
-            <Typography
-              variant='caption'
-              color='text.secondary'
-            >
+            <TrendingUpIcon fontSize='small' color='action' />
+            <Typography variant='caption' color='text.secondary'>
               {curso.xp_oferecido} XP
             </Typography>
           </Box>
@@ -355,10 +347,7 @@ export default function AdminCourses() {
             size='small'
             precision={0.1}
           />
-          <Typography
-            variant='caption'
-            color='text.secondary'
-          >
+          <Typography variant='caption' color='text.secondary'>
             {curso.avaliacao_media || 0} ({curso.total_avaliacoes || 0})
           </Typography>
         </Box>
@@ -388,10 +377,7 @@ export default function AdminCourses() {
       label: 'Ações',
       align: 'center',
       render: (_, curso) => (
-        <IconButton
-          size='small'
-          onClick={e => handleOpenMenu(e, curso)}
-        >
+        <IconButton size='small' onClick={e => handleOpenMenu(e, curso)}>
           <MoreVertIcon />
         </IconButton>
       ),
@@ -497,10 +483,9 @@ export default function AdminCourses() {
           data={filtered}
           columns={courseColumns}
           loading={loadingCursos || loadingCategorias}
-          getRowId={(curso) => curso.codigo}
-          rowsPerPage={5}
+          getRowId={curso => curso.codigo}
         />
-       {/* Menu de ações */}
+        {/* Menu de ações */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -602,8 +587,8 @@ export default function AdminCourses() {
           onClose={() => setModalOpen(false)}
           onSubmit={handleModalSubmit}
           isLoading={
-            modalMode === 'create' 
-              ? createCourseMutation.isPending 
+            modalMode === 'create'
+              ? createCourseMutation.isPending
               : updateCourseMutation.isPending
           }
           mode={modalMode}

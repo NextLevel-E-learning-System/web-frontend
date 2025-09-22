@@ -51,9 +51,12 @@ export default function CourseModal({
   funcionarios,
   cursos,
 }: CourseModalProps) {
-  const [tab, setTab] = useState<'general' | 'assignment' | 'content'>('general')
-  const [departamentoSelecionado, setDepartamentoSelecionado] = useState<string>('')
-  
+  const [tab, setTab] = useState<'general' | 'assignment' | 'content'>(
+    'general'
+  )
+  const [departamentoSelecionado, setDepartamentoSelecionado] =
+    useState<string>('')
+
   const [form, setForm] = useState<FormData>({
     codigo: '',
     titulo: '',
@@ -83,9 +86,11 @@ export default function CourseModal({
           pre_requisitos: courseToEdit.pre_requisitos || [],
           ativo: courseToEdit.ativo ?? true,
         })
-        
+
         // Pré-selecionar departamento baseado na categoria do curso
-        const categoria = categorias.find(c => c.codigo === courseToEdit.categoria_id)
+        const categoria = categorias.find(
+          c => c.codigo === courseToEdit.categoria_id
+        )
         if (categoria?.departamento_codigo) {
           setDepartamentoSelecionado(categoria.departamento_codigo)
         }
@@ -130,67 +135,71 @@ export default function CourseModal({
     }
   }
 
-  const title = mode === 'create' 
-    ? 'Adicionar Curso' 
-    : `Editar Curso${courseToEdit ? ` — ${courseToEdit.titulo}` : ''}`
+  const title =
+    mode === 'create'
+      ? 'Adicionar Curso'
+      : `Editar Curso${courseToEdit ? ` — ${courseToEdit.titulo}` : ''}`
 
   const submitText = mode === 'create' ? 'Adicionar' : 'Salvar alterações'
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
       <DialogTitle>{title}</DialogTitle>
-          <DialogContent sx={{ py: 0 }}>
-        <Box sx={{ borderBottom: t => `1px solid ${t.palette.divider}`, mb: 2 }}>
+      <DialogContent sx={{ py: 0 }}>
+        <Box
+          sx={{ borderBottom: t => `1px solid ${t.palette.divider}`, mb: 2 }}
+        >
           <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-            <Tab value="general" label="Geral" />
-            <Tab value="assignment" label="Atribuição" />
-            <Tab value="content" label="Conteúdo" />
+            <Tab value='general' label='Geral' />
+            <Tab value='assignment' label='Atribuição' />
+            <Tab value='content' label='Conteúdo' />
           </Tabs>
         </Box>
 
         {tab === 'general' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label="Código"
-                      value={form.codigo}
-                      onChange={e => setForm({ ...form, codigo: e.target.value })}
-                      fullWidth
-                      required
-                      disabled={mode === 'edit'}
-                      helperText={mode === 'edit' ? 'Código não pode ser alterado' : ''}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={form.ativo ? 'true' : 'false'}
-                        onChange={e =>
-                          setForm({
-                            ...form,
-                            ativo: e.target.value === 'true',
-                          })
-                        }
-                        label="Status"
-                      >
-                        <MenuItem value="true">Ativo</MenuItem>
-                        <MenuItem value="false">Inativo</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                   
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Código'
+                  value={form.codigo}
+                  onChange={e => setForm({ ...form, codigo: e.target.value })}
+                  fullWidth
+                  required
+                  disabled={mode === 'edit'}
+                  helperText={
+                    mode === 'edit' ? 'Código não pode ser alterado' : ''
+                  }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={form.ativo ? 'true' : 'false'}
+                    onChange={e =>
+                      setForm({
+                        ...form,
+                        ativo: e.target.value === 'true',
+                      })
+                    }
+                    label='Status'
+                  >
+                    <MenuItem value='true'>Ativo</MenuItem>
+                    <MenuItem value='false'>Inativo</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
             <TextField
-              label="Título"
+              label='Título'
               value={form.titulo}
               onChange={e => setForm({ ...form, titulo: e.target.value })}
               fullWidth
               required
             />
             <TextField
-              label="Descrição"
+              label='Descrição'
               value={form.descricao}
               onChange={e => setForm({ ...form, descricao: e.target.value })}
               fullWidth
@@ -201,19 +210,19 @@ export default function CourseModal({
         )}
 
         {tab === 'assignment' && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Departamento</InputLabel>
                 <Select
                   value={departamentoSelecionado}
-                  label="Departamento"
+                  label='Departamento'
                   onChange={e => {
                     setDepartamentoSelecionado(e.target.value)
                     setForm({ ...form, categoria_id: '' })
                   }}
                 >
-                  <MenuItem value="">
+                  <MenuItem value=''>
                     <em>— Selecione o departamento —</em>
                   </MenuItem>
                   {categorias
@@ -232,12 +241,12 @@ export default function CourseModal({
                 <InputLabel>Categoria</InputLabel>
                 <Select
                   value={form.categoria_id || ''}
-                  label="Categoria"
+                  label='Categoria'
                   onChange={e =>
                     setForm({ ...form, categoria_id: e.target.value })
                   }
                 >
-                  <MenuItem value="">
+                  <MenuItem value=''>
                     <em>— Selecione a categoria —</em>
                   </MenuItem>
                   {categorias
@@ -259,13 +268,13 @@ export default function CourseModal({
                 <InputLabel>Instrutor</InputLabel>
                 <Select
                   value={form.instrutor_id || ''}
-                  label="Instrutor"
+                  label='Instrutor'
                   onChange={e =>
                     setForm({ ...form, instrutor_id: e.target.value })
                   }
                   disabled={mode === 'edit'}
                 >
-                  <MenuItem value="">
+                  <MenuItem value=''>
                     <em>— Selecione o instrutor —</em>
                   </MenuItem>
                   {funcionarios?.map(func => (
@@ -280,11 +289,11 @@ export default function CourseModal({
         )}
 
         {tab === 'content' && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
-                label="Duração Estimada (horas)"
-                type="number"
+                label='Duração Estimada (horas)'
+                type='number'
                 value={form.duracao_estimada}
                 onChange={e =>
                   setForm({
@@ -297,8 +306,8 @@ export default function CourseModal({
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField
-                label="XP Oferecido"
-                type="number"
+                label='XP Oferecido'
+                type='number'
                 value={form.xp_oferecido}
                 onChange={e =>
                   setForm({
@@ -314,7 +323,7 @@ export default function CourseModal({
                 <InputLabel>Nível de Dificuldade</InputLabel>
                 <Select
                   value={form.nivel_dificuldade || 'Iniciante'}
-                  label="Nível de Dificuldade"
+                  label='Nível de Dificuldade'
                   onChange={e =>
                     setForm({
                       ...form,
@@ -322,9 +331,9 @@ export default function CourseModal({
                     })
                   }
                 >
-                  <MenuItem value="iniciante">Iniciante</MenuItem>
-                  <MenuItem value="intermediario">Intermediário</MenuItem>
-                  <MenuItem value="avancado">Avançado</MenuItem>
+                  <MenuItem value='iniciante'>Iniciante</MenuItem>
+                  <MenuItem value='intermediario'>Intermediário</MenuItem>
+                  <MenuItem value='avancado'>Avançado</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -333,7 +342,7 @@ export default function CourseModal({
                 <InputLabel>Pré-requisitos</InputLabel>
                 <Select
                   multiple
-                  label="Pré-requisitos"
+                  label='Pré-requisitos'
                   value={form.pre_requisitos || []}
                   onChange={e => {
                     const value = e.target.value
@@ -367,17 +376,15 @@ export default function CourseModal({
           </Grid>
         )}
       </DialogContent>
-          <DialogActions sx={{ p: 3 }}>
-        <Button variant="outlined" onClick={onClose} disabled={isLoading}>
+      <DialogActions sx={{ p: 3 }}>
+        <Button variant='outlined' onClick={onClose} disabled={isLoading}>
           Cancelar
         </Button>
         <Button
-          variant="contained"
+          variant='contained'
           onClick={handleSubmit}
           disabled={isLoading || !form.titulo.trim()}
-          startIcon={
-            isLoading ? <CircularProgress size={18} /> : undefined
-          }
+          startIcon={isLoading ? <CircularProgress size={18} /> : undefined}
         >
           {submitText}
         </Button>

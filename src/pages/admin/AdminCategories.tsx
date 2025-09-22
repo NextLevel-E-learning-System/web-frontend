@@ -205,9 +205,7 @@ export default function AdminCategories() {
               fontSize: 24,
             }}
           />
-          <Typography fontWeight={500}>
-            {categoria.nome}
-          </Typography>
+          <Typography fontWeight={500}>{categoria.nome}</Typography>
         </Box>
       ),
     },
@@ -312,8 +310,7 @@ export default function AdminCategories() {
           data={categoriasFiltradas}
           columns={categoryColumns}
           loading={loadingDepartamentos || loadingCategorias}
-          getRowId={(categoria) => categoria.codigo}
-          rowsPerPage={5}
+          getRowId={categoria => categoria.codigo}
         />
 
         {/* Dialog Adicionar Categoria */}

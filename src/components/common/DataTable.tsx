@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import { InboxOutlined } from '@mui/icons-material'
 import { useState, ReactNode } from 'react'
+import React from 'react'
 
 export interface Column {
   id: string
@@ -27,11 +28,10 @@ interface DataTableProps<T = any> {
   data: T[]
   loading?: boolean
   emptyIcon?: ReactNode
-  rowsPerPage?: number
   showPagination?: boolean
   stickyHeader?: boolean
   maxHeight?: number
-  size?: 'small'  
+  size?: 'small'
   onRowClick?: (row: T, index: number) => void
   getRowId?: (row: T, index: number) => string | number
 }
@@ -41,7 +41,6 @@ export default function DataTable<T = any>({
   data,
   loading = false,
   emptyIcon,
-  rowsPerPage = 5,
   showPagination = true,
   stickyHeader = true,
   maxHeight = 600,
@@ -49,26 +48,19 @@ export default function DataTable<T = any>({
   onRowClick,
   getRowId = (_, index) => index,
 }: DataTableProps<T>) {
-  const [page, setPage] = useState(0)
-  const [pageSize, setPageSize] = useState(rowsPerPage)
+  const [page, setPage] = React.useState(0)
+  const [rowsPerPage, setRowsPerPage] = React.useState(5)
 
-  const handleChangePage = (_: unknown, newPage: number) => {
+  const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
   }
 
   const handleChangeRowsPerPage = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setPageSize(parseInt(event.target.value, 10))
+    setRowsPerPage(+event.target.value)
     setPage(0)
   }
-
-  // Dados paginados
-  const paginatedData = showPagination
-    ? data.slice(page * pageSize, page * pageSize + pageSize)
-    : data
-
-  const isEmpty = data.length === 0
 
   if (loading) {
     return (
@@ -79,28 +71,16 @@ export default function DataTable<T = any>({
   }
 
   return (
-    <Box>
-      <TableContainer
-        component={Paper}
-        sx={{ 
-          maxHeight: maxHeight, 
-          overflow: 'auto',
-          ...(isEmpty && { minHeight: 200 })
-        }}
-      >
-        <Table size={size} stickyHeader={stickyHeader}>
+    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+      <TableContainer sx={{ maxHeight: 440 }}>
+        <Table size={size} stickyHeader aria-label='sticky table'>
           <TableHead>
             <TableRow>
-              {columns.map((column) => (
+              {columns.map(column => (
                 <TableCell
                   key={column.id}
                   align={column.align || 'left'}
-                  sx={{ 
-                    minWidth: column.minWidth,
-                    backgroundColor: (theme) => theme.palette.mode === 'light' 
-                      ? theme.palette.grey[50] 
-                      : theme.palette.grey[900]
-                  }}
+                  style={{ minWidth: column.minWidth }}
                 >
                   {column.label}
                 </TableCell>
@@ -108,93 +88,43 @@ export default function DataTable<T = any>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {isEmpty ? (
-              <TableRow>
-                <TableCell colSpan={columns.length}>
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      py: 6,
-                      gap: 2
-                    }}
-                  >
-                    {emptyIcon || (
-                      <InboxOutlined 
-                        sx={{ 
-                          fontSize: 64, 
-                          color: 'text.disabled' 
-                        }} 
-                      />
-                    )}
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedData.map((row, index) => {
-                const actualIndex = showPagination ? page * pageSize + index : index
-                const rowId = getRowId(row, actualIndex)
-                
+            {data
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row, index) => {
                 return (
-                  <TableRow
-                    key={rowId}
-                    hover={!!onRowClick}
-                    onClick={onRowClick ? () => onRowClick(row, actualIndex) : undefined}
-                    sx={{
-                      ...(onRowClick && { cursor: 'pointer' })
-                    }}
-                  >
-                    {columns.map((column) => {
+                  <TableRow hover role='checkbox' tabIndex={-1} key={index}>
+                    {columns.map(column => {
                       const value = row[column.id]
                       return (
-                        <TableCell 
-                          key={column.id} 
+                        <TableCell
+                          key={column.id}
                           align={column.align || 'left'}
                         >
-                          {column.render 
-                            ? column.render(value, row, actualIndex) 
-                            : value
-                          }
+                          {column.render
+                            ? column.render(value, row, index)
+                            : value}
                         </TableCell>
                       )
                     })}
                   </TableRow>
                 )
-              })
-            )}
+              })}
           </TableBody>
         </Table>
       </TableContainer>
-
-      {showPagination && data.length > 0 && (
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50]}
-          component="div"
-          count={data.length}
-          rowsPerPage={pageSize}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Itens por página:"
-          labelDisplayedRows={({ from, to, count }) =>
-            `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
-          }
-          sx={{
-            backgroundColor: (theme) => theme.palette.mode === 'light' 
-              ? theme.palette.grey[50] 
-              : theme.palette.grey[900],
-            border: (theme) => `1px solid ${theme.palette.divider}`,
-            '& .MuiTablePagination-root': {
-              backgroundColor: 'inherit',
-            },
-            '& .MuiTablePagination-toolbar': {
-              backgroundColor: 'inherit',
-            }
-          }}
-        />
-      )}
-    </Box>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25, 50]}
+        component='div'
+        count={data.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage='Itens por página:'
+        labelDisplayedRows={({ from, to, count }) =>
+          `${from}-${to} de ${count !== -1 ? count : `mais de ${to}`}`
+        }
+      />
+    </Paper>
   )
 }

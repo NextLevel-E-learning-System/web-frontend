@@ -67,8 +67,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       // Extrair role (pode ser string ou array)
-      const userRole = Array.isArray(decoded.roles) 
-        ? decoded.roles[0] 
+      const userRole = Array.isArray(decoded.roles)
+        ? decoded.roles[0]
         : decoded.roles
 
       return {

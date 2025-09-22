@@ -54,8 +54,8 @@ export function useLogin() {
       try {
         const tokenPayload = JSON.parse(atob(result.accessToken.split('.')[1]))
         // Tratar tanto string quanto array para roles
-        const userRole = Array.isArray(tokenPayload.roles) 
-          ? tokenPayload.roles[0] 
+        const userRole = Array.isArray(tokenPayload.roles)
+          ? tokenPayload.roles[0]
           : tokenPayload.roles || 'ALUNO'
 
         console.log('[useLogin] User role from token:', userRole)
