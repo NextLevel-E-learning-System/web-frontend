@@ -151,8 +151,6 @@ export default function CourseModal({
         {tab === 'general' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Grid container spacing={2}>
-              {mode === 'create' && (
-                <>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       label="Código"
@@ -160,6 +158,8 @@ export default function CourseModal({
                       onChange={e => setForm({ ...form, codigo: e.target.value })}
                       fullWidth
                       required
+                      disabled={mode === 'edit'}
+                      helperText={mode === 'edit' ? 'Código não pode ser alterado' : ''}
                     />
                   </Grid>
                   <Grid size={{ xs: 12, md: 6 }}>
@@ -180,8 +180,7 @@ export default function CourseModal({
                       </Select>
                     </FormControl>
                   </Grid>
-                </>
-              )}
+                   
             </Grid>
             <TextField
               label="Título"
@@ -213,7 +212,6 @@ export default function CourseModal({
                     setDepartamentoSelecionado(e.target.value)
                     setForm({ ...form, categoria_id: '' })
                   }}
-                  disabled={mode === 'edit'}
                 >
                   <MenuItem value="">
                     <em>— Selecione o departamento —</em>
@@ -295,7 +293,6 @@ export default function CourseModal({
                   })
                 }
                 fullWidth
-                inputProps={{ min: 0 }}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -310,7 +307,6 @@ export default function CourseModal({
                   })
                 }
                 fullWidth
-                inputProps={{ min: 0 }}
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
@@ -326,9 +322,9 @@ export default function CourseModal({
                     })
                   }
                 >
-                  <MenuItem value="Iniciante">Iniciante</MenuItem>
-                  <MenuItem value="Intermediário">Intermediário</MenuItem>
-                  <MenuItem value="Avançado">Avançado</MenuItem>
+                  <MenuItem value="iniciante">Iniciante</MenuItem>
+                  <MenuItem value="intermediario">Intermediário</MenuItem>
+                  <MenuItem value="avancado">Avançado</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -353,7 +349,6 @@ export default function CourseModal({
                       })
                       .join(', ')
                   }
-                  disabled={mode === 'edit'}
                 >
                   {cursos
                     .filter(c => c.codigo !== form.codigo) // Não permitir curso como pré-requisito dele mesmo
