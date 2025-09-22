@@ -71,6 +71,7 @@ import {
   type UpdateCourseInput,
 } from '@/api/courses'
 import { useListarDepartamentosAdmin, useFuncionarios } from '@/api/users'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 
 interface Filtros {
   q: string // busca por título/descrição
@@ -110,6 +111,11 @@ export default function AdminCourses() {
     message: '',
     severity: 'success' as 'success' | 'error',
   })
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean
+    action: 'duplicate' | 'toggle' | null
+    curso: Curso | null
+  }>({ open: false, action: null, curso: null })
 
   // Form states
   const [newCourseData, setNewCourseData] = useState<CreateCourseInput>({
@@ -322,55 +328,78 @@ export default function AdminCourses() {
   return (
     <DashboardLayout title='Gerenciar Cursos' items={navigationItems}>
       <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, gap: 2, flexWrap: 'wrap' }}>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <FormControl sx={{ minWidth: 180 }}>
-                  <InputLabel>Categoria</InputLabel>
-                  <Select
-                    value={filtros.categoria}
-                    onChange={e => setFiltros({ ...filtros, categoria: e.target.value })}
-                    label='Categoria'
-                  >
-                    <MenuItem value='all'><em>Todas as Categorias</em></MenuItem>
-                    {categorias.map(cat => (
-                      <MenuItem key={cat.codigo} value={cat.codigo}>{cat.nome}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl sx={{ minWidth: 180 }}>
-                  <InputLabel>Instrutor</InputLabel>
-                  <Select
-                    value={filtros.instrutor}
-                    onChange={e => setFiltros({ ...filtros, instrutor: e.target.value })}
-                    label='Instrutor'
-                  >
-                    <MenuItem value='all'><em>Todos os Instrutores</em></MenuItem>
-                    {/* Adicione instrutores se necessário */}
-                  </Select>
-                </FormControl>
-                <FormControl sx={{ minWidth: 180 }}>
-                  <InputLabel>Nível</InputLabel>
-                  <Select
-                    value={filtros.nivel}
-                    onChange={e => setFiltros({ ...filtros, nivel: e.target.value })}
-                    label='Nível'
-                  >
-                    <MenuItem value='all'><em>Todos os Níveis</em></MenuItem>
-                    <MenuItem value='Básico'>Básico</MenuItem>
-                    <MenuItem value='Intermediário'>Intermediário</MenuItem>
-                    <MenuItem value='Avançado'>Avançado</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-              <Button
-                variant='contained'
-                startIcon={<AddIcon />}
-                onClick={() => setDialogCreateCourse(true)}
-                sx={{ minWidth: 160 }}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 3,
+            gap: 2,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <FormControl sx={{ minWidth: 180 }}>
+              <InputLabel>Categoria</InputLabel>
+              <Select
+                value={filtros.categoria}
+                onChange={e =>
+                  setFiltros({ ...filtros, categoria: e.target.value })
+                }
+                label='Categoria'
               >
-                Novo Curso
-              </Button>
-            </Box>
+                <MenuItem value='all'>
+                  <em>Todas as Categorias</em>
+                </MenuItem>
+                {categorias.map(cat => (
+                  <MenuItem key={cat.codigo} value={cat.codigo}>
+                    {cat.nome}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: 180 }}>
+              <InputLabel>Instrutor</InputLabel>
+              <Select
+                value={filtros.instrutor}
+                onChange={e =>
+                  setFiltros({ ...filtros, instrutor: e.target.value })
+                }
+                label='Instrutor'
+              >
+                <MenuItem value='all'>
+                  <em>Todos os Instrutores</em>
+                </MenuItem>
+                {/* Adicione instrutores se necessário */}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ minWidth: 180 }}>
+              <InputLabel>Nível</InputLabel>
+              <Select
+                value={filtros.nivel}
+                onChange={e =>
+                  setFiltros({ ...filtros, nivel: e.target.value })
+                }
+                label='Nível'
+              >
+                <MenuItem value='all'>
+                  <em>Todos os Níveis</em>
+                </MenuItem>
+                <MenuItem value='Básico'>Básico</MenuItem>
+                <MenuItem value='Intermediário'>Intermediário</MenuItem>
+                <MenuItem value='Avançado'>Avançado</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          <Button
+            variant='contained'
+            startIcon={<AddIcon />}
+            onClick={() => setDialogCreateCourse(true)}
+            sx={{ minWidth: 160 }}
+          >
+            Adicionar Curso
+          </Button>
+        </Box>
 
         {/* Tabs de Status */}
         <StatusFilterTabs
@@ -418,7 +447,6 @@ export default function AdminCourses() {
                       const instrutor = funcionarios.find(
                         f => f.id === curso.instrutor_id
                       )
-
                       return (
                         <TableRow
                           key={curso.codigo}
@@ -599,26 +627,43 @@ export default function AdminCourses() {
           onClose={handleCloseMenu}
         >
           <MenuItem
-            onClick={() =>
-              selectedCourseForMenu && openEditDialog(selectedCourseForMenu)
-            }
+            onClick={() => {
+              handleCloseMenu()
+              if (selectedCourseForMenu) {
+                setCourseToEdit(selectedCourseForMenu)
+                setDialogEditCourse(true)
+              }
+            }}
           >
             <EditIcon sx={{ mr: 1 }} fontSize='small' />
             Editar
           </MenuItem>
           <MenuItem
-            onClick={() =>
-              selectedCourseForMenu &&
-              handleDuplicateCourse(selectedCourseForMenu)
-            }
+            onClick={() => {
+              handleCloseMenu()
+              if (selectedCourseForMenu) {
+                setConfirmDialog({
+                  open: true,
+                  action: 'duplicate',
+                  curso: selectedCourseForMenu,
+                })
+              }
+            }}
           >
             <FileCopy sx={{ mr: 1 }} fontSize='small' />
             Duplicar
           </MenuItem>
           <MenuItem
-            onClick={() =>
-              selectedCourseForMenu && handleToggleStatus(selectedCourseForMenu)
-            }
+            onClick={() => {
+              handleCloseMenu()
+              if (selectedCourseForMenu) {
+                setConfirmDialog({
+                  open: true,
+                  action: 'toggle',
+                  curso: selectedCourseForMenu,
+                })
+              }
+            }}
           >
             {selectedCourseForMenu?.ativo ? (
               <>
@@ -633,6 +678,138 @@ export default function AdminCourses() {
             )}
           </MenuItem>
         </Menu>
+
+        {/* Dialog de confirmação para duplicar/inativar */}
+        <ConfirmationDialog
+          open={confirmDialog.open}
+          onClose={() =>
+            setConfirmDialog({ open: false, action: null, curso: null })
+          }
+          onConfirm={async () => {
+            if (confirmDialog.action === 'duplicate' && confirmDialog.curso) {
+              await handleDuplicateCourse(confirmDialog.curso)
+              setConfirmDialog({ open: false, action: null, curso: null })
+            }
+            if (confirmDialog.action === 'toggle' && confirmDialog.curso) {
+              await handleToggleStatus(confirmDialog.curso)
+              setConfirmDialog({ open: false, action: null, curso: null })
+            }
+          }}
+          title={
+            confirmDialog.action === 'duplicate'
+              ? 'Duplicar Curso'
+              : 'Alterar Status do Curso'
+          }
+          message={
+            confirmDialog.action === 'duplicate'
+              ? `Deseja duplicar o curso "${confirmDialog.curso?.titulo}"?`
+              : confirmDialog.curso?.ativo
+                ? `Deseja inativar o curso "${confirmDialog.curso?.titulo}"?`
+                : `Deseja ativar o curso "${confirmDialog.curso?.titulo}"?`
+          }
+          confirmText={
+            confirmDialog.action === 'duplicate'
+              ? 'Duplicar'
+              : confirmDialog.curso?.ativo
+                ? 'Inativar'
+                : 'Ativar'
+          }
+          cancelText='Cancelar'
+          severity={confirmDialog.action === 'duplicate' ? 'info' : 'warning'}
+        />
+
+        {/* Dialog de edição de curso */}
+        <Dialog
+          open={dialogEditCourse}
+          onClose={() => setDialogEditCourse(false)}
+          maxWidth='md'
+          fullWidth
+        >
+          <DialogTitle>Editar Curso</DialogTitle>
+          <DialogContent>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}
+            >
+              <TextField
+                label='Título'
+                value={courseToEdit?.titulo || ''}
+                onChange={e =>
+                  setCourseToEdit(
+                    courseToEdit
+                      ? { ...courseToEdit, titulo: e.target.value }
+                      : null
+                  )
+                }
+                required
+              />
+              <TextField
+                label='Descrição'
+                value={courseToEdit?.descricao || ''}
+                onChange={e =>
+                  setCourseToEdit(
+                    courseToEdit
+                      ? { ...courseToEdit, descricao: e.target.value }
+                      : null
+                  )
+                }
+                multiline
+                rows={3}
+              />
+              {/* Adicione outros campos conforme necessário */}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDialogEditCourse(false)}>Cancelar</Button>
+            <Button variant='contained' onClick={handleEditCourse}>
+              Salvar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog de criação de curso */}
+        <Dialog
+          open={dialogCreateCourse}
+          onClose={() => setDialogCreateCourse(false)}
+          maxWidth='md'
+          fullWidth
+        >
+          <DialogTitle>Adicionar Curso</DialogTitle>
+          <DialogContent>
+            <Box
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}
+            >
+              <TextField
+                label='Título'
+                value={newCourseData.titulo}
+                onChange={e =>
+                  setNewCourseData({ ...newCourseData, titulo: e.target.value })
+                }
+                required
+              />
+              <TextField
+                label='Descrição'
+                value={newCourseData.descricao}
+                onChange={e =>
+                  setNewCourseData({
+                    ...newCourseData,
+                    descricao: e.target.value,
+                  })
+                }
+                multiline
+                rows={3}
+              />
+              {/* Adicione outros campos conforme necessário */}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDialogCreateCourse(false)}>
+              Cancelar
+            </Button>
+            <Button variant='contained' onClick={handleCreateCourse}>
+              Criar
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Snackbar para feedback */}
         <Snackbar
