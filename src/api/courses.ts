@@ -38,6 +38,7 @@ export interface Course {
   total_avaliacoes?: number
   total_concluidos?: number
   total_inscritos?: number
+  taxa_conclusao?: number
 }
 
 export interface CreateCourseInput {
@@ -50,6 +51,7 @@ export interface CreateCourseInput {
   xp_oferecido?: number
   nivel_dificuldade?: string
   pre_requisitos?: string[]
+  ativo?: boolean
 }
 
 export interface UpdateCourseInput {

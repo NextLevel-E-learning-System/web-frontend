@@ -39,6 +39,10 @@ import {
   useTheme,
   CircularProgress,
   TableContainer,
+  Checkbox,
+  FormControlLabel,
+  Tab,
+  Tabs,
 } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
@@ -74,12 +78,10 @@ import { useListarDepartamentosAdmin, useFuncionarios } from '@/api/users'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 
 interface Filtros {
-  q: string // busca por título/descrição
   categoria: string
   instrutor: string
   status: 'all' | 'active' | 'inactive'
   nivel: string
-  departamento: string
 }
 
 export default function AdminCourses() {
@@ -91,12 +93,10 @@ export default function AdminCourses() {
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [selectedCourse, setSelectedCourse] = useState<Curso | null>(null)
   const [filtros, setFiltros] = useState<Filtros>({
-    q: '',
     categoria: 'all',
     instrutor: 'all',
     status: 'all',
     nivel: 'all',
-    departamento: 'all',
   })
 
   // Estados para ações
@@ -111,6 +111,9 @@ export default function AdminCourses() {
     message: '',
     severity: 'success' as 'success' | 'error',
   })
+    const [tabModal, setTabModal] = useState<
+      'general' | 'assignment' | 'content'
+    >('general')
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     action: 'duplicate' | 'toggle' | null
@@ -118,7 +121,7 @@ export default function AdminCourses() {
   }>({ open: false, action: null, curso: null })
 
   // Form states
-  const [newCourseData, setNewCourseData] = useState<CreateCourseInput>({
+  const [form, setForm] = useState<CreateCourseInput>({
     codigo: '',
     titulo: '',
     descricao: '',
@@ -126,19 +129,17 @@ export default function AdminCourses() {
     instrutor_id: '',
     duracao_estimada: 0,
     xp_oferecido: 0,
-    nivel_dificuldade: 'Básico',
+    nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
+    ativo: true
   })
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
     const filters: any = {}
-    if (filtros.q) filters.q = filtros.q
     if (filtros.categoria !== 'all') filters.categoria = filtros.categoria
     if (filtros.instrutor !== 'all') filters.instrutor = filtros.instrutor
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
-    if (filtros.departamento !== 'all')
-      filters.departamento = filtros.departamento
 
     // Filtro por status baseado na tab
     if (tab === 'active') filters.ativo = true
@@ -170,7 +171,7 @@ export default function AdminCourses() {
   // Funções para ações
   const handleCreateCourse = async () => {
     try {
-      await createCourseMutation.mutateAsync(newCourseData)
+      await createCourseMutation.mutateAsync(form)
       setSnackbar({
         open: true,
         message: 'Curso criado com sucesso!',
@@ -182,34 +183,6 @@ export default function AdminCourses() {
       setSnackbar({
         open: true,
         message: 'Erro ao criar curso',
-        severity: 'error',
-      })
-    }
-  }
-
-  const handleEditCourse = async () => {
-    if (!courseToEdit) return
-    try {
-      const updateData: UpdateCourseInput = {
-        titulo: newCourseData.titulo,
-        descricao: newCourseData.descricao,
-        categoria_id: newCourseData.categoria_id,
-        duracao_estimada: newCourseData.duracao_estimada,
-        xp_oferecido: newCourseData.xp_oferecido,
-        nivel_dificuldade: newCourseData.nivel_dificuldade,
-      }
-      await updateCourseMutation.mutateAsync(updateData)
-      setSnackbar({
-        open: true,
-        message: 'Curso atualizado com sucesso!',
-        severity: 'success',
-      })
-      setDialogEditCourse(false)
-      setCourseToEdit(null)
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Erro ao atualizar curso',
         severity: 'error',
       })
     }
@@ -298,21 +271,24 @@ export default function AdminCourses() {
     if (filtros.categoria !== 'all' && curso.categoria_id !== filtros.categoria)
       return false
 
-    // Filtro de pesquisa
-    if (filtros.q) {
-      const searchLower = filtros.q.toLowerCase()
-      return (
-        curso.titulo.toLowerCase().includes(searchLower) ||
-        curso.descricao?.toLowerCase().includes(searchLower) ||
-        curso.codigo.toLowerCase().includes(searchLower)
-      )
-    }
-
     return true
   })
 
   const getStatusColor = (ativo: boolean) => {
     return ativo ? 'success' : 'default'
+  }
+
+  const getNivelColor = (nivel: string) => {
+    switch (nivel) {
+      case 'iniciante':
+        return 'success'
+      case 'intermediario':
+        return 'warning'
+      case 'avancado':
+        return 'error'
+      default:
+        return 'default'
+    }
   }
 
   if (loadingCursos || loadingCategorias) {
@@ -370,7 +346,7 @@ export default function AdminCourses() {
                 <MenuItem value='all'>
                   <em>Todos os Instrutores</em>
                 </MenuItem>
-                {/* Adicione instrutores se necessário */}
+                <MenuItem value={'instrutor.id'}>'instrutor.nome'</MenuItem>
               </Select>
             </FormControl>
             <FormControl sx={{ minWidth: 180 }}>
@@ -400,7 +376,6 @@ export default function AdminCourses() {
             Adicionar Curso
           </Button>
         </Box>
-
         {/* Tabs de Status */}
         <StatusFilterTabs
           value={tab}
@@ -410,7 +385,6 @@ export default function AdminCourses() {
           activeLabel='Cursos Ativos'
           inactiveLabel='Cursos Inativos'
         />
-
         {/* Tabela de Cursos */}
         <Card>
           <CardContent>
@@ -491,7 +465,7 @@ export default function AdminCourses() {
                             <Chip
                               variant='outlined'
                               size='small'
-                              label={categoria?.nome || 'N/A'}
+                              label={categoria?.codigo}
                               sx={{
                                 borderColor: categoria?.cor_hex || '#ccc',
                                 color: categoria?.cor_hex || '#666',
@@ -519,49 +493,42 @@ export default function AdminCourses() {
                                 : 'N/A'}
                             </Typography>
                           </TableCell>
+
                           <TableCell align='center'>
-                            <Typography variant='body2' fontWeight={500}>
-                              {curso.nivel_dificuldade}
-                            </Typography>
+                            <Chip
+                              size='small'
+                              label={curso.nivel_dificuldade}
+                              color={
+                                getNivelColor(curso.nivel_dificuldade) as any
+                              }
+                            />
                           </TableCell>
                           <TableCell align='center'>
                             <Box>
                               <Typography variant='body2' fontWeight={500}>
                                 {curso.total_inscritos || 0}
                               </Typography>
+                              <Typography
+                                variant='caption'
+                                color='success.main'
+                              >
+                                {curso.total_concluidos || 0} concluídos
+                              </Typography>
                             </Box>
                           </TableCell>
                           <TableCell align='center'>
                             <Box sx={{ minWidth: 80 }}>
                               <Typography variant='body2' fontWeight={500}>
-                                {(
-                                  ((curso.total_concluidos || 0) /
-                                    Math.max(curso.total_inscritos || 1, 1)) *
-                                  100
-                                ).toFixed(1)}
-                                %
+                                {curso.taxa_conclusao || 0}%
                               </Typography>
                               <LinearProgress
                                 variant='determinate'
-                                value={
-                                  ((curso.total_concluidos || 0) /
-                                    Math.max(curso.total_inscritos || 1, 1)) *
-                                  100
-                                }
+                                value={curso.taxa_conclusao || 0}
                                 sx={{ mt: 0.5 }}
                                 color={
-                                  ((curso.total_concluidos || 0) /
-                                    Math.max(curso.total_inscritos || 1, 1)) *
-                                    100 >
-                                  70
+                                  curso.taxa_conclusao > 70
                                     ? 'success'
-                                    : ((curso.total_concluidos || 0) /
-                                          Math.max(
-                                            curso.total_inscritos || 1,
-                                            1
-                                          )) *
-                                          100 >
-                                        40
+                                    : curso.taxa_conclusao > 40
                                       ? 'warning'
                                       : 'error'
                                 }
@@ -577,7 +544,7 @@ export default function AdminCourses() {
                               }}
                             >
                               <Rating
-                                value={0}
+                                value={curso.avaliacao_media || 0}
                                 readOnly
                                 size='small'
                                 precision={0.1}
@@ -585,14 +552,17 @@ export default function AdminCourses() {
                               <Typography
                                 variant='caption'
                                 color='text.secondary'
-                              ></Typography>
+                              >
+                                {curso.avaliacao_media || 0} (
+                                {curso.total_avaliacoes || 0})
+                              </Typography>
                             </Box>
                           </TableCell>
                           <TableCell align='center'>
                             <Chip
                               size='small'
                               label={curso.ativo ? 'Ativo' : 'Inativo'}
-                              color={getStatusColor(curso.ativo) as any}
+                              color={getStatusColor(curso.ativo)}
                             />
                           </TableCell>
                           <TableCell align='center'>
@@ -612,14 +582,6 @@ export default function AdminCourses() {
             )}
           </CardContent>
         </Card>
-
-        {/* Dialog de Detalhes do Curso */}
-        <CourseDetailsDialog
-          open={!!selectedCourse}
-          onClose={() => setSelectedCourse(null)}
-          curso={selectedCourse as any}
-        />
-
         {/* Menu de ações */}
         <Menu
           anchorEl={anchorEl}
@@ -678,7 +640,6 @@ export default function AdminCourses() {
             )}
           </MenuItem>
         </Menu>
-
         {/* Dialog de confirmação para duplicar/inativar */}
         <ConfirmationDialog
           open={confirmDialog.open}
@@ -718,120 +679,165 @@ export default function AdminCourses() {
           severity={confirmDialog.action === 'duplicate' ? 'info' : 'warning'}
         />
 
-        {/* Dialog de edição de curso */}
-        <Dialog
-          open={dialogEditCourse}
-          onClose={() => setDialogEditCourse(false)}
-          maxWidth='md'
-          fullWidth
-        >
-          <DialogTitle>Editar Curso</DialogTitle>
-          <DialogContent>
-            <Box
-              sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}
-            >
-              <TextField
-                label='Título'
-                value={courseToEdit?.titulo || ''}
-                onChange={e =>
-                  setCourseToEdit(
-                    courseToEdit
-                      ? { ...courseToEdit, titulo: e.target.value }
-                      : null
-                  )
-                }
-                required
-              />
-              <TextField
-                label='Descrição'
-                value={courseToEdit?.descricao || ''}
-                onChange={e =>
-                  setCourseToEdit(
-                    courseToEdit
-                      ? { ...courseToEdit, descricao: e.target.value }
-                      : null
-                  )
-                }
-                multiline
-                rows={3}
-              />
-              {/* Adicione outros campos conforme necessário */}
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDialogEditCourse(false)}>Cancelar</Button>
-            <Button variant='contained' onClick={handleEditCourse}>
-              Salvar
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Dialog de criação de curso */}
-        <Dialog
-          open={dialogCreateCourse}
-          onClose={() => setDialogCreateCourse(false)}
-          maxWidth='md'
-          fullWidth
-        >
+        <Dialog   open={dialogCreateCourse}
+          onClose={() => setDialogCreateCourse(false)} maxWidth='md' fullWidth>
           <DialogTitle>Adicionar Curso</DialogTitle>
           <DialogContent>
             <Box
-              sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}
+              sx={{
+                borderBottom: t => `1px solid ${t.palette.divider}`,
+                mb: 2,
+              }}
             >
-              <TextField
-                label='Título'
-                value={newCourseData.titulo}
-                onChange={e =>
-                  setNewCourseData({ ...newCourseData, titulo: e.target.value })
-                }
-                required
-              />
-              <TextField
-                label='Descrição'
-                value={newCourseData.descricao}
-                onChange={e =>
-                  setNewCourseData({
-                    ...newCourseData,
-                    descricao: e.target.value,
-                  })
-                }
-                multiline
-                rows={3}
-              />
-              {/* Adicione outros campos conforme necessário */}
+              <Tabs value={tabModal} onChange={(_, v) => setTabModal(v)}>
+                <Tab value='general' label='Geral' />
+                <Tab value='assignment' label='Atribuição' />
+                <Tab value='settings' label='Configurações' />
+                <Tab value='content' label='Conteúdo' />
+              </Tabs>
             </Box>
+
+            {tabModal === 'general' && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='Código'
+                      value={form.codigo}
+                      onChange={e => setForm({ ...form, codigo: e.target.value })}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Select
+                      fullWidth
+                      value={form.ativo}
+                      onChange={e =>
+                        setForm({
+                          ...form,
+                          ativo: e.target.value as boolean
+                        })
+                      }
+                    >
+                      <MenuItem value='true'>Ativo</MenuItem>
+                      <MenuItem value='false'>Inativo</MenuItem>
+                    </Select>
+                  </Grid>
+                </Grid>
+                <TextField
+                  label='Título'
+                  value={form.titulo}
+                  onChange={e => setForm({ ...form, titulo: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label='Descrição'
+                  value={form.descricao}
+                  onChange={e =>
+                    setForm({ ...form, descricao: e.target.value })
+                  }
+                  fullWidth
+                  multiline
+                  minRows={3}
+                />
+              </Box>
+            )}
+
+            {tabModal === 'assignment' && (
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Select
+                    fullWidth
+                    displayEmpty
+                    value={form.department}
+                    onChange={e =>
+                      setForm({ ...form, department: e.target.value })
+                    }
+                  >
+                    <MenuItem value=''>
+                      <em>— Selecione o departamento —</em>
+                    </MenuItem>
+                    {departments.map(d => (
+                      <MenuItem key={d} value={d}>
+                        {d}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <Select
+                    fullWidth
+                    displayEmpty
+                    value={form.category}
+                    onChange={e =>
+                      setForm({ ...form, category: e.target.value })
+                    }
+                  >
+                    <MenuItem value=''>
+                      <em>— Selecione a categoria —</em>
+                    </MenuItem>
+                    {categories.map(c => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Select
+                    fullWidth
+                    displayEmpty
+                    value={form.instructor}
+                    onChange={e =>
+                      setForm({ ...form, instructor: e.target.value })
+                    }
+                  >
+                    <MenuItem value=''>
+                      <em>— Selecione o instrutor —</em>
+                    </MenuItem>
+                    {instructors.map(i => (
+                      <MenuItem key={i} value={i}>
+                        {i}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Grid>
+              </Grid>
+            )}
+
+            {tabModal === 'content' && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <TextField
+                  label='Sobre o curso'
+                  value={form.about}
+                  onChange={e => setForm({ ...form, about: e.target.value })}
+                  fullWidth
+                  multiline
+                  minRows={4}
+                />
+                <TextField
+                  label='Pré-requisitos'
+                  value={form.prerequisites}
+                  onChange={e =>
+                    setForm({ ...form, prerequisites: e.target.value })
+                  }
+                  fullWidth
+                  multiline
+                  minRows={4}
+                />
+              </Box>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogCreateCourse(false)}>
+            <Button variant='outlined' onClick={() => setDialogCreateCourse(false)}>
               Cancelar
             </Button>
             <Button variant='contained' onClick={handleCreateCourse}>
-              Criar
+              Adicionar
             </Button>
           </DialogActions>
         </Dialog>
-
-        {/* Snackbar para feedback */}
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert
-            onClose={handleCloseSnackbar}
-            severity={snackbar.severity}
-            sx={{ width: '100%' }}
-          >
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
       </Box>
     </DashboardLayout>
   )
-}
-
-// Função auxiliar para abrir o dialog de edição
-const openEditDialog = (curso: Curso) => {
-  // Esta função será implementada quando criarmos os dialogs
-  console.log('Editar curso:', curso)
 }

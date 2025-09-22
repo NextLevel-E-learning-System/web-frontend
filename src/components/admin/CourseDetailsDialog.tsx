@@ -16,6 +16,13 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Checkbox,
+  FormControlLabel,
+  MenuItem,
+  Select,
+  Tab,
+  Tabs,
+  TextField,
 } from '@mui/material'
 import {
   Close as CloseIcon,
@@ -28,6 +35,7 @@ import {
   Star as StarIcon,
   Assignment as AssignmentIcon,
 } from '@mui/icons-material'
+import { useState } from 'react'
 
 interface CursoDetalhes {
   id?: string
@@ -64,7 +72,9 @@ export default function CourseDetailsDialog({
   curso,
 }: CourseDetailsDialogProps) {
   if (!curso) return null
-
+  const [tab, setTab] = useState<
+    'general' | 'assignment' | 'settings' | 'content'
+  >('general')
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
       case 'Básico':
@@ -86,283 +96,220 @@ export default function CourseDetailsDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth='md' fullWidth>
-      <DialogTitle>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <SchoolIcon color='primary' />
-            <Box>
-              <Typography variant='h6' fontWeight={600}>
-                {curso.titulo}
-              </Typography>
-              <Typography
-                variant='caption'
-                sx={{
-                  fontFamily:
-                    'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                  color: 'text.secondary',
-                }}
-              >
-                {curso.codigo}
-              </Typography>
-            </Box>
-          </Box>
-          <Button
-            onClick={onClose}
-            variant='outlined'
-            size='small'
-            startIcon={<CloseIcon />}
-          >
-            Fechar
-          </Button>
-        </Box>
-      </DialogTitle>
-
+      <DialogTitle>Novo Curso</DialogTitle>
       <DialogContent>
-        <Grid container spacing={3}>
-          {/* Informações Básicas */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant='h6' gutterBottom>
-              Informações do Curso
-            </Typography>
-            <List dense>
-              <ListItem>
-                <ListItemIcon>
-                  <AssignmentIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText
-                  primary='Categoria'
-                  secondary={
-                    <Chip
-                      variant='outlined'
-                      label={curso.categoria_nome || 'Não definida'}
-                      size='small'
-                    />
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <PersonIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText
-                  primary='Instrutor'
-                  secondary={
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        mt: 0.5,
-                      }}
-                    >
-                      <Avatar
-                        sx={{ width: 20, height: 20, fontSize: '0.75rem' }}
-                      >
-                        {curso.instrutor_nome?.charAt(0)}
-                      </Avatar>
-                      {curso.instrutor_nome || 'Não atribuído'}
-                    </Box>
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <ScheduleIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText
-                  primary='Duração Estimada'
-                  secondary={`${curso.duracao_estimada || 0} horas`}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <TrendingUpIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText
-                  primary='XP Oferecido'
-                  secondary={`${curso.xp_oferecido || 0} pontos`}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <StarIcon fontSize='small' />
-                </ListItemIcon>
-                <ListItemText
-                  primary='Nível de Dificuldade'
-                  secondary={
-                    <Chip
-                      size='small'
-                      label={curso.nivel_dificuldade || 'Básico'}
-                      color={
-                        getNivelColor(
-                          curso.nivel_dificuldade || 'Básico'
-                        ) as any
-                      }
-                    />
-                  }
-                />
-              </ListItem>
-            </List>
-          </Grid>
+        <Box
+          sx={{ borderBottom: t => `1px solid ${t.palette.divider}`, mb: 2 }}
+        >
+          <Tabs value={tab} onChange={(_, v) => setTab(v)}>
+            <Tab value='general' label='Geral' />
+            <Tab value='assignment' label='Atribuição' />
+            <Tab value='settings' label='Configurações' />
+            <Tab value='content' label='Conteúdo' />
+          </Tabs>
+        </Box>
 
-          {/* Métricas */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant='h6' gutterBottom>
-              Métricas de Desempenho
-            </Typography>
-
-            <Box sx={{ mb: 3 }}>
-              <Typography variant='body2' color='text.secondary' gutterBottom>
-                Inscrições e Conclusões
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 6 }}>
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      p: 2,
-                      bgcolor: 'background.paper',
-                      borderRadius: 1,
-                    }}
-                  >
-                    <GroupIcon color='primary' sx={{ fontSize: 32, mb: 1 }} />
-                    <Typography variant='h5' fontWeight={600}>
-                      {curso.total_inscritos}
-                    </Typography>
-                    <Typography variant='caption' color='text.secondary'>
-                      Total Inscritos
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      p: 2,
-                      bgcolor: 'background.paper',
-                      borderRadius: 1,
-                    }}
-                  >
-                    <CheckCircleIcon
-                      color='success'
-                      sx={{ fontSize: 32, mb: 1 }}
-                    />
-                    <Typography variant='h5' fontWeight={600}>
-                      {curso.total_concluidos}
-                    </Typography>
-                    <Typography variant='caption' color='text.secondary'>
-                      Concluídos
-                    </Typography>
-                  </Box>
-                </Grid>
+        {tab === 'general' && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Código'
+                  value={curso.codigo}
+                  onChange={e => setForm({ ...form, code: e.target.value })}
+                  fullWidth
+                />
               </Grid>
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <Typography variant='body2' color='text.secondary' gutterBottom>
-                Taxa de Conclusão
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <LinearProgress
-                  variant='determinate'
-                  value={curso.taxa_conclusao}
-                  sx={{ flexGrow: 1, height: 8, borderRadius: 4 }}
-                  color={getProgressColor(curso.taxa_conclusao)}
-                />
-                <Typography variant='body2' fontWeight={500}>
-                  {curso.taxa_conclusao.toFixed(1)}%
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <Typography variant='body2' color='text.secondary' gutterBottom>
-                Avaliação dos Alunos
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Rating
-                  value={curso.avaliacao_media}
-                  readOnly
-                  precision={0.1}
-                />
-                <Typography variant='body2' fontWeight={500}>
-                  {curso.avaliacao_media.toFixed(1)}
-                </Typography>
-                <Typography variant='caption' color='text.secondary'>
-                  ({curso.total_avaliacoes} avaliações)
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box>
-              <Typography variant='body2' color='text.secondary' gutterBottom>
-                Tempo Médio de Conclusão
-              </Typography>
-              <Typography variant='h6' fontWeight={500}>
-                {curso.tempo_medio_conclusao} dias
-              </Typography>
-            </Box>
-          </Grid>
-
-          {/* Descrição */}
-          {curso.descricao && (
-            <>
-              <Grid size={{ xs: 12 }}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant='h6' gutterBottom>
-                  Descrição do Curso
-                </Typography>
-                <Typography variant='body2' color='text.secondary'>
-                  {curso.descricao}
-                </Typography>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Select
+                  fullWidth
+                  value={form.status}
+                  onChange={e =>
+                    setForm({
+                      ...form,
+                      status: e.target.value as Subject['status'],
+                    })
+                  }
+                >
+                  <MenuItem value='Active'>Active</MenuItem>
+                  <MenuItem value='Draft'>Draft</MenuItem>
+                  <MenuItem value='Inactive'>Inactive</MenuItem>
+                </Select>
               </Grid>
-            </>
-          )}
+            </Grid>
+            <TextField
+              label='Título'
+              value={form.title}
+              onChange={e => setForm({ ...form, title: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label='Descrição'
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+              fullWidth
+              multiline
+              minRows={3}
+            />
+          </Box>
+        )}
 
-          {/* Status e Informações Adicionais */}
-          <Grid size={{ xs: 12 }}>
-            <Divider sx={{ my: 2 }} />
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Box>
-                <Typography variant='body2' color='text.secondary'>
-                  Status do Curso
-                </Typography>
-                <Chip
-                  label={curso.ativo ? 'Ativo' : 'Inativo'}
-                  color={curso.ativo ? 'success' : 'default'}
-                  variant='outlined'
-                />
-              </Box>
-              {curso.data_criacao && (
-                <Box sx={{ textAlign: 'right' }}>
-                  <Typography variant='body2' color='text.secondary'>
-                    Criado em
-                  </Typography>
-                  <Typography variant='body2'>
-                    {new Date(curso.data_criacao).toLocaleDateString('pt-BR')}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
+        {tab === 'assignment' && (
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Select
+                fullWidth
+                displayEmpty
+                value={form.department}
+                onChange={e => setForm({ ...form, department: e.target.value })}
+              >
+                <MenuItem value=''>
+                  <em>— Selecione o departamento —</em>
+                </MenuItem>
+                {departments.map(d => (
+                  <MenuItem key={d} value={d}>
+                    {d}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Select
+                fullWidth
+                displayEmpty
+                value={form.category}
+                onChange={e => setForm({ ...form, category: e.target.value })}
+              >
+                <MenuItem value=''>
+                  <em>— Selecione a categoria —</em>
+                </MenuItem>
+                {categories.map(c => (
+                  <MenuItem key={c} value={c}>
+                    {c}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Select
+                fullWidth
+                displayEmpty
+                value={form.instructor}
+                onChange={e => setForm({ ...form, instructor: e.target.value })}
+              >
+                <MenuItem value=''>
+                  <em>— Selecione o instrutor —</em>
+                </MenuItem>
+                {instructors.map(i => (
+                  <MenuItem key={i} value={i}>
+                    {i}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
           </Grid>
-        </Grid>
+        )}
+
+        {tab === 'settings' && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.independent}
+                  onChange={e =>
+                    setForm({ ...form, independent: e.target.checked })
+                  }
+                />
+              }
+              label='Disciplina independente'
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.certification}
+                  onChange={e =>
+                    setForm({ ...form, certification: e.target.checked })
+                  }
+                />
+              }
+              label='Possui certificação'
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.sequential}
+                  onChange={e =>
+                    setForm({ ...form, sequential: e.target.checked })
+                  }
+                />
+              }
+              label='Aprendizado sequencial'
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={form.showProgress}
+                  onChange={e =>
+                    setForm({ ...form, showProgress: e.target.checked })
+                  }
+                />
+              }
+              label='Mostrar progresso'
+            />
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Taxa (fees)'
+                  type='number'
+                  value={form.fees}
+                  onChange={e => setForm({ ...form, fees: e.target.value })}
+                  fullWidth
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Unidades de teste'
+                  type='number'
+                  value={form.trialUnits}
+                  onChange={e =>
+                    setForm({ ...form, trialUnits: e.target.value })
+                  }
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        )}
+
+        {tab === 'content' && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label='Sobre o curso'
+              value={form.about}
+              onChange={e => setForm({ ...form, about: e.target.value })}
+              fullWidth
+              multiline
+              minRows={4}
+            />
+            <TextField
+              label='Pré-requisitos'
+              value={form.prerequisites}
+              onChange={e =>
+                setForm({ ...form, prerequisites: e.target.value })
+              }
+              fullWidth
+              multiline
+              minRows={4}
+            />
+          </Box>
+        )}
       </DialogContent>
-
       <DialogActions>
-        <Button onClick={onClose} variant='contained'>
-          Fechar
+        <Button variant='outlined' onClick={() => setIsAddOpen(false)}>
+          Cancelar
+        </Button>
+        <Button variant='contained' onClick={handleAdd}>
+          Adicionar
         </Button>
       </DialogActions>
     </Dialog>
