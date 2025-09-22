@@ -805,37 +805,43 @@ export default function AdminCourses() {
                     fullWidth
                   />
                 </Grid>
-                <FormControl fullWidth>
-                  <InputLabel>Pré-requisitos</InputLabel>
-                  <Select
-                    multiple
-                    value={form.pre_requisitos || []}
-                    onChange={e => {
-                      const value = e.target.value
-                      setForm({
-                        ...form,
-                        pre_requisitos: Array.isArray(value) ? value : [value],
-                      })
-                    }}
-                    renderValue={selected =>
-                      (Array.isArray(selected) ? selected : [selected])
-                        .map(cod => {
-                          const curso = cursos.find(c => c.codigo === cod)
-                          return curso ? curso.codigo : cod
+                <Grid size={{ xs: 12 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Pré-requisitos</InputLabel>
+                    <Select
+                      multiple
+                      value={form.pre_requisitos || []}
+                      onChange={e => {
+                        const value = e.target.value
+                        setForm({
+                          ...form,
+                          pre_requisitos: Array.isArray(value)
+                            ? value
+                            : [value],
                         })
-                        .join(', ')
-                    }
-                  >
-                    {cursos.map(curso => (
-                      <MenuItem key={curso.codigo} value={curso.codigo}>
-                        <Checkbox
-                          checked={form.pre_requisitos?.includes(curso.codigo)}
-                        />
-                        <ListItemText primary={curso.titulo} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                      }}
+                      renderValue={selected =>
+                        (Array.isArray(selected) ? selected : [selected])
+                          .map(cod => {
+                            const curso = cursos.find(c => c.codigo === cod)
+                            return curso ? curso.codigo : cod
+                          })
+                          .join(', ')
+                      }
+                    >
+                      {cursos.map(curso => (
+                        <MenuItem key={curso.codigo} value={curso.codigo}>
+                          <Checkbox
+                            checked={form.pre_requisitos?.includes(
+                              curso.codigo
+                            )}
+                          />
+                          <ListItemText primary={curso.titulo} />
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
               </Grid>
             )}
           </DialogContent>
