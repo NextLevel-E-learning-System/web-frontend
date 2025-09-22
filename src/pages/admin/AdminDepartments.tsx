@@ -1,18 +1,11 @@
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
   Alert,
@@ -22,8 +15,6 @@ import {
   FormControl,
   InputLabel,
   Select,
-  TableContainer,
-  Paper,
   useMediaQuery,
   useTheme,
   Stack,
@@ -47,6 +38,7 @@ import {
   useDeleteDepartamento,
   type Departamento,
 } from '@/api/users'
+import DataTable, { Column } from '@/components/common/DataTable'
 
 interface DepartmentForm {
   codigo: string
@@ -225,6 +217,126 @@ export default function AdminDepartments() {
     )
   }
 
+  // Definição das colunas para o DataTable
+  const departmentColumns: Column[] = [
+    {
+      id: 'codigo',
+      label: 'Código',
+      align: 'left',
+      minWidth: 80,
+      render: (_, dept) => (
+        <Typography fontWeight={500}>
+          {dept.codigo}
+        </Typography>
+      ),
+    },
+    {
+      id: 'nome',
+      label: 'Departamento',
+      align: 'left',
+      minWidth: 150,
+      render: (_, dept) => (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+          }}
+        >
+          <Typography fontWeight={500}>
+            {dept.nome}
+          </Typography>
+          {isMobile && dept.descricao && (
+            <Typography
+              variant='caption'
+              color='text.secondary'
+            >
+              {dept.descricao}
+            </Typography>
+          )}
+          {isMobile &&
+            getGestorNome(dept.gestor_funcionario_id) && (
+              <Typography
+                variant='caption'
+                color='text.secondary'
+              >
+                Gestor: {getGestorNome(dept.gestor_funcionario_id)}
+              </Typography>
+            )}
+        </Box>
+      ),
+    },
+    ...(isMobile ? [] : [
+      {
+        id: 'descricao',
+        label: 'Descrição',
+        align: 'left',
+        minWidth: 200,
+        render: (_, dept) => (
+          <Typography
+            variant='body2'
+            color='text.secondary'
+            sx={{
+              maxWidth: 300,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {dept.descricao || '—'}
+          </Typography>
+        ),
+      },
+      {
+        id: 'gestor',
+        label: 'Gestor',
+        align: 'left',
+        minWidth: 150,
+        render: (_, dept) => (
+          <Typography variant='body2' color='text.secondary'>
+            {getGestorNome(dept.gestor_funcionario_id) || '—'}
+          </Typography>
+        ),
+      },
+    ] as Column[]),
+    {
+      id: 'acoes',
+      label: 'Ações',
+      align: 'right',
+      minWidth: 120,
+      render: (_, dept) => (
+        <Stack
+          direction='row'
+          spacing={1}
+          justifyContent='flex-end'
+        >
+          <IconButton
+            size='small'
+            onClick={() => handleEdit(dept)}
+            aria-label='editar'
+            color='primary'
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            size='small'
+            onClick={() =>
+              handleDelete(dept.codigo, dept.nome)
+            }
+            aria-label='excluir'
+            color='error'
+            disabled={
+              deleteDepartamento.isPending ||
+              confirmDialog.isLoading
+            }
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Stack>
+      ),
+    },
+  ]
+
   return (
     <DashboardLayout title={title} items={navigationItems}>
       <Box>
@@ -246,134 +358,13 @@ export default function AdminDepartments() {
           </Button>
         </Box>
 
-        <Card>
-          <CardContent>
-            {departamentosFiltrados.length === 0 ? (
-              <Alert severity='info'>
-                Nenhum departamento cadastrado. Clique em "Adicionar
-                Departamento" para começar.
-              </Alert>
-            ) : (
-              <TableContainer
-                component={Paper}
-                sx={{ maxHeight: 600, overflow: 'auto' }}
-              >
-                <Table size='small' stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ minWidth: 80 }}>Código</TableCell>
-                      <TableCell sx={{ minWidth: 150 }}>Departamento</TableCell>
-                      {!isMobile && (
-                        <TableCell sx={{ minWidth: 200 }}>Descrição</TableCell>
-                      )}
-                      {!isMobile && (
-                        <TableCell sx={{ minWidth: 150 }}>Gestor</TableCell>
-                      )}
-                      <TableCell align='right' sx={{ minWidth: 120 }}>
-                        Ações
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {departamentosFiltrados.map(dept => (
-                      <TableRow key={dept.codigo} hover>
-                        <TableCell>
-                          <Typography fontWeight={500}>
-                            {dept.codigo}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 0.5,
-                            }}
-                          >
-                            <Typography fontWeight={500}>
-                              {dept.nome}
-                            </Typography>
-                            {isMobile && dept.descricao && (
-                              <Typography
-                                variant='caption'
-                                color='text.secondary'
-                              >
-                                {dept.descricao}
-                              </Typography>
-                            )}
-                            {isMobile &&
-                              getGestorNome(dept.gestor_funcionario_id) && (
-                                <Typography
-                                  variant='caption'
-                                  color='text.secondary'
-                                >
-                                  Gestor:{' '}
-                                  {getGestorNome(dept.gestor_funcionario_id)}
-                                </Typography>
-                              )}
-                          </Box>
-                        </TableCell>
-                        {!isMobile && (
-                          <TableCell>
-                            <Typography
-                              variant='body2'
-                              color='text.secondary'
-                              sx={{
-                                maxWidth: 300,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {dept.descricao || '—'}
-                            </Typography>
-                          </TableCell>
-                        )}
-                        {!isMobile && (
-                          <TableCell>
-                            <Typography variant='body2' color='text.secondary'>
-                              {getGestorNome(dept.gestor_funcionario_id) || '—'}
-                            </Typography>
-                          </TableCell>
-                        )}
-                        <TableCell align='right'>
-                          <Stack
-                            direction='row'
-                            spacing={1}
-                            justifyContent='flex-end'
-                          >
-                            <IconButton
-                              size='small'
-                              onClick={() => handleEdit(dept)}
-                              aria-label='editar'
-                              color='primary'
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            <IconButton
-                              size='small'
-                              onClick={() =>
-                                handleDelete(dept.codigo, dept.nome)
-                              }
-                              aria-label='excluir'
-                              color='error'
-                              disabled={
-                                deleteDepartamento.isPending ||
-                                confirmDialog.isLoading
-                              }
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </CardContent>
-        </Card>
+        <DataTable
+          data={departamentosFiltrados}
+          columns={departmentColumns}
+          loading={isLoading}
+          getRowId={(dept) => dept.codigo}
+          rowsPerPage={5}
+        />
 
         {/* Dialog Adicionar Departamento */}
         <Dialog

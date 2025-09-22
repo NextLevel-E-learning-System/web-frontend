@@ -1,9 +1,6 @@
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
@@ -11,11 +8,6 @@ import {
   IconButton,
   MenuItem,
   Select,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
   Chip,
@@ -46,6 +38,7 @@ import {
   type CreateCategoryInput,
 } from '@/api/courses'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
+import DataTable, { Column } from '@/components/common/DataTable'
 
 interface CategoryForm {
   codigo: string
@@ -192,6 +185,91 @@ export default function AdminCategories() {
     )
   }
 
+  // Definição das colunas para o DataTable
+  const categoryColumns: Column[] = [
+    {
+      id: 'categoria',
+      label: 'Categoria',
+      align: 'left',
+      render: (_, categoria) => (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+          }}
+        >
+          <CircleIcon
+            sx={{
+              color: categoria.cor_hex || '#3B82F6',
+              fontSize: 24,
+            }}
+          />
+          <Typography fontWeight={500}>
+            {categoria.nome}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      id: 'departamento',
+      label: 'Departamento',
+      align: 'left',
+      render: (_, categoria) => (
+        <Box>
+          <Typography variant='body2' fontWeight={500}>
+            {getDepartmentName(categoria.departamento_codigo || '')}
+          </Typography>
+          <Typography variant='caption' color='text.secondary'>
+            {categoria.departamento_codigo}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      id: 'descricao',
+      label: 'Descrição',
+      align: 'left',
+      render: (_, categoria) => (
+        <Typography
+          variant='body2'
+          color='text.secondary'
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {categoria.descricao || '—'}
+        </Typography>
+      ),
+    },
+    {
+      id: 'acoes',
+      label: 'Ações',
+      align: 'right',
+      render: (_, categoria) => (
+        <Box>
+          <IconButton
+            size='small'
+            aria-label='editar'
+            onClick={() => handleEdit(categoria)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            size='small'
+            onClick={() => handleDelete(categoria)}
+            aria-label='excluir'
+            color='error'
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ]
+
   return (
     <DashboardLayout title={'Gerenciar Categorias'} items={navigationItems}>
       <Box>
@@ -230,101 +308,13 @@ export default function AdminCategories() {
         </Box>
 
         {/* Lista de Categorias */}
-        <Card>
-          <CardContent>
-            {categoriasFiltradas.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <CategoryIcon sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
-                <Typography variant='h6' color='textSecondary'>
-                  Nenhuma categoria encontrada
-                </Typography>
-                <Typography variant='body2' color='textSecondary'>
-                  {selectedDept === 'all'
-                    ? 'Não há categorias cadastradas'
-                    : 'Não há categorias para este departamento'}
-                </Typography>
-              </Box>
-            ) : (
-              <Table size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Categoria</TableCell>
-                    <TableCell>Departamento</TableCell>
-                    <TableCell>Descrição</TableCell>
-                    <TableCell align='right'>Ações</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {categoriasFiltradas.map(categoria => (
-                    <TableRow key={categoria.codigo} hover>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                          }}
-                        >
-                          <CircleIcon
-                            sx={{
-                              color: categoria.cor_hex || '#3B82F6',
-                              fontSize: 24,
-                            }}
-                          />
-                          <Typography fontWeight={500}>
-                            {categoria.nome}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant='body2' fontWeight={500}>
-                            {getDepartmentName(
-                              categoria.departamento_codigo || ''
-                            )}
-                          </Typography>
-                          <Typography variant='caption' color='text.secondary'>
-                            {categoria.departamento_codigo}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {categoria.descricao || '—'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align='right'>
-                        <IconButton
-                          size='small'
-                          aria-label='editar'
-                          onClick={() => handleEdit(categoria)}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size='small'
-                          onClick={() => handleDelete(categoria)}
-                          aria-label='excluir'
-                          color='error'
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <DataTable
+          data={categoriasFiltradas}
+          columns={categoryColumns}
+          loading={loadingDepartamentos || loadingCategorias}
+          getRowId={(categoria) => categoria.codigo}
+          rowsPerPage={5}
+        />
 
         {/* Dialog Adicionar Categoria */}
         <Dialog

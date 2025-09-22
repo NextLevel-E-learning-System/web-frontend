@@ -4,11 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
   Chip,
   Select,
@@ -19,29 +14,20 @@ import {
   Skeleton,
   LinearProgress,
   Rating,
-  Paper,
   IconButton,
   Menu,
-  ListItemIcon,
-  ListItemText,
-  Fab,
   useMediaQuery,
   useTheme,
-  TableContainer,
   FormControlLabel,
   Switch,
 } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
-  Group as GroupIcon,
-  CheckCircle as CheckCircleIcon,
   Schedule as ScheduleIcon,
   FileCopy,
-  Search as SearchIcon,
   Add as AddIcon,
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
-  Clear as ClearIcon,
 } from '@mui/icons-material'
 import { VisibilityOff } from '@mui/icons-material'
 import { Visibility } from '@mui/icons-material'
@@ -49,6 +35,7 @@ import { useMemo, useState } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import CourseModal from '@/components/admin/CourseModal'
+import DataTable, { Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCourses,
@@ -212,6 +199,205 @@ export default function AdminCourses() {
     }
   }
 
+  // Definição das colunas para o DataTable
+  const courseColumns: Column[] = [
+    {
+      id: 'titulo',
+      label: 'Curso',
+      align: 'left',
+      render: (_, curso) => (
+        <Box>
+          <Typography variant='body2' fontWeight={500}>
+            {curso.titulo}
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mt: 0.5,
+            }}
+          >
+            <ScheduleIcon fontSize='small' color='action' />
+            <Typography
+              variant='caption'
+              color='text.secondary'
+            >
+              {curso.duracao_estimada}h
+            </Typography>
+            <TrendingUpIcon
+              fontSize='small'
+              color='action'
+            />
+            <Typography
+              variant='caption'
+              color='text.secondary'
+            >
+              {curso.xp_oferecido} XP
+            </Typography>
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      id: 'categoria',
+      label: 'Categoria',
+      align: 'center',
+      render: (_, curso) => {
+        const categoria = categorias.find(c => c.codigo === curso.categoria_id)
+        return (
+          <Chip
+            variant='outlined'
+            size='small'
+            label={categoria?.codigo}
+            sx={{
+              borderColor: categoria?.cor_hex || '#ccc',
+              color: categoria?.cor_hex || '#666',
+              backgroundColor: categoria?.cor_hex
+                ? `${categoria.cor_hex}15`
+                : 'transparent',
+            }}
+          />
+        )
+      },
+    },
+    {
+      id: 'instrutor',
+      label: 'Instrutor',
+      align: 'center',
+      render: (_, curso) => {
+        const instrutor = funcionarios.find(f => f.id === curso.instrutor_id)
+        return (
+          <Typography variant='body2'>
+            {instrutor?.nome
+              ? (() => {
+                  const nomes = instrutor.nome
+                    .split(' ')
+                    .filter(n => n.length > 0)
+                  const primeiro = nomes[0]?.charAt(0) || ''
+                  const ultimo =
+                    nomes.length > 1
+                      ? nomes[nomes.length - 1]?.charAt(0) || ''
+                      : ''
+                  return `${primeiro}${ultimo}`.toUpperCase()
+                })()
+              : '-'}
+          </Typography>
+        )
+      },
+    },
+    {
+      id: 'nivel',
+      label: 'Nível',
+      align: 'center',
+      render: (_, curso) => (
+        <Chip
+          size='small'
+          label={curso.nivel_dificuldade}
+          color={getNivelColor(curso.nivel_dificuldade) as any}
+        />
+      ),
+    },
+    {
+      id: 'inscritos',
+      label: 'Inscritos',
+      align: 'center',
+      render: (_, curso) => (
+        <Box>
+          <Typography variant='body2' fontWeight={500}>
+            {curso.total_inscritos || 0}
+          </Typography>
+          <Typography variant='caption' color='success.main'>
+            {curso.total_concluidos || 0} concluídos
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      id: 'taxa_conclusao',
+      label: 'Taxa Conclusão',
+      align: 'center',
+      render: (_, curso) => (
+        <Box sx={{ minWidth: 80 }}>
+          <Typography variant='body2' fontWeight={500}>
+            {curso.taxa_conclusao || 0}%
+          </Typography>
+          <LinearProgress
+            variant='determinate'
+            value={curso.taxa_conclusao || 0}
+            sx={{ mt: 0.5 }}
+            color={
+              curso.taxa_conclusao > 70
+                ? 'success'
+                : curso.taxa_conclusao > 40
+                  ? 'warning'
+                  : 'error'
+            }
+          />
+        </Box>
+      ),
+    },
+    {
+      id: 'avaliacao',
+      label: 'Avaliação',
+      align: 'center',
+      render: (_, curso) => (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Rating
+            value={curso.avaliacao_media || 0}
+            readOnly
+            size='small'
+            precision={0.1}
+          />
+          <Typography
+            variant='caption'
+            color='text.secondary'
+          >
+            {curso.avaliacao_media || 0} ({curso.total_avaliacoes || 0})
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      id: 'status',
+      label: 'Status',
+      align: 'center',
+      render: (_, curso) => (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={curso.ativo}
+              onChange={async () => {
+                await handleToggleStatus(curso)
+              }}
+              color='primary'
+            />
+          }
+          label={curso.ativo ? 'Ativo' : 'Inativo'}
+        />
+      ),
+    },
+    {
+      id: 'acoes',
+      label: 'Ações',
+      align: 'center',
+      render: (_, curso) => (
+        <IconButton
+          size='small'
+          onClick={e => handleOpenMenu(e, curso)}
+        >
+          <MoreVertIcon />
+        </IconButton>
+      ),
+    },
+  ]
+
   if (loadingCursos || loadingCategorias) {
     return (
       <DashboardLayout title='Cursos' items={navigationItems}>
@@ -307,209 +493,14 @@ export default function AdminCourses() {
           inactiveLabel='Cursos Inativos'
         />
         {/* Tabela de Cursos */}
-        <Card>
-          <CardContent>
-            {filtered.length === 0 ? (
-              <Alert severity='info'>
-                {tab === 'all'
-                  ? 'Nenhum curso encontrado com os filtros selecionados.'
-                  : `Nenhum curso ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
-              </Alert>
-            ) : (
-              <TableContainer
-                component={Paper}
-                sx={{ maxHeight: 600, overflow: 'auto' }}
-              >
-                <Table size='small' stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Curso</TableCell>
-                      <TableCell align='center'>Categoria</TableCell>
-                      <TableCell align='center'>Instrutor</TableCell>
-                      <TableCell align='center'>Nível</TableCell>
-                      <TableCell align='center'>Inscritos</TableCell>
-                      <TableCell align='center'>Taxa Conclusão</TableCell>
-                      <TableCell align='center'>Avaliação</TableCell>
-                      <TableCell align='center'>Status</TableCell>
-                      <TableCell align='center'>Ações</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filtered.map(curso => {
-                      const categoria = categorias.find(
-                        c => c.codigo === curso.categoria_id
-                      )
-                      const instrutor = funcionarios.find(
-                        f => f.id === curso.instrutor_id
-                      )
-                      return (
-                        <TableRow
-                          key={curso.codigo}
-                          hover
-                          sx={{ cursor: 'pointer' }}
-                        >
-                          <TableCell>
-                            <Box>
-                              <Typography variant='body2' fontWeight={500}>
-                                {curso.titulo}
-                              </Typography>
-                              <Box
-                                sx={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 1,
-                                  mt: 0.5,
-                                }}
-                              >
-                                <ScheduleIcon fontSize='small' color='action' />
-                                <Typography
-                                  variant='caption'
-                                  color='text.secondary'
-                                >
-                                  {curso.duracao_estimada}h
-                                </Typography>
-                                <TrendingUpIcon
-                                  fontSize='small'
-                                  color='action'
-                                />
-                                <Typography
-                                  variant='caption'
-                                  color='text.secondary'
-                                >
-                                  {curso.xp_oferecido} XP
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </TableCell>
-                          <TableCell align='center'>
-                            <Chip
-                              variant='outlined'
-                              size='small'
-                              label={categoria?.codigo}
-                              sx={{
-                                borderColor: categoria?.cor_hex || '#ccc',
-                                color: categoria?.cor_hex || '#666',
-                                backgroundColor: categoria?.cor_hex
-                                  ? `${categoria.cor_hex}15`
-                                  : 'transparent',
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell align='center'>
-                            <Typography variant='body2'>
-                              {instrutor?.nome
-                                ? (() => {
-                                    const nomes = instrutor.nome
-                                      .split(' ')
-                                      .filter(n => n.length > 0)
-                                    const primeiro = nomes[0]?.charAt(0) || ''
-                                    const ultimo =
-                                      nomes.length > 1
-                                        ? nomes[nomes.length - 1]?.charAt(0) ||
-                                          ''
-                                        : ''
-                                    return `${primeiro}${ultimo}`.toUpperCase()
-                                  })()
-                                : '-'}
-                            </Typography>
-                          </TableCell>
-
-                          <TableCell align='center'>
-                            <Chip
-                              size='small'
-                              label={curso.nivel_dificuldade}
-                              color={
-                                getNivelColor(curso.nivel_dificuldade) as any
-                              }
-                            />
-                          </TableCell>
-                          <TableCell align='center'>
-                            <Box>
-                              <Typography variant='body2' fontWeight={500}>
-                                {curso.total_inscritos || 0}
-                              </Typography>
-                              <Typography
-                                variant='caption'
-                                color='success.main'
-                              >
-                                {curso.total_concluidos || 0} concluídos
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell align='center'>
-                            <Box sx={{ minWidth: 80 }}>
-                              <Typography variant='body2' fontWeight={500}>
-                                {curso.taxa_conclusao || 0}%
-                              </Typography>
-                              <LinearProgress
-                                variant='determinate'
-                                value={curso.taxa_conclusao || 0}
-                                sx={{ mt: 0.5 }}
-                                color={
-                                  curso.taxa_conclusao > 70
-                                    ? 'success'
-                                    : curso.taxa_conclusao > 40
-                                      ? 'warning'
-                                      : 'error'
-                                }
-                              />
-                            </Box>
-                          </TableCell>
-                          <TableCell align='center'>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                              }}
-                            >
-                              <Rating
-                                value={curso.avaliacao_media || 0}
-                                readOnly
-                                size='small'
-                                precision={0.1}
-                              />
-                              <Typography
-                                variant='caption'
-                                color='text.secondary'
-                              >
-                                {curso.avaliacao_media || 0} (
-                                {curso.total_avaliacoes || 0})
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell align='center'>
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  checked={curso.ativo}
-                                  onChange={async () => {
-                                    await handleToggleStatus(curso)
-                                  }}
-                                  color='primary'
-                                />
-                              }
-                              label={curso.ativo ? 'Ativo' : 'Inativo'}
-                            />
-                          </TableCell>
-                          <TableCell align='center'>
-                            <IconButton
-                              size='small'
-                              onClick={e => handleOpenMenu(e, curso)}
-                            >
-                              <MoreVertIcon />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </CardContent>
-        </Card>
-        {/* Menu de ações */}
+        <DataTable
+          data={filtered}
+          columns={courseColumns}
+          loading={loadingCursos || loadingCategorias}
+          getRowId={(curso) => curso.codigo}
+          rowsPerPage={5}
+        />
+       {/* Menu de ações */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
