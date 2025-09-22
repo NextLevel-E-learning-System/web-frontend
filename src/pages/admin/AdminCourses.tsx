@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
   Table,
   TableBody,
   TableCell,
@@ -18,22 +17,18 @@ import {
   InputLabel,
   Alert,
   Skeleton,
-  Avatar,
   LinearProgress,
   Rating,
   Paper,
   TextField,
-  InputAdornment,
   IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Snackbar,
   Menu,
   ListItemIcon,
   ListItemText,
-  Tooltip,
   Fab,
   useMediaQuery,
   useTheme,
@@ -105,11 +100,6 @@ export default function AdminCourses() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedCourseForMenu, setSelectedCourseForMenu] =
     useState<Curso | null>(null)
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success' as 'success' | 'error',
-  })
   const [tabModal, setTabModal] = useState<
     'general' | 'assignment' | 'content'
   >('general')
@@ -172,70 +162,28 @@ export default function AdminCourses() {
   const handleCreateCourse = async () => {
     try {
       await createCourseMutation.mutateAsync(form)
-      setSnackbar({
-        open: true,
-        message: 'Curso criado com sucesso!',
-        severity: 'success',
-      })
       setDialogCreateCourse(false)
-      resetNewCourseData()
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Erro ao criar curso',
-        severity: 'error',
-      })
+      // erro ao criar curso
     }
   }
 
   const handleDuplicateCourse = async (curso: Curso) => {
     try {
       await duplicateCourseMutation.mutateAsync(curso.codigo)
-      setSnackbar({
-        open: true,
-        message: 'Curso duplicado com sucesso!',
-        severity: 'success',
-      })
       setAnchorEl(null)
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Erro ao duplicar curso',
-        severity: 'error',
-      })
+      // erro ao duplicar curso
     }
   }
 
   const handleToggleStatus = async (curso: Curso) => {
     try {
       await toggleStatusMutation.mutateAsync(!curso.ativo)
-      setSnackbar({
-        open: true,
-        message: `Curso ${!curso.ativo ? 'ativado' : 'desativado'} com sucesso!`,
-        severity: 'success',
-      })
       setAnchorEl(null)
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Erro ao alterar status do curso',
-        severity: 'error',
-      })
+      // erro ao alterar status do curso
     }
-  }
-
-  const resetNewCourseData = () => {
-    setNewCourseData({
-      codigo: '',
-      titulo: '',
-      descricao: '',
-      categoria_id: '',
-      instrutor_id: '',
-      duracao_estimada: 0,
-      xp_oferecido: 0,
-      nivel_dificuldade: 'Básico',
-      pre_requisitos: [],
-    })
   }
 
   // Menu handlers
@@ -254,7 +202,7 @@ export default function AdminCourses() {
   }
 
   const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }))
+  // removido, não usa mais snackbar
   }
 
   // Filtragem de cursos
@@ -696,7 +644,6 @@ export default function AdminCourses() {
               <Tabs value={tabModal} onChange={(_, v) => setTabModal(v)}>
                 <Tab value='general' label='Geral' />
                 <Tab value='assignment' label='Atribuição' />
-                <Tab value='settings' label='Configurações' />
                 <Tab value='content' label='Conteúdo' />
               </Tabs>
             </Box>
@@ -870,11 +817,15 @@ export default function AdminCourses() {
                   <Select
                     multiple
                     value={form.pre_requisitos || []}
-                    onChange={e =>
-                      setForm({ ...form, pre_requisitos: e.target.value })
-                    }
+                    onChange={e => {
+                      const value = e.target.value
+                      setForm({
+                        ...form,
+                        pre_requisitos: Array.isArray(value) ? value : [value]
+                      })
+                    }}
                     renderValue={selected =>
-                      (selected as string[])
+                      (Array.isArray(selected) ? selected : [selected])
                         .map(cod => {
                           const curso = cursos.find(c => c.codigo === cod)
                           return curso ? curso.titulo : cod
