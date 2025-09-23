@@ -29,21 +29,13 @@ export default function BrandAppBar() {
             component={RouterLink}
             to='/'
           >
-            <Box
-              sx={{
-                display: 'grid',
-                placeItems: 'center',
-              }}
-            >
+           
               <img
                 src={logoIcon}
                 alt='NextLevel Logo'
-                style={{ height: 40, width: 'auto', display: 'block' }}
+                style={{ height: 60, width: 'auto', display: 'block' }}
               />
-            </Box>
-            <Typography variant='h6' fontWeight={800} color='primary'>
-              NextLevel
-            </Typography>
+         
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Button component={RouterLink} to='/login' variant='outlined'>

@@ -125,20 +125,9 @@ export default function DashboardLayout({
       >
         <Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
           {/* Logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src={logoIcon} alt="Logo NextLevel" style={{ width: 40, height: 35 }} />
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              sx={{ 
-                ml: 1,
-                color: 'primary.main',
-                display: { xs: 'none', sm: 'block' }
-              }}
-            >
-              NextLevel
-            </Typography>
-          </Box>
+          
+            <img src={logoIcon} alt="Logo NextLevel" style={{   height: 60 , }} />
+          
 
           {/* Desktop Navigation - Centralizada */}
           <Box 
@@ -247,18 +236,13 @@ export default function DashboardLayout({
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
-            width: 280,
+            width: 200,
           },
         }}
       >
         <Toolbar>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src={logoIcon} alt="Logo NextLevel" style={{ width: 40 }} />
-            <Typography variant="h6" fontWeight={700} sx={{ ml: 1 }}>
-              NextLevel
-            </Typography>
-          </Box>
-        </Toolbar>
+            <img src={logoIcon} alt="Logo NextLevel" style={{ height: 60 }} />
+            </Toolbar>
         <Divider />
         {renderMobileItems(items)}
       </Drawer>
