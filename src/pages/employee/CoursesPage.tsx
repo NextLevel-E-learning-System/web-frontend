@@ -105,7 +105,7 @@ export default function CoursesPage() {
     instrutor_id: user?.id || '',
     duracao_estimada: 0,
     xp_oferecido: 0,
-    nivel_dificuldade: 'Básico',
+    nivel_dificuldade: 'Iniciante',
   })
 
   // Hooks
@@ -131,7 +131,7 @@ export default function CoursesPage() {
   }
 
   const dificuldadeColors = {
-    Básico: '#4caf50',
+    Iniciante: '#4caf50',
     Intermediário: '#ff9800',
     Avançado: '#f44336',
   }
@@ -166,7 +166,7 @@ export default function CoursesPage() {
       instrutor_id: user?.id || '',
       duracao_estimada: 0,
       xp_oferecido: 0,
-      nivel_dificuldade: 'Básico',
+      nivel_dificuldade: 'Iniciante',
     })
   }
 
@@ -692,7 +692,7 @@ export default function CoursesPage() {
                     sx={{ borderRadius: '8px' }}
                   >
                     <MenuItem value=''>Todos os níveis</MenuItem>
-                    <MenuItem value='Básico'>Básico</MenuItem>
+                    <MenuItem value='Iniciante'>Iniciante</MenuItem>
                     <MenuItem value='Intermediário'>Intermediário</MenuItem>
                     <MenuItem value='Avançado'>Avançado</MenuItem>
                   </Select>
@@ -992,13 +992,13 @@ export default function CoursesPage() {
                   setDadosNovoCurso(prev => ({
                     ...prev,
                     nivel_dificuldade: e.target.value as
-                      | 'Básico'
+                      | 'Iniciante'
                       | 'Intermediário'
                       | 'Avançado',
                   }))
                 }
               >
-                <MenuItem value='Básico'>Básico</MenuItem>
+                <MenuItem value='Iniciante'>Iniciante</MenuItem>
                 <MenuItem value='Intermediário'>Intermediário</MenuItem>
                 <MenuItem value='Avançado'>Avançado</MenuItem>
               </Select>

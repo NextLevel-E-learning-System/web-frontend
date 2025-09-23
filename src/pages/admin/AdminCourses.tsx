@@ -189,11 +189,11 @@ export default function AdminCourses() {
 
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
-      case 'iniciante':
+      case 'Iniciante':
         return 'success'
-      case 'intermediario':
+      case 'Intermediário':
         return 'warning'
-      case 'avancado':
+      case 'Avançado':
         return 'error'
       default:
         return 'default'
@@ -462,7 +462,7 @@ export default function AdminCourses() {
                 <MenuItem value='all'>
                   <em>Todos os Níveis</em>
                 </MenuItem>
-                <MenuItem value='Básico'>Básico</MenuItem>
+                <MenuItem value='Iniciante'>Iniciante</MenuItem>
                 <MenuItem value='Intermediário'>Intermediário</MenuItem>
                 <MenuItem value='Avançado'>Avançado</MenuItem>
               </Select>
