@@ -114,7 +114,13 @@ export default function DashboardLayout({
       <AppBar
         position='sticky'
         elevation={0}
-        sx={{ borderBottom: 1, borderColor: 'divider' }}
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          color: 'text.primary',
+          backdropFilter: 'saturate(180%) blur(8px)',
+        }}
       >
         <Toolbar disableGutters sx={{ gap: 3, px: 2 }}>
           <Box
@@ -137,7 +143,7 @@ export default function DashboardLayout({
               alignItems: 'center',
               justifyContent: 'center',
               flex: 1,
-              gap: 2,
+              gap: 3,
             }}
           >
             {items.map((item, idx) => {
@@ -164,12 +170,13 @@ export default function DashboardLayout({
                   component={RouterLink}
                   to={item.href || ''}
                   underline='none'
-                  color={
-                    location.pathname === item.href
-                      ? 'primary'
-                      : 'text.secondary'
-                  }
-                  sx={{ fontWeight: 600 }}
+                  sx={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: isActive ? 'primary.main' : 'text.secondary',
+                    transition: 'color .2s ease',
+                    '&:hover': { color: 'text.primary' },
+                  }}
                 >
                   {item.label}
                 </Link>
@@ -297,23 +304,21 @@ function NavDropdown({
           display: 'flex',
           alignItems: 'center',
           cursor: 'pointer',
-          color: isActive ? 'primary.main' : 'text.secondary',
-          fontWeight: 600,
-          '&:hover': {
-            color: 'primary.main',
-          },
         }}
         onClick={handleClick}
       >
         <Typography
           sx={{
+            fontSize: 14,
             fontWeight: 600,
-            color: 'inherit',
+            transition: 'color .2s ease',
+            '&:hover': { color: 'text.primary' },
+            color: isActive ? 'primary.main' : 'text.secondary',
           }}
         >
           {item.label}
         </Typography>
-        <ExpandMore sx={{ ml: 0.5 }} />
+        <ExpandMore />
       </Box>
 
       <Menu
