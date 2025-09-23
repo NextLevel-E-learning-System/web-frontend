@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material'
 import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward'
 import { Link as RouterLink } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
@@ -9,43 +9,26 @@ export default function BrandAppBar() {
       position='fixed'
       color='transparent'
       elevation={0}
-      sx={{
-        background: 'transparent',
-        borderBottom: t => `1px solid ${t.palette.divider}`,
-      }}
     >
-      <Box sx={{ width: '100%', px: 2 }}>
-        <Toolbar
-          disableGutters
-          sx={{ justifyContent: 'space-between', minHeight: 48, width: '100%' }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              textDecoration: 'none',
-            }}
-            component={RouterLink}
-            to='/'
-          >
-           
-              <img
+      <Box   sx={{
+        background: "linear-gradient(90deg, rgba(99,102,241,0.10), rgba(59,130,246,0.10), rgba(16,185,129,0.10))",
+        borderBottom: 1,
+        borderColor: "divider",
+        px: 1
+       }}>
+         <Container maxWidth="xxl" sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+           <img
                 src={logoIcon}
                 alt='NextLevel Logo'
                 style={{ height: 60, width: 'auto', display: 'block' }}
               />
-         
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button component={RouterLink} to='/login' variant='outlined'>
-              Entrar
-            </Button>
-            <Button component={RouterLink} to='/register' variant='contained'>
-              Cadastrar
-            </Button>
+          <Box sx={{ display: { xs: "none", md: "flex" }, gap: 1 }}>
+            <Button component={RouterLink} to="/login" variant="text">Entrar</Button>
+            <Button component={RouterLink} to="/register" variant="contained">Cadastrar</Button>
           </Box>
-        </Toolbar>
+        </Container>
       </Box>
     </AppBar>
   )

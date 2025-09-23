@@ -10,8 +10,7 @@ export default function Home() {
       sx={{
         minHeight: '100vh',
         width: '100%',
-        background:
-          'radial-gradient(1200px 500px at 10% -10%, rgba(18,131,230,.10), transparent), radial-gradient(1200px 500px at 90% 0%, rgba(245,158,11,.10), transparent), linear-gradient(180deg,#F7FAFF 0%, #EDF3FA 100%)',
+        background: "linear-gradient(180deg, rgba(99,102,241,0.10), rgba(59,130,246,0.05), transparent)"
       }}
     >
       <BrandAppBar />
