@@ -14,7 +14,7 @@ export default function BrandAppBar() {
           px: 2,
         }}
       >
-        <Toolbar disableGutters sx={{ gap: 3, py: 1.5 }}>
+        <Toolbar disableGutters sx={{ gap: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <img src={logoIcon} alt='NextLevel Logo' style={{ height: 60 }} />
           </Box>

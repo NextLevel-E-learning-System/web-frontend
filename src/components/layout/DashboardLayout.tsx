@@ -116,7 +116,7 @@ export default function DashboardLayout({
         elevation={0}
         sx={{ borderBottom: 1, borderColor: 'divider' }}
       >
-        <Toolbar disableGutters sx={{ gap: 3, py: 1.5 }}>
+        <Toolbar disableGutters sx={{ gap: 3, px: 2 }}>
           <Box
             component={RouterLink}
             to='/'
