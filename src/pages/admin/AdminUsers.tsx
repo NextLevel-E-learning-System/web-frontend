@@ -125,8 +125,7 @@ export default function AdminUsers() {
         id: 'cargo_nome',
         label: 'Cargo',
         minWidth: 150,
-        render: (value: string | null) =>
-          value ? getCargoName(value) : '—',
+        render: (value: string | null) => (value ? getCargoName(value) : '—'),
       },
       {
         id: 'role',
@@ -156,12 +155,12 @@ export default function AdminUsers() {
           >
             <Switch
               checked={value}
-              onChange={(e) => {
+              onChange={e => {
                 e.stopPropagation()
                 handleToggleAtivo(row.id, row.nome, row.ativo)
               }}
               size='small'
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             />
             <Typography
               variant='body2'
@@ -182,7 +181,7 @@ export default function AdminUsers() {
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <IconButton
               size='small'
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 handleEdit(row)
               }}
@@ -192,7 +191,7 @@ export default function AdminUsers() {
             </IconButton>
             <IconButton
               size='small'
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation()
                 handleDelete(row.id, row.nome)
               }}
@@ -433,7 +432,7 @@ export default function AdminUsers() {
               columns={columns}
               data={filtered}
               loading={loadingUsers}
-              getRowId={(row) => row.id}
+              getRowId={row => row.id}
               showPagination={true}
               stickyHeader={true}
             />

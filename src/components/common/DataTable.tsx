@@ -94,11 +94,15 @@ export default function DataTable<T = any>({
                 const actualIndex = page * rowsPerPage + index
                 const rowId = getRowId(row, actualIndex)
                 return (
-                  <TableRow 
-                    hover 
-                    tabIndex={-1} 
+                  <TableRow
+                    hover
+                    tabIndex={-1}
                     key={rowId}
-                    onClick={onRowClick ? () => onRowClick(row, actualIndex) : undefined}
+                    onClick={
+                      onRowClick
+                        ? () => onRowClick(row, actualIndex)
+                        : undefined
+                    }
                     sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
                   >
                     {columns.map(column => {

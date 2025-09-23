@@ -63,11 +63,16 @@ export default function EmployeeDashboard() {
     )
   }
 
-  const { progressao, cursos, ranking, atividades_recentes = [] } = alunoData || {
+  const {
+    progressao,
+    cursos,
+    ranking,
+    atividades_recentes = [],
+  } = alunoData || {
     progressao: {},
     cursos: { em_andamento: [], concluidos: [], recomendados: [] },
     ranking: {},
-    atividades_recentes: []
+    atividades_recentes: [],
   }
 
   return (
@@ -82,7 +87,10 @@ export default function EmployeeDashboard() {
           dashboardData={{
             tipo_dashboard: alunoData?.tipo_dashboard || 'aluno',
             xp_atual: progressao?.xp_atual || 0,
-            nivel_atual: typeof progressao?.nivel_atual === 'number' ? progressao.nivel_atual : 1,
+            nivel_atual:
+              typeof progressao?.nivel_atual === 'number'
+                ? progressao.nivel_atual
+                : 1,
             progresso_nivel: progressao?.progresso_nivel || 0,
             ranking_departamento: ranking?.posicao_departamento || 0,
             xp_proximo_nivel: progressao?.xp_proximo_nivel || 100,
@@ -115,61 +123,66 @@ export default function EmployeeDashboard() {
                 {tab === 0 && (
                   <List>
                     {(cursos?.em_andamento || []).length > 0 ? (
-                      (cursos?.em_andamento || []).map((c: any, index: number) => (
-                        <ListItem
-                          key={c.id || index}
-                          sx={{
-                            flexDirection: 'column',
-                            alignItems: 'flex-start',
-                          }}
-                        >
-                          <Typography fontWeight={700}>
-                            {c.titulo ||
-                              c.title ||
-                              c.nome ||
-                              'Curso sem título'}
-                          </Typography>
-                          <Box
+                      (cursos?.em_andamento || []).map(
+                        (c: any, index: number) => (
+                          <ListItem
+                            key={c.id || index}
                             sx={{
-                              mt: 1,
-                              width: '100%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 2,
-                              flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
                             }}
                           >
+                            <Typography fontWeight={700}>
+                              {c.titulo ||
+                                c.title ||
+                                c.nome ||
+                                'Curso sem título'}
+                            </Typography>
                             <Box
                               sx={{
-                                flexGrow: 1,
-                                height: 8,
-                                bgcolor: 'grey.200',
-                                borderRadius: 5,
-                                minWidth: '120px',
+                                mt: 1,
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 2,
+                                flexWrap: { xs: 'wrap', sm: 'nowrap' },
                               }}
                             >
                               <Box
                                 sx={{
-                                  width: `${c.progress || c.progresso || c.progresso_percentual || 0}%`,
+                                  flexGrow: 1,
                                   height: 8,
-                                  bgcolor: 'primary.main',
+                                  bgcolor: 'grey.200',
                                   borderRadius: 5,
+                                  minWidth: '120px',
                                 }}
-                              />
+                              >
+                                <Box
+                                  sx={{
+                                    width: `${c.progress || c.progresso || c.progresso_percentual || 0}%`,
+                                    height: 8,
+                                    bgcolor: 'primary.main',
+                                    borderRadius: 5,
+                                  }}
+                                />
+                              </Box>
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                              >
+                                {c.progress ||
+                                  c.progresso ||
+                                  c.progresso_percentual ||
+                                  0}
+                                %
+                              </Typography>
+                              <Button size='small' variant='outlined'>
+                                Continuar
+                              </Button>
                             </Box>
-                            <Typography variant='body2' color='text.secondary'>
-                              {c.progress ||
-                                c.progresso ||
-                                c.progresso_percentual ||
-                                0}
-                              %
-                            </Typography>
-                            <Button size='small' variant='outlined'>
-                              Continuar
-                            </Button>
-                          </Box>
-                        </ListItem>
-                      ))
+                          </ListItem>
+                        )
+                      )
                     ) : (
                       <Typography
                         color='text.secondary'
@@ -183,24 +196,26 @@ export default function EmployeeDashboard() {
                 {tab === 1 && (
                   <List>
                     {(cursos?.concluidos || []).length > 0 ? (
-                      (cursos?.concluidos || []).map((c: any, index: number) => (
-                        <ListItem key={c.id || index}>
-                          <ListItemText
-                            primary={
-                              c.titulo ||
-                              c.title ||
-                              c.nome ||
-                              'Curso sem título'
-                            }
-                            secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
-                          />
-                          <Chip
-                            label='Concluído'
-                            color='success'
-                            size='small'
-                          />
-                        </ListItem>
-                      ))
+                      (cursos?.concluidos || []).map(
+                        (c: any, index: number) => (
+                          <ListItem key={c.id || index}>
+                            <ListItemText
+                              primary={
+                                c.titulo ||
+                                c.title ||
+                                c.nome ||
+                                'Curso sem título'
+                              }
+                              secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
+                            />
+                            <Chip
+                              label='Concluído'
+                              color='success'
+                              size='small'
+                            />
+                          </ListItem>
+                        )
+                      )
                     ) : (
                       <Typography
                         color='text.secondary'

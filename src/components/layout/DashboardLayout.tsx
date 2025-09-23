@@ -19,6 +19,7 @@ import {
   ListItemText,
   Divider,
   Collapse,
+  Link,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -67,7 +68,8 @@ export default function DashboardLayout({
       {navItems.map((item, idx) => {
         const key = `${level}-${idx}-${item.label}`
         const hasChildren = !!item.children?.length
-        const selected = currentPath === item.href || 
+        const selected =
+          currentPath === item.href ||
           (hasChildren && item.children!.some(c => c.href === currentPath))
 
         return (
@@ -75,7 +77,7 @@ export default function DashboardLayout({
             <ListItemButton
               component={item.href ? RouterLink : 'div'}
               to={item.href || ''}
-              onClick={(e) => {
+              onClick={e => {
                 if (hasChildren) {
                   e.preventDefault()
                   toggleSection(key)
@@ -84,7 +86,7 @@ export default function DashboardLayout({
                 }
               }}
               selected={selected}
-              sx={{ 
+              sx={{
                 pl: 2 + level * 2,
                 borderRadius: 1,
                 mx: 1,
@@ -92,12 +94,11 @@ export default function DashboardLayout({
               }}
             >
               <ListItemText primary={item.label} />
-              {hasChildren && (
-                openSections[key] ? <ExpandLess /> : <ExpandMore />
-              )}
+              {hasChildren &&
+                (openSections[key] ? <ExpandLess /> : <ExpandMore />)}
             </ListItemButton>
             {hasChildren && (
-              <Collapse in={!!openSections[key]} timeout="auto" unmountOnExit>
+              <Collapse in={!!openSections[key]} timeout='auto' unmountOnExit>
                 {renderMobileItems(item.children!, level + 1)}
               </Collapse>
             )}
@@ -108,48 +109,49 @@ export default function DashboardLayout({
   )
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <CssBaseline />
-      
+    <Box>
       {/* Header/Navbar */}
-      <AppBar 
-        position="sticky" 
-        color="inherit"
-        elevation={1}
-        sx={{
-          borderBottom: t => `1px solid ${t.palette.divider}`,
-          bgcolor: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'saturate(120%) blur(8px)',
-          zIndex: theme.zIndex.appBar,
-        }}
+      <AppBar
+        position='sticky'
+        elevation={0}
+        sx={{ borderBottom: 1, borderColor: 'divider' }}
       >
-        <Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
-          {/* Logo */}
-          
-            <img src={logoIcon} alt="Logo NextLevel" style={{   height: 60 , }} />
-          
+        <Toolbar disableGutters sx={{ gap: 3, py: 1.5 }}>
+          <Box
+            component={RouterLink}
+            to='/'
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            <img src={logoIcon} alt='Logo NextLevel' style={{ height: 60 }} />
+          </Box>
 
           {/* Desktop Navigation - Centralizada */}
-          <Box 
-            component="nav" 
-            sx={{ 
-              display: { xs: 'none', md: 'flex' }, 
-              alignItems: 'center', 
+          <Box
+            component='nav'
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              alignItems: 'center',
               justifyContent: 'center',
               flex: 1,
-              gap: 1
+              gap: 2,
             }}
           >
             {items.map((item, idx) => {
               const hasChildren = !!item.children?.length
-              const isActive = currentPath === item.href || 
-                (hasChildren && item.children!.some(c => c.href === currentPath))
+              const isActive =
+                currentPath === item.href ||
+                (hasChildren &&
+                  item.children!.some(c => c.href === currentPath))
 
               if (hasChildren) {
                 return (
-                  <NavDropdown 
+                  <NavDropdown
                     key={idx}
-                    item={item} 
+                    item={item}
                     isActive={isActive}
                     currentPath={currentPath}
                   />
@@ -157,43 +159,35 @@ export default function DashboardLayout({
               }
 
               return (
-                <Button
+                <Link
                   key={idx}
                   component={RouterLink}
                   to={item.href || ''}
-                  variant="text"
-                  sx={{
-                    color: isActive ? 'primary.main' : 'text.primary',
-                    fontWeight: isActive ? 600 : 500,
-                    borderBottom: isActive ? '2px solid' : '2px solid transparent',
-                    borderColor: isActive ? 'primary.main' : 'transparent',
-                    borderRadius: 0,
-                    px: 2,
-                    py: 1,
-                    '&:hover': {
-                      bgcolor: 'primary.main',
-                      color: 'primary.contrastText',
-                      borderRadius: 1,
-                    }
-                  }}
+                  underline='none'
+                  color={
+                    location.pathname === item.href
+                      ? 'primary'
+                      : 'text.secondary'
+                  }
+                  sx={{ fontWeight: 600 }}
                 >
                   {item.label}
-                </Button>
+                </Link>
               )
             })}
           </Box>
 
           {/* Page Title - Mobile */}
-          <Typography 
-            variant="h6" 
+          <Typography
+            variant='h6'
             fontWeight={600}
-            sx={{ 
+            sx={{
               flexGrow: 1,
               display: { xs: 'block', md: 'none' },
               textAlign: 'center',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
             }}
           >
             {title}
@@ -201,21 +195,19 @@ export default function DashboardLayout({
 
           {/* Right side - User and Mobile Menu */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Avatar sx={{ width: 32, height: 32 }}>
-              {avatarText}
-            </Avatar>
-            
+            <Avatar sx={{ width: 32, height: 32 }}>{avatarText}</Avatar>
+
             <IconButton
-              color="inherit"
+              color='inherit'
               onClick={() => mutate(undefined)}
-              size="small"
+              size='small'
             >
               <LogoutIcon />
             </IconButton>
 
             {/* Mobile menu button */}
             <IconButton
-              color="inherit"
+              color='inherit'
               onClick={() => setMobileOpen(true)}
               sx={{ display: { xs: 'flex', md: 'none' } }}
             >
@@ -227,8 +219,8 @@ export default function DashboardLayout({
 
       {/* Mobile Drawer */}
       <Drawer
-        variant="temporary"
-        anchor="left"
+        variant='temporary'
+        anchor='left'
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         ModalProps={{ keepMounted: true }}
@@ -241,15 +233,15 @@ export default function DashboardLayout({
         }}
       >
         <Toolbar>
-            <img src={logoIcon} alt="Logo NextLevel" style={{ height: 60 }} />
-            </Toolbar>
+          <img src={logoIcon} alt='Logo NextLevel' style={{ height: 60 }} />
+        </Toolbar>
         <Divider />
         {renderMobileItems(items)}
       </Drawer>
 
       {/* Main Content */}
       <Box
-        component="main"
+        component='main'
         sx={{
           flexGrow: 1,
           bgcolor: '#F5F7FB',
@@ -266,28 +258,26 @@ export default function DashboardLayout({
             px: 3,
           }}
         >
-          <Typography variant="h4" fontWeight={700}>
+          <Typography variant='h4' fontWeight={700}>
             {title}
           </Typography>
         </Box>
 
-        <Box sx={{ p: { xs: 2, sm: 3 } }}>
-          {children}
-        </Box>
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box>
       </Box>
     </Box>
   )
 }
 
 // Componente para dropdown de navegação
-function NavDropdown({ 
-  item, 
-  isActive, 
-  currentPath 
-}: { 
-  item: NavItem; 
-  isActive: boolean;
-  currentPath: string;
+function NavDropdown({
+  item,
+  isActive,
+  currentPath,
+}: {
+  item: NavItem
+  isActive: boolean
+  currentPath: string
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -302,28 +292,30 @@ function NavDropdown({
 
   return (
     <>
-      <Button
-        onClick={handleClick}
-        endIcon={<ExpandMore />}
-        variant="text"
+      <Box
         sx={{
-          color: isActive ? 'primary.main' : 'text.primary',
-          fontWeight: isActive ? 600 : 500,
-          borderBottom: isActive ? '2px solid' : '2px solid transparent',
-          borderColor: isActive ? 'primary.main' : 'transparent',
-          borderRadius: 0,
-          px: 2,
-          py: 1,
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          color: isActive ? 'primary.main' : 'text.secondary',
+          fontWeight: 600,
           '&:hover': {
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            borderRadius: 1,
-          }
+            color: 'primary.main',
+          },
         }}
+        onClick={handleClick}
       >
-        {item.label}
-      </Button>
-      
+        <Typography
+          sx={{
+            fontWeight: 600,
+            color: 'inherit',
+          }}
+        >
+          {item.label}
+        </Typography>
+        <ExpandMore sx={{ ml: 0.5 }} />
+      </Box>
+
       <Menu
         anchorEl={anchorEl}
         open={open}
@@ -351,11 +343,11 @@ function NavDropdown({
                 color: 'primary.contrastText',
                 '&:hover': {
                   bgcolor: 'primary.dark',
-                }
-              }
+                },
+              },
             }}
           >
-           
+            <ListItemText primary={child.label} />
           </MenuItem>
         ))}
       </Menu>

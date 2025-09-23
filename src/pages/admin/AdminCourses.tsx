@@ -362,11 +362,11 @@ export default function AdminCourses() {
           control={
             <Switch
               checked={curso.ativo}
-              onChange={async (e) => {
+              onChange={async e => {
                 e.stopPropagation()
                 await handleToggleStatus(curso)
               }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
               color='primary'
             />
           }
@@ -379,8 +379,8 @@ export default function AdminCourses() {
       label: 'Ações',
       align: 'center',
       render: (_, curso) => (
-        <IconButton 
-          size='small' 
+        <IconButton
+          size='small'
           onClick={e => {
             e.stopPropagation()
             handleOpenMenu(e, curso)
