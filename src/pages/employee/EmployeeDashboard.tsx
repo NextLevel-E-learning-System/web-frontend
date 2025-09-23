@@ -27,9 +27,16 @@ export default function EmployeeDashboard() {
   const { dashboard, isLoading, error } = useDashboardCompleto()
   const { title, navigationItems } = useDashboardLayout()
 
+  // Debug logs
+  console.log('Dashboard data:', dashboard)
+  console.log('Loading:', isLoading)
+  console.log('Error:', error)
+
   // Type guard para garantir que é um dashboard de aluno
   const alunoData =
     dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
+
+  console.log('Aluno data:', alunoData)
 
   if (isLoading) {
     return (
@@ -56,7 +63,12 @@ export default function EmployeeDashboard() {
     )
   }
 
-  const { progressao, cursos, ranking, atividades_recentes } = alunoData
+  const { progressao, cursos, ranking, atividades_recentes = [] } = alunoData || {
+    progressao: {},
+    cursos: { em_andamento: [], concluidos: [], recomendados: [] },
+    ranking: {},
+    atividades_recentes: []
+  }
 
   return (
     <DashboardLayout title={title} items={navigationItems}>
@@ -68,13 +80,13 @@ export default function EmployeeDashboard() {
       >
         <EmployeeHeader
           dashboardData={{
-            tipo_dashboard: alunoData.tipo_dashboard,
-            xp_atual: progressao.xp_atual,
-            nivel_atual: progressao.nivel_atual,
-            progresso_nivel: progressao.progresso_nivel,
-            ranking_departamento: ranking.posicao_departamento,
-            xp_proximo_nivel: progressao.xp_proximo_nivel,
-            badges_conquistados: progressao.badges_conquistados,
+            tipo_dashboard: alunoData?.tipo_dashboard || 'aluno',
+            xp_atual: progressao?.xp_atual || 0,
+            nivel_atual: typeof progressao?.nivel_atual === 'number' ? progressao.nivel_atual : 1,
+            progresso_nivel: progressao?.progresso_nivel || 0,
+            ranking_departamento: ranking?.posicao_departamento || 0,
+            xp_proximo_nivel: progressao?.xp_proximo_nivel || 100,
+            badges_conquistados: progressao?.badges_conquistados || [],
           }}
         />
         <Grid container spacing={3}>
@@ -102,8 +114,8 @@ export default function EmployeeDashboard() {
               >
                 {tab === 0 && (
                   <List>
-                    {cursos.em_andamento.length > 0 ? (
-                      cursos.em_andamento.map((c: any, index: number) => (
+                    {(cursos?.em_andamento || []).length > 0 ? (
+                      (cursos?.em_andamento || []).map((c: any, index: number) => (
                         <ListItem
                           key={c.id || index}
                           sx={{
@@ -170,8 +182,8 @@ export default function EmployeeDashboard() {
                 )}
                 {tab === 1 && (
                   <List>
-                    {cursos.concluidos.length > 0 ? (
-                      cursos.concluidos.map((c: any, index: number) => (
+                    {(cursos?.concluidos || []).length > 0 ? (
+                      (cursos?.concluidos || []).map((c: any, index: number) => (
                         <ListItem key={c.id || index}>
                           <ListItemText
                             primary={
@@ -215,8 +227,8 @@ export default function EmployeeDashboard() {
                   Atividades Recentes
                 </Typography>
                 <List dense>
-                  {atividades_recentes.length > 0 ? (
-                    atividades_recentes.map((a: any, index: number) => (
+                  {(atividades_recentes || []).length > 0 ? (
+                    (atividades_recentes || []).map((a: any, index: number) => (
                       <ListItem key={a.id || index}>
                         <ListItemText
                           primary={
@@ -242,7 +254,7 @@ export default function EmployeeDashboard() {
                   Cursos Recomendados
                 </Typography>
                 <List dense>
-                  {cursos.recomendados
+                  {(cursos?.recomendados || [])
                     .slice(0, 3)
                     .map((c: any, index: number) => (
                       <ListItem key={c.id || index}>
@@ -254,7 +266,7 @@ export default function EmployeeDashboard() {
                         />
                       </ListItem>
                     ))}
-                  {cursos.recomendados.length === 0 && (
+                  {(cursos?.recomendados || []).length === 0 && (
                     <Typography
                       color='text.secondary'
                       sx={{ p: 1, textAlign: 'center' }}

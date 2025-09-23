@@ -31,43 +31,35 @@ export function useNavigation() {
       return [
         {
           label: 'Dashboard',
-          icon: React.createElement(DashboardIcon),
           href: '/dashboard/funcionario', // Rota correta para ALUNO
         },
         {
           label: 'Cursos',
-          icon: React.createElement(SchoolIcon),
           children: [
             {
               label: 'Catálogo de Cursos',
-              icon: React.createElement(SchoolIcon),
               href: '/cursos',
             },
             {
               label: 'Meus Cursos',
-              icon: React.createElement(BookIcon),
               href: '/meus-cursos',
             },
             {
               label: 'Certificados',
-              icon: React.createElement(SchoolIcon),
               href: '/certificados',
             },
           ],
         },
         {
           label: 'Conquistas',
-          icon: React.createElement(EmojiEventsIcon),
           href: '/conquistas',
         },
         {
           label: 'Ranking',
-          icon: React.createElement(WorkspacePremiumIcon),
           href: '/ranking',
         },
         {
           label: 'Configurações',
-          icon: React.createElement(SettingsIcon),
           href: '/configuracoes',
         },
       ]
@@ -78,38 +70,31 @@ export function useNavigation() {
       return [
         {
           label: 'Dashboard',
-          icon: React.createElement(DashboardIcon),
           href: '/dashboard/instrutor',
         },
         {
           label: 'Cursos',
-          icon: React.createElement(SchoolIcon),
           children: [
             {
               label: 'Meus Cursos',
-              icon: React.createElement(SchoolIcon),
               href: '/instrutor/cursos',
             },
             {
               label: 'Criar Curso',
-              icon: React.createElement(BookIcon),
               href: '/instrutor/criar-curso',
             },
             {
               label: 'Avaliações',
-              icon: React.createElement(AssignmentIcon),
               href: '/instrutor/avaliacoes',
             },
           ],
         },
         {
           label: 'Turmas',
-          icon: React.createElement(PeopleIcon),
           href: '/instrutor/turmas',
         },
         {
           label: 'Configurações',
-          icon: React.createElement(SettingsIcon),
           href: '/instrutor/configuracoes',
         },
       ]
@@ -120,49 +105,40 @@ export function useNavigation() {
       return [
         {
           label: 'Dashboard',
-          icon: React.createElement(DashboardIcon),
           href: '/dashboard/admin', // Mesmo dashboard que ADMIN
         },
         {
           label: 'Cursos',
-          icon: React.createElement(SchoolIcon),
           children: [
             {
               label: 'Catálogo de Cursos',
-              icon: React.createElement(SchoolIcon),
               href: '/cursos',
             },
             {
               label: 'Cursos do Departamento',
-              icon: React.createElement(BookIcon),
               href: '/admin/courses', // Filtrado por departamento
             },
             {
               label: 'Progresso da Equipe',
-              icon: React.createElement(GradeIcon),
               href: '/admin/courses', // Mesma página, mas filtrada
             },
           ],
         },
         {
           label: 'Usuários',
-          icon: React.createElement(ApartmentIcon),
           children: [
             {
               label: 'Alunos',
-              icon: React.createElement(PeopleIcon),
               href: '/admin/users', // Mesma página, mas filtrada
             },
             {
               label: 'Instrutores',
-              icon: React.createElement(BadgeIcon),
               href: '/admin/instructors',
             },
           ],
         },
         {
           label: 'Relatórios',
-          icon: React.createElement(AssignmentIcon),
           href: '/admin/relatorios', // Mesma página, mas filtrada
         },
       ]
@@ -173,43 +149,35 @@ export function useNavigation() {
       return [
         {
           label: 'Dashboard',
-          icon: React.createElement(DashboardIcon),
           href: '/dashboard/admin',
         },
         {
           label: 'Departamentos',
-          icon: React.createElement(ApartmentIcon),
           href: '/admin/departments',
         },
         {
           label: 'Categorias',
-          icon: React.createElement(AssignmentIcon),
           href: '/admin/categorias',
         },
         {
           label: 'Cursos',
-          icon: React.createElement(SchoolIcon),
           href: '/admin/courses',
         },
         {
           label: 'Usuários',
-          icon: React.createElement(PeopleIcon),
           children: [
             {
               label: 'Funcionários',
-              icon: React.createElement(PeopleIcon),
               href: '/admin/users',
             },
             {
               label: 'Instrutores',
-              icon: React.createElement(BadgeIcon),
               href: '/admin/instructors',
             },
           ],
         },
         {
           label: 'Relatórios',
-          icon: React.createElement(GradeIcon),
           href: '/admin/relatorios',
         },
       ]

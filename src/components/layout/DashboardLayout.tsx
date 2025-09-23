@@ -1,22 +1,24 @@
-import { PropsWithChildren, useMemo, useState, useEffect } from 'react'
+import { PropsWithChildren, useMemo, useState } from 'react'
 import {
   AppBar,
   Avatar,
   Box,
+  Button,
   CssBaseline,
-  Divider,
-  Drawer,
   IconButton,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
+  Menu,
+  MenuItem,
   Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Divider,
   Collapse,
-  Tooltip,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -30,13 +32,9 @@ import { useMeuPerfil } from '@/api/users'
 
 export type NavItem = {
   label: string
-  icon: JSX.Element
   href?: string
   children?: NavItem[]
 }
-
-const DRAWER_WIDTH = 240
-const DRAWER_WIDTH_COLLAPSED = 72
 
 export default function DashboardLayout({
   title,
@@ -44,27 +42,13 @@ export default function DashboardLayout({
   children,
 }: PropsWithChildren<{ title: string; items: NavItem[] }>) {
   const theme = useTheme()
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const [mobileOpen, setMobileOpen] = useState(false)
-
-  // Melhor detecção de breakpoints para responsividade
-  const isLgUp = useMediaQuery(theme.breakpoints.up('lg')) // 1200px+
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md')) // 900px+
-  const isSmUp = useMediaQuery(theme.breakpoints.up('sm')) // 600px+
-
-  // Inicializar collapsed baseado no tamanho da tela
-  const [isCollapsed, setIsCollapsed] = useState(() => !isLgUp)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
   const location = useLocation()
   const { mutate } = useLogout()
   const currentPath = typeof location !== 'undefined' ? location.pathname : ''
   const { data: perfil } = useMeuPerfil()
-
-  // Fechar sidebar mobile ao redimensionar
-  useEffect(() => {
-    if (isMdUp && mobileOpen) {
-      setMobileOpen(false)
-    }
-  }, [isMdUp, mobileOpen])
 
   const avatarText = useMemo(() => {
     if (!perfil?.nome) return ''
@@ -77,343 +61,320 @@ export default function DashboardLayout({
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const drawerWidth = useMemo(
-    () =>
-      isMdUp
-        ? isCollapsed
-          ? DRAWER_WIDTH_COLLAPSED
-          : DRAWER_WIDTH
-        : DRAWER_WIDTH,
-    [isMdUp, isCollapsed]
-  )
-
-  const renderItems = (navItems: NavItem[], level = 0) => (
+  // Renderizar itens do menu mobile
+  const renderMobileItems = (navItems: NavItem[], level = 0) => (
     <List disablePadding>
-      {navItems.map((it, idx) => {
-        const key = `${level}-${idx}-${it.label}`
-        const hasChildren = !!it.children?.length
-        const selected =
-          currentPath === it.href ||
-          (hasChildren && it.children!.some(c => c.href === currentPath))
-        const content = (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: isCollapsed ? 'center' : 'flex-start',
-              width: '100%',
-            }}
-          >
-            <ListItemButton
-              key={key}
-              component={RouterLink}
-              to={it.href || ''}
-              onClick={e => {
-                if (hasChildren && !isCollapsed) {
-                  e.preventDefault()
-                  toggleSection(key)
-                }
-                if (!isMdUp) setMobileOpen(false)
-              }}
-              selected={selected}
-              sx={{
-                borderRadius: 1,
-                mx: 1,
-                my: 0.5,
-                pl: 1 + level * 2,
-                color: '#e5e7eb',
-                '&.Mui-selected,&:hover': { bgcolor: 'rgba(255,255,255,.06)' },
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  color: '#93c5fd',
-                  minWidth: 36,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {it.icon}
-              </ListItemIcon>
-              {!isCollapsed && (
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 600 }}
-                  primary={it.label}
-                />
-              )}
-              {hasChildren && (
-                <IconButton
-                  size='small'
-                  edge='end'
-                  sx={{
-                    color: '#93c5fd',
-                    ml: isCollapsed ? 0 : 0.5,
-                    zIndex: 2,
-                    alignSelf: 'center',
-                    p: 0,
-                    display: 'flex',
-                  }}
-                  onClick={e => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    toggleSection(key)
-                  }}
-                >
-                  {openSections[key] ? (
-                    <ExpandLess fontSize='small' />
-                  ) : (
-                    <ExpandMore fontSize='small' />
-                  )}
-                </IconButton>
-              )}
-            </ListItemButton>
-          </Box>
-        )
+      {navItems.map((item, idx) => {
+        const key = `${level}-${idx}-${item.label}`
+        const hasChildren = !!item.children?.length
+        const selected = currentPath === item.href || 
+          (hasChildren && item.children!.some(c => c.href === currentPath))
 
         return (
           <Box key={key}>
-            {isCollapsed ? (
-              <Tooltip title={it.label} arrow placement='right'>
-                {content}
-              </Tooltip>
-            ) : (
-              content
+            <ListItemButton
+              component={item.href ? RouterLink : 'div'}
+              to={item.href || ''}
+              onClick={(e) => {
+                if (hasChildren) {
+                  e.preventDefault()
+                  toggleSection(key)
+                } else {
+                  setMobileOpen(false)
+                }
+              }}
+              selected={selected}
+              sx={{ 
+                pl: 2 + level * 2,
+                borderRadius: 1,
+                mx: 1,
+                my: 0.5,
+              }}
+            >
+              <ListItemText primary={item.label} />
+              {hasChildren && (
+                openSections[key] ? <ExpandLess /> : <ExpandMore />
+              )}
+            </ListItemButton>
+            {hasChildren && (
+              <Collapse in={!!openSections[key]} timeout="auto" unmountOnExit>
+                {renderMobileItems(item.children!, level + 1)}
+              </Collapse>
             )}
-            {hasChildren &&
-              (isCollapsed ? (
-                openSections[key] ? (
-                  <Box sx={{ pl: 0 }}>
-                    {it.children!.map((child, cidx) => (
-                      <Tooltip
-                        title={child.label}
-                        arrow
-                        placement='right'
-                        key={child.label + cidx}
-                      >
-                        <ListItemButton
-                          component={RouterLink}
-                          to={child.href || ''}
-                          sx={{
-                            borderRadius: 1,
-                            mx: 1,
-                            my: 0.5,
-                            color: '#e5e7eb',
-                            minHeight: 48,
-                            justifyContent: 'center',
-                            display: 'flex',
-                          }}
-                          selected={currentPath === child.href}
-                        >
-                          <ListItemIcon
-                            sx={{
-                              color: '#60a5fa',
-                              minWidth: 36,
-                              justifyContent: 'center',
-                              display: 'flex',
-                            }}
-                          >
-                            {child.icon}
-                          </ListItemIcon>
-                        </ListItemButton>
-                      </Tooltip>
-                    ))}
-                  </Box>
-                ) : null
-              ) : (
-                <Collapse in={!!openSections[key]} timeout='auto' unmountOnExit>
-                  <Box sx={{ pl: 2 }}>
-                    {renderItems(it.children!, level + 1)}
-                  </Box>
-                </Collapse>
-              ))}
           </Box>
         )
       })}
     </List>
   )
 
-  const drawer = (
-    <Box
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: '#1f2937',
-        color: '#e5e7eb',
-      }}
-    >
-      <Toolbar
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <CssBaseline />
+      
+      {/* Header/Navbar */}
+      <AppBar 
+        position="sticky" 
+        color="inherit"
+        elevation={1}
         sx={{
-          minHeight: 48,
-          px: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: isCollapsed ? 'center' : 'flex-start',
+          borderBottom: t => `1px solid ${t.palette.divider}`,
+          bgcolor: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'saturate(120%) blur(8px)',
+          zIndex: theme.zIndex.appBar,
         }}
       >
-        {!isCollapsed && (
-          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            <img src={logoIcon} alt='Logo NextLevel' style={{ width: 50 }} />
+        <Toolbar sx={{ px: { xs: 2, sm: 3 } }}>
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logoIcon} alt="Logo NextLevel" style={{ width: 40, height: 35 }} />
             <Typography
-              variant='h6'
-              fontWeight={800}
-              color='#e5e7eb'
-              sx={{ ml: 1 }}
+              variant="h6"
+              fontWeight={700}
+              sx={{ 
+                ml: 1,
+                color: 'primary.main',
+                display: { xs: 'none', sm: 'block' }
+              }}
             >
               NextLevel
             </Typography>
           </Box>
-        )}
-        {isMdUp && (
-          <IconButton
-            size='small'
-            color='inherit'
-            onClick={() => setIsCollapsed(v => !v)}
-            aria-label='toggle sidebar'
-            sx={{ ml: isCollapsed ? 0 : 2, alignSelf: 'center' }}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
-        {!isMdUp && (
-          <IconButton
-            size='small'
-            color='inherit'
-            onClick={() => setMobileOpen(true)}
-            aria-label='open drawer'
-            sx={{ alignSelf: 'center' }}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
-      </Toolbar>
-      <Divider sx={{ borderColor: 'rgba(255,255,255,.12)' }} />
-      <Box sx={{ flex: 1, overflow: 'auto' }}>{renderItems(items)}</Box>
-    </Box>
-  )
 
-  return (
-    <Box
-      sx={{
-        display: 'flex',
-        minHeight: '100vh',
-        bgcolor: '#F5F7FB',
-        // Evitar overflow horizontal
-        maxWidth: '100vw',
-        overflow: 'hidden',
-      }}
-    >
-      <CssBaseline />
-      <Box
-        component='nav'
-        sx={{
-          width: { md: drawerWidth },
-          flexShrink: { md: 0 },
-          // Garantir que não cause overflow
-          minWidth: 0,
-        }}
-        aria-label='sidebar'
-      >
-        <Drawer
-          variant={isMdUp ? 'permanent' : 'temporary'}
-          open={isMdUp ? true : mobileOpen}
-          onClose={() => setMobileOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            '& .MuiDrawer-paper': {
-              width: drawerWidth,
-              boxSizing: 'border-box',
-              border: 0,
-              // Transição suave para mudanças de largura
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
-              }),
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-      </Box>
-
-      <Box
-        component='main'
-        sx={{
-          flexGrow: 1,
-          p: 0,
-          // Garantir que o conteúdo se ajuste adequadamente
-          minWidth: 0,
-          width: `calc(100vw - ${isMdUp ? drawerWidth : 0}px)`,
-          // Melhor controle de overflow
-          overflow: 'auto',
-        }}
-      >
-        <AppBar
-          position='sticky'
-          color='inherit'
-          elevation={0}
-          sx={{
-            borderBottom: t => `1px solid ${t.palette.divider}`,
-            bgcolor: 'rgba(255,255,255,.9)',
-            backdropFilter: 'saturate(120%) blur(6px)',
-            // Ajustar largura baseado na sidebar
-            width: '100%',
-          }}
-        >
-          <Toolbar
-            sx={{
-              gap: 2,
-              minHeight: { xs: 56, sm: 64 },
-              px: { xs: 2, sm: 3 },
+          {/* Desktop Navigation - Centralizada */}
+          <Box 
+            component="nav" 
+            sx={{ 
+              display: { xs: 'none', md: 'flex' }, 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              flex: 1,
+              gap: 1
             }}
           >
-            {!isMdUp && (
-              <IconButton
-                color='inherit'
-                aria-label='open drawer'
-                edge='start'
-                onClick={() => setMobileOpen(true)}
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-            <Typography
-              variant='h6'
-              fontWeight={800}
-              sx={{
-                flexGrow: 1,
-                // Evitar quebra em telas pequenas
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {title}
-            </Typography>
-            <Avatar sx={{ width: 32, height: 32 }}>{avatarText}</Avatar>
+            {items.map((item, idx) => {
+              const hasChildren = !!item.children?.length
+              const isActive = currentPath === item.href || 
+                (hasChildren && item.children!.some(c => c.href === currentPath))
+
+              if (hasChildren) {
+                return (
+                  <NavDropdown 
+                    key={idx}
+                    item={item} 
+                    isActive={isActive}
+                    currentPath={currentPath}
+                  />
+                )
+              }
+
+              return (
+                <Button
+                  key={idx}
+                  component={RouterLink}
+                  to={item.href || ''}
+                  variant="text"
+                  sx={{
+                    color: isActive ? 'primary.main' : 'text.primary',
+                    fontWeight: isActive ? 600 : 500,
+                    borderBottom: isActive ? '2px solid' : '2px solid transparent',
+                    borderColor: isActive ? 'primary.main' : 'transparent',
+                    borderRadius: 0,
+                    px: 2,
+                    py: 1,
+                    '&:hover': {
+                      bgcolor: 'primary.main',
+                      color: 'primary.contrastText',
+                      borderRadius: 1,
+                    }
+                  }}
+                >
+                  {item.label}
+                </Button>
+              )
+            })}
+          </Box>
+
+          {/* Page Title - Mobile */}
+          <Typography 
+            variant="h6" 
+            fontWeight={600}
+            sx={{ 
+              flexGrow: 1,
+              display: { xs: 'block', md: 'none' },
+              textAlign: 'center',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {title}
+          </Typography>
+
+          {/* Right side - User and Mobile Menu */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Avatar sx={{ width: 32, height: 32 }}>
+              {avatarText}
+            </Avatar>
+            
             <IconButton
-              color='inherit'
-              aria-label='logout'
+              color="inherit"
               onClick={() => mutate(undefined)}
+              size="small"
             >
               <LogoutIcon />
             </IconButton>
-          </Toolbar>
-        </AppBar>
 
+            {/* Mobile menu button */}
+            <IconButton
+              color="inherit"
+              onClick={() => setMobileOpen(true)}
+              sx={{ display: { xs: 'flex', md: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        anchor="left"
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: 280,
+          },
+        }}
+      >
+        <Toolbar>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logoIcon} alt="Logo NextLevel" style={{ width: 40 }} />
+            <Typography variant="h6" fontWeight={700} sx={{ ml: 1 }}>
+              NextLevel
+            </Typography>
+          </Box>
+        </Toolbar>
+        <Divider />
+        {renderMobileItems(items)}
+      </Drawer>
+
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          bgcolor: '#F5F7FB',
+          minHeight: 'calc(100vh - 64px)',
+        }}
+      >
+        {/* Page Title - Desktop */}
         <Box
           sx={{
-            p: { xs: 2, sm: 3 },
-            // Garantir que o conteúdo se ajuste bem
-            maxWidth: '100%',
-            overflow: 'auto',
+            display: { xs: 'none', md: 'block' },
+            bgcolor: 'background.paper',
+            borderBottom: t => `1px solid ${t.palette.divider}`,
+            py: 2,
+            px: 3,
           }}
         >
+          <Typography variant="h4" fontWeight={700}>
+            {title}
+          </Typography>
+        </Box>
+
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           {children}
         </Box>
       </Box>
     </Box>
+  )
+}
+
+// Componente para dropdown de navegação
+function NavDropdown({ 
+  item, 
+  isActive, 
+  currentPath 
+}: { 
+  item: NavItem; 
+  isActive: boolean;
+  currentPath: string;
+}) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const open = Boolean(anchorEl)
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
+
+  return (
+    <>
+      <Button
+        onClick={handleClick}
+        endIcon={<ExpandMore />}
+        variant="text"
+        sx={{
+          color: isActive ? 'primary.main' : 'text.primary',
+          fontWeight: isActive ? 600 : 500,
+          borderBottom: isActive ? '2px solid' : '2px solid transparent',
+          borderColor: isActive ? 'primary.main' : 'transparent',
+          borderRadius: 0,
+          px: 2,
+          py: 1,
+          '&:hover': {
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            borderRadius: 1,
+          }
+        }}
+      >
+        {item.label}
+      </Button>
+      
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        {item.children?.map((child, idx) => (
+          <MenuItem
+            key={idx}
+            component={RouterLink}
+            to={child.href || ''}
+            onClick={handleClose}
+            selected={currentPath === child.href}
+            sx={{
+              minWidth: 200,
+              '&.Mui-selected': {
+                bgcolor: 'primary.main',
+                color: 'primary.contrastText',
+                '&:hover': {
+                  bgcolor: 'primary.dark',
+                }
+              }
+            }}
+          >
+           
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
   )
 }
