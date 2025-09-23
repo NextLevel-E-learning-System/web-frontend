@@ -1,6 +1,5 @@
 import { Box, Button, Chip, Container, Grid, Typography } from '@mui/material'
-import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined'
-import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import BrandAppBar from '@/components/auth/BrandAppBar'
 import { Link as RouterLink } from 'react-router-dom'
 
@@ -10,57 +9,69 @@ export default function Home() {
       sx={{
         minHeight: '100vh',
         width: '100%',
-        background:
-          'linear-gradient(180deg, rgba(99,102,241,0.10), rgba(59,130,246,0.05), transparent)',
       }}
     >
       <BrandAppBar />
-      <Container maxWidth='xl' sx={{ py: { xs: 16, md: 24 } }}>
-        <Grid container spacing={12} alignItems='center'>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Chip
-              color='primary'
-              label='Plataforma de E-learning Corporativa'
-              sx={{ fontWeight: 700 }}
-            />
-            <Typography
-              variant='h2'
-              sx={{
-                fontWeight: 800,
-                mt: 2,
-                lineHeight: 1.1,
-                letterSpacing: -0.6,
-              }}
-            >
-              Aprenda, evolua e alcance o próximo nível
-            </Typography>
-            <Typography sx={{ mt: 2 }} color='text.secondary'>
-              Cursos modernos, trilhas orientadas e gamificação para engajar seu
-              time.
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, mt: 6 }}>
-              <Button
-                component={RouterLink}
-                to='/login'
-                variant='contained'
-                size='large'
-                startIcon={<LoginOutlinedIcon />}
+      <Box
+        component='section'
+        sx={{
+          background:
+            'linear-gradient(180deg, rgba(99,102,241,0.10), rgba(59,130,246,0.05), transparent)',
+          py: { xs: 8, md: 14 },
+        }}
+      >
+        <Container maxWidth='lg'>
+          <Grid container spacing={6} alignItems='center'>
+            <Grid>
+              <Typography variant='h3' fontWeight={800} gutterBottom>
+                Eleve sua jornada de aprendizagem com a{' '}
+                <Box
+                  component='span'
+                  sx={{
+                    background:
+                      'linear-gradient(90deg,#4F46E5,#0EA5E9,#10B981)',
+                    WebkitBackgroundClip: 'text',
+                    color: 'transparent',
+                  }}
+                >
+                  NextLevel
+                </Box>
+              </Typography>
+              <Typography variant='h6' color='text.secondary' sx={{ mb: 3 }}>
+                A plataforma completa de aprendizagem corporativa para
+                desenvolver competências, acompanhar resultados e alcançar metas
+                profissionais.
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 2,
+                  flexDirection: { xs: 'column', sm: 'row' },
+                }}
               >
-                Entrar
-              </Button>
-              <Button
-                component={RouterLink}
-                to='/register'
-                variant='outlined'
-                size='large'
-                startIcon={<PersonAddAlt1Icon />}
-              >
-                Cadastrar
-              </Button>
-            </Box>
+                <Button
+                  size='large'
+                  variant='contained'
+                  component={RouterLink}
+                  to='/sign-up'
+                  sx={{ background: 'linear-gradient(90deg,#4F46E5,#3B82F6)' }}
+                  endIcon={<ArrowForwardIcon />}
+                >
+                  Comece Agora
+                </Button>
+                <Button
+                  size='large'
+                  variant='outlined'
+                  component={RouterLink}
+                  to='/sign-in'
+                >
+                  Entrar na sua conta{' '}
+                </Button>
+              </Box>
+            </Grid>
           </Grid>
-        </Grid>
-      </Container>
+        </Container>
+      </Box>
     </Box>
   )
 }
