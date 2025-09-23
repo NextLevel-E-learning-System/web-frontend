@@ -65,7 +65,7 @@ export default function Home() {
                   component={RouterLink}
                   to='/sign-in'
                 >
-                  Entrar na sua conta{' '}
+                  Entrar na sua conta
                 </Button>
               </Box>
             </Grid>

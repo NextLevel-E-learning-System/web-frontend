@@ -29,10 +29,10 @@ export default function BrandAppBar() {
           ></Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Button component={RouterLink} to='/login' variant='text'>
-              Entrar
+              Login
             </Button>
             <Button component={RouterLink} to='/register' variant='contained'>
-              Cadastrar
+              Cadastro
             </Button>
           </Box>
         </Toolbar>
