@@ -34,11 +34,22 @@ export interface Course {
   pre_requisitos?: string[]
   criado_em: string
   atualizado_em: string
+  // Campos relacionados ao instrutor
+  instrutor_nome?: string
+  instrutor_sobrenome?: string
+  // Campos de categoria
+  categoria_nome?: string
+  departamento_codigo?: string
+  // Estatísticas de progresso
+  total_inscricoes?: number
+  total_conclusoes?: number
+  taxa_conclusao?: number
+  media_conclusao?: number
+  // Campos legados (manter por compatibilidade)
   avaliacao_media?: number
   total_avaliacoes?: number
   total_concluidos?: number
   total_inscritos?: number
-  taxa_conclusao?: number
 }
 
 export interface CreateCourseInput {
