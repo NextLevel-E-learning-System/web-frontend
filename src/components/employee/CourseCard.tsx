@@ -37,7 +37,7 @@ export default function CourseCard({
       <CardContent>
         {/* Linha com Chip à esquerda e Rating à direita */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Chip label={category} size='small' />
+          <Chip label={category} size='small' sx={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`, color: '#fff', padding: '6px 8px', borderRadius: '16px' }} />
           {rating > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <StarIcon sx={{ fontSize: 18, color: '#f59e0b' }} />
