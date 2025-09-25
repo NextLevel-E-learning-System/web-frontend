@@ -15,6 +15,7 @@ export interface CourseCardProps {
   rating?: number
   gradientFrom: string
   gradientTo: string
+    onViewCourse?: () => void;
 }
 
 export default function CourseCard({
@@ -25,6 +26,7 @@ export default function CourseCard({
   rating = 0,
   gradientFrom,
   gradientTo,
+    onViewCourse,
 }: CourseCardProps) {
   return (
     <Card sx={{ overflow: 'hidden' }}>
@@ -62,7 +64,7 @@ export default function CourseCard({
           </Box>
       </CardContent>
       <CardActions sx={{ px: 2, pb: 2 }}>
-        <Button variant='outlined' size='small'>
+        <Button variant='outlined' size='small' onClick={onViewCourse}>
           Ver curso
         </Button>
       </CardActions>

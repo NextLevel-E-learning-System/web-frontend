@@ -33,8 +33,10 @@ import {
   type Category,
   type CatalogFilters as FiltrosCatalogo,
 } from '@/api/courses'
+import { useCreateEnrollment } from '@/api/progress'
 import CategoryChips from '@/components/employee/CategoryChips'
 import CourseCard from '@/components/employee/CourseCard'
+import CourseDialog from '@/components/employee/CourseDialog'
 import CourseNavbar from '@/components/employee/CourseNavbar'
 import FilterBar from '@/components/common/FilterBar'
 import { Pagination, CircularProgress, Alert } from '@mui/material'
@@ -126,6 +128,10 @@ export default function Courses() {
   const [currentPage, setCurrentPage] = useState(1)
   const coursesPerPage = 6
 
+  // Estados para o dialog do curso
+  const [selectedCourse, setSelectedCourse] = useState<Curso | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
   // Filtros para a API
   const filters: FiltrosCatalogo = useMemo(() => {
     const f: FiltrosCatalogo = {}
@@ -163,6 +169,7 @@ export default function Courses() {
   // Hooks da API
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories()
   const { data: courses, isLoading: coursesLoading, error: coursesError } = useCourseCatalog(filters)
+  const { mutate: createEnrollment, isPending: isEnrolling } = useCreateEnrollment()
 
   // Função para converter hex para rgba
   const hexToRgb = (hex: string) => {
@@ -290,6 +297,69 @@ export default function Courses() {
     setCurrentPage(1) // Reset para primeira página
   }
 
+  // Função para abrir o dialog do curso
+  const handleViewCourse = (course: Curso) => {
+    setSelectedCourse(course)
+    setDialogOpen(true)
+  }
+
+  // Função para fechar o dialog
+  const handleCloseDialog = () => {
+    setDialogOpen(false)
+    setSelectedCourse(null)
+  }
+
+  // Função para converter dados do curso para o formato do dialog
+  const convertCourseToDialogData = (course: Curso) => {
+    const gradient = getCourseCardGradient(course.categoria_id)
+    const categoryName = getCategoryName(course.categoria_id)
+    
+    return {
+      title: course.titulo,
+      category: categoryName,
+      description: course.descricao,
+      rating: course.avaliacao_media || 0,
+      reviews: course.total_avaliacoes || 0,
+      students: course.total_inscritos || 0,
+      level: course.nivel_dificuldade,
+      hours: formatDuration(course.duracao_estimada),
+      gradientFrom: gradient.gradientFrom,
+      gradientTo: gradient.gradientTo,
+      courseCode: course.codigo,
+      xpOffered: course.xp_oferecido || 0,
+      isActive: course.ativo,
+    }
+  }
+
+  // Função para inscrever-se no curso
+  const handleEnrollCourse = (courseCode: string) => {
+    if (!user?.id) {
+      console.error('Usuário não encontrado')
+      return
+    }
+
+    createEnrollment(
+      {
+        funcionario_id: user.id,
+        curso_id: courseCode,
+      },
+      {
+        onSuccess: () => {
+          // Fechar o dialog e mostrar sucesso
+          setDialogOpen(false)
+          setSelectedCourse(null)
+          // Aqui você pode adicionar uma notificação de sucesso
+          console.log('Inscrição realizada com sucesso!')
+        },
+        onError: (error) => {
+          // Mostrar erro
+          console.error('Erro ao se inscrever:', error)
+          // Aqui você pode adicionar uma notificação de erro
+        }
+      }
+    )
+  }
+
   if (categoriesError || coursesError) {
     return (
       <DashboardLayout items={navigationItems}>
@@ -360,6 +430,7 @@ export default function Courses() {
                     rating={course.avaliacao_media || 0}
                     gradientFrom={gradient.gradientFrom}
                     gradientTo={gradient.gradientTo}
+                    onViewCourse={() => handleViewCourse(course)}
                   />
                 </Grid>
               )
@@ -391,6 +462,17 @@ export default function Courses() {
             </Box>
           )}
         </>
+      )}
+
+      {/* Dialog do Curso */}
+      {selectedCourse && (
+        <CourseDialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          course={convertCourseToDialogData(selectedCourse)}
+          onEnroll={handleEnrollCourse}
+          isEnrolling={isEnrolling}
+        />
       )}
     </DashboardLayout>
   )

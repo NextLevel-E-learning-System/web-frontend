@@ -7,13 +7,21 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import CircularProgress from "@mui/material/CircularProgress";
+import Alert from "@mui/material/Alert";
 import StarIcon from "@mui/icons-material/Star";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
 import React from "react";
+import { useCourseModules } from "@/api/courses";
 
 export interface CourseData {
   title: string;
@@ -29,21 +37,31 @@ export interface CourseData {
   badgeLabel?: string;
   gradientFrom: string;
   gradientTo: string;
+  courseCode?: string;
+  xpOffered?: number;
+  isActive?: boolean;
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
   course?: CourseData | null;
+  onEnroll?: (courseCode: string) => void;
+  isEnrolling?: boolean;
 }
 
-export default function CourseDialog({ open, onClose, course }: Props) {
+export default function CourseDialog({ open, onClose, course, onEnroll, isEnrolling }: Props) {
   const [tab, setTab] = React.useState(0);
+  
+  // Buscar módulos do curso se courseCode estiver disponível
+  const { data: modules, isLoading: modulesLoading, error: modulesError } = useCourseModules(
+    course?.courseCode || ""
+  );
+
   if (!course) return null;
 
   const orig = course.priceOriginal ? Number(String(course.priceOriginal).replace(/[^0-9.]/g, "")) : undefined;
   const curr = course.price ? Number(String(course.price).replace(/[^0-9.]/g, "")) : undefined;
-  const discount = orig && curr && orig > curr ? Math.round(((orig - curr) / orig) * 100) : undefined;
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
@@ -66,9 +84,9 @@ export default function CourseDialog({ open, onClose, course }: Props) {
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <PeopleAltIcon sx={{ fontSize: 18 }} />
-            <Typography variant="body2">{course.students ?? 2540} students</Typography>
+            <Typography variant="body2">{course.students ?? 2540} alunos</Typography>
           </Box>
-          <Typography variant="body2">{course.level ?? "Advanced"}</Typography>
+          <Typography variant="body2">{course.level}</Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <AccessTimeIcon sx={{ fontSize: 18 }} />
             <Typography variant="body2">{course.hours.replace(" total", "")}</Typography>
@@ -77,39 +95,25 @@ export default function CourseDialog({ open, onClose, course }: Props) {
       </Box>
       <DialogContent sx={{ p: 0 }}>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ px: 3 }}>
-          <Tab label="Overview" />
-          <Tab label="Curriculum" />
-          <Tab label="Reviews" />
+          <Tab label="Visão Geral" />
+          <Tab label="Módulos" />
+          <Tab label="Avaliações" />
         </Tabs>
         <Divider />
         {tab === 0 && (
           <Box sx={{ p: 3 }}>
-            <Typography variant="h6" fontWeight={800} gutterBottom>About This Course</Typography>
+            <Typography variant="h6" fontWeight={800} gutterBottom>Sobre este Curso</Typography>
             <Typography color="text.secondary" sx={{ mb: 2 }}>
-              {course.description ?? "Master advanced React patterns and Redux state management for building complex applications."}
+              {course.description }
             </Typography>
-            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr" }, gap: 2 }}>
               <Box sx={{ p: 2, border: 1, borderColor: "divider", borderRadius: 2 }}>
-                <Typography variant="subtitle2" fontWeight={800} gutterBottom>What You'll Learn</Typography>
+                <Typography variant="subtitle2" fontWeight={800} gutterBottom>O curso inclui</Typography>
                 {[
-                  "Master all the core concepts covered in the course",
-                  "Build real-world projects with practical applications",
-                  "Understand advanced techniques and best practices",
-                  "Gain the skills needed for professional development",
-                ].map((t) => (
-                  <Box key={t} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                    <CheckCircleIcon color="success" fontSize="small" />
-                    <Typography variant="body2">{t}</Typography>
-                  </Box>
-                ))}
-              </Box>
-              <Box sx={{ p: 2, border: 1, borderColor: "divider", borderRadius: 2 }}>
-                <Typography variant="subtitle2" fontWeight={800} gutterBottom>Course Includes</Typography>
-                {[
-                  { icon: <AccessTimeIcon fontSize="small" />, text: course.hours.replace(" total", "") + " of video content" },
-                  { icon: <PlaylistPlayIcon fontSize="small" />, text: "15 practical exercises" },
-                  { icon: <WorkspacePremiumIcon fontSize="small" />, text: "Lifetime access" },
-                  { icon: <WorkspacePremiumIcon fontSize="small" />, text: "Certificate of completion" },
+                  { icon: <AccessTimeIcon fontSize="small" />, text: `${course.hours} de conteúdo` },
+                  { icon: <PlaylistPlayIcon fontSize="small" />, text: `${modules?.length || 0} módulos` },
+                  { icon: <WorkspacePremiumIcon fontSize="small" />, text: `${course.xpOffered || 0} XP ao completar` },
+                  { icon: <BookmarkIcon fontSize="small" />, text: "Certificado de conclusão" },
                 ].map((i, idx) => (
                   <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
                     {i.icon}
@@ -118,30 +122,134 @@ export default function CourseDialog({ open, onClose, course }: Props) {
                 ))}
               </Box>
             </Box>
-            <Box sx={{ mt: 3, p: 2, borderTop: 1, borderColor: "divider", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {course.priceOriginal ? (
-                  <Typography sx={{ textDecoration: "line-through", opacity: 0.6 }} variant="h6">{course.priceOriginal}</Typography>
-                ) : null}
-                {course.price ? (
-                  <Typography variant="h5" fontWeight={900}>{course.price}</Typography>
-                ) : null}
-                {discount ? (
-                  <Chip label={`${discount}% off`} color="success" size="small" />
-                ) : null}
-              </Box>
-              <Button variant="contained" sx={{ bgcolor: "#0f172a" }}>Continue Learning</Button>
+            <Box sx={{ mt: 3, p: 2, borderTop: 1, borderColor: "divider", display: "flex", alignItems: "center", justifyContent: "end", flexWrap: "wrap", gap: 2 }}>
+              
+              {course.isActive && (
+                <Button 
+                  variant="contained" 
+                  sx={{ bgcolor: "#0f172a" }}
+                  onClick={() => course.courseCode && onEnroll?.(course.courseCode)}
+                  disabled={isEnrolling}
+                >
+                  {isEnrolling ? "Inscrevendo..." : "Inscrever-se"}
+                </Button>
+              )}
             </Box>
           </Box>
         )}
         {tab === 1 && (
           <Box sx={{ p: 3 }}>
-            <Typography color="text.secondary">Curriculum preview coming soon.</Typography>
+            <Typography variant="h6" fontWeight={800} gutterBottom>Módulos do Curso</Typography>
+            {modulesLoading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : modulesError ? (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                Erro ao carregar os módulos: {modulesError.message}
+              </Alert>
+            ) : modules && modules.length > 0 ? (
+              <List>
+                {modules
+                  .sort((a, b) => a.ordem - b.ordem)
+                  .map((module, index) => (
+                    <ListItem key={module.id} sx={{ pl: 0 }}>
+                      <ListItemIcon>
+                        <Box sx={{ 
+                          minWidth: 32, 
+                          height: 32, 
+                          borderRadius: "50%", 
+                          bgcolor: "primary.main", 
+                          color: "white", 
+                          display: "flex", 
+                          alignItems: "center", 
+                          justifyContent: "center",
+                          fontSize: 14,
+                          fontWeight: 700
+                        }}>
+                          {index + 1}
+                        </Box>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Typography variant="subtitle1" fontWeight={600}>
+                              {module.titulo}
+                            </Typography>
+                            {module.obrigatorio && (
+                              <Chip label="Obrigatório" size="small" color="warning" />
+                            )}
+                            {module.xp > 0 && (
+                              <Chip label={`${module.xp} XP`} size="small" color="primary" />
+                            )}
+                          </Box>
+                        }
+                        secondary={
+                          <Box sx={{ mt: 1 }}>
+                            {module.conteudo && (
+                              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                {module.conteudo.length > 200 
+                                  ? `${module.conteudo.substring(0, 200)}...` 
+                                  : module.conteudo
+                                }
+                              </Typography>
+                            )}
+                            {module.tipo_conteudo && (
+                              <Chip 
+                                label={module.tipo_conteudo} 
+                                size="small" 
+                                variant="outlined" 
+                                sx={{ mr: 1 }}
+                              />
+                            )}
+                          </Box>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+              </List>
+            ) : (
+              <Typography color="text.secondary">
+                Este curso ainda não possui módulos cadastrados.
+              </Typography>
+            )}
           </Box>
         )}
         {tab === 2 && (
           <Box sx={{ p: 3 }}>
-            <Typography color="text.secondary">Reviews coming soon.</Typography>
+            <Typography variant="h6" fontWeight={800} gutterBottom>Avaliações dos Alunos</Typography>
+            {course.reviews && course.reviews > 0 ? (
+              <Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+                  <Box sx={{ textAlign: "center" }}>
+                    <Typography variant="h3" fontWeight={900}>
+                      {(course.rating || 0).toFixed(1)}
+                    </Typography>
+                    <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <StarIcon 
+                          key={star} 
+                          sx={{ 
+                            color: star <= (course.rating || 0) ? "#f59e0b" : "#e5e7eb",
+                            fontSize: 20 
+                          }} 
+                        />
+                      ))}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {course.reviews} avaliação{course.reviews !== 1 ? 'ões' : ''}
+                    </Typography>
+                  </Box>
+                </Box>
+                <Typography color="text.secondary">
+                  Detalhes das avaliações serão implementados em breve.
+                </Typography>
+              </Box>
+            ) : (
+              <Typography color="text.secondary">
+                Este curso ainda não possui avaliações.
+              </Typography>
+            )}
           </Box>
         )}
       </DialogContent>
