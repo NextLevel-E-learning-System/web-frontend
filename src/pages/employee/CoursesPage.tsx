@@ -121,7 +121,7 @@ export default function Courses() {
             title='React Avançado e Redux'
             category='Programação'
             hours='12h total'
-            price='R$ 89'
+           description="Master advanced React patterns and Redux state management for building complex applications."
             rating={4.8}
             gradientFrom='#ef4444'
             gradientTo='#f97316'
@@ -133,7 +133,7 @@ export default function Courses() {
             title='TypeScript do Zero'
             category='Programação'
             hours='10h total'
-            price='R$ 79'
+            description="Aprenda TypeScript do zero e crie aplicações robustas."
             rating={4.7}
             gradientFrom='#22c55e'
             gradientTo='#06b6d4'
@@ -145,7 +145,7 @@ export default function Courses() {
             title='Design de Interfaces'
             category='Design'
             hours='8h total'
-            price='R$ 69'
+            description="Aprenda a criar interfaces incríveis com as melhores práticas de design."
             rating={4.6}
             gradientFrom='#3b82f6'
             gradientTo='#8b5cf6'
@@ -156,7 +156,7 @@ export default function Courses() {
             title='Marketing Digital'
             category='Marketing'
             hours='7h total'
-            price='R$ 59'
+            description="Aprenda as melhores estratégias de marketing digital para alavancar seu negócio."
             rating={4.5}
             gradientFrom='#14b8a6'
             gradientTo='#84cc16'
