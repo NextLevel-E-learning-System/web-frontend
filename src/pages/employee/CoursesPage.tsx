@@ -1,71 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CardMedia,
-  Button,
-  Chip,
-  useTheme,
-  useMediaQuery,
-  TextField,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Fab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-  Snackbar,
-  IconButton,
-  Tooltip,
-  LinearProgress,
-  Avatar,
-  Grid,
-  Rating,
-  Collapse,
-  Divider,
-} from '@mui/material'
-import {
-  Dashboard as DashboardIcon,
-  School as SchoolIcon,
-  Assignment as AssignmentIcon,
-  Grade as GradeIcon,
-  Settings as SettingsIcon,
-  Search as SearchIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  Visibility as VisibilityIcon,
-  ContentCopy as CopyIcon,
-  AccessTime as AccessTimeIcon,
-  Person as PersonIcon,
-  Star as StarIcon,
-  PlayArrow as PlayArrowIcon,
-  CheckCircle as CheckCircleIcon,
-  Lock as LockIcon,
-  Code as CodeIcon,
-  Palette as PaletteIcon,
-  Business as BusinessIcon,
-  Security as SecurityIcon,
-  Computer as ComputerIcon,
-  Psychology as PsychologyIcon,
-  Language as LanguageIcon,
-  Engineering as EngineeringIcon,
-  Analytics as AnalyticsIcon,
-  CameraAlt as CameraAltIcon,
-  Book as BookIcon,
-  EmojiEvents as EmojiEventsIcon,
-  WorkspacePremium as WorkspacePremiumIcon,
-  School as GraduationCapIcon,
-  People as PeopleIcon,
-  Badge as BadgeIcon,
-  Apartment as ApartmentIcon,
-} from '@mui/icons-material'
+import Grid from '@mui/material/Grid'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
 import { useMeuPerfil } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
@@ -76,979 +12,113 @@ import {
   type CreateCourseInput as CriarCurso,
   type CatalogFilters as FiltrosCatalogo,
 } from '@/api/courses'
+import CategoryChips from '@/components/employee/CategoryChips'
+import CourseCard from '@/components/employee/CourseCard'
+import CourseNavbar from '@/components/employee/CourseNavbar'
 
-export default function CoursesPage() {
-  const theme = useTheme()
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
+const categories = [
+  { label: 'Programação', color: '#2563eb' },
+  { label: 'Design', color: '#e11d48' },
+  { label: 'Negócios', color: '#0ea5e9' },
+  { label: 'Marketing', color: '#84cc16' },
+  { label: 'TI & Software', color: '#06b6d4' },
+  { label: 'Ciência', color: '#8b5cf6' },
+  { label: 'Idiomas', color: '#f59e0b' },
+  { label: 'Saúde & Fitness', color: '#22c55e' },
+]
+
+export default function Courses() {
   const { data: user } = useMeuPerfil()
   const { navigationItems, canManageCourses, isInstrutor, isAdmin } =
     useNavigation()
-
-  // Estados locais
-  const [filtros, setFiltros] = useState<FiltrosCatalogo>({})
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [selectedDepartment, setSelectedDepartment] = useState('')
-  const [selectedInstructor, setSelectedInstructor] = useState('')
-  const [selectedLevel, setSelectedLevel] = useState('')
-  const [minDuration, setMinDuration] = useState<number | ''>('')
-  const [maxDuration, setMaxDuration] = useState<number | ''>('')
-  const [minRating, setMinRating] = useState<number | ''>('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [dialogCriarCurso, setDialogCriarCurso] = useState(false)
-  const [mensagem, setMensagem] = useState('')
-  const [dadosNovoCurso, setDadosNovoCurso] = useState<CriarCurso>({
-    codigo: '',
-    titulo: '',
-    descricao: '',
-    categoria_id: '',
-    instrutor_id: user?.id || '',
-    duracao_estimada: 0,
-    xp_oferecido: 0,
-    nivel_dificuldade: 'Iniciante',
-  })
-
-  // Hooks
-  const { data: categorias, isLoading: loadingCategorias } = useCategories()
-  const { data: cursos, isLoading: loadingCursos } = useCourseCatalog(filtros)
-
-  // Hook para buscar todos os cursos (sem filtros) para contagem por categoria
-  const { data: todosCursos } = useCourseCatalog()
-
-  // Filtrar categorias por departamento selecionado
-  const categoriasFiltradas = useMemo(() => {
-    if (!selectedDepartment) return categorias || []
-    return (categorias || []).filter(
-      cat => cat.departamento_codigo === selectedDepartment
-    )
-  }, [categorias, selectedDepartment])
-
-  // Função para contar cursos por categoria
-  const getContagemCursosPorCategoria = (categoriaId: string): number => {
-    if (!todosCursos) return 0
-    return todosCursos.filter(curso => curso.categoria_id === categoriaId)
-      .length
-  }
-
-  const dificuldadeColors = {
-    Iniciante: '#4caf50',
-    Intermediário: '#ff9800',
-    Avançado: '#f44336',
-  }
-
-  // Atualizar filtros automaticamente quando categoria é selecionada
-  useEffect(() => {
-    const newFilters: FiltrosCatalogo = {}
-
-    if (searchTerm) newFilters.q = searchTerm
-    if (selectedCategory) newFilters.categoria = selectedCategory
-    if (selectedInstructor) newFilters.instrutor = selectedInstructor
-    if (selectedLevel) newFilters.nivel = selectedLevel
-    if (maxDuration) newFilters.duracaoMax = maxDuration
-
-    setFiltros(newFilters)
-  }, [
-    searchTerm,
-    selectedCategory,
-    selectedInstructor,
-    selectedLevel,
-    minDuration,
-    maxDuration,
-    minRating,
-  ])
-
-  const resetFormCurso = () => {
-    setDadosNovoCurso({
-      codigo: '',
-      titulo: '',
-      descricao: '',
-      categoria_id: '',
-      instrutor_id: user?.id || '',
-      duracao_estimada: 0,
-      xp_oferecido: 0,
-      nivel_dificuldade: 'Iniciante',
-    })
-  }
-
-  const resetAllFilters = () => {
-    setSearchTerm('')
-    setSelectedCategory('')
-    setSelectedDepartment('')
-    setSelectedInstructor('')
-    setSelectedLevel('')
-    setMinDuration('')
-    setMaxDuration('')
-    setMinRating('')
-    setFiltros({})
-  }
-
-  // Função para buscar categoria por ID
-  const getCategoriaById = (categoriaId: string) => {
-    return categorias?.find(categoria => categoria.codigo === categoriaId)
-  }
-
-  const renderCategoriaCard = (categoria: any) => (
-    <Box
-      key={categoria.codigo}
-      sx={{
-        width: { xs: '100%', sm: '50%', md: '33.33%', lg: '20%' },
-        p: 1,
-      }}
-    >
-      <Card
-        sx={{
-          height: 180,
-          display: 'flex',
-          flexDirection: 'column',
-          borderRadius: '16px',
-          border: '1px solid #EAEAEA',
-          bgcolor: 'transparent',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          overflow: 'hidden',
-          '&:hover': {
-            boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.10)',
-            transform: 'translateY(-2px)',
-          },
-        }}
-        onClick={() => {
-          setSelectedCategory(categoria.codigo)
-        }}
-      >
-        {/* Header com cor da categoria */}
-        <Box
-          sx={{
-            height: 80,
-            background: categoria.cor_hex || '#3B82F6',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-          }}
-        >
-          <Typography
-            variant='h6'
-            sx={{
-              fontFamily: 'Exo, -apple-system, Roboto, Helvetica, sans-serif',
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#FFF',
-              textAlign: 'center',
-              textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-            }}
-          >
-            {categoria.nome}
-          </Typography>
-        </Box>
-
-        {/* Conteúdo do card */}
-        <CardContent
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 2,
-            p: 2,
-            flexGrow: 1,
-          }}
-        >
-          <Typography
-            variant='body2'
-            sx={{
-              fontFamily: 'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-              fontSize: '16px',
-              fontWeight: 500,
-              lineHeight: 1.5,
-              color: '#666',
-              textAlign: 'center',
-            }}
-          >
-            {getContagemCursosPorCategoria(categoria.codigo)} Cursos
-          </Typography>
-        </CardContent>
-      </Card>
-    </Box>
-  )
-
-  const renderCursoCard = (curso: Curso) => {
-    // Buscar dados da categoria
-    const categoria = getCategoriaById(curso.categoria_id || '')
-
-    return (
-      <Box
-        key={curso.codigo}
-        sx={{
-          width: { xs: '100%', sm: '50%', lg: '24%' },
-          p: 1,
-        }}
-      >
-        <Card
-          sx={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            borderRadius: '20px',
-            border: '1px solid #EAEAEA',
-            bgcolor: 'transparent',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.10)',
-              bgcolor: '#FFF',
-            },
-          }}
-        >
-          <Box sx={{ position: 'relative' }}>
-            <Box
-              sx={{
-                height: 200,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                borderRadius: '20px 20px 0 0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <SchoolIcon sx={{ fontSize: 60, color: 'white', opacity: 0.8 }} />
-            </Box>
-
-            <Chip
-              label={categoria?.nome || 'Categoria'}
-              sx={{
-                position: 'absolute',
-                top: 16,
-                left: 16,
-                bgcolor: categoria?.cor_hex || '#000',
-                color: '#FFF',
-                fontFamily:
-                  'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                fontSize: '14px',
-                fontWeight: 400,
-                borderRadius: '8px',
-                height: 'auto',
-                py: 0.5,
-                px: 1,
-              }}
-            />
-
-            {curso.nivel_dificuldade && (
-              <Chip
-                label={curso.nivel_dificuldade}
-                sx={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 16,
-                  bgcolor: dificuldadeColors[curso.nivel_dificuldade],
-                  color: '#FFF',
-                  fontSize: '12px',
-                  height: 'auto',
-                  py: 0.5,
-                  px: 1,
-                }}
-              />
-            )}
-
-            {/* Status de progresso */}
-
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: 16,
-                right: 16,
-                bgcolor: 'rgba(0,0,0,0.8)',
-                borderRadius: '12px',
-                px: 1,
-                py: 0.5,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-              }}
-            ></Box>
-
-            <CardContent
-              sx={{
-                p: 2.5,
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-              }}
-            >
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant='body2'
-                  sx={{
-                    fontFamily:
-                      'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    lineHeight: 1.5,
-                    color: '#555',
-                    mb: 1,
-                  }}
-                >
-                  por <span style={{ color: '#000' }}>{'Instrutor'}</span>
-                </Typography>
-                <Typography
-                  variant='h6'
-                  sx={{
-                    fontFamily:
-                      'Exo, -apple-system, Roboto, Helvetica, sans-serif',
-                    fontSize: '18px',
-                    fontWeight: 700,
-                    lineHeight: 1.2,
-                    color: '#000',
-                    textTransform: 'capitalize',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {curso.titulo}
-                </Typography>
-              </Box>
-
-              <Typography
-                variant='body2'
-                sx={{
-                  fontFamily:
-                    'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                  fontSize: '14px',
-                  color: '#666',
-                  mb: 2,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                {curso.descricao || 'Descrição do curso...'}
-              </Typography>
-
-              <Box
-                sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}
-              >
-                {curso.duracao_estimada && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <AccessTimeIcon
-                      sx={{ fontSize: '16px', color: '#FF782D' }}
-                    />
-                    <Typography
-                      variant='body2'
-                      sx={{ fontSize: '14px', color: '#555' }}
-                    >
-                      {curso.duracao_estimada}h
-                    </Typography>
-                  </Box>
-                )}
-                {curso.xp_oferecido && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <StarIcon sx={{ fontSize: '16px', color: '#FF782D' }} />
-                    <Typography
-                      variant='body2'
-                      sx={{ fontSize: '14px', color: '#555' }}
-                    >
-                      {curso.xp_oferecido} XP
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-
-              {/* Avaliação do curso */}
-              {curso.avaliacao_media && (
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    {[...Array(5)].map((_, index) => (
-                      <StarIcon
-                        key={index}
-                        sx={{
-                          fontSize: '16px',
-                          color:
-                            index < Math.round(curso.avaliacao_media || 0)
-                              ? '#FFD700'
-                              : '#E0E0E0',
-                        }}
-                      />
-                    ))}
-                  </Box>
-                  <Typography
-                    variant='body2'
-                    sx={{ fontSize: '14px', color: '#555' }}
-                  >
-                    {curso.avaliacao_media.toFixed(1)} (
-                    {curso.total_avaliacoes || 0} avaliações)
-                  </Typography>
-                </Box>
-              )}
-
-              {/* Indicador de pré-requisitos */}
-              {curso.pre_requisitos && curso.pre_requisitos.length > 0 && (
-                <Box sx={{ mb: 2 }}>
-                  <Chip
-                    size='small'
-                    icon={<LockIcon />}
-                    label={`${curso.pre_requisitos.length} pré-requisito(s)`}
-                    variant='outlined'
-                    sx={{
-                      borderColor: '#FF9800',
-                      color: '#FF9800',
-                      fontSize: '12px',
-                    }}
-                  />
-                </Box>
-              )}
-
-              {/* Progresso para usuários inscritos */}
-
-              <Box sx={{ mb: 2 }}>
-                <Typography
-                  variant='body2'
-                  sx={{ fontSize: '12px', color: '#666', mb: 0.5 }}
-                >
-                  Progresso
-                </Typography>
-                <LinearProgress
-                  variant='determinate'
-                  sx={{
-                    height: 6,
-                    borderRadius: 3,
-                    '& .MuiLinearProgress-bar': {
-                      borderRadius: 3,
-                    },
-                  }}
-                />
-              </Box>
-
-              <Box sx={{ borderTop: '1px solid #EAEAEA', pt: 2, mt: 'auto' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  {/* Botões para funcionários */}
-                  <Button
-                    size='small'
-                    sx={{
-                      borderRadius: '20px',
-                      textTransform: 'none',
-                      fontSize: '14px',
-                    }}
-                  >
-                    'Inscrever-se'
-                  </Button>
-
-                  {/* Botões para instrutores/admins */}
-                  {canManageCourses && (
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Tooltip title='Visualizar'>
-                        <IconButton size='small'>
-                          <VisibilityIcon fontSize='small' />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title='Editar'>
-                        <IconButton size='small'>
-                          <EditIcon fontSize='small' />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title='Duplicar'>
-                        <IconButton size='small'>
-                          <CopyIcon fontSize='small' />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  )}
-
-                  <Typography
-                    variant='body2'
-                    sx={{
-                      fontFamily:
-                        'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      color: '#FF782D',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        color: '#e64a19',
-                      },
-                    }}
-                  >
-                    Ver mais
-                  </Typography>
-                </Box>
-              </Box>
-            </CardContent>
-          </Box>
-        </Card>
-      </Box>
-    )
-  }
-
   return (
-    <DashboardLayout title={'Catálogo de Cursos'} items={navigationItems}>
-      <Box>
-        {/* Seção de Busca e Filtros */}
-        <Box sx={{ mb: 4 }}>
-          {/* Busca principal */}
-          <Box sx={{ mb: 3 }}>
-            <TextField
-              fullWidth
-              placeholder='Buscar cursos por título, descrição ou palavras-chave...'
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position='start'>
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                },
-              }}
-            />
-          </Box>
-
-          {/* Toggle para mostrar/ocultar filtros avançados */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 2,
-            }}
-          >
-            <Button
-              variant='outlined'
-              onClick={() => setShowFilters(!showFilters)}
-              sx={{ borderRadius: '8px' }}
-            >
-              {showFilters ? 'Ocultar Filtros' : 'Filtros Avançados'}
-            </Button>
-
-            {Object.keys(filtros).length > 0 && (
-              <Button
-                variant='text'
-                onClick={resetAllFilters}
-                color='secondary'
-                size='small'
-              >
-                Limpar todos os filtros
-              </Button>
-            )}
-          </Box>
-
-          {/* Filtros avançados */}
-          {showFilters && (
-            <Card sx={{ p: 3, borderRadius: '12px' }}>
-              <Typography variant='h6' sx={{ mb: 2, fontWeight: 600 }}>
-                Filtros Avançados
-              </Typography>
-
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    xs: '1fr',
-                    sm: '1fr 1fr',
-                    md: '1fr 1fr 1fr',
-                  },
-                  gap: 2,
-                  mb: 3,
-                }}
-              >
-                {/* Filtro por Categoria */}
-                <FormControl>
-                  <InputLabel>Categoria</InputLabel>
-                  <Select
-                    value={selectedCategory}
-                    label='Categoria'
-                    onChange={e => setSelectedCategory(e.target.value)}
-                    sx={{ borderRadius: '8px' }}
-                  >
-                    <MenuItem value=''>Todas as categorias</MenuItem>
-                    {categorias?.map(categoria => (
-                      <MenuItem key={categoria.codigo} value={categoria.codigo}>
-                        {categoria.nome}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                {/* Filtro por Nível */}
-                <FormControl>
-                  <InputLabel>Nível de Dificuldade</InputLabel>
-                  <Select
-                    value={selectedLevel}
-                    label='Nível de Dificuldade'
-                    onChange={e => setSelectedLevel(e.target.value)}
-                    sx={{ borderRadius: '8px' }}
-                  >
-                    <MenuItem value=''>Todos os níveis</MenuItem>
-                    <MenuItem value='Iniciante'>Iniciante</MenuItem>
-                    <MenuItem value='Intermediário'>Intermediário</MenuItem>
-                    <MenuItem value='Avançado'>Avançado</MenuItem>
-                  </Select>
-                </FormControl>
-
-                {/* Filtro por Avaliação Mínima */}
-                <FormControl>
-                  <InputLabel>Avaliação Mínima</InputLabel>
-                  <Select
-                    value={minRating}
-                    label='Avaliação Mínima'
-                    onChange={e => setMinRating(e.target.value as number)}
-                    sx={{ borderRadius: '8px' }}
-                  >
-                    <MenuItem value=''>Qualquer avaliação</MenuItem>
-                    <MenuItem value={4}>4+ estrelas</MenuItem>
-                    <MenuItem value={3}>3+ estrelas</MenuItem>
-                    <MenuItem value={2}>2+ estrelas</MenuItem>
-                    <MenuItem value={1}>1+ estrelas</MenuItem>
-                  </Select>
-                </FormControl>
-              </Box>
-
-              {/* Filtros de Duração */}
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                  gap: 2,
-                }}
-              >
-                <TextField
-                  label='Duração Mínima (horas)'
-                  type='number'
-                  value={minDuration}
-                  onChange={e =>
-                    setMinDuration(e.target.value ? Number(e.target.value) : '')
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <AccessTimeIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                />
-                <TextField
-                  label='Duração Máxima (horas)'
-                  type='number'
-                  value={maxDuration}
-                  onChange={e =>
-                    setMaxDuration(e.target.value ? Number(e.target.value) : '')
-                  }
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position='start'>
-                        <AccessTimeIcon />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-                />
-              </Box>
-            </Card>
-          )}
-        </Box>
-
-        {canManageCourses && (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'end',
-              mb: 3,
-            }}
-          >
-            <Button
-              variant='contained'
-              startIcon={<AddIcon />}
-              onClick={() => setDialogCriarCurso(true)}
-            >
-              Novo Curso
-            </Button>
-          </Box>
-        )}
-
-        {/* Seção de Categorias */}
-        {loadingCategorias && <LinearProgress sx={{ mb: 2 }} />}
-        {categorias && categorias.length > 0 && (
-          <Box>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 3,
-              }}
-            >
-              <Box>
-                <Typography
-                  variant='h5'
-                  fontWeight={700}
-                  sx={{
-                    fontFamily:
-                      'Exo, -apple-system, Roboto, Helvetica, sans-serif',
-                    fontSize: { xs: '20px', md: '24px' },
-                    color: '#000',
-                    mb: 1,
-                  }}
-                >
-                  Categorias
-                </Typography>
-                <Typography
-                  variant='body1'
-                  sx={{
-                    fontFamily:
-                      'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                    fontSize: '16px',
-                    color: '#555',
-                  }}
-                >
-                  Explore nossos cursos por categoria
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 2,
-                justifyContent: 'center',
-              }}
-            >
-              {categoriasFiltradas?.map(renderCategoriaCard)}
-            </Box>
-          </Box>
-        )}
-
-        {/* Loading */}
-        {loadingCursos && <LinearProgress sx={{ mb: 2 }} />}
-
-        {/* Seção de Cursos */}
-        <Box>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 3,
-            }}
-          >
-            <Box>
-              <Typography
-                variant='h5'
-                fontWeight={700}
-                sx={{
-                  fontFamily:
-                    'Exo, -apple-system, Roboto, Helvetica, sans-serif',
-                  fontSize: { xs: '20px', md: '24px' },
-                  color: '#000',
-                  mb: 1,
-                }}
-              >
-                {Object.keys(filtros).length > 0 || selectedCategory
-                  ? 'Cursos Filtrados'
-                  : 'Todos os Cursos'}
-              </Typography>
-              <Typography
-                variant='body1'
-                sx={{
-                  fontFamily:
-                    'Jost, -apple-system, Roboto, Helvetica, sans-serif',
-                  fontSize: '16px',
-                  color: '#555',
-                }}
-              >
-                {cursos?.length || 0} curso(s) encontrado(s)
-                {selectedCategory && ` na categoria selecionada`}
-                {searchTerm && ` para "${searchTerm}"`}
-              </Typography>
-            </Box>
-
-            {(Object.keys(filtros).length > 0 || selectedCategory) && (
-              <Button
-                variant='outlined'
-                onClick={resetAllFilters}
-                sx={{ borderRadius: '20px', textTransform: 'none' }}
-              >
-                Limpar todos os filtros
-              </Button>
-            )}
-          </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 2,
-            }}
-          >
-            {cursos?.map(renderCursoCard)}
-          </Box>
-
-          {cursos?.length === 0 && !loadingCursos && (
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <SchoolIcon sx={{ fontSize: 64, color: '#ccc', mb: 2 }} />
-              <Typography variant='h6' sx={{ color: '#666', mb: 1 }}>
-                Nenhum curso encontrado
-              </Typography>
-              <Typography variant='body2' sx={{ color: '#999' }}>
-                Tente ajustar os filtros ou criar um novo curso
-              </Typography>
-            </Box>
-          )}
-        </Box>
-
-        {/* FAB para criar curso (mobile) */}
-        {canManageCourses && !isMdUp && (
-          <Fab
-            color='primary'
-            sx={{ position: 'fixed', bottom: 16, right: 16 }}
-            onClick={() => setDialogCriarCurso(true)}
-          >
-            <AddIcon />
-          </Fab>
-        )}
+    <DashboardLayout items={navigationItems}>
+       <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 2,
+         }}
+      >
+        <Typography variant='h5' fontWeight={800}>
+          Explorar cursos
+        </Typography>
+        <TextField size='small' placeholder='Buscar cursos...' />
       </Box>
 
-      {/* Dialog para criar curso */}
-      <Dialog
-        open={dialogCriarCurso}
-        onClose={() => setDialogCriarCurso(false)}
-        maxWidth='md'
-        fullWidth
-      >
-        <DialogTitle>Novo Curso</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField
-              label='Código'
-              value={dadosNovoCurso.codigo}
-              onChange={e =>
-                setDadosNovoCurso(prev => ({ ...prev, codigo: e.target.value }))
-              }
-              required
-            />
+      <CategoryChips categories={categories} />
 
-            <TextField
-              label='Título'
-              value={dadosNovoCurso.titulo}
-              onChange={e =>
-                setDadosNovoCurso(prev => ({ ...prev, titulo: e.target.value }))
-              }
-              required
-            />
-
-            <TextField
-              label='Descrição'
-              value={dadosNovoCurso.descricao}
-              onChange={e =>
-                setDadosNovoCurso(prev => ({
-                  ...prev,
-                  descricao: e.target.value,
-                }))
-              }
-              multiline
-              rows={3}
-            />
-
-            <FormControl>
-              <InputLabel>Categoria</InputLabel>
-              <Select
-                value={dadosNovoCurso.categoria_id}
-                label='Categoria'
-                onChange={e =>
-                  setDadosNovoCurso(prev => ({
-                    ...prev,
-                    categoria_id: e.target.value,
-                  }))
-                }
-              >
-                {categorias?.map(categoria => (
-                  <MenuItem key={categoria.codigo} value={categoria.codigo}>
-                    {categoria.nome}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <FormControl>
-              <InputLabel>Nível de Dificuldade</InputLabel>
-              <Select
-                value={dadosNovoCurso.nivel_dificuldade}
-                label='Nível de Dificuldade'
-                onChange={e =>
-                  setDadosNovoCurso(prev => ({
-                    ...prev,
-                    nivel_dificuldade: e.target.value as
-                      | 'Iniciante'
-                      | 'Intermediário'
-                      | 'Avançado',
-                  }))
-                }
-              >
-                <MenuItem value='Iniciante'>Iniciante</MenuItem>
-                <MenuItem value='Intermediário'>Intermediário</MenuItem>
-                <MenuItem value='Avançado'>Avançado</MenuItem>
-              </Select>
-            </FormControl>
-
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <TextField
-                label='Duração (horas)'
-                type='number'
-                value={dadosNovoCurso.duracao_estimada}
-                onChange={e =>
-                  setDadosNovoCurso(prev => ({
-                    ...prev,
-                    duracao_estimada: parseInt(e.target.value) || 0,
-                  }))
-                }
-                sx={{ flex: 1 }}
-              />
-
-              <TextField
-                label='XP Oferecido'
-                type='number'
-                value={dadosNovoCurso.xp_oferecido}
-                onChange={e =>
-                  setDadosNovoCurso(prev => ({
-                    ...prev,
-                    xp_oferecido: parseInt(e.target.value) || 0,
-                  }))
-                }
-                sx={{ flex: 1 }}
-              />
-            </Box>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogCriarCurso(false)}>Cancelar</Button>
-          <Button>{'Criar'}</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar para mensagens */}
-      <Snackbar
-        open={!!mensagem}
-        autoHideDuration={4000}
-        onClose={() => setMensagem('')}
-      >
-        <Alert severity={mensagem.includes('sucesso') ? 'success' : 'error'}>
-          {mensagem}
-        </Alert>
-      </Snackbar>
+      <Grid container spacing={3} sx={{ mt: 2 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <CourseCard
+            title='React Avançado e Redux'
+            category='Programação'
+            hours='12h total'
+            price='R$ 89'
+            rating={4.8}
+            gradientFrom='#ef4444'
+            gradientTo='#f97316'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          {' '}
+          <CourseCard
+            title='TypeScript do Zero'
+            category='Programação'
+            hours='10h total'
+            price='R$ 79'
+            rating={4.7}
+            gradientFrom='#22c55e'
+            gradientTo='#06b6d4'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          {' '}
+          <CourseCard
+            title='Design de Interfaces'
+            category='Design'
+            hours='8h total'
+            price='R$ 69'
+            rating={4.6}
+            gradientFrom='#3b82f6'
+            gradientTo='#8b5cf6'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <CourseCard
+            title='Marketing Digital'
+            category='Marketing'
+            hours='7h total'
+            price='R$ 59'
+            rating={4.5}
+            gradientFrom='#14b8a6'
+            gradientTo='#84cc16'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <CourseCard
+            title='Liderança e Gestão'
+            category='Negócios'
+            hours='9h total'
+            price='R$ 89'
+            rating={4.7}
+            gradientFrom='#a855f7'
+            gradientTo='#2563eb'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <CourseCard
+            title='Noções de Cloud'
+            category='TI & Software'
+            hours='6h total'
+            price='R$ 49'
+            rating={4.6}
+            gradientFrom='#0ea5e9'
+            gradientTo='#6366f1'
+          />
+        </Grid>
+      </Grid>
     </DashboardLayout>
   )
 }

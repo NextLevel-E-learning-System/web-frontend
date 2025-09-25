@@ -6,15 +6,6 @@ export function useDashboardLayout() {
     useNavigation()
   const { data: perfil } = useMeuPerfil()
 
-  // Definir títulos baseados no papel do usuário
-  const getDashboardTitle = () => {
-    if (isAdmin) return 'Dashboard do Administrador'
-    if (isGerente) return 'Dashboard do Gerente'
-    if (isInstrutor) return 'Dashboard do Instrutor'
-    if (isAluno) return 'Dashboard do Aluno'
-    return 'Dashboard'
-  }
-
   // Definir rota do dashboard baseada no papel
   const getDashboardRoute = () => {
     if (isAdmin || isGerente) return '/dashboard/admin'
@@ -24,7 +15,6 @@ export function useDashboardLayout() {
   }
 
   return {
-    title: getDashboardTitle(),
     navigationItems,
     user,
     perfil,

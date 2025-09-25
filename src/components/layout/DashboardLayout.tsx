@@ -38,10 +38,9 @@ export type NavItem = {
 }
 
 export default function DashboardLayout({
-  title,
   items,
   children,
-}: PropsWithChildren<{ title: string; items: NavItem[] }>) {
+}: PropsWithChildren<{ items: NavItem[] }>) {
   const theme = useTheme()
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -184,22 +183,6 @@ export default function DashboardLayout({
             })}
           </Box>
 
-          {/* Page Title - Mobile */}
-          <Typography
-            variant='h6'
-            fontWeight={600}
-            sx={{
-              flexGrow: 1,
-              display: { xs: 'block', md: 'none' },
-              textAlign: 'center',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {title}
-          </Typography>
-
           {/* Right side - User and Mobile Menu */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Avatar sx={{ width: 32, height: 32 }}>{avatarText}</Avatar>
@@ -255,21 +238,6 @@ export default function DashboardLayout({
           minHeight: 'calc(100vh - 64px)',
         }}
       >
-        {/* Page Title - Desktop */}
-        <Box
-          sx={{
-            display: { xs: 'none', md: 'block' },
-            bgcolor: 'background.paper',
-            borderBottom: t => `1px solid ${t.palette.divider}`,
-            py: 2,
-            px: 3,
-          }}
-        >
-          <Typography variant='h4' fontWeight={700}>
-            {title}
-          </Typography>
-        </Box>
-
         <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box>
       </Box>
     </Box>

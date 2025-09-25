@@ -25,7 +25,7 @@ import { useDashboardCompleto } from '@/api/users'
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
   const { dashboard, isLoading, error } = useDashboardCompleto()
-  const { title, navigationItems } = useDashboardLayout()
+  const { navigationItems } = useDashboardLayout()
 
   // Debug logs
   console.log('Dashboard data:', dashboard)
@@ -40,7 +40,7 @@ export default function EmployeeDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title={title} items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box
           display='flex'
           justifyContent='center'
@@ -55,7 +55,7 @@ export default function EmployeeDashboard() {
 
   if (error || !alunoData) {
     return (
-      <DashboardLayout title={title} items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Alert severity='error'>
           Erro ao carregar dados do dashboard. Tente novamente.
         </Alert>
@@ -76,7 +76,7 @@ export default function EmployeeDashboard() {
   }
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box
         sx={{
           maxWidth: '100%',

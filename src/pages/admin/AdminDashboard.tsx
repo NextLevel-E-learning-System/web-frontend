@@ -14,7 +14,7 @@ import {
 } from '@mui/material'
 import { People, School, Assignment, CheckCircle } from '@mui/icons-material'
 import DashboardWrapper from '@/components/layout/DashboardWrapper'
-import StatCard from '@/components/admin/StatCard'
+import StatCard from '@/components/common/StatCard'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import { DashboardAdmin, DashboardGerente } from '@/api/users'
