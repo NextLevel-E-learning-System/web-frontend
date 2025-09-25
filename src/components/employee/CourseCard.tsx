@@ -22,7 +22,7 @@ export default function CourseCard({
   category,
   hours,
   description,
-  rating = 4.7,
+  rating = 0,
   gradientFrom,
   gradientTo,
 }: CourseCardProps) {
@@ -38,12 +38,14 @@ export default function CourseCard({
         {/* Linha com Chip à esquerda e Rating à direita */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
           <Chip label={category} size='small' />
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <StarIcon sx={{ fontSize: 18, color: '#f59e0b' }} />
-            <Typography variant='body2' sx={{ fontWeight: 600 }}>
-              {rating.toFixed(1)}
-            </Typography>
-          </Box>
+          {rating > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <StarIcon sx={{ fontSize: 18, color: '#f59e0b' }} />
+              <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                {rating.toFixed(1)}
+              </Typography>
+            </Box>
+          )}
         </Box>
         
         <Typography variant='h6' fontWeight={700} gutterBottom>
