@@ -334,6 +334,7 @@ export default function Courses() {
       prerequisites: course.pre_requisitos || [],
       completionRate: course.taxa_conclusao || 0,
       totalEnrollments: course.total_inscricoes || 0,
+      modules: course.modulos, // Módulos se disponível
     }
   }
 
@@ -437,6 +438,10 @@ export default function Courses() {
                     gradientFrom={gradient.gradientFrom}
                     gradientTo={gradient.gradientTo}
                     onViewCourse={() => handleViewCourse(course)}
+                    // Novas propriedades
+                    completionRate={course.taxa_conclusao}
+                    totalEnrollments={course.total_inscricoes}
+                    instructorName={course.instrutor_nome}
                   />
                 </Grid>
               )

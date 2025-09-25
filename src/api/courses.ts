@@ -45,6 +45,9 @@ export interface Course {
   total_conclusoes?: number
   taxa_conclusao?: number
   media_conclusao?: number
+  total_modulos?: number
+  // Módulos do curso (quando detalhado)
+  modulos?: Module[]
   // Campos legados (manter por compatibilidade)
   avaliacao_media?: number
   total_avaliacoes?: number

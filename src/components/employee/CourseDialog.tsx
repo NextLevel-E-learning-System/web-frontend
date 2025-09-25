@@ -46,6 +46,7 @@ export interface CourseData {
   prerequisites?: string[];
   completionRate?: number;
   totalEnrollments?: number;
+  modules?: any[]; // Módulos já carregados, se disponível
 }
 
 interface Props {
@@ -59,10 +60,14 @@ interface Props {
 export default function CourseDialog({ open, onClose, course, onEnroll, isEnrolling }: Props) {
   const [tab, setTab] = React.useState(0);
   
-  // Buscar módulos do curso se courseCode estiver disponível
-  const { data: modules, isLoading: modulesLoading, error: modulesError } = useCourseModules(
-    course?.courseCode || ""
+  // Buscar módulos do curso se não estiverem disponíveis e courseCode estiver presente
+  const shouldFetchModules = !course?.modules && !!course?.courseCode;
+  const { data: fetchedModules, isLoading: modulesLoading, error: modulesError } = useCourseModules(
+    shouldFetchModules ? course.courseCode : ""
   );
+
+  // Usar módulos já disponíveis ou os buscados via API
+  const modules = course?.modules || fetchedModules;
 
   if (!course) return null;
 
@@ -197,7 +202,7 @@ export default function CourseDialog({ open, onClose, course, onEnroll, isEnroll
         {tab === 1 && (
           <Box sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight={800} gutterBottom>Módulos do Curso</Typography>
-            {modulesLoading ? (
+            {(modulesLoading && shouldFetchModules) ? (
               <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
                 <CircularProgress />
               </Box>
