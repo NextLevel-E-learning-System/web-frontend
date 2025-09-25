@@ -16,11 +16,20 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material'
+import MenuBookIcon from '@mui/icons-material/MenuBook'
+import TimelineIcon from '@mui/icons-material/Timeline'
+import GroupsIcon from '@mui/icons-material/Groups'
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
+import StarRateIcon from '@mui/icons-material/StarRate'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
 import { DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboardCompleto } from '@/api/users'
+import StatsCard from '@/components/common/StatCard'
+import CourseProgressCard from '@/components/employee/CourseProgressCard'
+import QuickActionCard from '@/components/common/QuickActionCard'
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
@@ -77,224 +86,136 @@ export default function EmployeeDashboard() {
 
   return (
     <DashboardLayout items={navigationItems}>
+      <EmployeeHeader
+        dashboardData={{
+          tipo_dashboard: alunoData?.tipo_dashboard || 'aluno',
+          xp_atual: progressao?.xp_atual || 0,
+          nivel_atual:
+            typeof progressao?.nivel_atual === 'number'
+              ? progressao.nivel_atual
+              : 1,
+          progresso_nivel: progressao?.progresso_nivel || 0,
+          ranking_departamento: ranking?.posicao_departamento || 0,
+          xp_proximo_nivel: progressao?.xp_proximo_nivel || 100,
+          badges_conquistados: progressao?.badges_conquistados || [],
+        }}
+      />
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <StatsCard
+            label='Courses Enrolled'
+            value='12'
+            icon={<MenuBookIcon />}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <StatsCard
+            label='Completed'
+            value='8'
+            icon={<WorkspacePremiumIcon />}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <StatsCard
+            label='Learning Time'
+            value='42h'
+            icon={<AccessTimeIcon />}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <StatsCard
+            label='Average Rating'
+            value='4.8'
+            icon={<StarRateIcon />}
+          />
+        </Grid>
+      </Grid>
+
+      <Typography variant='h6' fontWeight={800} sx={{ mt: 4, mb: 2 }}>
+        Quick Actions
+      </Typography>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <QuickActionCard
+            title='Browse Courses'
+            description='Discover new courses and expand your skillset with our curated content.'
+            to='/courses'
+            button='Explore Courses'
+            icon={<MenuBookIcon color='primary' />}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <QuickActionCard
+            title='View Progress'
+            description="Track your learning progress and see how far you've come."
+            to='/progress'
+            button='Check Progress'
+            icon={<TimelineIcon color='success' />}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <QuickActionCard
+            title='Join Community'
+            description='Connect with fellow learners and share your knowledge.'
+            to='/community'
+            button='Join Now'
+            icon={<GroupsIcon color='info' />}
+          />
+        </Grid>
+      </Grid>
+
       <Box
         sx={{
-          maxWidth: '100%',
-          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mt: 4,
+          mb: 2,
         }}
       >
-        <EmployeeHeader
-          dashboardData={{
-            tipo_dashboard: alunoData?.tipo_dashboard || 'aluno',
-            xp_atual: progressao?.xp_atual || 0,
-            nivel_atual:
-              typeof progressao?.nivel_atual === 'number'
-                ? progressao.nivel_atual
-                : 1,
-            progresso_nivel: progressao?.progresso_nivel || 0,
-            ranking_departamento: ranking?.posicao_departamento || 0,
-            xp_proximo_nivel: progressao?.xp_proximo_nivel || 100,
-            badges_conquistados: progressao?.badges_conquistados || [],
-          }}
-        />
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, lg: 8 }}>
-            <Card
-              sx={{
-                overflow: 'hidden',
-                maxWidth: '100%',
-              }}
-            >
-              <Tabs
-                value={tab}
-                onChange={(_, v) => setTab(v)}
-                variant='fullWidth'
-                sx={{ borderBottom: t => `1px solid ${t.palette.divider}` }}
-              >
-                <Tab label='Em andamento' />
-                <Tab label='Concluídos' />
-              </Tabs>
-              <CardContent
-                sx={{
-                  maxWidth: '100%',
-                  overflow: 'auto',
-                }}
-              >
-                {tab === 0 && (
-                  <List>
-                    {(cursos?.em_andamento || []).length > 0 ? (
-                      (cursos?.em_andamento || []).map(
-                        (c: any, index: number) => (
-                          <ListItem
-                            key={c.id || index}
-                            sx={{
-                              flexDirection: 'column',
-                              alignItems: 'flex-start',
-                            }}
-                          >
-                            <Typography fontWeight={700}>
-                              {c.titulo ||
-                                c.title ||
-                                c.nome ||
-                                'Curso sem título'}
-                            </Typography>
-                            <Box
-                              sx={{
-                                mt: 1,
-                                width: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                flexWrap: { xs: 'wrap', sm: 'nowrap' },
-                              }}
-                            >
-                              <Box
-                                sx={{
-                                  flexGrow: 1,
-                                  height: 8,
-                                  bgcolor: 'grey.200',
-                                  borderRadius: 5,
-                                  minWidth: '120px',
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    width: `${c.progress || c.progresso || c.progresso_percentual || 0}%`,
-                                    height: 8,
-                                    bgcolor: 'primary.main',
-                                    borderRadius: 5,
-                                  }}
-                                />
-                              </Box>
-                              <Typography
-                                variant='body2'
-                                color='text.secondary'
-                              >
-                                {c.progress ||
-                                  c.progresso ||
-                                  c.progresso_percentual ||
-                                  0}
-                                %
-                              </Typography>
-                              <Button size='small' variant='outlined'>
-                                Continuar
-                              </Button>
-                            </Box>
-                          </ListItem>
-                        )
-                      )
-                    ) : (
-                      <Typography
-                        color='text.secondary'
-                        sx={{ p: 2, textAlign: 'center' }}
-                      >
-                        Nenhum curso em andamento
-                      </Typography>
-                    )}
-                  </List>
-                )}
-                {tab === 1 && (
-                  <List>
-                    {(cursos?.concluidos || []).length > 0 ? (
-                      (cursos?.concluidos || []).map(
-                        (c: any, index: number) => (
-                          <ListItem key={c.id || index}>
-                            <ListItemText
-                              primary={
-                                c.titulo ||
-                                c.title ||
-                                c.nome ||
-                                'Curso sem título'
-                              }
-                              secondary={`Concluído em ${c.data_conclusao || 'Data não disponível'}`}
-                            />
-                            <Chip
-                              label='Concluído'
-                              color='success'
-                              size='small'
-                            />
-                          </ListItem>
-                        )
-                      )
-                    ) : (
-                      <Typography
-                        color='text.secondary'
-                        sx={{ p: 2, textAlign: 'center' }}
-                      >
-                        Você ainda não concluiu cursos.
-                      </Typography>
-                    )}
-                  </List>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid size={{ xs: 12, lg: 4 }}>
-            <Card
-              sx={{
-                overflow: 'hidden',
-                maxWidth: '100%',
-              }}
-            >
-              <CardContent>
-                <Typography fontWeight={700} gutterBottom>
-                  Atividades Recentes
-                </Typography>
-                <List dense>
-                  {(atividades_recentes || []).length > 0 ? (
-                    (atividades_recentes || []).map((a: any, index: number) => (
-                      <ListItem key={a.id || index}>
-                        <ListItemText
-                          primary={
-                            a.text || a.descricao || a.titulo || 'Atividade'
-                          }
-                          secondary={
-                            a.time || a.data || a.data_criacao || 'Recente'
-                          }
-                        />
-                      </ListItem>
-                    ))
-                  ) : (
-                    <Typography
-                      color='text.secondary'
-                      sx={{ p: 1, textAlign: 'center' }}
-                    >
-                      Nenhuma atividade recente
-                    </Typography>
-                  )}
-                </List>
-                <Divider sx={{ my: 1.5 }} />
-                <Typography fontWeight={700} gutterBottom>
-                  Cursos Recomendados
-                </Typography>
-                <List dense>
-                  {(cursos?.recomendados || [])
-                    .slice(0, 3)
-                    .map((c: any, index: number) => (
-                      <ListItem key={c.id || index}>
-                        <ListItemText
-                          primary={
-                            c.titulo || c.title || c.nome || 'Curso recomendado'
-                          }
-                          secondary={c.categoria || 'Recomendado para você'}
-                        />
-                      </ListItem>
-                    ))}
-                  {(cursos?.recomendados || []).length === 0 && (
-                    <Typography
-                      color='text.secondary'
-                      sx={{ p: 1, textAlign: 'center' }}
-                    >
-                      Nenhuma recomendação disponível
-                    </Typography>
-                  )}
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <Typography variant='h6' fontWeight={800}>
+          Continue Learning
+        </Typography>
+        <Typography
+          variant='body2'
+          color='primary.main'
+          sx={{ cursor: 'pointer' }}
+        >
+          View all courses
+        </Typography>
       </Box>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <CourseProgressCard
+            title='React Fundamentals'
+            description='Master the basics of React and build modern web applications.'
+            progress={75}
+            timeLeft='3h left'
+            gradientFrom='#6366f1'
+            gradientTo='#06b6d4'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <CourseProgressCard
+            title='Node.js Backend'
+            description='Build scalable backend applications with Node.js and Express.'
+            progress={45}
+            timeLeft='8h left'
+            gradientFrom='#22c55e'
+            gradientTo='#0ea5e9'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <CourseProgressCard
+            title='UI/UX Design'
+            description='Design principles and create beautiful user interfaces.'
+            progress={20}
+            timeLeft='12h left'
+            gradientFrom='#f97316'
+            gradientTo='#ef4444'
+          />
+        </Grid>
+      </Grid>
     </DashboardLayout>
   )
 }

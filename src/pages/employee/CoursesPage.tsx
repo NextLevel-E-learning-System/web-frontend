@@ -15,6 +15,7 @@ import {
 import CategoryChips from '@/components/employee/CategoryChips'
 import CourseCard from '@/components/employee/CourseCard'
 import CourseNavbar from '@/components/employee/CourseNavbar'
+import FilterBar from '@/components/common/FilterBar'
 
 const categories = [
   { label: 'Programação', color: '#2563eb' },
@@ -33,20 +34,20 @@ export default function Courses() {
     useNavigation()
   return (
     <DashboardLayout items={navigationItems}>
-       <Box
+      <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           mb: 2,
-         }}
+        }}
       >
         <Typography variant='h5' fontWeight={800}>
           Explorar cursos
         </Typography>
         <TextField size='small' placeholder='Buscar cursos...' />
       </Box>
-
+ <FilterBar />
       <CategoryChips categories={categories} />
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
