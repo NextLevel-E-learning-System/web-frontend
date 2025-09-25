@@ -6,10 +6,10 @@ import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import Button from '@mui/material/Button'
 import StarIcon from '@mui/icons-material/Star'
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import PersonIcon from "@mui/icons-material/Person";
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import PersonIcon from '@mui/icons-material/Person'
 export interface CourseCardProps {
   title: string
   category: string
@@ -18,7 +18,7 @@ export interface CourseCardProps {
   rating?: number
   gradientFrom: string
   gradientTo: string
-  onViewCourse?: () => void;
+  onViewCourse?: () => void
   // Novas propriedades
   completionRate?: number
   totalEnrollments?: number
@@ -48,8 +48,24 @@ export default function CourseCard({
       />
       <CardContent>
         {/* Linha com Chip à esquerda e Rating à direita */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Chip label={category} size='small' sx={{ background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`, color: '#fff', padding: '6px 8px', borderRadius: '16px' }} />
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 1,
+          }}
+        >
+          <Chip
+            label={category}
+            size='small'
+            sx={{
+              background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+              color: '#fff',
+              padding: '6px 8px',
+              borderRadius: '16px',
+            }}
+          />
           {rating > 0 && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <StarIcon sx={{ fontSize: 18, color: '#f59e0b' }} />
@@ -59,48 +75,20 @@ export default function CourseCard({
             </Box>
           )}
         </Box>
-        
+
         <Typography variant='h6' fontWeight={700} gutterBottom>
           {title}
         </Typography>
-         {description ? (
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        {description ? (
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
             {description}
           </Typography>
         ) : null}
         {/* Informações do curso */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-            <Typography variant="body2">{hours}</Typography>
-          </Box>
-          
-          {instructorName && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <PersonIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-              <Typography variant="body2" color="text.secondary">{instructorName}</Typography>
-            </Box>
-          )}
-          
-          {/* Estatísticas */}
-          <Box sx={{ display: "flex", gap: 2, mt: 0.5 }}>
-            {totalEnrollments !== undefined && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <PeopleAltIcon sx={{ fontSize: 16, color: "primary.main" }} />
-                <Typography variant="body2" color="primary.main" fontWeight={600}>
-                  {totalEnrollments}
-                </Typography>
-              </Box>
-            )}
-            
-            {completionRate !== undefined && completionRate > 0 && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />
-                <Typography variant="body2" color="success.main" fontWeight={600}>
-                  {completionRate}%
-                </Typography>
-              </Box>
-            )}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <AccessTimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <Typography variant='body2'>{hours}</Typography>
           </Box>
         </Box>
       </CardContent>

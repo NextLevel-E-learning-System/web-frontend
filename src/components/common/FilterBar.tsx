@@ -46,13 +46,15 @@ export default function FilterBar({
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
         <FormControl size='small' sx={{ minWidth: 160 }}>
           <InputLabel>Categorias</InputLabel>
-          <Select 
-            label='Categorias' 
+          <Select
+            label='Categorias'
             value={selectedCategory || 'all'}
-            onChange={(e) => onCategoryChange(e.target.value === 'all' ? null : e.target.value)}
+            onChange={e =>
+              onCategoryChange(e.target.value === 'all' ? null : e.target.value)
+            }
           >
             <MenuItem value='all'>Todas as Categorias</MenuItem>
-            {categories.map((category) => (
+            {categories.map(category => (
               <MenuItem key={category.codigo} value={category.codigo}>
                 {category.codigo}
               </MenuItem>
@@ -61,10 +63,10 @@ export default function FilterBar({
         </FormControl>
         <FormControl size='small' sx={{ minWidth: 140 }}>
           <InputLabel>Nível</InputLabel>
-          <Select 
-            label='Nível' 
+          <Select
+            label='Nível'
             value={selectedLevel}
-            onChange={(e) => onLevelChange(e.target.value)}
+            onChange={e => onLevelChange(e.target.value)}
           >
             <MenuItem value='all'>Todos os Níveis</MenuItem>
             <MenuItem value='Iniciante'>Iniciante</MenuItem>
@@ -74,10 +76,10 @@ export default function FilterBar({
         </FormControl>
         <FormControl size='small' sx={{ minWidth: 140 }}>
           <InputLabel>Duração</InputLabel>
-          <Select 
-            label='Duração' 
+          <Select
+            label='Duração'
             value={selectedDuration}
-            onChange={(e) => onDurationChange(e.target.value)}
+            onChange={e => onDurationChange(e.target.value)}
           >
             <MenuItem value='all'>Qualquer</MenuItem>
             <MenuItem value='lt5'>Menos de 5h</MenuItem>

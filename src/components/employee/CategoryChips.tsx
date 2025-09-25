@@ -17,7 +17,11 @@ interface Props {
   onCategorySelect?: (categoryCode: string) => void
 }
 
-export default function CategoryChips({ items, selectedCategory, onCategorySelect }: Props) {
+export default function CategoryChips({
+  items,
+  selectedCategory,
+  onCategorySelect,
+}: Props) {
   return (
     <Box
       sx={{
@@ -48,8 +52,8 @@ export default function CategoryChips({ items, selectedCategory, onCategorySelec
               background: `linear-gradient(135deg, ${c.gradientFrom}, ${c.gradientTo})`,
               color: '#fff',
               fontWeight: 700,
-              boxShadow: isSelected 
-                ? '0 4px 12px rgba(0,0,0,0.3)' 
+              boxShadow: isSelected
+                ? '0 4px 12px rgba(0,0,0,0.3)'
                 : '0 1px 2px rgba(0,0,0,0.06)',
               minWidth: 120,
               maxWidth: 150,
@@ -60,18 +64,22 @@ export default function CategoryChips({ items, selectedCategory, onCategorySelec
               cursor: onCategorySelect ? 'pointer' : 'default',
               transform: isSelected ? 'scale(1.05)' : 'scale(1)',
               transition: 'all 0.2s ease-in-out',
-              border: isSelected ? '2px solid rgba(255,255,255,0.8)' : '2px solid transparent',
-              '&:hover': onCategorySelect ? {
-                transform: 'scale(1.02)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              } : {},
+              border: isSelected
+                ? '2px solid rgba(255,255,255,0.8)'
+                : '2px solid transparent',
+              '&:hover': onCategorySelect
+                ? {
+                    transform: 'scale(1.02)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  }
+                : {},
             }}
           >
             {/* Ícone */}
             <Box sx={{ fontSize: 24, display: 'flex', alignItems: 'center' }}>
               {c.icon}
             </Box>
-            
+
             {/* Nome da categoria */}
             <Typography
               sx={{
@@ -82,7 +90,7 @@ export default function CategoryChips({ items, selectedCategory, onCategorySelec
             >
               {c.label}
             </Typography>
-            
+
             {/* Quantidade de cursos */}
             {typeof c.count === 'number' ? (
               <Typography sx={{ opacity: 0.9, fontSize: 12 }}>

@@ -5,27 +5,27 @@ import TextField from '@mui/material/TextField'
 import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
 import { useMeuPerfil } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
-import CodeIcon from "@mui/icons-material/Code";
-import BrushIcon from "@mui/icons-material/Brush";
-import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
-import CampaignIcon from "@mui/icons-material/Campaign";
-import ComputerIcon from "@mui/icons-material/Computer";
-import ScienceIcon from "@mui/icons-material/Science";
-import TranslateIcon from "@mui/icons-material/Translate";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import SchoolIcon from "@mui/icons-material/School";
-import WorkIcon from "@mui/icons-material/Work";
-import PsychologyIcon from "@mui/icons-material/Psychology";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import SecurityIcon from "@mui/icons-material/Security";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import IntegrationInstructionsIcon from "@mui/icons-material/IntegrationInstructions";
-import StorefrontIcon from "@mui/icons-material/Storefront";
-import GavelIcon from "@mui/icons-material/Gavel";
-import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
-import GroupIcon from "@mui/icons-material/Group";
-import ConstructionIcon from "@mui/icons-material/Construction";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import CodeIcon from '@mui/icons-material/Code'
+import BrushIcon from '@mui/icons-material/Brush'
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
+import CampaignIcon from '@mui/icons-material/Campaign'
+import ComputerIcon from '@mui/icons-material/Computer'
+import ScienceIcon from '@mui/icons-material/Science'
+import TranslateIcon from '@mui/icons-material/Translate'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
+import SchoolIcon from '@mui/icons-material/School'
+import WorkIcon from '@mui/icons-material/Work'
+import PsychologyIcon from '@mui/icons-material/Psychology'
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import SecurityIcon from '@mui/icons-material/Security'
+import LocalShippingIcon from '@mui/icons-material/LocalShipping'
+import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions'
+import StorefrontIcon from '@mui/icons-material/Storefront'
+import GavelIcon from '@mui/icons-material/Gavel'
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'
+import GroupIcon from '@mui/icons-material/Group'
+import ConstructionIcon from '@mui/icons-material/Construction'
+import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import {
   useCourseCatalog,
   useCategories,
@@ -77,7 +77,7 @@ const getCategoryIcon = (categoryCodigo: string) => {
       return <SecurityIcon sx={{ color: '#fff' }} />
     case 'vendas':
       return <StorefrontIcon sx={{ color: '#fff' }} />
-    
+
     // Códigos adicionais prováveis
     case 'ti':
     case 'tecnologia':
@@ -109,7 +109,7 @@ const getCategoryIcon = (categoryCodigo: string) => {
     case 'analytics':
     case 'ciencia':
       return <ScienceIcon sx={{ color: '#fff' }} />
-    
+
     // Default
     default:
       return <SchoolIcon sx={{ color: '#fff' }} />
@@ -118,8 +118,9 @@ const getCategoryIcon = (categoryCodigo: string) => {
 
 export default function Courses() {
   const { data: user } = useMeuPerfil()
-  const { navigationItems, canManageCourses, isInstrutor, isAdmin } = useNavigation()
-  
+  const { navigationItems, canManageCourses, isInstrutor, isAdmin } =
+    useNavigation()
+
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -135,19 +136,19 @@ export default function Courses() {
   // Filtros para a API
   const filters: FiltrosCatalogo = useMemo(() => {
     const f: FiltrosCatalogo = {}
-    
+
     if (searchTerm.trim()) {
       f.q = searchTerm.trim()
     }
-    
+
     if (selectedCategory && selectedCategory !== 'all') {
       f.categoria_id = selectedCategory
     }
-    
+
     if (selectedLevel && selectedLevel !== 'all') {
       f.nivel = selectedLevel
     }
-    
+
     if (selectedDuration && selectedDuration !== 'all') {
       switch (selectedDuration) {
         case 'lt5':
@@ -162,31 +163,42 @@ export default function Courses() {
           break
       }
     }
-    
+
     return f
   }, [searchTerm, selectedCategory, selectedLevel, selectedDuration])
 
   // Hooks da API
-  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories()
-  const { data: courses, isLoading: coursesLoading, error: coursesError } = useCourseCatalog(filters)
-  const { mutate: createEnrollment, isPending: isEnrolling } = useCreateEnrollment()
+  const {
+    data: categories,
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useCategories()
+  const {
+    data: courses,
+    isLoading: coursesLoading,
+    error: coursesError,
+  } = useCourseCatalog(filters)
+  const { mutate: createEnrollment, isPending: isEnrolling } =
+    useCreateEnrollment()
 
   // Função para converter hex para rgba
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null
   }
 
   // Filtragem adicional local (para casos não suportados pela API)
   const filteredCourses = useMemo(() => {
     if (!courses) return []
-    
+
     let filtered = courses
-    
+
     // Filtro de duração local para ranges complexos
     if (selectedDuration === '5-10') {
       filtered = filtered.filter(course => {
@@ -199,28 +211,33 @@ export default function Courses() {
         return duration > 600 // mais de 10 horas
       })
     }
-    
+
     return filtered
   }, [courses, selectedDuration])
 
   // Processamento das categorias para o componente CategoryChips
   const processedCategories: TileCategory[] = useMemo(() => {
     if (!categories) return []
-    
+
     return categories.map(category => {
       // Sempre usar cor do backend (cor_hex sempre existe)
       const rgb = hexToRgb(category.cor_hex)
-      const gradientColors = rgb ? {
-        gradientFrom: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
-        gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
-      } : {
-        gradientFrom: '#6b7280',
-        gradientTo: '#374151',
-      }
-      
+      const gradientColors = rgb
+        ? {
+            gradientFrom: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
+            gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
+          }
+        : {
+            gradientFrom: '#6b7280',
+            gradientTo: '#374151',
+          }
+
       // Contar cursos por categoria (usando cursos filtrados)
-      const courseCount = filteredCourses?.filter(course => course.categoria_id === category.codigo).length || 0
-      
+      const courseCount =
+        filteredCourses?.filter(
+          course => course.categoria_id === category.codigo
+        ).length || 0
+
       return {
         label: category.codigo,
         code: category.codigo,
@@ -244,22 +261,22 @@ export default function Courses() {
     if (!categoryId || !categories) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
-    
+
     const category = categories.find(c => c.codigo === categoryId)
     if (!category) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
-    
+
     // Sempre usar cor do backend (cor_hex sempre existe)
     const rgb = hexToRgb(category.cor_hex)
     if (!rgb) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
-    
+
     // Criar gradient com diferentes opacidades
     const gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)` // 100% opacidade
     const gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)` // 70% opacidade
-    
+
     return {
       gradientFrom,
       gradientTo,
@@ -279,7 +296,9 @@ export default function Courses() {
     if (minutes < 60) return `${minutes}min`
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}min` : `${hours}h`
+    return remainingMinutes > 0
+      ? `${hours}h ${remainingMinutes}min`
+      : `${hours}h`
   }
 
   // Função para limpar todos os filtros
@@ -313,7 +332,7 @@ export default function Courses() {
   const convertCourseToDialogData = (course: Curso) => {
     const gradient = getCourseCardGradient(course.categoria_id)
     const categoryName = getCategoryName(course.categoria_id)
-    
+
     return {
       title: course.titulo,
       category: categoryName,
@@ -357,11 +376,11 @@ export default function Courses() {
           // Aqui você pode adicionar uma notificação de sucesso
           console.log('Inscrição realizada com sucesso!')
         },
-        onError: (error) => {
+        onError: error => {
           // Mostrar erro
           console.error('Erro ao se inscrever:', error)
           // Aqui você pode adicionar uma notificação de erro
-        }
+        },
       }
     )
   }
@@ -369,8 +388,11 @@ export default function Courses() {
   if (categoriesError || coursesError) {
     return (
       <DashboardLayout items={navigationItems}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Erro ao carregar os dados: {categoriesError?.message || coursesError?.message || 'Erro desconhecido'}
+        <Alert severity='error' sx={{ mb: 2 }}>
+          Erro ao carregar os dados:{' '}
+          {categoriesError?.message ||
+            coursesError?.message ||
+            'Erro desconhecido'}
         </Alert>
       </DashboardLayout>
     )
@@ -389,15 +411,15 @@ export default function Courses() {
         <Typography variant='h5' fontWeight={800}>
           Explorar cursos
         </Typography>
-        <TextField 
-          size='small' 
-          placeholder='Buscar cursos...' 
+        <TextField
+          size='small'
+          placeholder='Buscar cursos...'
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
         />
       </Box>
-      
-      <FilterBar 
+
+      <FilterBar
         categories={categories || []}
         selectedCategory={selectedCategory}
         selectedLevel={selectedLevel}
@@ -407,14 +429,12 @@ export default function Courses() {
         onDurationChange={setSelectedDuration}
         onClearFilters={clearAllFilters}
       />
-      
 
-        <CategoryChips 
-          items={processedCategories} 
-          selectedCategory={selectedCategory}
-          onCategorySelect={handleCategorySelect}
-        />
-      
+      <CategoryChips
+        items={processedCategories}
+        selectedCategory={selectedCategory}
+        onCategorySelect={handleCategorySelect}
+      />
 
       {/* Carregamento dos cursos */}
       {coursesLoading ? (
@@ -424,7 +444,7 @@ export default function Courses() {
       ) : (
         <>
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            {paginatedCourses.map((course) => {
+            {paginatedCourses.map(course => {
               const gradient = getCourseCardGradient(course.categoria_id)
               return (
                 <Grid size={{ xs: 12, md: 4 }} key={course.codigo}>
@@ -446,27 +466,27 @@ export default function Courses() {
               )
             })}
           </Grid>
-          
+
           {/* Paginação */}
           {totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-              <Pagination 
-                count={totalPages} 
-                page={currentPage} 
+              <Pagination
+                count={totalPages}
+                page={currentPage}
                 onChange={(_, page) => setCurrentPage(page)}
-                shape='rounded' 
-                color='primary' 
+                shape='rounded'
+                color='primary'
               />
             </Box>
           )}
-          
+
           {/* Mensagem quando não há cursos */}
           {filteredCourses && filteredCourses.length === 0 && (
             <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="h6" color="text.secondary">
+              <Typography variant='h6' color='text.secondary'>
                 Nenhum curso encontrado
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 Tente ajustar os filtros ou termos de busca
               </Typography>
             </Box>
