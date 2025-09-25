@@ -42,7 +42,6 @@ export interface CourseData {
   isActive?: boolean;
   // Novas propriedades
   instructorName?: string;
-  instructorLastName?: string;
   prerequisites?: string[];
   completionRate?: number;
   totalEnrollments?: number;
@@ -121,11 +120,11 @@ export default function CourseDialog({ open, onClose, course, onEnroll, isEnroll
             </Typography>
 
             {/* Informações do Instrutor */}
-            {(course.instructorName || course.instructorLastName) && (
+            {course.instructorName && (
               <Box sx={{ mb: 3, p: 2, border: 1, borderColor: "divider", borderRadius: 2, bgcolor: "grey.50" }}>
                 <Typography variant="subtitle2" fontWeight={800} gutterBottom>Instrutor</Typography>
                 <Typography variant="body1" fontWeight={600}>
-                  {course.instructorName} {course.instructorLastName}
+                  {course.instructorName}
                 </Typography>
               </Box>
             )}

@@ -330,7 +330,6 @@ export default function Courses() {
       isActive: course.ativo,
       // Novas propriedades
       instructorName: course.instrutor_nome,
-      instructorLastName: course.instrutor_sobrenome,
       prerequisites: course.pre_requisitos || [],
       completionRate: course.taxa_conclusao || 0,
       totalEnrollments: course.total_inscricoes || 0,

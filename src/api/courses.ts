@@ -36,7 +36,6 @@ export interface Course {
   atualizado_em: string
   // Campos relacionados ao instrutor
   instrutor_nome?: string
-  instrutor_sobrenome?: string
   // Campos de categoria
   categoria_nome?: string
   departamento_codigo?: string
