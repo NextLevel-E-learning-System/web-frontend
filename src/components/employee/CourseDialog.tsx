@@ -40,6 +40,12 @@ export interface CourseData {
   courseCode?: string;
   xpOffered?: number;
   isActive?: boolean;
+  // Novas propriedades
+  instructorName?: string;
+  instructorLastName?: string;
+  prerequisites?: string[];
+  completionRate?: number;
+  totalEnrollments?: number;
 }
 
 interface Props {
@@ -78,13 +84,15 @@ export default function CourseDialog({ open, onClose, course, onEnroll, isEnroll
           <Chip label={course.badgeLabel} sx={{ bgcolor: "rgba(17,24,39,0.8)", color: "#fff", fontWeight: 700, position: "absolute", top: 12, right: 12 }} />
         ) : null}
         <Box sx={{ display: "flex", gap: 2, alignItems: "center", mt: 1, flexWrap: "wrap" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-            <StarIcon sx={{ fontSize: 18 }} />
-            <Typography variant="body2">{(course.rating ?? 4.7).toFixed(1)} ({course.reviews ?? 3} reviews)</Typography>
-          </Box>
+          {course.completionRate !== undefined && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <CheckCircleIcon sx={{ fontSize: 18 }} />
+              <Typography variant="body2">{course.completionRate.toFixed(1)}% conclusão</Typography>
+            </Box>
+          )}
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
             <PeopleAltIcon sx={{ fontSize: 18 }} />
-            <Typography variant="body2">{course.students ?? 2540} alunos</Typography>
+            <Typography variant="body2">{course.totalEnrollments || 0} inscritos</Typography>
           </Box>
           <Typography variant="body2">{course.level}</Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -104,9 +112,45 @@ export default function CourseDialog({ open, onClose, course, onEnroll, isEnroll
           <Box sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight={800} gutterBottom>Sobre este Curso</Typography>
             <Typography color="text.secondary" sx={{ mb: 2 }}>
-              {course.description }
+              {course.description}
             </Typography>
-            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr" }, gap: 2 }}>
+
+            {/* Informações do Instrutor */}
+            {(course.instructorName || course.instructorLastName) && (
+              <Box sx={{ mb: 3, p: 2, border: 1, borderColor: "divider", borderRadius: 2, bgcolor: "grey.50" }}>
+                <Typography variant="subtitle2" fontWeight={800} gutterBottom>Instrutor</Typography>
+                <Typography variant="body1" fontWeight={600}>
+                  {course.instructorName} {course.instructorLastName}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Estatísticas do Curso */}
+            {(course.totalEnrollments !== undefined || course.completionRate !== undefined) && (
+              <Box sx={{ mb: 3, p: 2, border: 1, borderColor: "divider", borderRadius: 2, bgcolor: "primary.50" }}>
+                <Typography variant="subtitle2" fontWeight={800} gutterBottom>Estatísticas</Typography>
+                <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+                  {course.totalEnrollments !== undefined && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <PeopleAltIcon fontSize="small" color="primary" />
+                      <Typography variant="body2">
+                        <strong>{course.totalEnrollments}</strong> inscrições
+                      </Typography>
+                    </Box>
+                  )}
+                  {course.completionRate !== undefined && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <CheckCircleIcon fontSize="small" color="success" />
+                      <Typography variant="body2">
+                        <strong>{course.completionRate}%</strong> taxa de conclusão
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: course.prerequisites?.length ? "1fr 1fr" : "1fr" }, gap: 2 }}>
               <Box sx={{ p: 2, border: 1, borderColor: "divider", borderRadius: 2 }}>
                 <Typography variant="subtitle2" fontWeight={800} gutterBottom>O curso inclui</Typography>
                 {[
@@ -121,6 +165,19 @@ export default function CourseDialog({ open, onClose, course, onEnroll, isEnroll
                   </Box>
                 ))}
               </Box>
+              
+              {/* Pré-requisitos */}
+              {course.prerequisites && course.prerequisites.length > 0 && (
+                <Box sx={{ p: 2, border: 1, borderColor: "divider", borderRadius: 2 }}>
+                  <Typography variant="subtitle2" fontWeight={800} gutterBottom>Pré-requisitos</Typography>
+                  {course.prerequisites.map((prerequisite, idx) => (
+                    <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                      <CheckCircleIcon color="warning" fontSize="small" />
+                      <Typography variant="body2">{prerequisite}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
             </Box>
             <Box sx={{ mt: 3, p: 2, borderTop: 1, borderColor: "divider", display: "flex", alignItems: "center", justifyContent: "end", flexWrap: "wrap", gap: 2 }}>
               
@@ -217,37 +274,67 @@ export default function CourseDialog({ open, onClose, course, onEnroll, isEnroll
         )}
         {tab === 2 && (
           <Box sx={{ p: 3 }}>
-            <Typography variant="h6" fontWeight={800} gutterBottom>Avaliações dos Alunos</Typography>
-            {course.reviews && course.reviews > 0 ? (
+            <Typography variant="h6" fontWeight={800} gutterBottom>Métricas do Curso</Typography>
+            {(course.totalEnrollments !== undefined && course.totalEnrollments > 0) || 
+             (course.completionRate !== undefined && course.completionRate > 0) ? (
               <Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-                  <Box sx={{ textAlign: "center" }}>
-                    <Typography variant="h3" fontWeight={900}>
-                      {(course.rating || 0).toFixed(1)}
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3, mb: 3 }}>
+                  {/* Taxa de Conclusão */}
+                  <Box sx={{ textAlign: "center", p: 3, border: 1, borderColor: "divider", borderRadius: 2 }}>
+                    <Typography variant="h3" fontWeight={900} color="success.main">
+                      {(course.completionRate || 0).toFixed(1)}%
                     </Typography>
-                    <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <StarIcon 
-                          key={star} 
-                          sx={{ 
-                            color: star <= (course.rating || 0) ? "#f59e0b" : "#e5e7eb",
-                            fontSize: 20 
-                          }} 
-                        />
-                      ))}
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {course.reviews} avaliação{course.reviews !== 1 ? 'ões' : ''}
+                    <Typography variant="h6" fontWeight={600} sx={{ mt: 1 }}>
+                      Taxa de Conclusão
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Percentual de alunos que completaram o curso
+                    </Typography>
+                  </Box>
+
+                  {/* Total de Inscrições */}
+                  <Box sx={{ textAlign: "center", p: 3, border: 1, borderColor: "divider", borderRadius: 2 }}>
+                    <Typography variant="h3" fontWeight={900} color="primary.main">
+                      {course.totalEnrollments || 0}
+                    </Typography>
+                    <Typography variant="h6" fontWeight={600} sx={{ mt: 1 }}>
+                      Total de Inscrições
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      Número de funcionários inscritos
                     </Typography>
                   </Box>
                 </Box>
-                <Typography color="text.secondary">
-                  Detalhes das avaliações serão implementados em breve.
-                </Typography>
+
+                {/* Indicadores de Qualidade */}
+                <Box sx={{ p: 3, border: 1, borderColor: "divider", borderRadius: 2, bgcolor: "grey.50" }}>
+                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                    Indicadores de Qualidade
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 2 }}>
+                    {course.completionRate !== undefined && (
+                      <Chip 
+                        label={
+                          course.completionRate >= 80 ? "Alta Taxa de Conclusão" :
+                          course.completionRate >= 60 ? "Boa Taxa de Conclusão" : 
+                          "Taxa de Conclusão em Melhoria"
+                        }
+                        color={
+                          course.completionRate >= 80 ? "success" :
+                          course.completionRate >= 60 ? "warning" : "default"
+                        }
+                        variant="filled"
+                      />
+                    )}
+                    {course.totalEnrollments !== undefined && course.totalEnrollments > 50 && (
+                      <Chip label="Curso Popular" color="primary" variant="filled" />
+                    )}
+                  </Box>
+                </Box>
               </Box>
             ) : (
               <Typography color="text.secondary">
-                Este curso ainda não possui avaliações.
+                Este curso ainda não possui métricas suficientes para exibição.
               </Typography>
             )}
           </Box>
