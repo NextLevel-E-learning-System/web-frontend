@@ -43,15 +43,6 @@ export default function FilterBar() {
             <MenuItem value='>10'>10h+</MenuItem>
           </Select>
         </FormControl>
-        <FormControl size='small' sx={{ minWidth: 140 }}>
-          <InputLabel>Sort By</InputLabel>
-          <Select label='Sort By' value='popular'>
-            <MenuItem value='popular'>Most Popular</MenuItem>
-            <MenuItem value='rating'>Highest Rated</MenuItem>
-            <MenuItem value='new'>Newest</MenuItem>
-            <MenuItem value='price'>Price</MenuItem>
-          </Select>
-        </FormControl>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Button variant='text'>Clear Filters</Button>

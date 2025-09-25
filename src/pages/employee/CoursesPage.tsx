@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid'
+import { Grid } from '@mui/material'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
@@ -16,6 +16,16 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import SchoolIcon from "@mui/icons-material/School";
 import WorkIcon from "@mui/icons-material/Work";
 import PsychologyIcon from "@mui/icons-material/Psychology";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import SecurityIcon from "@mui/icons-material/Security";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import IntegrationInstructionsIcon from "@mui/icons-material/IntegrationInstructions";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import GavelIcon from "@mui/icons-material/Gavel";
+import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
+import GroupIcon from "@mui/icons-material/Group";
+import ConstructionIcon from "@mui/icons-material/Construction";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import {
   useCourseCatalog,
   useCategories,
@@ -38,86 +48,69 @@ export interface TileCategory {
   count?: number
 }
 
-// Mapeamento de categorias para ícones e cores
-const getCategoryStyle = (categoryCodigo: string) => {
+// Mapeamento de ícones baseado no código da categoria
+const getCategoryIcon = (categoryCodigo: string) => {
   const codigo = categoryCodigo.toLowerCase()
 
-  if (codigo.includes('programação') || codigo.includes('desenvolvimento') || codigo.includes('code') || codigo.includes('software')) {
-    return {
-      icon: <CodeIcon sx={{ color: '#fff' }} />,
-     
-    }
-  }
-
-  if (codigo.includes('design') || codigo.includes('ui') || codigo.includes('ux')) {
-    return {
-      icon: <BrushIcon sx={{ color: '#fff' }} />,
-      gradientFrom: '#f43f5e',
-      gradientTo: '#f97316',
-    }
-  }
-
-  if (codigo.includes('negócio') || codigo.includes('gestão') || codigo.includes('liderança') || codigo.includes('business')) {
-    return {
-      icon: <BusinessCenterIcon sx={{ color: '#fff' }} />,
-     
-    }
-  }
-
-  if (codigo.includes('marketing') || codigo.includes('vendas') || codigo.includes('comunicação')) {
-    return {
-      icon: <CampaignIcon sx={{ color: '#fff' }} />,
-     
-    }
-  }
-
-  if (codigo.includes('ti') || codigo.includes('tecnologia') || codigo.includes('informática') || codigo.includes('it')) {
-    return {
-      icon: <ComputerIcon sx={{ color: '#fff' }} />,
-      
-    }
-  }
-
-  if (codigo.includes('ciência') || codigo.includes('dados') || codigo.includes('analytics') || codigo.includes('science')) {
-    return {
-      icon: <ScienceIcon sx={{ color: '#fff' }} />,
-     
-    }
-  }
-
-  if (codigo.includes('idioma') || codigo.includes('língua') || codigo.includes('language') || codigo.includes('inglês')) {
-    return {
-      icon: <TranslateIcon sx={{ color: '#fff' }} />,
-      
-    }
-  }
-
-  if (codigo.includes('saúde') || codigo.includes('fitness') || codigo.includes('bem-estar') || codigo.includes('health')) {
-    return {
-      icon: <FavoriteBorderIcon sx={{ color: '#fff' }} />,
-      
-    }
-  }
-
-  if (codigo.includes('rh') || codigo.includes('recursos humanos') || codigo.includes('people')) {
-    return {
-      icon: <WorkIcon sx={{ color: '#fff' }} />,
-     
-    }
-  }
-
-  if (codigo.includes('psicologia') || codigo.includes('comportamental') || codigo.includes('soft skills')) {
-    return {
-      icon: <PsychologyIcon sx={{ color: '#fff' }} />,
-      
-    }
-  }
-  
-  // Default para categorias não mapeadas
-  return {
-    icon: <SchoolIcon sx={{ color: '#fff' }} />,
-    gradientFrom: '#6b7280',
-    gradientTo: '#374151',
+  // Códigos existentes
+  switch (codigo) {
+    case 'compliance':
+      return <GavelIcon sx={{ color: '#fff' }} />
+    case 'desenvolvimento':
+      return <CodeIcon sx={{ color: '#fff' }} />
+    case 'design':
+      return <BrushIcon sx={{ color: '#fff' }} />
+    case 'financeiro':
+      return <AccountBalanceIcon sx={{ color: '#fff' }} />
+    case 'integração':
+    case 'integracao':
+      return <IntegrationInstructionsIcon sx={{ color: '#fff' }} />
+    case 'logística':
+    case 'logistica':
+      return <LocalShippingIcon sx={{ color: '#fff' }} />
+    case 'marketing':
+      return <CampaignIcon sx={{ color: '#fff' }} />
+    case 'segurança':
+    case 'seguranca':
+      return <SecurityIcon sx={{ color: '#fff' }} />
+    case 'vendas':
+      return <StorefrontIcon sx={{ color: '#fff' }} />
+    
+    // Códigos adicionais prováveis
+    case 'ti':
+    case 'tecnologia':
+    case 'informatica':
+      return <ComputerIcon sx={{ color: '#fff' }} />
+    case 'rh':
+    case 'recursos-humanos':
+    case 'pessoas':
+      return <GroupIcon sx={{ color: '#fff' }} />
+    case 'operacional':
+    case 'operacoes':
+    case 'producao':
+      return <ConstructionIcon sx={{ color: '#fff' }} />
+    case 'qualidade':
+    case 'sst':
+    case 'meio-ambiente':
+      return <HealthAndSafetyIcon sx={{ color: '#fff' }} />
+    case 'liderança':
+    case 'lideranca':
+    case 'gestao':
+      return <BusinessCenterIcon sx={{ color: '#fff' }} />
+    case 'vendas-avancadas':
+    case 'comercial':
+      return <TrendingUpIcon sx={{ color: '#fff' }} />
+    case 'soft-skills':
+    case 'comportamental':
+      return <PsychologyIcon sx={{ color: '#fff' }} />
+    case 'dados':
+    case 'analytics':
+    case 'ciencia':
+      return <ScienceIcon sx={{ color: '#fff' }} />
+    
+    // Default
+    default:
+      return <SchoolIcon sx={{ color: '#fff' }} />
   }
 }
 
@@ -147,47 +140,30 @@ export default function Courses() {
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories()
   const { data: courses, isLoading: coursesLoading, error: coursesError } = useCourseCatalog(filters)
 
+  // Função para converter hex para rgba
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null
+  }
+
   // Processamento das categorias para o componente CategoryChips
   const processedCategories: TileCategory[] = useMemo(() => {
     if (!categories) return []
     
     return categories.map(category => {
-      // Usar cor do backend se disponível, senão usar mapeamento padrão
-      let gradientColors
-      if (category.cor_hex) {
-        // Converter hex para rgb
-        const hexToRgb = (hex: string) => {
-          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-          return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16)
-          } : null
-        }
-        
-        const rgb = hexToRgb(category.cor_hex)
-        if (rgb) {
-          gradientColors = {
-            gradientFrom: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
-            gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
-          }
-        } else {
-          const style = getCategoryStyle(category.nome)
-          gradientColors = {
-            gradientFrom: style.gradientFrom,
-            gradientTo: style.gradientTo,
-          }
-        }
-      } else {
-        const style = getCategoryStyle(category.nome)
-        gradientColors = {
-          gradientFrom: style.gradientFrom,
-          gradientTo: style.gradientTo,
-        }
+      // Sempre usar cor do backend (cor_hex sempre existe)
+      const rgb = hexToRgb(category.cor_hex)
+      const gradientColors = rgb ? {
+        gradientFrom: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
+        gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
+      } : {
+        gradientFrom: '#6b7280',
+        gradientTo: '#374151',
       }
-      
-      // Obter ícone baseado no nome da categoria
-      const style = getCategoryStyle(category.nome)
       
       // Contar cursos por categoria
       const courseCount = courses?.filter(course => course.categoria_id === category.codigo).length || 0
@@ -195,7 +171,7 @@ export default function Courses() {
       return {
         label: category.codigo,
         ...gradientColors,
-        icon: style.icon,
+        icon: getCategoryIcon(category.codigo),
         count: courseCount,
       }
     })
@@ -217,28 +193,17 @@ export default function Courses() {
     }
     
     const category = categories.find(c => c.codigo === categoryId)
-    if (!category || !category.cor_hex) {
+    if (!category) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
     
-    // Usar a cor do backend com diferentes opacidades para criar o gradient
-    const baseColor = category.cor_hex
-    // Converter hex para rgb para aplicar opacidade
-    const hexToRgb = (hex: string) => {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : null
-    }
-    
-    const rgb = hexToRgb(baseColor)
+    // Sempre usar cor do backend (cor_hex sempre existe)
+    const rgb = hexToRgb(category.cor_hex)
     if (!rgb) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
     
-    // Criar gradient com a cor original e uma versão mais escura/opaca
+    // Criar gradient com diferentes opacidades
     const gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)` // 100% opacidade
     const gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)` // 70% opacidade
     
@@ -297,14 +262,9 @@ export default function Courses() {
       
       <FilterBar />
       
-      {/* Carregamento das categorias */}
-      {categoriesLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
+
         <CategoryChips items={processedCategories} />
-      )}
+      
 
       {/* Carregamento dos cursos */}
       {coursesLoading ? (

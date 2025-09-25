@@ -70,7 +70,7 @@ export default function CategoryChips({ items }: Props) {
           {/* Quantidade de cursos */}
           {typeof c.count === 'number' ? (
             <Typography sx={{ opacity: 0.9, fontSize: 12 }}>
-              {c.count} courses
+              {c.count} curso{c.count !== 1 ? 's' : ''}
             </Typography>
           ) : null}
         </Box>
