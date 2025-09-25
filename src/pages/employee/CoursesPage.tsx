@@ -121,20 +121,44 @@ export default function Courses() {
   // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedLevel, setSelectedLevel] = useState<string>('all')
+  const [selectedDuration, setSelectedDuration] = useState<string>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const coursesPerPage = 6
 
   // Filtros para a API
   const filters: FiltrosCatalogo = useMemo(() => {
     const f: FiltrosCatalogo = {}
+    
     if (searchTerm.trim()) {
       f.q = searchTerm.trim()
     }
-    if (selectedCategory) {
+    
+    if (selectedCategory && selectedCategory !== 'all') {
       f.categoria_id = selectedCategory
     }
+    
+    if (selectedLevel && selectedLevel !== 'all') {
+      f.nivel = selectedLevel
+    }
+    
+    if (selectedDuration && selectedDuration !== 'all') {
+      switch (selectedDuration) {
+        case 'lt5':
+          f.duracaoMax = 300 // 5 horas em minutos
+          break
+        case '5-10':
+          // Para range 5-10h, vamos usar uma lógica de filtragem local
+          // pois a API pode não suportar range complexo
+          break
+        case '>10':
+          // Também será filtrado localmente
+          break
+      }
+    }
+    
     return f
-  }, [searchTerm, selectedCategory])
+  }, [searchTerm, selectedCategory, selectedLevel, selectedDuration])
 
   // Hooks da API
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories()
@@ -149,6 +173,28 @@ export default function Courses() {
       b: parseInt(result[3], 16)
     } : null
   }
+
+  // Filtragem adicional local (para casos não suportados pela API)
+  const filteredCourses = useMemo(() => {
+    if (!courses) return []
+    
+    let filtered = courses
+    
+    // Filtro de duração local para ranges complexos
+    if (selectedDuration === '5-10') {
+      filtered = filtered.filter(course => {
+        const duration = course.duracao_estimada || 0
+        return duration >= 300 && duration <= 600 // 5-10 horas
+      })
+    } else if (selectedDuration === '>10') {
+      filtered = filtered.filter(course => {
+        const duration = course.duracao_estimada || 0
+        return duration > 600 // mais de 10 horas
+      })
+    }
+    
+    return filtered
+  }, [courses, selectedDuration])
 
   // Processamento das categorias para o componente CategoryChips
   const processedCategories: TileCategory[] = useMemo(() => {
@@ -165,26 +211,26 @@ export default function Courses() {
         gradientTo: '#374151',
       }
       
-      // Contar cursos por categoria
-      const courseCount = courses?.filter(course => course.categoria_id === category.codigo).length || 0
+      // Contar cursos por categoria (usando cursos filtrados)
+      const courseCount = filteredCourses?.filter(course => course.categoria_id === category.codigo).length || 0
       
       return {
         label: category.codigo,
+        code: category.codigo,
         ...gradientColors,
         icon: getCategoryIcon(category.codigo),
         count: courseCount,
       }
     })
-  }, [categories, courses])
+  }, [categories, filteredCourses])
 
-  // Paginação dos cursos
+  // Paginação dos cursos filtrados
   const paginatedCourses = useMemo(() => {
-    if (!courses) return []
     const startIndex = (currentPage - 1) * coursesPerPage
-    return courses.slice(startIndex, startIndex + coursesPerPage)
-  }, [courses, currentPage, coursesPerPage])
+    return filteredCourses.slice(startIndex, startIndex + coursesPerPage)
+  }, [filteredCourses, currentPage, coursesPerPage])
 
-  const totalPages = Math.ceil((courses?.length || 0) / coursesPerPage)
+  const totalPages = Math.ceil((filteredCourses?.length || 0) / coursesPerPage)
 
   // Função para obter cor da categoria para o CourseCard
   const getCourseCardGradient = (categoryId?: string) => {
@@ -229,6 +275,21 @@ export default function Courses() {
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}min` : `${hours}h`
   }
 
+  // Função para limpar todos os filtros
+  const clearAllFilters = () => {
+    setSearchTerm('')
+    setSelectedCategory(null)
+    setSelectedLevel('all')
+    setSelectedDuration('all')
+    setCurrentPage(1)
+  }
+
+  // Função para selecionar categoria
+  const handleCategorySelect = (categoryCode: string) => {
+    setSelectedCategory(categoryCode === selectedCategory ? null : categoryCode)
+    setCurrentPage(1) // Reset para primeira página
+  }
+
   if (categoriesError || coursesError) {
     return (
       <DashboardLayout items={navigationItems}>
@@ -260,10 +321,23 @@ export default function Courses() {
         />
       </Box>
       
-      <FilterBar />
+      <FilterBar 
+        categories={categories || []}
+        selectedCategory={selectedCategory}
+        selectedLevel={selectedLevel}
+        selectedDuration={selectedDuration}
+        onCategoryChange={setSelectedCategory}
+        onLevelChange={setSelectedLevel}
+        onDurationChange={setSelectedDuration}
+        onClearFilters={clearAllFilters}
+      />
       
 
-        <CategoryChips items={processedCategories} />
+        <CategoryChips 
+          items={processedCategories} 
+          selectedCategory={selectedCategory}
+          onCategorySelect={handleCategorySelect}
+        />
       
 
       {/* Carregamento dos cursos */}
@@ -306,7 +380,7 @@ export default function Courses() {
           )}
           
           {/* Mensagem quando não há cursos */}
-          {courses && courses.length === 0 && (
+          {filteredCourses && filteredCourses.length === 0 && (
             <Box sx={{ textAlign: 'center', mt: 4 }}>
               <Typography variant="h6" color="text.secondary">
                 Nenhum curso encontrado
