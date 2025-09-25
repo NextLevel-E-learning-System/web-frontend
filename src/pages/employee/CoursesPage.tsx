@@ -167,7 +167,7 @@ export default function Courses() {
             title='Liderança e Gestão'
             category='Negócios'
             hours='9h total'
-            price='R$ 89'
+            description="Master advanced React patterns and Redux state management for building complex applications."
             rating={4.7}
             gradientFrom='#a855f7'
             gradientTo='#2563eb'
@@ -178,7 +178,7 @@ export default function Courses() {
             title='Noções de Cloud'
             category='TI & Software'
             hours='6h total'
-            price='R$ 49'
+            description="Aprenda os fundamentos de computação em nuvem e como utilizar serviços como AWS e Azure."
             rating={4.6}
             gradientFrom='#0ea5e9'
             gradientTo='#6366f1'
