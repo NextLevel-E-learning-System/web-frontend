@@ -394,7 +394,7 @@ export default function AdminCourses() {
 
   if (loadingCursos || loadingCategorias) {
     return (
-      <DashboardLayout title='Cursos' items={navigationItems}>
+      <DashboardLayout  items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={300} />
         </Box>
@@ -403,7 +403,7 @@ export default function AdminCourses() {
   }
 
   return (
-    <DashboardLayout title='Gerenciar Cursos' items={navigationItems}>
+    <DashboardLayout   items={navigationItems}>
       <Box>
         <Box
           sx={{

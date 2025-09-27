@@ -390,7 +390,7 @@ export default function AdminUsers() {
 
   if (loadingUsers || loadingDepartments || loadingCargos) {
     return (
-      <DashboardLayout title='Gerenciar Usuários' items={navigationItems}>
+      <DashboardLayout   items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={300} />
         </Box>
@@ -399,7 +399,7 @@ export default function AdminUsers() {
   }
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout   items={navigationItems}>
       <Box>
         <Box
           sx={{
