@@ -36,11 +36,6 @@ export default function EmployeeDashboard() {
   const { dashboard, isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
 
-  // Debug logs
-  console.log('Dashboard data:', dashboard)
-  console.log('Loading:', isLoading)
-  console.log('Error:', error)
-
   // Type guard para garantir que é um dashboard de aluno
   const alunoData =
     dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null

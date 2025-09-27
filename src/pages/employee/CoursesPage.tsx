@@ -217,7 +217,7 @@ export default function Courses() {
 
   // Processamento das categorias para o componente CategoryChips
   const processedCategories: TileCategory[] = useMemo(() => {
-    if (!categories) return []
+    if (!categories || !Array.isArray(categories)) return []
 
     return categories.map(category => {
       // Sempre usar cor do backend (cor_hex sempre existe)
@@ -262,7 +262,9 @@ export default function Courses() {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
 
-    const category = categories.find(c => c.codigo === categoryId)
+    const category = Array.isArray(categories)
+      ? categories.find(c => c.codigo === categoryId)
+      : undefined
     if (!category) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
@@ -286,7 +288,9 @@ export default function Courses() {
   // Função para obter nome da categoria
   const getCategoryName = (categoryId?: string) => {
     if (!categoryId || !categories) return 'Sem categoria'
-    const category = categories.find(c => c.codigo === categoryId)
+    const category = Array.isArray(categories)
+      ? categories.find(c => c.codigo === categoryId)
+      : undefined
     return category?.nome || 'Sem categoria'
   }
 

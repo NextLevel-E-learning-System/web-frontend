@@ -10,12 +10,19 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   accessToken: string
+  refreshToken?: string
   tokenType: string
   expiresInHours: number
+  mensagem: string
 }
 
 export interface LogoutResponse {
-  sucesso: boolean
+  mensagem: string
+}
+
+export interface RefreshResponse {
+  accessToken: string
+  mensagem: string
 }
 
 // Auth Hooks
@@ -50,8 +57,8 @@ export function useRefreshToken() {
   return useMutation({
     mutationKey: ['auth', 'refresh'],
     mutationFn: () =>
-      apiPost<LoginResponse>(`${API_ENDPOINTS.AUTH}/refresh`, {}),
-    onSuccess: (data: LoginResponse) => {
+      apiPost<RefreshResponse>(`${API_ENDPOINTS.AUTH}/refresh`, {}),
+    onSuccess: (data: RefreshResponse) => {
       // Update token using http utility
       setAccessToken(data.accessToken)
     },

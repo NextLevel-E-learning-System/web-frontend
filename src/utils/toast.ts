@@ -43,28 +43,30 @@ export const showToast = {
   },
 }
 
-// Shortcuts para mensagens comuns
-export const toastMessages = {
-  success: {
-    saved: 'Dados salvos com sucesso!',
-    created: 'Criado com sucesso!',
-    updated: 'Atualizado com sucesso!',
-    deleted: 'Excluído com sucesso!',
-    sent: 'Enviado com sucesso!',
-  },
+// Helper function to show error toast with backend message
+export function showErrorToast(error: any) {
+  const message = error?.mensagem
+  if (message) {
+    showToast.error(message)
+  }
+  // Se não há mensagem do backend, não mostra toast
+  // O backend deve sempre fornecer mensagens de erro apropriadas
+}
 
-  error: {
-    generic: 'Ocorreu um erro. Tente novamente.',
-    network: 'Erro de conexão. Verifique sua internet.',
-    validation: 'Verifique os dados preenchidos.',
-    notFound: 'Item não encontrado.',
-    unauthorized: 'Você não tem permissão para esta ação.',
-  },
+// Helper function to show success toast with backend message
+export function showSuccessToast(result: any) {
+  const message = result?.mensagem
+  if (message && typeof message === 'string') {
+    showToast.success(message)
+  }
+  // Se não há mensagem do backend, não mostra toast
+  // O backend deve sempre fornecer mensagens de sucesso apropriadas
+}
 
-  loading: {
-    saving: 'Salvando...',
-    loading: 'Carregando...',
-    sending: 'Enviando...',
-    processing: 'Processando...',
-  },
+// Loading messages são permitidos pois são mensagens de estado, não de resultado
+export const loadingMessages = {
+  saving: 'Salvando...',
+  loading: 'Carregando...',
+  sending: 'Enviando...',
+  processing: 'Processando...',
 }

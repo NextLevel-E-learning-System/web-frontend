@@ -53,8 +53,7 @@ export default function AdminCategories() {
 
   const { data: departamentos = [], isLoading: loadingDepartamentos } =
     useListarDepartamentosAdmin()
-  const { data: categorias = [], isLoading: loadingCategorias } =
-    useCategories()
+  const { data: categorias = [], isLoading: loadingCategorias } = useCategories()
 
   const createCategoryMutation = useCreateCategory()
   const updateCategoryMutation = useUpdateCategory()
@@ -97,10 +96,7 @@ export default function AdminCategories() {
   }
 
   const handleCreate = async () => {
-    if (!form.codigo || !form.nome || !form.departamento_codigo) {
-      toast.error('Código, nome e departamento são obrigatórios')
-      return
-    }
+   
 
     try {
       await createCategoryMutation.mutateAsync({
@@ -177,7 +173,7 @@ export default function AdminCategories() {
 
   if (loadingDepartamentos || loadingCategorias) {
     return (
-      <DashboardLayout title='Gerenciar Categorias' items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={300} />
         </Box>
@@ -269,7 +265,7 @@ export default function AdminCategories() {
   ]
 
   return (
-    <DashboardLayout title={'Gerenciar Categorias'} items={navigationItems}>
+  <DashboardLayout items={navigationItems}>
       <Box>
         <Box
           sx={{

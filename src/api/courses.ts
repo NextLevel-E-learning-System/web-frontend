@@ -13,6 +13,12 @@ export interface Category {
   atualizado_em: string
 }
 
+
+export interface CategoriesListResponse {
+  items: Category[]
+  mensagem: string
+}
+
 export interface CreateCategoryInput {
   codigo: string
   nome: string
@@ -86,6 +92,10 @@ export interface Module {
   tipo_conteudo?: string
 }
 
+export interface ModuleResponse {
+  items: Module[]
+  mensagem: string
+}
 export interface CreateModuleInput {
   titulo: string
   conteudo?: string
@@ -138,14 +148,19 @@ export interface CatalogFilters {
 
 export interface CoursesResponse {
   items: Course[]
-  total: number
+  total?: number
 }
 
 // Hooks para Categorias
 export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ['courses', 'categories'],
-    queryFn: () => authGet<Category[]>(`${API_ENDPOINTS.COURSES}/categorias`),
+    queryFn: async () => {
+      const response = await authGet<CategoriesListResponse>(
+        `${API_ENDPOINTS.COURSES}/categorias`
+      )
+      return response.items || []
+    },
   })
 }
 
@@ -267,8 +282,12 @@ export function useToggleCourseStatus(codigo: string) {
 export function useCourseModules(codigo: string) {
   return useQuery<Module[]>({
     queryKey: ['courses', 'modules', codigo],
-    queryFn: () =>
-      authGet<Module[]>(`${API_ENDPOINTS.COURSES}/${codigo}/modulos`),
+    queryFn: async () => {
+      const response = await authGet<ModuleResponse>(
+        `${API_ENDPOINTS.COURSES}/${codigo}/modulos`
+      )
+      return response.items || []
+    },
     enabled: !!codigo,
   })
 }
