@@ -2,7 +2,7 @@ import { Grid } from '@mui/material'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
-import DashboardLayout, { NavItem } from '@/components/layout/DashboardLayout'
+import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useMeuPerfil } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
 import CodeIcon from '@mui/icons-material/Code'
@@ -10,37 +10,27 @@ import BrushIcon from '@mui/icons-material/Brush'
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
 import CampaignIcon from '@mui/icons-material/Campaign'
 import ComputerIcon from '@mui/icons-material/Computer'
-import ScienceIcon from '@mui/icons-material/Science'
-import TranslateIcon from '@mui/icons-material/Translate'
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder'
-import SchoolIcon from '@mui/icons-material/School'
-import WorkIcon from '@mui/icons-material/Work'
-import PsychologyIcon from '@mui/icons-material/Psychology'
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
-import SecurityIcon from '@mui/icons-material/Security'
-import LocalShippingIcon from '@mui/icons-material/LocalShipping'
+ import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+ import LocalShippingIcon from '@mui/icons-material/LocalShipping'
 import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions'
-import StorefrontIcon from '@mui/icons-material/Storefront'
-import GavelIcon from '@mui/icons-material/Gavel'
+ import GavelIcon from '@mui/icons-material/Gavel'
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'
 import GroupIcon from '@mui/icons-material/Group'
 import ConstructionIcon from '@mui/icons-material/Construction'
-import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import {
+ import {
   useCourseCatalog,
   useCategories,
   type Course as Curso,
-  type Category,
   type CatalogFilters as FiltrosCatalogo,
 } from '@/api/courses'
 import { useCreateEnrollment } from '@/api/progress'
 import CategoryChips from '@/components/employee/CategoryChips'
 import CourseCard from '@/components/employee/CourseCard'
 import CourseDialog from '@/components/employee/CourseDialog'
-import CourseNavbar from '@/components/employee/CourseNavbar'
 import FilterBar from '@/components/common/FilterBar'
 import { Pagination, CircularProgress, Alert } from '@mui/material'
 import { useState, useMemo } from 'react'
+import { Psychology, School, Science, Security, Storefront, TrendingUp } from '@mui/icons-material'
 
 export interface TileCategory {
   label: string
@@ -74,9 +64,9 @@ const getCategoryIcon = (categoryCodigo: string) => {
       return <CampaignIcon sx={{ color: '#fff' }} />
     case 'segurança':
     case 'seguranca':
-      return <SecurityIcon sx={{ color: '#fff' }} />
+      return <Security sx={{ color: '#fff' }} />
     case 'vendas':
-      return <StorefrontIcon sx={{ color: '#fff' }} />
+      return <Storefront sx={{ color: '#fff' }} />
 
     // Códigos adicionais prováveis
     case 'ti':
@@ -101,18 +91,18 @@ const getCategoryIcon = (categoryCodigo: string) => {
       return <BusinessCenterIcon sx={{ color: '#fff' }} />
     case 'vendas-avancadas':
     case 'comercial':
-      return <TrendingUpIcon sx={{ color: '#fff' }} />
+      return <TrendingUp sx={{ color: '#fff' }} />
     case 'soft-skills':
     case 'comportamental':
-      return <PsychologyIcon sx={{ color: '#fff' }} />
+      return <Psychology sx={{ color: '#fff' }} />
     case 'dados':
     case 'analytics':
     case 'ciencia':
-      return <ScienceIcon sx={{ color: '#fff' }} />
+      return <Science sx={{ color: '#fff' }} />
 
     // Default
     default:
-      return <SchoolIcon sx={{ color: '#fff' }} />
+      return <School sx={{ color: '#fff' }} />
   }
 }
 

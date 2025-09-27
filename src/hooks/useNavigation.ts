@@ -51,22 +51,18 @@ export function useNavigation() {
           ],
         },
         {
-          label: 'Conquistas',
-          href: '/conquistas',
+          label: 'Progresso',
+          href: '/meu-progresso',
         },
         {
           label: 'Ranking',
           href: '/ranking',
-        },
-        {
-          label: 'Configurações',
-          href: '/configuracoes',
-        },
+        }
       ]
     }
 
     // INSTRUTOR - Gerencia próprios cursos e turmas
-    if (isInstrutor) {
+  if (isInstrutor) {
       return [
         {
           label: 'Dashboard',
@@ -182,6 +178,8 @@ export function useNavigation() {
         },
       ]
     }
+
+    return []
   }
 
   return {

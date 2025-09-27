@@ -23,6 +23,7 @@ import CoursesPage from './pages/employee/CoursesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
 import theme from './theme'
+import ProgressPage from './pages/employee/ProgressPage'
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -110,10 +111,18 @@ const App = () => (
           <Route
             path='/cursos'
             element={
-              <ProtectedRoute>
+           <ProtectedRoute allowedRoles={['ALUNO']}>
                 <CoursesPage />
               </ProtectedRoute>
             }
+          />
+          <Route
+          path='/meu-progresso'
+          element={
+              <ProtectedRoute allowedRoles={['ALUNO']}>
+              <ProgressPage/>
+            </ProtectedRoute>
+          }
           />
           <Route path='*' element={<NotFound />} />
         </Routes>

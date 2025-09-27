@@ -8,7 +8,7 @@ export interface Category {
   nome: string
   descricao?: string
   departamento_codigo?: string // REFERENCES departamentos(codigo)
-  cor_hex?: string
+  cor_hex: string
   criado_em: string
   atualizado_em: string
 }

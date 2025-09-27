@@ -1,28 +1,14 @@
 import { useState } from 'react'
 import {
   Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  Tab,
-  Tabs,
   Typography,
   Grid,
   Alert,
   CircularProgress,
 } from '@mui/material'
-import MenuBookIcon from '@mui/icons-material/MenuBook'
-import TimelineIcon from '@mui/icons-material/Timeline'
-import GroupsIcon from '@mui/icons-material/Groups'
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
+import{   MenuBook, WorkspacePremium, StarRate, MenuBookSharp, TimelineOutlined }from '@mui/icons-material'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import StarRateIcon from '@mui/icons-material/StarRate'
-import DashboardLayout from '@/components/layout/DashboardLayout'
+ import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
 import { DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
@@ -30,7 +16,7 @@ import { useDashboardCompleto } from '@/api/users'
 import StatsCard from '@/components/common/StatCard'
 import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import QuickActionCard from '@/components/common/QuickActionCard'
-import { GamesOutlined, VideogameAsset } from '@mui/icons-material'
+import { VideogameAsset } from '@mui/icons-material'
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
@@ -96,36 +82,7 @@ export default function EmployeeDashboard() {
           badges_conquistados: progressao?.badges_conquistados || [],
         }}
       />
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <StatsCard
-            label='Courses Enrolled'
-            value='12'
-            icon={<MenuBookIcon />}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <StatsCard
-            label='Completed'
-            value='8'
-            icon={<WorkspacePremiumIcon />}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <StatsCard
-            label='Learning Time'
-            value='42h'
-            icon={<AccessTimeIcon />}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 3 }}>
-          <StatsCard
-            label='Average Rating'
-            value='4.8'
-            icon={<StarRateIcon />}
-          />
-        </Grid>
-      </Grid>
+
 
       <Typography variant='h6' fontWeight={800} sx={{ mt: 4, mb: 2 }}>
           Ações Rápidas
@@ -137,7 +94,7 @@ export default function EmployeeDashboard() {
               description='Descubra novos cursos e desenvolva suas habilidades com conteúdos selecionados.'
             to='/cursos'
               button='Ver Cursos'
-            icon={<MenuBookIcon color='primary' />}
+            icon={<MenuBookSharp color='primary' />}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
@@ -146,7 +103,7 @@ export default function EmployeeDashboard() {
               description='Acompanhe sua evolução e veja quanto falta para concluir cada curso.'
             to='/meu-progresso'
               button='Ver Progresso'
-            icon={<TimelineIcon color='success' />}
+            icon={<TimelineOutlined color='success' />}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
