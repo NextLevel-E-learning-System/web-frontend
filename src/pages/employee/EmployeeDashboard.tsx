@@ -30,6 +30,7 @@ import { useDashboardCompleto } from '@/api/users'
 import StatsCard from '@/components/common/StatCard'
 import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import QuickActionCard from '@/components/common/QuickActionCard'
+import { GamesOutlined, VideogameAsset } from '@mui/icons-material'
 
 export default function EmployeeDashboard() {
   const [tab, setTab] = useState(0)
@@ -127,34 +128,34 @@ export default function EmployeeDashboard() {
       </Grid>
 
       <Typography variant='h6' fontWeight={800} sx={{ mt: 4, mb: 2 }}>
-        Quick Actions
+          Ações Rápidas
       </Typography>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
           <QuickActionCard
-            title='Browse Courses'
-            description='Discover new courses and expand your skillset with our curated content.'
-            to='/courses'
-            button='Explore Courses'
+              title='Explorar Cursos'
+              description='Descubra novos cursos e desenvolva suas habilidades com conteúdos selecionados.'
+            to='/cursos'
+              button='Ver Cursos'
             icon={<MenuBookIcon color='primary' />}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <QuickActionCard
-            title='View Progress'
-            description="Track your learning progress and see how far you've come."
-            to='/progress'
-            button='Check Progress'
+              title='Meu Progresso'
+              description='Acompanhe sua evolução e veja quanto falta para concluir cada curso.'
+            to='/meu-progresso'
+              button='Ver Progresso'
             icon={<TimelineIcon color='success' />}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <QuickActionCard
-            title='Join Community'
-            description='Connect with fellow learners and share your knowledge.'
-            to='/community'
-            button='Join Now'
-            icon={<GroupsIcon color='info' />}
+            title='Gamificação'
+              description='Rankings totais de participação e pontuação'
+            to='/gamificacao'
+              button='Ver ranking'
+            icon={<VideogameAsset color='primary' />}
           />
         </Grid>
       </Grid>
