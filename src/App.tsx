@@ -24,6 +24,7 @@ import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
 import theme from './theme'
 import ProgressPage from './pages/employee/ProgressPage'
+import RankingPage from './pages/employee/RankingPage'
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -121,6 +122,14 @@ const App = () => (
           element={
               <ProtectedRoute allowedRoles={['ALUNO']}>
               <ProgressPage/>
+            </ProtectedRoute>
+          }
+          />
+            <Route
+          path='/ranking'
+          element={
+              <ProtectedRoute >
+              <RankingPage/>
             </ProtectedRoute>
           }
           />
