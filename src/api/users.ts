@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { authGet, authPost, authPut, authPatch, authDelete } from './http'
+import { authGet, authPost, authPut, authDelete } from './http'
 import { API_ENDPOINTS } from './config'
 
 // Types alinhados com o schema do banco de dados
@@ -326,6 +326,12 @@ export function useExcluirCargo() {
   })
 }
 
+// Resposta paginada para funcionários
+export interface FuncionariosResponse {
+  items: Funcionario[]
+  mensagem: string
+}
+
 // Hooks para Funcionários
 export function useRegisterFuncionario() {
   return useMutation({
@@ -336,10 +342,10 @@ export function useRegisterFuncionario() {
 }
 
 export function useFuncionarios() {
-  return useQuery<Funcionario[]>({
+  return useQuery<FuncionariosResponse>({
     queryKey: ['users', 'funcionarios'],
     queryFn: () =>
-      authGet<Funcionario[]>(`${API_ENDPOINTS.USERS}/funcionarios`),
+      authGet<FuncionariosResponse>(`${API_ENDPOINTS.USERS}/funcionarios`),
   })
 }
 

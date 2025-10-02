@@ -1,23 +1,17 @@
-import Grid from '@mui/material/Grid'
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Typography,
   Chip,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  Alert,
   Skeleton,
   LinearProgress,
   Rating,
   IconButton,
   Menu,
-  useMediaQuery,
-  useTheme,
   FormControlLabel,
   Switch,
 } from '@mui/material'
@@ -48,7 +42,7 @@ import {
   type CreateCourseInput,
   type UpdateCourseInput,
 } from '@/api/courses'
-import { useListarDepartamentosAdmin, useFuncionarios } from '@/api/users'
+import { useFuncionarios } from '@/api/users'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 
 interface Filtros {
@@ -59,8 +53,6 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
-  const theme = useTheme()
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const { navigationItems } = useNavigation()
 
   // Estados
@@ -102,8 +94,9 @@ export default function AdminCourses() {
     useCourses(coursesFilters)
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
-  const { data: funcionarios = [] } = useFuncionarios()
+  const { data: funcionariosResponse, isLoading: loadingFuncionarios } = useFuncionarios()
   const cursos = cursosResponse?.items || []
+  const funcionarios = funcionariosResponse?.items || []
 
   // Mutations
   const createCourseMutation = useCreateCourse()
@@ -392,7 +385,7 @@ export default function AdminCourses() {
     },
   ]
 
-  if (loadingCursos || loadingCategorias) {
+  if (loadingCursos || loadingCategorias || loadingFuncionarios) {
     return (
       <DashboardLayout  items={navigationItems}>
         <Box>
@@ -447,7 +440,13 @@ export default function AdminCourses() {
                 <MenuItem value='all'>
                   <em>Todos os Instrutores</em>
                 </MenuItem>
-                <MenuItem value={'instrutor.id'}>'instrutor.nome'</MenuItem>
+                {funcionarios
+                  .filter(func => func.role === 'INSTRUTOR')
+                  .map(instrutor => (
+                    <MenuItem key={instrutor.id} value={instrutor.id}>
+                      {instrutor.nome}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
             <FormControl sx={{ minWidth: 180 }}>
@@ -490,7 +489,7 @@ export default function AdminCourses() {
         <DataTable
           data={filtered}
           columns={courseColumns}
-          loading={loadingCursos || loadingCategorias}
+          loading={loadingCursos || loadingCategorias || loadingFuncionarios}
           getRowId={curso => curso.codigo}
         />
         {/* Menu de ações */}

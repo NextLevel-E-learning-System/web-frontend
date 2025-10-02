@@ -67,7 +67,7 @@ export default function CourseModal({
     xp_oferecido: 0,
     nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
-    ativo: true,
+    ativo: false,
   })
 
   // Reset form quando o modal abre/fecha ou muda de modo
@@ -84,7 +84,7 @@ export default function CourseModal({
           xp_oferecido: courseToEdit.xp_oferecido || 0,
           nivel_dificuldade: courseToEdit.nivel_dificuldade || 'Iniciante',
           pre_requisitos: courseToEdit.pre_requisitos || [],
-          ativo: courseToEdit.ativo ?? true,
+          ativo: courseToEdit.ativo ?? false,
         })
 
         // Pré-selecionar departamento baseado na categoria do curso
@@ -106,7 +106,7 @@ export default function CourseModal({
           xp_oferecido: 0,
           nivel_dificuldade: 'Iniciante',
           pre_requisitos: [],
-          ativo: true,
+          ativo: false,
         })
         setDepartamentoSelecionado('')
       }
