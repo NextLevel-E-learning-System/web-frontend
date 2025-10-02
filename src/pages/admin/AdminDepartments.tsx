@@ -8,7 +8,6 @@ import {
   IconButton,
   TextField,
   Typography,
-  Alert,
   Skeleton,
   Grid,
   MenuItem,
@@ -25,7 +24,7 @@ import {
   Delete as DeleteIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
@@ -52,11 +51,14 @@ export default function AdminDepartments() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const { navigationItems } = useNavigation()
   const {
-    data: departamentos = [],
+    data: departamentosResponse,
     isLoading,
     refetch,
   } = useListarDepartamentosAdmin()
-  const { data: funcionarios = [] } = useFuncionarios()
+  // A resposta da API vem como { items: [...] }
+  const departamentos = (departamentosResponse as any)?.items || departamentosResponse || []
+  const { data: funcionariosResponse } = useFuncionarios()
+  const funcionarios = funcionariosResponse?.items || []
   const criarDepartamento = useCriarDepartamento()
   const deleteDepartamento = useDeleteDepartamento()
   const [editingDept, setEditingDept] = useState<Departamento | null>(null)
@@ -80,11 +82,6 @@ export default function AdminDepartments() {
     descricao: '',
     gestor_id: '',
   })
-
-  const title = useMemo(
-    () => (editingDept ? 'Editar Departamento' : 'Gerenciar Departamentos'),
-    [editingDept]
-  )
 
   // Função para buscar o nome do gestor
   const getGestorNome = (gestorId: string | null) => {
@@ -209,7 +206,7 @@ export default function AdminDepartments() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title='Gerenciar Departamentos' items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={200} />
         </Box>
