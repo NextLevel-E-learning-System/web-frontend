@@ -36,23 +36,14 @@ export default function ModuleInfoForm({
   const updateModule = useUpdateModule(cursoCodigo, modulo.id)
 
   useEffect(() => {
-    // Compara valores antes de setar para evitar loop infinito
-    if (
-      titulo !== modulo.titulo ||
-      ordem !== modulo.ordem ||
-      xp !== modulo.xp ||
-      obrigatorio !== modulo.obrigatorio ||
-      conteudo !== (modulo.conteudo || '') ||
-      tipoConteudo !== (modulo.tipo_conteudo || 'texto')
-    ) {
-      setTitulo(modulo.titulo)
-      setOrdem(modulo.ordem)
-      setXp(modulo.xp)
-      setObrigatorio(modulo.obrigatorio)
-      setConteudo(modulo.conteudo || '')
-      setTipoConteudo(modulo.tipo_conteudo || 'texto')
-    }
-  }, [modulo, titulo, ordem, xp, obrigatorio, conteudo, tipoConteudo])
+    // Sincroniza estado apenas se o módulo mudou (por ID ou propriedades)
+    setTitulo(modulo.titulo)
+    setOrdem(modulo.ordem)
+    setXp(modulo.xp)
+    setObrigatorio(modulo.obrigatorio)
+    setConteudo(modulo.conteudo || '')
+    setTipoConteudo(modulo.tipo_conteudo || 'texto')
+  }, [modulo.id, modulo.titulo, modulo.ordem, modulo.xp, modulo.obrigatorio, modulo.conteudo, modulo.tipo_conteudo])
 
   const handleSave = async () => {
     await updateModule.mutateAsync({

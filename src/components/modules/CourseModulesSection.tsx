@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Box, Stack, Typography, Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Chip, IconButton, Tooltip, Tabs, Tab } from '@mui/material'
+import { Box, Stack, Typography, Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Chip, Tabs, Tab } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import AddIcon from '@mui/icons-material/Add'
-import DeleteIcon from '@mui/icons-material/Delete'
 import { useCourseModules, useCreateModule } from '@/api/courses'
 import ModuleInfoForm from './ModuleInfoForm'
 import ModuleMaterialsPanel from './ModuleMaterialsPanel'
@@ -60,20 +59,17 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
             const currentTab = (stored && allowedTabs.includes(stored as any) ? stored : 'info') as 'info' | 'materiais' | 'avaliacoes'
             return (
               <Accordion key={m.id} expanded={expanded === m.id} onChange={(_, isExp) => setExpanded(isExp ? m.id : false)} disableGutters>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1 } }}>
+                <AccordionSummary 
+                  expandIcon={<ExpandMoreIcon />} 
+                  sx={{ 
+                    '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1 },
+                    '& .MuiAccordionSummary-expandIconWrapper': { order: 2 }
+                  }}
+                >
                   <Typography variant='body2' fontWeight={600}>{m.titulo}</Typography>
                   <Chip size='small' label={`Ordem ${m.ordem}`} />
                   {m.xp ? <Chip size='small' variant='outlined' label={`${m.xp} XP`} /> : null}
-                  {/* Container para ações sem semântica de botão */}
-                  <Box component='span' sx={{ display:'flex', flexDirection:'row', gap: 0.5, ml: 'auto' }}>
-                    <Tooltip title='Excluir módulo (não implementado)'>
-                      <span>
-                        <IconButton size='small' disabled onClick={e => { e.stopPropagation(); setConfirm({ open: true, moduloId: m.id }) }}>
-                          <DeleteIcon fontSize='inherit' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  </Box>
+                  {/* Removido IconButton para evitar button aninhado - funcionalidade será reimplementada */}
                 </AccordionSummary>
                 <AccordionDetails>
                   <Box sx={{ mb: 2, borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
