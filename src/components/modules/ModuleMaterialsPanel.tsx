@@ -21,7 +21,8 @@ interface Props {
 }
 
 export default function ModuleMaterialsPanel({ moduloId }: Props) {
-  const { data: materials = [], isLoading } = useModuleMaterials(moduloId)
+  const { data: materialsRaw, isLoading } = useModuleMaterials(moduloId)
+  const materials = Array.isArray(materialsRaw) ? materialsRaw : []
   const upload = useUploadMaterial(moduloId)
   const [uploading, setUploading] = useState(false)
 

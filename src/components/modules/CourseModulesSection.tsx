@@ -32,25 +32,29 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
     }
   }, [modulos, onTotalXpChange])
 
+  // Instancia única de mutator: atualizamos dinamicamente pelo id
+  const updateModuleFactory = (id: string) => useUpdateModule(cursoCodigo, id)
+
   const swapOrder = async (fromId: string, direction: 'up' | 'down') => {
-    const ordered = [...modulos].sort((a, b) => a.ordem - b.ordem)
+    const ordered = [...modulos].slice().sort((a, b) => a.ordem - b.ordem)
     const idx = ordered.findIndex(m => m.id === fromId)
     if (idx === -1) return
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1
     if (targetIdx < 0 || targetIdx >= ordered.length) return
     const current = ordered[idx]
     const target = ordered[targetIdx]
-    const currentOrder = current.ordem
-    current.ordem = target.ordem
-    target.ordem = currentOrder
+    const newCurrentOrder = target.ordem
+    const newTargetOrder = current.ordem
     try {
-      const updaterCurrent = useUpdateModule(cursoCodigo, current.id)
-      const updaterTarget = useUpdateModule(cursoCodigo, target.id)
+      const updaterCurrent = updateModuleFactory(current.id)
+      const updaterTarget = updateModuleFactory(target.id)
       await Promise.all([
-        updaterCurrent.mutateAsync({ ordem: current.ordem }),
-        updaterTarget.mutateAsync({ ordem: target.ordem }),
+        updaterCurrent.mutateAsync({ ordem: newCurrentOrder }),
+        updaterTarget.mutateAsync({ ordem: newTargetOrder }),
       ])
-    } catch {}
+    } catch (e) {
+      // silencia por enquanto; TODO: snackbar
+    }
   }
 
   return (
