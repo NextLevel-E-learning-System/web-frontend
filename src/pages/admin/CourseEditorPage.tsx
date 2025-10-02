@@ -383,7 +383,6 @@ export default function CourseEditorPage() {
                 value={form.xp_oferecido}
                 fullWidth
                 InputProps={{ readOnly: true }}
-                helperText='Calculado a partir dos módulos'
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
@@ -442,14 +441,9 @@ export default function CourseEditorPage() {
           <Stack direction='row' gap={1} justifyContent='flex-end'>
             <Button
               variant='outlined'
-              onClick={() => handleSaveInfo(true)}
-              disabled={
-                createCourse.isPending ||
-                updateCourse?.isPending ||
-                !form.titulo
-              }
+             onClick={() => navigate(-1)}
             >
-              Salvar & Módulos
+              Voltar
             </Button>
             <Button
               variant='contained'
@@ -460,7 +454,7 @@ export default function CourseEditorPage() {
                 !form.titulo
               }
             >
-              {isEdit ? 'Salvar' : 'Criar'}
+             Salvar
             </Button>
           </Stack>
         </Stack>
@@ -472,7 +466,7 @@ export default function CourseEditorPage() {
 
   return (
     <DashboardLayout items={navigationItems}>
-      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{   display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Stack
             direction='row'
@@ -484,18 +478,6 @@ export default function CourseEditorPage() {
                 ? `Editar Curso — ${course?.titulo || form.titulo}`
                 : 'Novo Curso'}
             </Typography>
-            <Stack direction='row' gap={1}>
-              <Button variant='outlined' onClick={() => navigate(-1)}>
-                Voltar
-              </Button>
-              <Button
-                variant='contained'
-                onClick={() => handleSaveInfo()}
-                disabled={createCourse.isPending || updateCourse?.isPending}
-              >
-                {isEdit ? 'Salvar' : 'Criar'}
-              </Button>
-            </Stack>
           </Stack>
           <Tabs
             value={tab}
