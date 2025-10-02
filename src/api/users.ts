@@ -89,13 +89,13 @@ export interface Instructor {
   funcionario_id: string
   nome: string
   email: string
-  cpf?: string
-  departamento_id?: string
-  departamento_nome?: string
-  cargo_nome?: string
-  biografia?: string
-  especialidades?: string[]
-  avaliacao_media?: number
+  cpf?: string | null
+  departamento_id?: string | null
+  departamento_nome?: string | null
+  cargo_nome?: string | null
+  biografia?: string | null
+  especialidades?: string[] | null
+  avaliacao_media?: string | null // Vem como string da API
   ativo: boolean
   criado_em: string
   atualizado_em: string

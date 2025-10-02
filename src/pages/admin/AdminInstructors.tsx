@@ -60,29 +60,13 @@ export default function AdminInstructors() {
   // Definir colunas da tabela
   const instructorColumns = useMemo(() => [
     {
-      id: 'id',
-      label: 'ID',
-      width: 80,
-      render: (row: Instructor) => (
-        <Typography
-          component='span'
-          sx={{
-            fontFamily:
-              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-          }}
-        >
-          {row.funcionario_id}
-        </Typography>
-      )
-    },
-    {
       id: 'nome',
       label: 'Nome',
       width: 200,
-      render: (row: Instructor) => (
+      render: (_value: any, row: Instructor) => (
         <Box>
           <Typography variant='body2' fontWeight={500}>
-            {row.nome}
+            {row?.nome || 'N/A'}
           </Typography>
         </Box>
       )
@@ -91,9 +75,9 @@ export default function AdminInstructors() {
       id: 'email',
       label: 'Email',
       width: 250,
-      render: (row: Instructor) => (
+      render: (_value: any, row: Instructor) => (
         <Typography variant='body2'>
-          {row.email}
+          {row?.email || 'N/A'}
         </Typography>
       )
     },
@@ -101,9 +85,9 @@ export default function AdminInstructors() {
       id: 'departamento',
       label: 'Departamento',
       width: 150,
-      render: (row: Instructor) => (
+      render: (_value: any, row: Instructor) => (
         <Chip
-          label={row.departamento_nome || 'N/A'}
+          label={row?.departamento_nome || '-'}
           size='small'
           variant='outlined'
         />
@@ -113,9 +97,9 @@ export default function AdminInstructors() {
       id: 'cargo',
       label: 'Cargo',
       width: 150,
-      render: (row: Instructor) => (
+      render: (_value: any, row: Instructor) => (
         <Chip
-          label={row.cargo_nome || 'N/A'}
+          label={row?.cargo_nome || '-'}
           size='small'
           variant='outlined'
         />
@@ -125,9 +109,9 @@ export default function AdminInstructors() {
       id: 'avaliacao',
       label: 'Avaliação',
       width: 100,
-      render: (row: Instructor) => (
+      render: (_value: any, row: Instructor) => (
         <Typography variant='body2'>
-          {row.avaliacao_media ? `${row.avaliacao_media.toFixed(1)}/5` : 'N/A'}
+          {row?.avaliacao_media && row.avaliacao_media !== '0' ? `${parseFloat(row.avaliacao_media).toFixed(1)}/5` : '-'}
         </Typography>
       )
     },
@@ -135,21 +119,21 @@ export default function AdminInstructors() {
       id: 'status',
       label: 'Status',
       width: 120,
-      render: (row: Instructor) => (
+      render: (_value: any, row: Instructor) => (
         <Box display='flex' alignItems='center' gap={1}>
           <Switch
-            checked={row.ativo}
-            onChange={() => handleToggleAtivo(row.funcionario_id, row.nome, row.ativo)}
+            checked={row?.ativo || false}
+            onChange={() => handleToggleAtivo(row?.funcionario_id || '', row?.nome || '', row?.ativo || false)}
             size='small'
           />
           <Typography
             variant='body2'
             color={
-              row.ativo ? 'success.main' : 'text.disabled'
+              row?.ativo ? 'success.main' : 'text.disabled'
             }
             fontWeight={500}
           >
-            {row.ativo ? 'Ativo' : 'Inativo'}
+            {row?.ativo ? 'Ativo' : 'Inativo'}
           </Typography>
         </Box>
       )
@@ -159,12 +143,13 @@ export default function AdminInstructors() {
       label: 'Ações',
       width: 120,
       align: 'right' as const,
-      render: (row: Instructor) => (
+      render: (_value: any, row: Instructor) => (
         <Box display='flex' gap={1} justifyContent='flex-end'>
           <IconButton
             size='small'
             onClick={() => setEditingInstructor(row)}
             aria-label='editar'
+            disabled={!row}
           >
             <EditIcon />
           </IconButton>
@@ -172,6 +157,7 @@ export default function AdminInstructors() {
             size='small'
             aria-label='excluir'
             color='error'
+            disabled={!row}
           >
             <DeleteIcon />
           </IconButton>
