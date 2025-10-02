@@ -86,25 +86,25 @@ const App = () => (
             }
           />
           <Route
-            path='/admin/courses'
+            path='/manage/courses'
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
                 <AdminCourses />
               </ProtectedRoute>
             }
           />
           <Route
-            path='/admin/courses/new'
+            path='/manage/courses/new'
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
                 <CourseEditorPage />
               </ProtectedRoute>
             }
           />
           <Route
-            path='/admin/courses/:codigo/edit'
+            path='/manage/courses/:codigo/edit'
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
                 <CourseEditorPage />
               </ProtectedRoute>
             }
@@ -117,19 +117,10 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-          {/* Rota para instrutores gerenciarem seus cursos */}
-          <Route
-            path='/instrutor/cursos'
-            element={
-              <ProtectedRoute allowedRoles={['INSTRUTOR']}>
-                <AdminCourses />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path='/cursos'
             element={
-              <ProtectedRoute allowedRoles={['ALUNO']}>
+              <ProtectedRoute>
                 <CoursesPage />
               </ProtectedRoute>
             }

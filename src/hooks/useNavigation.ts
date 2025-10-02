@@ -71,23 +71,19 @@ export function useNavigation() {
         {
           label: 'Cursos',
           children: [
-            {
-              label: 'Meus Cursos',
-              href: '/instrutor/cursos',
+             {
+              label: 'Catálogo de Cursos',
+              href: '/cursos',
             },
             {
-              label: 'Criar Curso',
-              href: '/instrutor/criar-curso',
+              label: 'Meus Cursos',
+              href: '/manage/cursos',
             },
             {
               label: 'Avaliações',
               href: '/instrutor/avaliacoes',
             },
           ],
-        },
-        {
-          label: 'Turmas',
-          href: '/instrutor/turmas',
         },
         {
           label: 'Configurações',
@@ -112,12 +108,8 @@ export function useNavigation() {
             },
             {
               label: 'Cursos do Departamento',
-              href: '/admin/courses', // Filtrado por departamento
-            },
-            {
-              label: 'Progresso da Equipe',
-              href: '/admin/courses', // Mesma página, mas filtrada
-            },
+              href: '/manage/courses', // Filtrado por departamento
+            }
           ],
         },
         {
@@ -157,7 +149,7 @@ export function useNavigation() {
         },
         {
           label: 'Cursos',
-          href: '/admin/courses',
+          href: '/manage/courses',
         },
         {
           label: 'Usuários',

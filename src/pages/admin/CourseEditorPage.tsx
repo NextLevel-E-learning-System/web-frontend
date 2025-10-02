@@ -158,22 +158,26 @@ export default function CourseEditorPage() {
   const handleSaveInfo = async (goToModules = false) => {
     try {
       if (!form.titulo?.trim()) return
+      
+      console.log('Form data antes de enviar:', form)
+      
       if (isEdit && updateCourse) {
-        await updateCourse.mutateAsync({
+        const updateData = {
           titulo: form.titulo,
           descricao: form.descricao,
           categoria_id: form.categoria_id,
+          instrutor_id: form.instrutor_id,
           duracao_estimada: form.duracao_estimada,
           xp_oferecido: form.xp_oferecido,
           nivel_dificuldade: form.nivel_dificuldade,
-          // Campos não atualizados neste endpoint específico (instrutor, prereqs, ativo) omitidos
-        })
-        setSnack({
-          open: true,
-          message: 'Curso atualizado',
-          severity: 'success',
-        })
-        if (goToModules) setTab(MODULES_TAB.id)
+          pre_requisitos: form.pre_requisitos,
+          ativo: form.ativo,
+        }
+        
+        console.log('Update data:', updateData)
+        
+        await updateCourse.mutateAsync(updateData)
+         if (goToModules) setTab(MODULES_TAB.id)
       } else {
         const created = await createCourse.mutateAsync({
           codigo: form.codigo,
@@ -187,14 +191,12 @@ export default function CourseEditorPage() {
           pre_requisitos: form.pre_requisitos,
           ativo: form.ativo,
         })
-        setSnack({ open: true, message: 'Curso criado', severity: 'success' })
-        navigate(`/admin/courses/${created.codigo}/edit`, {
+         navigate(`/manage/courses/${created.codigo}/edit`, {
           state: { nextTab: goToModules ? MODULES_TAB.id : INFO_TAB.id },
         })
       }
     } catch (e) {
-      setSnack({ open: true, message: 'Erro ao salvar', severity: 'error' })
-    }
+     }
   }
 
 
@@ -315,10 +317,10 @@ export default function CourseEditorPage() {
                 <Select
                   value={form.instrutor_id || ''}
                   label='Instrutor'
-                  onChange={e =>
+                  onChange={e => {
+                    console.log('Instrutor selecionado:', e.target.value)
                     setForm({ ...form, instrutor_id: e.target.value })
-                  }
-                  disabled={isEdit}
+                  }}
                 >
                   <MenuItem value=''>
                     <em>— Selecione —</em>
