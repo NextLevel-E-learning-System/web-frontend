@@ -79,6 +79,8 @@ export default function AdminCourses() {
     action: 'duplicate' | 'toggle' | null
     curso: Curso | null
   }>({ open: false, action: null, curso: null })
+  // Gestão de avaliações passará a ser acionada no contexto de módulos (não no menu de curso)
+  // const [assessmentsDrawerCourse, setAssessmentsDrawerCourse] = useState<Curso | null>(null)
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
@@ -498,6 +500,7 @@ export default function AdminCourses() {
           open={Boolean(anchorEl)}
           onClose={handleCloseMenu}
         >
+          {/* Ação de Avaliações removida: agora ficará dentro da gestão de módulos do curso */}
           <MenuItem
             onClick={() => {
               handleCloseMenu()
@@ -604,6 +607,7 @@ export default function AdminCourses() {
           funcionarios={funcionarios}
           cursos={cursos}
         />
+        {/* Drawer de avaliações será disparado a partir do detalhamento de módulos (futuro) */}
       </Box>
     </DashboardLayout>
   )

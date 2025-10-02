@@ -17,6 +17,18 @@ import {
   ListItemText,
   CircularProgress,
 } from '@mui/material'
+import ModuleAssessmentsPanel from '@/components/assessments/ModuleAssessmentsPanel'
+import { useCourseModules, useCreateModule } from '@/api/courses'
+import AddIcon from '@mui/icons-material/Add'
+import { Accordion, AccordionSummary, AccordionDetails, Typography, Stack, Chip, Tabs as MuiTabs, Tab as MuiTab, IconButton, Tooltip } from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ModuleInfoForm from '@/components/modules/ModuleInfoForm'
+import ModuleMaterialsPanel from '@/components/modules/ModuleMaterialsPanel'
+import ModuleCreateDialog from '@/components/modules/ModuleCreateDialog'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import DeleteIcon from '@mui/icons-material/Delete'
+import  ConfirmationDialog  from '@/components/common/ConfirmationDialog'
 import { useState, useEffect } from 'react'
 import {
   type Course as Curso,
@@ -51,7 +63,7 @@ export default function CourseModal({
   funcionarios,
   cursos,
 }: CourseModalProps) {
-  const [tab, setTab] = useState<'general' | 'assignment' | 'content'>(
+  const [tab, setTab] = useState<'general' | 'assignment' | 'content' | 'modules'>(
     'general'
   )
   const [departamentoSelecionado, setDepartamentoSelecionado] =
@@ -69,6 +81,9 @@ export default function CourseModal({
     pre_requisitos: [],
     ativo: false,
   })
+  const handleModulesTotalXp = (total: number) => {
+    setForm(f => ({ ...f, xp_oferecido: total }))
+  }
 
   // Reset form quando o modal abre/fecha ou muda de modo
   useEffect(() => {
@@ -153,6 +168,7 @@ export default function CourseModal({
             <Tab value='general' label='Geral' />
             <Tab value='assignment' label='Atribuição' />
             <Tab value='content' label='Conteúdo' />
+            {mode === 'edit' && <Tab value='modules' label='Módulos' />}
           </Tabs>
         </Box>
 
@@ -289,91 +305,95 @@ export default function CourseModal({
         )}
 
         {tab === 'content' && (
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                label='Duração Estimada (horas)'
-                type='number'
-                value={form.duracao_estimada}
-                onChange={e =>
-                  setForm({
-                    ...form,
-                    duracao_estimada: Number(e.target.value),
-                  })
-                }
-                fullWidth
-              />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                label='XP Oferecido'
-                type='number'
-                value={form.xp_oferecido}
-                onChange={e =>
-                  setForm({
-                    ...form,
-                    xp_oferecido: Number(e.target.value),
-                  })
-                }
-                fullWidth
-              />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <FormControl fullWidth>
-                <InputLabel>Nível de Dificuldade</InputLabel>
-                <Select
-                  value={form.nivel_dificuldade || 'Iniciante'}
-                  label='Nível de Dificuldade'
+          <Box sx={{ mt: 1, display: 'grid', gap: 3 }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='Duração Estimada (horas)'
+                  type='number'
+                  value={form.duracao_estimada}
                   onChange={e =>
                     setForm({
                       ...form,
-                      nivel_dificuldade: e.target.value,
+                      duracao_estimada: Number(e.target.value),
                     })
                   }
-                >
-                  <MenuItem value='iniciante'>Iniciante</MenuItem>
-                  <MenuItem value='intermediario'>Intermediário</MenuItem>
-                  <MenuItem value='avancado'>Avançado</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <FormControl fullWidth>
-                <InputLabel>Pré-requisitos</InputLabel>
-                <Select
-                  multiple
-                  label='Pré-requisitos'
-                  value={form.pre_requisitos || []}
-                  onChange={e => {
-                    const value = e.target.value
-                    setForm({
-                      ...form,
-                      pre_requisitos: Array.isArray(value) ? value : [value],
-                    })
-                  }}
-                  renderValue={selected =>
-                    (Array.isArray(selected) ? selected : [selected])
-                      .map(cod => {
-                        const curso = cursos.find(c => c.codigo === cod)
-                        return curso ? curso.codigo : cod
+                  fullWidth
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='XP Total (derivado dos módulos)'
+                  type='number'
+                  value={form.xp_oferecido}
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                  helperText='Soma automática dos XP definidos em cada módulo'
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Nível de Dificuldade</InputLabel>
+                  <Select
+                    value={form.nivel_dificuldade || 'Iniciante'}
+                    label='Nível de Dificuldade'
+                    onChange={e =>
+                      setForm({
+                        ...form,
+                        nivel_dificuldade: e.target.value,
                       })
-                      .join(', ')
-                  }
-                >
-                  {cursos
-                    .filter(c => c.codigo !== form.codigo) // Não permitir curso como pré-requisito dele mesmo
-                    .map(curso => (
-                      <MenuItem key={curso.codigo} value={curso.codigo}>
-                        <Checkbox
-                          checked={form.pre_requisitos?.includes(curso.codigo)}
-                        />
-                        <ListItemText primary={curso.titulo} />
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
+                    }
+                  >
+                    <MenuItem value='iniciante'>Iniciante</MenuItem>
+                    <MenuItem value='intermediario'>Intermediário</MenuItem>
+                    <MenuItem value='avancado'>Avançado</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Pré-requisitos</InputLabel>
+                  <Select
+                    multiple
+                    label='Pré-requisitos'
+                    value={form.pre_requisitos || []}
+                    onChange={e => {
+                      const value = e.target.value
+                      setForm({
+                        ...form,
+                        pre_requisitos: Array.isArray(value) ? value : [value],
+                      })
+                    }}
+                    renderValue={selected =>
+                      (Array.isArray(selected) ? selected : [selected])
+                        .map(cod => {
+                          const curso = cursos.find(c => c.codigo === cod)
+                          return curso ? curso.codigo : cod
+                        })
+                        .join(', ')
+                    }
+                  >
+                    {cursos
+                      .filter(c => c.codigo !== form.codigo)
+                      .map(curso => (
+                        <MenuItem key={curso.codigo} value={curso.codigo}>
+                          <Checkbox
+                            checked={form.pre_requisitos?.includes(curso.codigo)}
+                          />
+                          <ListItemText primary={curso.titulo} />
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
-          </Grid>
+
+          </Box>
+        )}
+        {tab === 'modules' && mode === 'edit' && (
+          <Box sx={{ mt: 1 }}>
+            <CourseModulesSection cursoCodigo={form.codigo} onTotalXpChange={handleModulesTotalXp} />
+          </Box>
         )}
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
@@ -391,4 +411,147 @@ export default function CourseModal({
       </DialogActions>
     </Dialog>
   )
+}
+
+// Seção interna para gerenciamento de módulos e avaliações
+interface ModulesSectionProps { cursoCodigo: string; onTotalXpChange?: (total: number) => void }
+function CourseModulesSection({ cursoCodigo, onTotalXpChange }: ModulesSectionProps) {
+  const { data: modulos = [], isLoading } = useCourseModules(cursoCodigo)
+  const createModule = useCreateModule(cursoCodigo)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [expanded, setExpanded] = useState<string | false>(false)
+  const [moduleTab, setModuleTab] = useState<Record<string, string>>({})
+  const [confirm, setConfirm] = useState<{ open: boolean; moduloId?: string }>(() => ({ open: false }))
+
+  // Reordenação simples (front-end) - envia update de ordem individual
+  const swapOrder = async (fromId: string, direction: 'up' | 'down') => {
+    const ordered = [...modulos].sort((a,b) => a.ordem - b.ordem)
+    const idx = ordered.findIndex(m => m.id === fromId)
+    if (idx === -1) return
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (targetIdx < 0 || targetIdx >= ordered.length) return
+    const current = ordered[idx]
+    const target = ordered[targetIdx]
+    // Otimista: trocar local
+    const currentOrder = current.ordem
+    current.ordem = target.ordem
+    target.ordem = currentOrder
+    try {
+      // Usa atualização individual (poderia ser uma rota bulk se existir)
+      // Reaproveita hook de update criando dinamicamente (padrão já usado em outros pontos)
+      const updaterCurrent = (await import('@/api/courses')).useUpdateModule(cursoCodigo, current.id)
+      const updaterTarget = (await import('@/api/courses')).useUpdateModule(cursoCodigo, target.id)
+      await Promise.all([
+        updaterCurrent.mutateAsync({ ordem: current.ordem }),
+        updaterTarget.mutateAsync({ ordem: target.ordem })
+      ])
+    } catch {
+    }
+  }
+
+  return (
+    <Box>
+      <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 1 }}>
+        <Typography variant='subtitle2'>Módulos</Typography>
+        <Button variant='outlined' size='small' startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>Novo Módulo</Button>
+      </Stack>
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}><CircularProgress size={22} /></Box>
+      ) : modulos.length === 0 ? (
+        <Typography variant='body2' color='text.secondary'>Nenhum módulo cadastrado.</Typography>
+      ) : (
+        <Box sx={{ display: 'grid', gap: 1.5 }}>
+          {modulos.sort((a,b) => a.ordem - b.ordem).map((m, i, arr) => {
+            const currentTab = moduleTab[m.id] || 'info'
+            return (
+              <Accordion key={m.id} expanded={expanded === m.id} onChange={(_, isExp) => setExpanded(isExp ? m.id : false)} disableGutters>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1 } }}>
+                  <Typography variant='body2' fontWeight={600}>{m.titulo}</Typography>
+                  <Chip size='small' label={`Ordem ${m.ordem}`} />
+                  {m.xp ? <Chip size='small' variant='outlined' label={`${m.xp} XP`} /> : null}
+                  <Stack direction='row' gap={0.5} sx={{ ml: 'auto' }}>
+                    <Tooltip title='Mover para cima'>
+                      <span>
+                        <IconButton size='small' disabled={i === 0} onClick={e => { e.stopPropagation(); swapOrder(m.id, 'up') }}>
+                          <ArrowUpwardIcon fontSize='inherit' />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title='Mover para baixo'>
+                      <span>
+                        <IconButton size='small' disabled={i === arr.length - 1} onClick={e => { e.stopPropagation(); swapOrder(m.id, 'down') }}>
+                          <ArrowDownwardIcon fontSize='inherit' />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title='Excluir módulo (não implementado)'>
+                      <span>
+                        <IconButton size='small' disabled onClick={e => { e.stopPropagation(); setConfirm({ open: true, moduloId: m.id }) }}>
+                          <DeleteIcon fontSize='inherit' />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  </Stack>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Box sx={{ mb: 2, borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
+                    <MuiTabs
+                      value={currentTab}
+                      onChange={(_, val) => setModuleTab(prev => ({ ...prev, [m.id]: val }))}
+                      variant='scrollable'
+                      scrollButtons='auto'
+                    >
+                      <MuiTab value='info' label='Info' />
+                      <MuiTab value='materiais' label='Materiais' />
+                      <MuiTab value='avaliacoes' label='Avaliações' />
+                    </MuiTabs>
+                  </Box>
+                  {currentTab === 'info' && (
+                    <ModuleInfoForm cursoCodigo={cursoCodigo} modulo={m} />
+                  )}
+                  {currentTab === 'materiais' && (
+                    <ModuleMaterialsPanel moduloId={m.id} />
+                  )}
+                  {currentTab === 'avaliacoes' && (
+                    <ModuleAssessmentsPanel cursoCodigo={cursoCodigo} moduloId={m.id} moduloTitulo={m.titulo} />
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            )
+          })}
+        </Box>
+      )}
+      {/* Efeito para comunicar total de XP ao pai */}
+      {onTotalXpChange && (
+        <XPNotifier modulos={modulos} onChange={onTotalXpChange} />
+      )}
+      <ConfirmationDialog
+        open={confirm.open}
+        title='Excluir módulo'
+        message='Funcionalidade de exclusão ainda não implementada.'
+        onConfirm={() => setConfirm({ open: false })}
+        onClose={() => setConfirm({ open: false })}
+        confirmText='Fechar'
+        cancelText=''
+      />
+      <ModuleCreateDialog
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        nextOrder={(modulos?.length || 0) + 1}
+        loading={createModule.isPending}
+        onCreate={async data => {
+          await createModule.mutateAsync(data)
+         }}
+      />
+    </Box>
+  )
+}
+
+// Componente auxiliar invisível para disparar atualização de XP total
+function XPNotifier({ modulos, onChange }: { modulos: Array<{ xp: number }>; onChange: (total: number) => void }) {
+  const total = modulos.reduce((acc, m) => acc + (m.xp || 0), 0)
+  // useEffect inline simples: executa sempre que total muda
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { onChange(total) }, [total])
+  return null
 }

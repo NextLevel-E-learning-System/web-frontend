@@ -89,6 +89,7 @@ export interface Module {
   ordem: number
   obrigatorio: boolean
   xp: number
+  xp_modulo?: number // campo retornado pelo backend; normalizado para xp
   tipo_conteudo?: string
 }
 
@@ -283,10 +284,16 @@ export function useCourseModules(codigo: string) {
   return useQuery<Module[]>({
     queryKey: ['courses', 'modules', codigo],
     queryFn: async () => {
-      const response = await authGet<ModuleResponse>(
+      const raw = await authGet<ModuleResponse | Module[]>(
         `${API_ENDPOINTS.COURSES}/${codigo}/modulos`
       )
-      return response.items || []
+      const list: any[] = Array.isArray(raw)
+        ? raw
+        : (raw as ModuleResponse).items || []
+      return list.map(m => ({
+        ...m,
+        xp: m.xp !== undefined ? m.xp : (m.xp_modulo ?? 0),
+      }))
     },
     enabled: !!codigo,
   })
