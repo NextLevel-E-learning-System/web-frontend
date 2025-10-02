@@ -51,7 +51,19 @@ export default function CourseEditorPage() {
   const navigate = useNavigate()
   const location = useLocation() as any
   const courseQuery = isEdit ? useCourse(codigo!) : null
-  const course = courseQuery?.data as Course | null | undefined
+  // Normaliza possíveis formatos de retorno (Course direto ou envolto em item/data)
+  const rawCourseData: any = courseQuery?.data
+  const course: Course | null | undefined = rawCourseData
+    ? rawCourseData?.codigo
+      ? (rawCourseData as Course)
+      : rawCourseData?.curso?.codigo
+        ? (rawCourseData.curso as Course)
+        : rawCourseData?.item?.codigo
+          ? (rawCourseData.item as Course)
+          : rawCourseData?.data?.codigo
+            ? (rawCourseData.data as Course)
+            : null
+    : null
   const loadingCourse = courseQuery?.isLoading ?? false
   const createCourse = useCreateCourse()
   const updateCourse = isEdit ? useUpdateCourse(codigo!) : null
@@ -90,21 +102,29 @@ export default function CourseEditorPage() {
 
   useEffect(() => {
     if (isEdit && course) {
-      setForm((f: any) => ({
-        ...f,
-        codigo: course.codigo,
-        titulo: course.titulo,
-        descricao: course.descricao,
-        categoria_id: course.categoria_id,
-        instrutor_id: course.instrutor_id,
-        duracao_estimada: course.duracao_estimada || 0,
-        xp_oferecido: course.xp_oferecido || 0,
-        nivel_dificuldade: course.nivel_dificuldade || 'Iniciante',
-        pre_requisitos: course.pre_requisitos || [],
-        ativo: course.ativo,
-      }))
+      setForm((f: any) => {
+        // Evita setState se nada mudou (previne loop de profundidade)
+        const next = {
+          ...f,
+          codigo: course.codigo,
+            titulo: course.titulo,
+            descricao: course.descricao ?? '',
+            categoria_id: course.categoria_id || '',
+            instrutor_id: course.instrutor_id || '',
+            duracao_estimada: course.duracao_estimada || 0,
+            xp_oferecido: course.xp_oferecido || 0,
+            nivel_dificuldade: course.nivel_dificuldade || 'Iniciante',
+            pre_requisitos: course.pre_requisitos || [],
+            ativo: course.ativo,
+        }
+        const changed = Object.keys(next).some(k => (next as any)[k] !== (f as any)[k])
+        return changed ? next : f
+      })
+      if (course.departamento_codigo) {
+        setDepartamentoSelecionado(dep => dep || course.departamento_codigo!)
+      }
     }
-  }, [isEdit, course])
+  }, [isEdit, course?.codigo])
 
   // Ajusta departamento selecionado ao carregar categorias e curso
   useEffect(() => {
@@ -131,9 +151,9 @@ export default function CourseEditorPage() {
   useEffect(() => {
     if (isEdit) {
       const totalXp = modules.reduce((acc, m: any) => acc + (m.xp || 0), 0)
-      setForm((f: any) => ({ ...f, xp_oferecido: totalXp }))
+      setForm((f: any) => (f.xp_oferecido !== totalXp ? { ...f, xp_oferecido: totalXp } : f))
     }
-  }, [modules, isEdit])
+  }, [modules.length, isEdit])
 
   const handleSaveInfo = async (goToModules = false) => {
     try {

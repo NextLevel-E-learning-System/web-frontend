@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material'
 import { VisibilityOff } from '@mui/icons-material'
 import { Visibility } from '@mui/icons-material'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
@@ -34,13 +34,9 @@ import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCourses,
   useCategories,
-  useCreateCourse,
-  useUpdateCourse,
   useDuplicateCourse,
   useToggleCourseStatus,
   type Course as Curso,
-  type CreateCourseInput,
-  type UpdateCourseInput,
 } from '@/api/courses'
 import { useFuncionarios } from '@/api/users'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
@@ -147,14 +143,15 @@ export default function AdminCourses() {
     setSelectedCourseForMenu(null)
   }
 
-  const filtered = cursos.filter(curso => {
-    // Aplicar APENAS o filtro de status da aba
-    // Os outros filtros (categoria, instrutor, nível) já são aplicados pela API
-    if (tab === 'active' && !curso.ativo) return false
-    if (tab === 'disabled' && curso.ativo) return false
+  const filtered = useMemo(() => {
+    return cursos.filter(curso => {
+      if (tab === 'active' && !curso.ativo) return false
+      if (tab === 'disabled' && curso.ativo) return false
+      return true
+    })
+  }, [cursos, tab])
 
-    return true
-  })
+  const getRowId = useCallback((curso: Curso) => curso.codigo, [])
 
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
@@ -466,7 +463,7 @@ export default function AdminCourses() {
           data={filtered}
           columns={courseColumns}
           loading={loadingCursos || loadingCategorias || loadingFuncionarios}
-          getRowId={curso => curso.codigo}
+          getRowId={getRowId}
         />
         {/* Menu de ações */}
         <Menu

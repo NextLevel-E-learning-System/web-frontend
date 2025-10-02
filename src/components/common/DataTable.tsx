@@ -9,11 +9,8 @@ import {
   TablePagination,
   Box,
   Typography,
-  Alert,
 } from '@mui/material'
-import { InboxOutlined } from '@mui/icons-material'
-import { useState } from 'react'
-import React from 'react'
+import React, { useMemo, type ReactNode } from 'react'
 
 export interface Column {
   id: string
@@ -23,27 +20,19 @@ export interface Column {
   render?: (value: any, row: any, index: number) => ReactNode
 }
 
-interface DataTableProps<T = any> {
+interface DataTableProps<T extends Record<string, any> = Record<string, any>> {
   columns: Column[]
   data: T[]
   loading?: boolean
-  emptyIcon?: ReactNode
-  showPagination?: boolean
-  stickyHeader?: boolean
-  maxHeight?: number
   size?: 'small'
   onRowClick?: (row: T, index: number) => void
   getRowId?: (row: T, index: number) => string | number
 }
 
-export default function DataTable<T = any>({
+function DataTableInner<T extends Record<string, any>>({
   columns,
   data,
   loading = false,
-  emptyIcon,
-  showPagination = true,
-  stickyHeader = true,
-  maxHeight = 600,
   size = 'small',
   onRowClick,
   getRowId = (_, index) => index,
@@ -51,13 +40,9 @@ export default function DataTable<T = any>({
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
+  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage)
 
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
@@ -69,6 +54,11 @@ export default function DataTable<T = any>({
       </Box>
     )
   }
+
+  const pageData = useMemo(
+    () => data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [data, page, rowsPerPage]
+  )
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
@@ -88,9 +78,7 @@ export default function DataTable<T = any>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {data
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => {
+            {pageData.map((row, index) => {
                 const actualIndex = page * rowsPerPage + index
                 const rowId = getRowId(row, actualIndex)
                 return (
@@ -106,7 +94,7 @@ export default function DataTable<T = any>({
                     sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
                   >
                     {columns.map(column => {
-                      const value = row[column.id]
+                      const value = (row as any)[column.id]
                       return (
                         <TableCell
                           key={column.id}
@@ -140,3 +128,7 @@ export default function DataTable<T = any>({
     </Paper>
   )
 }
+
+const DataTable = React.memo(DataTableInner) as typeof DataTableInner
+
+export default DataTable

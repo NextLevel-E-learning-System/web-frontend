@@ -77,7 +77,8 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
                   <Typography variant='body2' fontWeight={600}>{m.titulo}</Typography>
                   <Chip size='small' label={`Ordem ${m.ordem}`} />
                   {m.xp ? <Chip size='small' variant='outlined' label={`${m.xp} XP`} /> : null}
-                  <Stack direction='row' gap={0.5} sx={{ ml: 'auto' }}>
+                  {/* Substitui Stack direto por Box para impedir propagação de semântica de botão dentro do botão do AccordionSummary */}
+                  <Box component='span' sx={{ display:'flex', flexDirection:'row', gap: 0.5, ml: 'auto' }}>
                     <Tooltip title='Mover para cima'>
                       <span>
                         <IconButton size='small' disabled={i === 0} onClick={e => { e.stopPropagation(); swapOrder(m.id, 'up') }}>
@@ -99,7 +100,7 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
                         </IconButton>
                       </span>
                     </Tooltip>
-                  </Stack>
+                  </Box>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Box sx={{ mb: 2, borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
