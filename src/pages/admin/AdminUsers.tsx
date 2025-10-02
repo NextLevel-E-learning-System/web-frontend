@@ -17,14 +17,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Alert,
   Skeleton,
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
   Person as PersonIcon,
   Badge as BadgeIcon,
   AdminPanelSettings as AdminIcon,
@@ -60,15 +58,20 @@ interface UserForm {
 }
 
 export default function AdminUsers() {
-  const { navigationItems, user, isGerente, isAdmin } = useNavigation()
+  const { navigationItems, user, isGerente } = useNavigation()
   const {
-    data: usuarios = [],
+    data: usuariosResponse,
     isLoading: loadingUsers,
     refetch: refetchUsers,
   } = useFuncionarios()
-  const { data: departamentos = [], isLoading: loadingDepartments } =
+  const usuarios = usuariosResponse?.items || []
+  
+  const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
-  const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
+  const departamentos = (departamentosResponse as any)?.items || departamentosResponse || []
+  
+  const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
+  const cargos = (cargosResponse as any)?.items || cargosResponse || []
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
   const excluirUsuario = useExcluirFuncionario()
@@ -207,14 +210,6 @@ export default function AdminUsers() {
     [departamentos, cargos]
   )
 
-  // Título dinâmico baseado na role
-  const title = useMemo(() => {
-    if (editingUser) return 'Editar Usuário'
-    if (isGerente)
-      return `Funcionários - Departamento ${user?.departamento_id || ''}`
-    return 'Gerenciar Usuários'
-  }, [editingUser, isGerente, user?.departamento_id])
-
   // Filtrar usuários: GERENTE vê apenas do seu departamento, ADMIN vê todos
   const allUsers = useMemo(() => {
     if (!usuarios) return []
@@ -338,7 +333,7 @@ export default function AdminUsers() {
   }
 
   const handleToggleAtivo = async (
-    id: string,
+    _id: string,
     nome: string,
     ativo: boolean
   ) => {
@@ -359,11 +354,11 @@ export default function AdminUsers() {
   }
 
   const getDepartmentName = (id: string) => {
-    return departamentos.find(d => d.codigo === id)?.nome || id
+    return departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome || id
   }
 
   const getCargoName = (codigo: string) => {
-    return cargos.find(c => c.codigo === codigo)?.nome || codigo
+    return cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome || codigo
   }
 
   const getUserTypeIcon = (tipo: string) => {
@@ -433,8 +428,6 @@ export default function AdminUsers() {
               data={filtered}
               loading={loadingUsers}
               getRowId={row => row.id}
-              showPagination={true}
-              stickyHeader={true}
             />
           </CardContent>
         </Card>
@@ -496,7 +489,7 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map(dept => (
+                    {departamentos.map((dept: { codigo: string; nome: string }) => (
                       <MenuItem key={dept.codigo} value={dept.codigo}>
                         {dept.nome}
                       </MenuItem>
@@ -517,7 +510,7 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map(cargo => (
+                    {cargos.map((cargo: { codigo: string; nome: string }) => (
                       <MenuItem key={cargo.codigo} value={cargo.codigo}>
                         {cargo.nome}
                       </MenuItem>
@@ -640,7 +633,7 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map(dept => (
+                    {departamentos.map((dept: { codigo: string; nome: string }) => (
                       <MenuItem key={dept.codigo} value={dept.codigo}>
                         {dept.nome}
                       </MenuItem>
@@ -661,7 +654,7 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map(cargo => (
+                    {cargos.map((cargo: { codigo: string; nome: string }) => (
                       <MenuItem key={cargo.codigo} value={cargo.codigo}>
                         {cargo.nome}
                       </MenuItem>
