@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Box,
   TextField,
@@ -35,15 +35,8 @@ export default function ModuleInfoForm({
   )
   const updateModule = useUpdateModule(cursoCodigo, modulo.id)
 
-  useEffect(() => {
-    // Sincroniza estado apenas se o módulo mudou (por ID ou propriedades)
-    setTitulo(modulo.titulo)
-    setOrdem(modulo.ordem)
-    setXp(modulo.xp)
-    setObrigatorio(modulo.obrigatorio)
-    setConteudo(modulo.conteudo || '')
-    setTipoConteudo(modulo.tipo_conteudo || 'texto')
-  }, [modulo.id, modulo.titulo, modulo.ordem, modulo.xp, modulo.obrigatorio, modulo.conteudo, modulo.tipo_conteudo])
+  // Estado inicializado diretamente com valores do módulo
+  // Componente será remontado via key quando módulo mudar
 
   const handleSave = async () => {
     await updateModule.mutateAsync({

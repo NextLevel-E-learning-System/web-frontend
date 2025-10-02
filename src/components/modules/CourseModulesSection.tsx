@@ -35,10 +35,6 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
     }
   }, [modulos, onTotalXpChange])
 
-  // Remove uso de hook dinâmico - callback para reordenar (temporariamente desabilitado)
-  // TODO: implementar reordenação via drag/drop ou endpoint batch
-  // const swapOrder = useCallback(async (fromId: string, direction: 'up' | 'down') => { ... }, [orderedModules])
-
   return (
     <Box>
       <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 1 }}>
@@ -79,7 +75,7 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
                       {allowedTabs.includes('avaliacoes') && <Tab value='avaliacoes' label='Avaliações' />}
                     </Tabs>
                   </Box>
-                  {currentTab === 'info' && <ModuleInfoForm cursoCodigo={cursoCodigo} modulo={m} />}
+                  {currentTab === 'info' && <ModuleInfoForm key={m.id} cursoCodigo={cursoCodigo} modulo={m} />}
                   {currentTab === 'materiais' && allowedTabs.includes('materiais') && <ModuleMaterialsPanel moduloId={m.id} />}
                   {currentTab === 'avaliacoes' && allowedTabs.includes('avaliacoes') && (
                     <ModuleAssessmentsPanel cursoCodigo={cursoCodigo} moduloId={m.id} moduloTitulo={m.titulo} />

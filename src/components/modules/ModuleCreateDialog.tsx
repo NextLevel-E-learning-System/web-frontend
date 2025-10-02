@@ -80,19 +80,13 @@ export default function ModuleCreateDialog({
   const [createdModuleId, setCreatedModuleId] = useState<string | null>(null)
   const [creatingEarly, setCreatingEarly] = useState(false)
   const [conteudo, setConteudo] = useState('')
-  // Materiais (para video/pdf)
   const [materials, setMaterials] = useState<PendingMaterial[]>([])
-  // Quiz (para tipo quiz)
   const [quizCodigo, setQuizCodigo] = useState('')
   const [quizTitulo, setQuizTitulo] = useState('')
   const [quizTempo, setQuizTempo] = useState<number | ''>('')
   const [quizTentativas, setQuizTentativas] = useState<number | ''>('')
   const [quizNotaMin, setQuizNotaMin] = useState<number | ''>('')
   const [questions, setQuestions] = useState<PendingQuizQuestion[]>([])
-  const [newQEnunciado, setNewQEnunciado] = useState('')
-  const [newQOptions, setNewQOptions] = useState<string[]>([''])
-  const [newQCorrect, setNewQCorrect] = useState('')
-  const [newQPeso, setNewQPeso] = useState<number | ''>('')
 
   const openedRef = useRef(false)
   const resetState = () => {
@@ -109,10 +103,6 @@ export default function ModuleCreateDialog({
     setQuizTentativas('')
     setQuizNotaMin('')
     setQuestions([])
-    setNewQEnunciado('')
-    setNewQOptions([''])
-    setNewQCorrect('')
-    setNewQPeso('')
     setCreatedModuleId(null)
     setCreatingEarly(false)
   }
@@ -229,49 +219,9 @@ export default function ModuleCreateDialog({
       onClose()
       return
     }
-    // Tipos com early save: executar pipeline e fechar
     await runPipelineIfNeeded()
     onClose()
   }
-
-  const addMaterial = async (file: File) => {
-    const base64 = await convertFileToBase64(file)
-    setMaterials(prev => [
-      ...prev,
-      {
-        nome_arquivo: file.name,
-        base64,
-        sizeKB: Math.round(file.size / 1024),
-        tipo_arquivo: file.type,
-      },
-    ])
-  }
-
-  const addQuestion = () => {
-    if (!newQEnunciado.trim() || !newQCorrect.trim()) return
-    const opts = newQOptions.filter(o => o.trim())
-    if (!opts.includes(newQCorrect)) return
-    setQuestions(prev => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        tipo_questao: 'MULTIPLA_ESCOLHA',
-        enunciado: newQEnunciado.trim(),
-        opcoes_resposta: opts,
-        resposta_correta: newQCorrect,
-        peso: newQPeso === '' ? 1 : Number(newQPeso) || 1,
-      },
-    ])
-    setNewQEnunciado('')
-    setNewQOptions([''])
-    setNewQCorrect('')
-    setNewQPeso('')
-  }
-
-  const updateOption = (index: number, value: string) => {
-    setNewQOptions(opts => opts.map((o, i) => (i === index ? value : o)))
-  }
-  const addOptionField = () => setNewQOptions(opts => [...opts, ''])
 
   return (
     <Dialog
@@ -356,263 +306,6 @@ export default function ModuleCreateDialog({
               size='small'
             />
           </Grid>
-          {(tipoConteudo === 'video' || tipoConteudo === 'pdf') &&
-            createdModuleId && (
-              <Grid size={{ xs: 12 }}>
-                <Paper
-                  variant='outlined'
-                  sx={{ p: 2, display: 'grid', gap: 1 }}
-                >
-                  <Stack
-                    direction='row'
-                    justifyContent='space-between'
-                    alignItems='center'
-                  >
-                    <Typography variant='subtitle2'>
-                      Materiais (upload será feito após criar o módulo)
-                    </Typography>
-                    <Button component='label' size='small' variant='outlined'>
-                      Selecionar Arquivo
-                      <input
-                        hidden
-                        type='file'
-                        onChange={async e => {
-                          const f = e.target.files?.[0]
-                          if (f) {
-                            await addMaterial(f)
-                            e.target.value = ''
-                          }
-                        }}
-                      />
-                    </Button>
-                  </Stack>
-                  {materials.length === 0 ? (
-                    <Typography variant='caption' color='text.secondary'>
-                      Nenhum arquivo selecionado.
-                    </Typography>
-                  ) : (
-                    <Stack gap={0.5}>
-                      {materials.map(m => (
-                        <Paper
-                          key={m.nome_arquivo + m.sizeKB}
-                          variant='outlined'
-                          sx={{
-                            p: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                          }}
-                        >
-                          <Typography variant='body2' sx={{ flex: 1 }}>
-                            {m.nome_arquivo}
-                          </Typography>
-                          <Chip size='small' label={`${m.sizeKB} KB`} />
-                          <IconButton
-                            size='small'
-                            onClick={() =>
-                              setMaterials(prev => prev.filter(x => x !== m))
-                            }
-                          >
-                            <DeleteIcon fontSize='inherit' />
-                          </IconButton>
-                        </Paper>
-                      ))}
-                    </Stack>
-                  )}
-                  <Typography variant='caption' color='text.secondary'>
-                    O módulo já foi salvo. Após fechar, poderá gerenciar
-                    materiais completos na aba do módulo.
-                  </Typography>
-                </Paper>
-              </Grid>
-            )}
-          {tipoConteudo === 'quiz' && createdModuleId && (
-            <Grid size={{ xs: 12 }}>
-              <Paper variant='outlined' sx={{ p: 2, display: 'grid', gap: 2 }}>
-                <Typography variant='subtitle2'>
-                  Avaliação (será criada vinculada a este módulo)
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                      label='Código do Quiz'
-                      value={quizCodigo}
-                      onChange={e => setQuizCodigo(e.target.value)}
-                      size='small'
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 8 }}>
-                    <TextField
-                      label='Título do Quiz'
-                      value={quizTitulo}
-                      onChange={e => setQuizTitulo(e.target.value)}
-                      size='small'
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, md: 2 }}>
-                    <TextField
-                      label='Tempo (min)'
-                      type='number'
-                      value={quizTempo}
-                      onChange={e =>
-                        setQuizTempo(
-                          e.target.value === ''
-                            ? ''
-                            : Math.max(1, Number(e.target.value) || 1)
-                        )
-                      }
-                      size='small'
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, md: 2 }}>
-                    <TextField
-                      label='Tentativas'
-                      type='number'
-                      value={quizTentativas}
-                      onChange={e =>
-                        setQuizTentativas(
-                          e.target.value === ''
-                            ? ''
-                            : Math.max(1, Number(e.target.value) || 1)
-                        )
-                      }
-                      size='small'
-                      fullWidth
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, md: 2 }}>
-                    <TextField
-                      label='Nota Mín (%)'
-                      type='number'
-                      value={quizNotaMin}
-                      onChange={e =>
-                        setQuizNotaMin(
-                          e.target.value === ''
-                            ? ''
-                            : Math.min(
-                                100,
-                                Math.max(0, Number(e.target.value) || 0)
-                              )
-                        )
-                      }
-                      size='small'
-                      fullWidth
-                    />
-                  </Grid>
-                </Grid>
-                <Box>
-                  <Typography variant='subtitle2' sx={{ mb: 1 }}>
-                    Questões ({questions.length})
-                  </Typography>
-                  {questions.map(q => (
-                    <Paper
-                      key={q.id}
-                      variant='outlined'
-                      sx={{
-                        p: 1,
-                        mb: 0.5,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 0.5,
-                      }}
-                    >
-                      <Typography variant='body2' fontWeight={600}>
-                        {q.enunciado}
-                      </Typography>
-                      <Typography variant='caption' color='text.secondary'>
-                        Opções: {q.opcoes_resposta.join(', ')} · Correta:{' '}
-                        {q.resposta_correta} · Peso: {q.peso}
-                      </Typography>
-                      <Stack direction='row' justifyContent='flex-end'>
-                        <IconButton
-                          size='small'
-                          onClick={() =>
-                            setQuestions(prev =>
-                              prev.filter(x => x.id !== q.id)
-                            )
-                          }
-                        >
-                          <DeleteIcon fontSize='inherit' />
-                        </IconButton>
-                      </Stack>
-                    </Paper>
-                  ))}
-                  <Paper
-                    variant='outlined'
-                    sx={{ p: 1.5, mt: 1, display: 'grid', gap: 1 }}
-                  >
-                    <TextField
-                      label='Enunciado'
-                      value={newQEnunciado}
-                      onChange={e => setNewQEnunciado(e.target.value)}
-                      size='small'
-                      fullWidth
-                    />
-                    <Grid container spacing={1}>
-                      {newQOptions.map((opt, idx) => (
-                        <Grid key={idx} size={{ xs: 12, md: 6 }}>
-                          <TextField
-                            label={`Opção ${idx + 1}`}
-                            value={opt}
-                            onChange={e => updateOption(idx, e.target.value)}
-                            size='small'
-                            fullWidth
-                          />
-                        </Grid>
-                      ))}
-                    </Grid>
-                    <Stack direction='row' gap={1} flexWrap='wrap'>
-                      <Button
-                        size='small'
-                        startIcon={<AddCircleOutlineIcon />}
-                        onClick={addOptionField}
-                        variant='outlined'
-                      >
-                        Adicionar Opção
-                      </Button>
-                      <TextField
-                        label='Correta'
-                        value={newQCorrect}
-                        onChange={e => setNewQCorrect(e.target.value)}
-                        size='small'
-                      />
-                      <TextField
-                        label='Peso'
-                        type='number'
-                        value={newQPeso}
-                        onChange={e =>
-                          setNewQPeso(
-                            e.target.value === ''
-                              ? ''
-                              : Number(e.target.value) || 1
-                          )
-                        }
-                        size='small'
-                        sx={{ width: 100 }}
-                      />
-                      <Button
-                        size='small'
-                        variant='contained'
-                        disabled={!newQEnunciado.trim() || !newQCorrect.trim()}
-                        onClick={addQuestion}
-                      >
-                        Adicionar Questão
-                      </Button>
-                    </Stack>
-                  </Paper>
-                  <Typography variant='caption' color='text.secondary'>
-                    O módulo foi salvo. Estes dados do quiz serão persistidos em
-                    etapa futura de pipeline.
-                  </Typography>
-                </Box>
-              </Paper>
-            </Grid>
-          )}
         </Grid>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
