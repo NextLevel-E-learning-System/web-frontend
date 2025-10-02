@@ -29,7 +29,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
-import DataTable, { Column } from '@/components/common/DataTable'
+import DataTable, { type Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useCourses,

@@ -14,10 +14,10 @@ import {
 } from '@mui/material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboard, DashboardInstrutor } from '@/api/users'
+import { useDashboard, type DashboardInstrutor } from '@/api/users'
 
 export default function InstrutorDashboard() {
-  const { title, navigationItems } = useDashboardLayout()
+  const { navigationItems } = useDashboardLayout()
   const { data: dashboardData, isLoading, error } = useDashboard()
 
   // Type guard para garantir que é um dashboard de instrutor
@@ -28,7 +28,7 @@ export default function InstrutorDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title={title} items={navigationItems}>
+      <DashboardLayout  items={navigationItems}>
         <Box
           display='flex'
           justifyContent='center'
@@ -43,7 +43,7 @@ export default function InstrutorDashboard() {
 
   if (error || !instrutorData) {
     return (
-      <DashboardLayout title={title} items={navigationItems}>
+      <DashboardLayout   items={navigationItems}>
         <Alert severity='error'>
           Erro ao carregar dados do dashboard. Tente novamente.
         </Alert>
@@ -54,7 +54,7 @@ export default function InstrutorDashboard() {
   const { metricas, cursos, atividades_recentes } = instrutorData
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout  items={navigationItems}>
       <Box
         sx={{
           maxWidth: '100%',

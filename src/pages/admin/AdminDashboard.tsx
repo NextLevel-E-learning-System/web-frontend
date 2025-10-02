@@ -17,7 +17,7 @@ import DashboardWrapper from '@/components/layout/DashboardWrapper'
 import StatCard from '@/components/common/StatCard'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
-import { DashboardAdmin, DashboardGerente } from '@/api/users'
+import { type DashboardAdmin, type DashboardGerente } from '@/api/users'
 
 export default function AdminDashboard() {
   return (

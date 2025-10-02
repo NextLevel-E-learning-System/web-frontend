@@ -12,8 +12,8 @@ import {
   Badge as BadgeIcon,
   Apartment as ApartmentIcon,
 } from '@mui/icons-material'
-import { NavItem } from '@/components/layout/DashboardLayout'
 import { useMeuPerfil } from '@/api/users'
+import type { NavItem } from '@/components/layout/DashboardLayout'
 
 export function useNavigation() {
   const { data: user } = useMeuPerfil()

@@ -10,7 +10,7 @@ import {
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
-import { DashboardAluno } from '@/api/users'
+import { type DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboardCompleto } from '@/api/users'
 import StatsCard from '@/components/common/StatCard'

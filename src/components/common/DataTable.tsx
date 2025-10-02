@@ -12,7 +12,7 @@ import {
   Alert,
 } from '@mui/material'
 import { InboxOutlined } from '@mui/icons-material'
-import { useState, ReactNode } from 'react'
+import { useState } from 'react'
 import React from 'react'
 
 export interface Column {

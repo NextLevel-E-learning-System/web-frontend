@@ -38,7 +38,7 @@ import {
   useDeleteDepartamento,
   type Departamento,
 } from '@/api/users'
-import DataTable, { Column } from '@/components/common/DataTable'
+import DataTable,{ type Column }  from '@/components/common/DataTable'
 
 interface DepartmentForm {
   codigo: string
@@ -320,7 +320,7 @@ export default function AdminDepartments() {
   ]
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout   items={navigationItems}>
       <Box>
         <Box
           sx={{

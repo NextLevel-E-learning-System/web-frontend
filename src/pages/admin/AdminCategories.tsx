@@ -38,7 +38,7 @@ import {
   type CreateCategoryInput,
 } from '@/api/courses'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
-import DataTable, { Column } from '@/components/common/DataTable'
+import DataTable, { type Column } from '@/components/common/DataTable'
 
 interface CategoryForm {
   codigo: string

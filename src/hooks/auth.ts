@@ -4,12 +4,12 @@ import {
   useLogin as useLoginAPI,
   useLogout as useLogoutAPI,
   useRefreshToken as useRefreshTokenAPI,
-  LoginRequest,
+  type LoginRequest,
 } from '@/api/auth'
 import {
   useRegisterFuncionario,
   useResetPassword as useResetPasswordAPI,
-  ResetPasswordInput,
+  type ResetPasswordInput,
 } from '@/api/users'
 import { setAccessToken, clearAccessToken, isTokenPersistent } from '@/api/http'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'

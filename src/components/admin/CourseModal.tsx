@@ -17,8 +17,6 @@ import {
   ListItemText,
   CircularProgress,
 } from '@mui/material'
-import ModuleAssessmentsPanel from '@/components/assessments/ModuleAssessmentsPanel'
-import { useCourseModules, useCreateModule } from '@/api/courses'
 import AddIcon from '@mui/icons-material/Add'
 import {
   Accordion,
@@ -33,23 +31,19 @@ import {
   Tooltip,
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ModuleInfoForm from '@/components/modules/ModuleInfoForm'
-import ModuleMaterialsPanel from '@/components/modules/ModuleMaterialsPanel'
-import ModuleCreateDialog, {
-  type CompositeModuleCreate,
-} from '@/components/modules/ModuleCreateDialog'
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import DeleteIcon from '@mui/icons-material/Delete'
-import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import { useState, useEffect } from 'react'
-import {
-  type Course as Curso,
-  type CreateCourseInput,
-  type UpdateCourseInput,
-  type Category,
-} from '@/api/courses'
-import { type Funcionario } from '@/api/users'
+import type { Funcionario } from '../../api/users'
+import { useCourseModules, useCreateModule, useUpdateModule, type Category, type CreateCourseInput, type Course as Curso, type UpdateCourseInput } from '../../api/courses'
+import ModuleInfoForm from '../modules/ModuleInfoForm'
+import ModuleMaterialsPanel from '../modules/ModuleMaterialsPanel'
+import ModuleAssessmentsPanel from '../assessments/ModuleAssessmentsPanel'
+import ConfirmationDialog from '../common/ConfirmationDialog'
+import ModuleCreateDialog, { type CompositeModuleCreate } from '../modules/ModuleCreateDialog'
+import { ArrowUpward } from '@mui/icons-material'
+
 
 interface CourseModalProps {
   open: boolean
@@ -464,11 +458,11 @@ function CourseModulesSection({
     try {
       // Usa atualização individual (poderia ser uma rota bulk se existir)
       // Reaproveita hook de update criando dinamicamente (padrão já usado em outros pontos)
-      const updaterCurrent = (await import('@/api/courses')).useUpdateModule(
+      const updaterCurrent = useUpdateModule(
         cursoCodigo,
         current.id
       )
-      const updaterTarget = (await import('@/api/courses')).useUpdateModule(
+      const updaterTarget =useUpdateModule(
         cursoCodigo,
         target.id
       )
@@ -559,7 +553,7 @@ function CourseModulesSection({
                               swapOrder(m.id, 'up')
                             }}
                           >
-                            <ArrowUpwardIcon fontSize='inherit' />
+                            <ArrowUpward fontSize='inherit' />
                           </IconButton>
                         </span>
                       </Tooltip>
