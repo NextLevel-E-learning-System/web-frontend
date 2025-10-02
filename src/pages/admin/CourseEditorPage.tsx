@@ -9,8 +9,6 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  Snackbar,
-  Alert,
   TextField,
   FormControl,
   Select,
@@ -78,11 +76,6 @@ export default function CourseEditorPage() {
   const allCourses: Course[] = allCoursesResponse?.items || []
 
   const [tab, setTab] = useState<string>(INFO_TAB.id)
-  const [snack, setSnack] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error'
-  }>({ open: false, message: '', severity: 'success' })
 
   // Form state centralizado (pode ser distribuído em subcomponentes via props ou context)
   const [form, setForm] = useState<any>({
@@ -159,8 +152,6 @@ export default function CourseEditorPage() {
     try {
       if (!form.titulo?.trim()) return
       
-      console.log('Form data antes de enviar:', form)
-      
       if (isEdit && updateCourse) {
         const updateData = {
           titulo: form.titulo,
@@ -173,13 +164,14 @@ export default function CourseEditorPage() {
           pre_requisitos: form.pre_requisitos,
           ativo: form.ativo,
         }
-        
-        console.log('Update data:', updateData)
-        
         await updateCourse.mutateAsync(updateData)
-         if (goToModules) setTab(MODULES_TAB.id)
+        if (goToModules) {
+          setTab(MODULES_TAB.id)
+        } else {
+          setTimeout(() => navigate('/manage/courses'), 1500)
+        }
       } else {
-        const created = await createCourse.mutateAsync({
+        const response = await createCourse.mutateAsync({
           codigo: form.codigo,
           titulo: form.titulo,
           descricao: form.descricao,
@@ -191,12 +183,18 @@ export default function CourseEditorPage() {
           pre_requisitos: form.pre_requisitos,
           ativo: form.ativo,
         })
-         navigate(`/manage/courses/${created.codigo}/edit`, {
-          state: { nextTab: goToModules ? MODULES_TAB.id : INFO_TAB.id },
-        })
+        
+           if (goToModules) {
+          navigate(`/manage/courses/${(response as any).curso?.codigo || response.codigo}/edit`, {
+            state: { nextTab: MODULES_TAB.id },
+          })
+        } else {
+          // Se não for para módulos, voltar para a lista de cursos
+          setTimeout(() => navigate('/manage/courses'), 1500)
+        }
       }
-    } catch (e) {
-     }
+    } catch (e: any) {
+    }
   }
 
 
@@ -221,7 +219,6 @@ export default function CourseEditorPage() {
                 fullWidth
                 required
                 disabled={isEdit}
-                helperText={isEdit ? 'Código não pode ser alterado' : ''}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 3' } }}>
@@ -233,7 +230,6 @@ export default function CourseEditorPage() {
                   onChange={e =>
                     setForm({ ...form, ativo: e.target.value === 'true' })
                   }
-                  disabled={isEdit} // caso status altere em outro fluxo
                 >
                   <MenuItem value='true'>Ativo</MenuItem>
                   <MenuItem value='false'>Inativo</MenuItem>
@@ -318,7 +314,6 @@ export default function CourseEditorPage() {
                   value={form.instrutor_id || ''}
                   label='Instrutor'
                   onChange={e => {
-                    console.log('Instrutor selecionado:', e.target.value)
                     setForm({ ...form, instrutor_id: e.target.value })
                   }}
                 >
@@ -352,6 +347,7 @@ export default function CourseEditorPage() {
                 type='number'
                 value={form.xp_oferecido}
                 fullWidth
+                disabled
                 InputProps={{ readOnly: true }}
               />
             </Box>
@@ -410,13 +406,13 @@ export default function CourseEditorPage() {
           </Box>
           <Stack direction='row' gap={1} justifyContent='flex-end'>
             <Button
-              variant='outlined'
-             onClick={() => navigate(-1)}
+              variant='text'
+              onClick={() => navigate('/manage/courses')}
             >
-              Voltar
+              Cancelar
             </Button>
             <Button
-              variant='contained'
+              variant='outlined'
               onClick={() => handleSaveInfo(false)}
               disabled={
                 createCourse.isPending ||
@@ -424,7 +420,18 @@ export default function CourseEditorPage() {
                 !form.titulo
               }
             >
-             Salvar
+              Salvar
+            </Button>
+            <Button
+              variant='contained'
+              onClick={() => handleSaveInfo(true)}
+              disabled={
+                createCourse.isPending ||
+                updateCourse?.isPending ||
+                !form.titulo
+              }
+            >
+              Próximo
             </Button>
           </Stack>
         </Stack>
@@ -472,19 +479,6 @@ export default function CourseEditorPage() {
             renderCurrent()
           )}
         </Paper>
-        <Snackbar
-          open={snack.open}
-          autoHideDuration={4000}
-          onClose={() => setSnack(s => ({ ...s, open: false }))}
-        >
-          <Alert
-            onClose={() => setSnack(s => ({ ...s, open: false }))}
-            severity={snack.severity}
-            variant='filled'
-          >
-            {snack.message}
-          </Alert>
-        </Snackbar>
       </Box>
     </DashboardLayout>
   )

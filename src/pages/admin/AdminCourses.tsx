@@ -229,16 +229,9 @@ export default function AdminCourses() {
           <Typography variant='body2'>
             {instrutor?.nome
               ? (() => {
-                  const nomes = instrutor.nome
-                    .split(' ')
-                    .filter(n => n.length > 0)
-                  const primeiro = nomes[0]?.charAt(0) || ''
-                  const ultimo =
-                    nomes.length > 1
-                      ? nomes[nomes.length - 1]?.charAt(0) || ''
-                      : ''
-                  return `${primeiro}${ultimo}`.toUpperCase()
-                })()
+                  const nome = instrutor.nome
+                    .trim().split(' ')
+                  return `${nome[0]}`})()
               : '-'}
           </Typography>
         )
