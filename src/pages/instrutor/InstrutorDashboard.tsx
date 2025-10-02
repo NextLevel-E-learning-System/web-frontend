@@ -10,7 +10,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider,
 } from '@mui/material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
@@ -51,7 +50,7 @@ export default function InstrutorDashboard() {
     )
   }
 
-  const { metricas, cursos, atividades_recentes } = instrutorData
+  const { metricas, cursos } = instrutorData || { metricas: {}, cursos: [] }
 
   return (
     <DashboardLayout  items={navigationItems}>
@@ -188,48 +187,6 @@ export default function InstrutorDashboard() {
             </Card>
           </Grid>
 
-          {/* Atividades Recentes */}
-          <Grid size={{ xs: 12, lg: 4 }}>
-            <Card
-              sx={{
-                maxWidth: '100%',
-                overflow: 'auto',
-              }}
-            >
-              <CardContent>
-                <Typography fontWeight={700} gutterBottom>
-                  Atividades Recentes
-                </Typography>
-                {atividades_recentes.length > 0 ? (
-                  <List dense>
-                    {atividades_recentes
-                      .slice(0, 5)
-                      .map((atividade: any, index: number) => (
-                        <ListItem key={index}>
-                          <ListItemText
-                            primary={
-                              atividade.descricao ||
-                              atividade.titulo ||
-                              'Atividade'
-                            }
-                            secondary={
-                              atividade.data || atividade.timestamp || 'Recente'
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                  </List>
-                ) : (
-                  <Typography
-                    color='text.secondary'
-                    sx={{ textAlign: 'center', py: 2 }}
-                  >
-                    Nenhuma atividade recente.
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
         </Grid>
       </Box>
     </DashboardLayout>
