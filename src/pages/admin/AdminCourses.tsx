@@ -23,8 +23,6 @@ import {
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material'
-import { VisibilityOff } from '@mui/icons-material'
-import { Visibility } from '@mui/icons-material'
 import { useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -111,8 +109,17 @@ export default function AdminCourses() {
 
   // Handlers substituídos por navegação
   const handleCreateCourse = () => navigate('/manage/courses/new')
-  const handleEditCourse = (curso: Curso) =>
+  
+  const handleEditCourse = (curso: Curso) => {
     navigate(`/manage/courses/${curso.codigo}/edit`)
+  }
+
+  const canEditCourse = (curso: Curso) => {
+    if (isInstrutor && (curso.total_inscricoes || 0) > 0) {
+      return false
+    }
+    return true
+  }
 
   const handleDuplicateCourse = async (curso: Curso) => {
     try {
@@ -179,9 +186,9 @@ export default function AdminCourses() {
       align: 'left',
       render: (_, curso) => (
         <Box>
-          <Typography variant='body2' fontWeight={500}>
-            {curso.titulo}
-          </Typography>
+            <Typography variant='body2' fontWeight={500}>
+              {curso.titulo}
+            </Typography>
           <Box
             sx={{
               display: 'flex',
@@ -332,6 +339,7 @@ export default function AdminCourses() {
               }}
               onClick={e => e.stopPropagation()}
               color='primary'
+              disabled={!canEditCourse(curso)}
             />
           }
           label={curso.ativo ? 'Ativo' : 'Inativo'}
@@ -480,6 +488,10 @@ export default function AdminCourses() {
                 handleEditCourse(selectedCourseForMenu)
               }
             }}
+            disabled={selectedCourseForMenu ? !canEditCourse(selectedCourseForMenu) : false}
+            sx={{
+              opacity: selectedCourseForMenu && !canEditCourse(selectedCourseForMenu) ? 0.5 : 1
+            }}
           >
             <EditIcon sx={{ mr: 1 }} fontSize='small' />
             Editar
@@ -498,30 +510,6 @@ export default function AdminCourses() {
           >
             <FileCopy sx={{ mr: 1 }} fontSize='small' />
             Duplicar
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              handleCloseMenu()
-              if (selectedCourseForMenu) {
-                setConfirmDialog({
-                  open: true,
-                  action: 'toggle',
-                  curso: selectedCourseForMenu,
-                })
-              }
-            }}
-          >
-            {selectedCourseForMenu?.ativo ? (
-              <>
-                <VisibilityOff sx={{ mr: 1 }} fontSize='small' />
-                Desativar
-              </>
-            ) : (
-              <>
-                <Visibility sx={{ mr: 1 }} fontSize='small' />
-                Ativar
-              </>
-            )}
           </MenuItem>
         </Menu>
         {/* Dialog de confirmação para duplicar/inativar */}

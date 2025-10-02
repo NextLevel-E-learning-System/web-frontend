@@ -115,10 +115,9 @@ const getCategoryIcon = (categoryCodigo: string) => {
 
 export default function Courses() {
   const { data: user } = useMeuPerfil()
-  const { navigationItems, canManageCourses, isInstrutor, isAdmin } =
+  const { navigationItems } =
     useNavigation()
 
-  // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
@@ -167,7 +166,6 @@ export default function Courses() {
   // Hooks da API
   const {
     data: categories,
-    isLoading: categoriesLoading,
     error: categoriesError,
   } = useCategories()
   const {
