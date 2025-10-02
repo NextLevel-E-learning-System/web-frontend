@@ -234,7 +234,7 @@ export default function CourseEditorPage() {
                 onChange={e => setForm({ ...form, descricao: e.target.value })}
                 fullWidth
                 multiline
-                minRows={3}
+                minRows={2}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>

@@ -22,7 +22,8 @@ import {
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
-import { type CreateModuleInput, convertFileToBase64 } from '@/api/courses'
+import { type CreateModuleInput, convertFileToBase64, useUploadMaterial } from '@/api/courses'
+import { useCreateAssessment, useCreateQuestion } from '@/api/assessments'
 
 export interface PendingMaterial {
   nome_arquivo: string
@@ -172,18 +173,64 @@ export default function ModuleCreateDialog({
     onCreate,
   ])
 
+  // Hooks para pipeline (lazy instantiation quando necessário)
+  const uploadMaterialMutation = useUploadMaterial(createdModuleId || '')
+  const createAssessment = useCreateAssessment()
+  // Função que executa pipeline pós criação (somente se módulo já está criado)
+  const runPipelineIfNeeded = async () => {
+    // Materiais
+    if (createdModuleId && (tipoConteudo === 'video' || tipoConteudo === 'pdf') && materials.length) {
+      for (const m of materials) {
+        try {
+          await uploadMaterialMutation.mutateAsync({ nome_arquivo: m.nome_arquivo, base64: m.base64 })
+        } catch {}
+      }
+    }
+    // Quiz
+    if (createdModuleId && tipoConteudo === 'quiz' && quizCodigo && quizTitulo) {
+      try {
+        const assessment = await createAssessment.mutateAsync({
+          codigo: quizCodigo,
+          curso_id: '', // backend pode inferir? se necessário, passar curso (não temos aqui)
+          modulo_id: createdModuleId,
+          titulo: quizTitulo,
+          tempo_limite: quizTempo === '' ? undefined : Number(quizTempo),
+          tentativas_permitidas: quizTentativas === '' ? undefined : Number(quizTentativas),
+          nota_minima: quizNotaMin === '' ? undefined : Number(quizNotaMin),
+        })
+        // Criar questões
+        if (assessment?.codigo) {
+          for (const q of questions) {
+            const cq = useCreateQuestion(assessment.codigo)
+            try {
+              await cq.mutateAsync({
+                avaliacao_id: assessment.codigo,
+                tipo_questao: q.tipo_questao,
+                enunciado: q.enunciado,
+                opcoes_resposta: q.opcoes_resposta,
+                resposta_correta: q.resposta_correta,
+                peso: q.peso,
+              })
+            } catch {}
+          }
+        }
+      } catch {}
+    }
+  }
+
   const handleSubmit = async () => {
-    // Caso conteúdo texto: criar agora.
-    // Caso outros: se já criou antecipadamente, apenas fechar (pipeline futuro para materiais/quiz será separado)
-    if (['video', 'pdf', 'quiz'].includes(tipoConteudo)) {
+    // Texto: criar agora e finalizar
+    if (!['video', 'pdf', 'quiz'].includes(tipoConteudo)) {
+      if (!createdModuleId) {
+        const modulePayload = buildModulePayload()
+        if (!modulePayload) return
+        await onCreate({ module: modulePayload })
+      }
       onClose()
       return
     }
-    if (!createdModuleId) {
-      const modulePayload = buildModulePayload()
-      if (!modulePayload) return
-      await onCreate({ module: modulePayload })
-    }
+    // Tipos com early save: executar pipeline e fechar
+    await runPipelineIfNeeded()
     onClose()
   }
 
