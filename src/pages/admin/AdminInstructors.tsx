@@ -10,7 +10,6 @@ import {
   Switch,
   TextField,
   Typography,
-  Chip,
   Select,
   MenuItem,
   FormControl,
@@ -66,7 +65,7 @@ export default function AdminInstructors() {
       render: (_value: any, row: Instructor) => (
         <Box>
           <Typography variant='body2' fontWeight={500}>
-            {row?.nome || 'N/A'}
+            {row?.nome}
           </Typography>
         </Box>
       )
@@ -77,7 +76,7 @@ export default function AdminInstructors() {
       width: 250,
       render: (_value: any, row: Instructor) => (
         <Typography variant='body2'>
-          {row?.email || 'N/A'}
+          {row?.email}
         </Typography>
       )
     },
@@ -86,11 +85,9 @@ export default function AdminInstructors() {
       label: 'Departamento',
       width: 150,
       render: (_value: any, row: Instructor) => (
-        <Chip
-          label={row?.departamento_nome || '-'}
-          size='small'
-          variant='outlined'
-        />
+           <Typography variant='body2'>
+            {row?.departamento_nome || '-'}
+            </Typography>
       )
     },
     {
@@ -98,11 +95,9 @@ export default function AdminInstructors() {
       label: 'Cargo',
       width: 150,
       render: (_value: any, row: Instructor) => (
-        <Chip
-          label={row?.cargo_nome || '-'}
-          size='small'
-          variant='outlined'
-        />
+           <Typography variant='body2'>
+            {row?.cargo_nome || '-'}
+            </Typography>
       )
     },
     {
