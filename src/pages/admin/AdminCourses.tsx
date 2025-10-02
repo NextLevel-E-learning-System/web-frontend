@@ -26,9 +26,9 @@ import {
 import { VisibilityOff } from '@mui/icons-material'
 import { Visibility } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
-import CourseModal from '@/components/admin/CourseModal'
 import DataTable, { Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
@@ -64,10 +64,8 @@ export default function AdminCourses() {
     nivel: 'all',
   })
 
-  // Estados para modal
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
-  const [courseToEdit, setCourseToEdit] = useState<Curso | null>(null)
+  // Navegação para editor dedicado
+  const navigate = useNavigate()
 
   // Estados para ações
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -96,13 +94,13 @@ export default function AdminCourses() {
     useCourses(coursesFilters)
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
-  const { data: funcionariosResponse, isLoading: loadingFuncionarios } = useFuncionarios()
+  const { data: funcionariosResponse, isLoading: loadingFuncionarios } =
+    useFuncionarios()
   const cursos = cursosResponse?.items || []
   const funcionarios = funcionariosResponse?.items || []
 
   // Mutations
-  const createCourseMutation = useCreateCourse()
-  const updateCourseMutation = useUpdateCourse(courseToEdit?.codigo || '')
+  // Criação/Edição agora ocorrem em CourseEditorPage
   const duplicateCourseMutation = useDuplicateCourse()
   const toggleStatusMutation = useToggleCourseStatus(courseToToggle)
 
@@ -110,34 +108,10 @@ export default function AdminCourses() {
   const cursosAtivos = cursos.filter(c => c.ativo === true).length
   const cursosInativos = cursos.filter(c => c.ativo === false).length
 
-  // Handlers do modal
-  const handleOpenCreateModal = () => {
-    setModalMode('create')
-    setCourseToEdit(null)
-    setModalOpen(true)
-  }
-
-  const handleOpenEditModal = (curso: Curso) => {
-    setModalMode('edit')
-    setCourseToEdit(curso)
-    setModalOpen(true)
-  }
-
-  const handleModalSubmit = async (
-    data: CreateCourseInput | UpdateCourseInput
-  ) => {
-    try {
-      if (modalMode === 'create') {
-        await createCourseMutation.mutateAsync(data as CreateCourseInput)
-      } else if (courseToEdit) {
-        await updateCourseMutation.mutateAsync(data as UpdateCourseInput)
-      }
-      setModalOpen(false)
-    } catch (error) {
-      // Erro será exibido pela mutation
-      throw error
-    }
-  }
+  // Handlers substituídos por navegação
+  const handleCreateCourse = () => navigate('/admin/courses/new')
+  const handleEditCourse = (curso: Curso) =>
+    navigate(`/admin/courses/${curso.codigo}/edit`)
 
   const handleDuplicateCourse = async (curso: Curso) => {
     try {
@@ -389,7 +363,7 @@ export default function AdminCourses() {
 
   if (loadingCursos || loadingCategorias || loadingFuncionarios) {
     return (
-      <DashboardLayout  items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={300} />
         </Box>
@@ -398,7 +372,7 @@ export default function AdminCourses() {
   }
 
   return (
-    <DashboardLayout   items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box>
         <Box
           sx={{
@@ -472,7 +446,7 @@ export default function AdminCourses() {
           <Button
             variant='contained'
             startIcon={<AddIcon />}
-            onClick={handleOpenCreateModal}
+            onClick={handleCreateCourse}
             sx={{ minWidth: 160 }}
           >
             Adicionar Curso
@@ -505,7 +479,7 @@ export default function AdminCourses() {
             onClick={() => {
               handleCloseMenu()
               if (selectedCourseForMenu) {
-                handleOpenEditModal(selectedCourseForMenu)
+                handleEditCourse(selectedCourseForMenu)
               }
             }}
           >
@@ -590,24 +564,6 @@ export default function AdminCourses() {
           cancelText='Cancelar'
           severity={confirmDialog.action === 'duplicate' ? 'info' : 'warning'}
         />
-
-        {/* Modal de Curso (Criar/Editar) */}
-        <CourseModal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          onSubmit={handleModalSubmit}
-          isLoading={
-            modalMode === 'create'
-              ? createCourseMutation.isPending
-              : updateCourseMutation.isPending
-          }
-          mode={modalMode}
-          courseToEdit={courseToEdit}
-          categorias={categorias}
-          funcionarios={funcionarios}
-          cursos={cursos}
-        />
-        {/* Drawer de avaliações será disparado a partir do detalhamento de módulos (futuro) */}
       </Box>
     </DashboardLayout>
   )

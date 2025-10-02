@@ -156,7 +156,9 @@ export function useCreateAssessment() {
 }
 
 // Listar avaliações (pode filtrar por curso)
-export function useAssessments(filters: { curso_id?: string; modulo_id?: string } = {}) {
+export function useAssessments(
+  filters: { curso_id?: string; modulo_id?: string } = {}
+) {
   const searchParams = new URLSearchParams()
   if (filters.curso_id) searchParams.append('curso_id', filters.curso_id)
   if (filters.modulo_id) searchParams.append('modulo_id', filters.modulo_id)
@@ -165,13 +167,14 @@ export function useAssessments(filters: { curso_id?: string; modulo_id?: string 
 
   return useQuery<Assessment[]>({
     queryKey: ['assessments', 'list', filters],
-    queryFn: () => authGet<{ avaliacoes?: Assessment[] } | Assessment[]>(url).then(res => {
-      const list = Array.isArray(res) ? res : (res.avaliacoes || [])
-      if (filters.modulo_id) {
-        return list.filter(a => a.modulo_id === filters.modulo_id)
-      }
-      return list
-    }),
+    queryFn: () =>
+      authGet<{ avaliacoes?: Assessment[] } | Assessment[]>(url).then(res => {
+        const list = Array.isArray(res) ? res : res.avaliacoes || []
+        if (filters.modulo_id) {
+          return list.filter(a => a.modulo_id === filters.modulo_id)
+        }
+        return list
+      }),
   })
 }
 
@@ -183,7 +186,9 @@ export function useUpdateAssessment(codigo: string) {
     mutationFn: (input: UpdateAssessmentInput) =>
       authPut<Assessment>(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'detail', codigo] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'detail', codigo],
+      })
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
     },
   })
@@ -194,7 +199,8 @@ export function useDeleteAssessment() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationKey: ['assessments', 'delete'],
-    mutationFn: (codigo: string) => authDelete(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`),
+    mutationFn: (codigo: string) =>
+      authDelete(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
     },
@@ -253,9 +259,14 @@ export function useUpdateQuestion(codigo: string, id: string) {
   return useMutation({
     mutationKey: ['assessments', 'questions', 'update', codigo, id],
     mutationFn: (input: UpdateQuestionInput) =>
-      authPut<Question>(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}/questions/${id}`, input),
+      authPut<Question>(
+        `${API_ENDPOINTS.ASSESSMENTS}/${codigo}/questions/${id}`,
+        input
+      ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'questions', codigo] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'questions', codigo],
+      })
     },
   })
 }
@@ -267,7 +278,9 @@ export function useDeleteQuestion(codigo: string) {
     mutationFn: (id: string) =>
       authDelete(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}/questions/${id}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'questions', codigo] })
+      queryClient.invalidateQueries({
+        queryKey: ['assessments', 'questions', codigo],
+      })
     },
   })
 }

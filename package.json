@@ -6,14 +6,13 @@
     "dev": "vite --host --open",
     "build": "vite build",
     "start": "vite preview --port 3000",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext ts,tsx --fix",
-    "lint:auto-fix": "eslint src --ext ts,tsx --fix --quiet",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json}\"",
-    "fix-all": "yarn format && yarn lint:auto-fix",
-    "typecheck": "tsc"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "preview": "vite preview"
   },
-    "lint-staged": {
+  "lint-staged": {
     "**/*.{ts,tsx}": [
       "yarn format",
       "yarn lint:auto-fix"
@@ -26,13 +25,13 @@
     "@mui/lab": "7.0.0-beta.17",
     "@mui/material": "^7.3.2",
     "@types/echarts": "^5.0.0",
+    "@vitejs/plugin-react": "^4.5.0",
     "axios": "^1.7.9",
     "date-fns": "^4.1.0",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.4",
     "jwt-decode": "^4.0.0",
     "react-toastify": "^11.0.5",
-    "@vitejs/plugin-react": "^4.5.0",
     "vite": "^7.1.2",
     "vitest": "^3.2.4",
     "zod": "^3.25.76"
@@ -40,7 +39,7 @@
   "devDependencies": {
     "@swc/core": "^1.13.3",
     "@tanstack/react-query": "^5.84.2",
-    "@types/node": "^24.2.1",
+    "@types/node": "^24.6.2",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@typescript-eslint/eslint-plugin": "^8.43.0",
@@ -48,17 +47,18 @@
     "@vitejs/plugin-react-swc": "^4.0.1",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.2.1",
-    "prettier-eslint": "^16.1.2",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "eslint-plugin-unused-imports": "^4.2.0",
     "prettier": "^3.6.2",
+    "prettier-eslint": "^16.1.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.1",
     "typescript": "^5.6.3",
-    "vite-tsconfig-paths": "^5.1.4",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.4.20",
-    "eslint-plugin-unused-imports": "^4.1.4"
+    "typescript-eslint": "^8.39.1",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

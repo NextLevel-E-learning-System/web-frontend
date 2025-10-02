@@ -121,7 +121,7 @@ export function useLogout() {
     onError: (error: any) => {
       console.error('[useLogout] Erro:', error)
       showErrorToast(error)
-      
+
       // Mesmo com erro, fazer logout local
       clearAccessToken()
       queryClient.clear()

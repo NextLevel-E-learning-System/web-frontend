@@ -10,13 +10,19 @@ import {
   FormControlLabel,
   Switch,
 } from '@mui/material'
-import { type CreateAssessmentInput, type UpdateAssessmentInput } from '@/api/assessments'
+import {
+  type CreateAssessmentInput,
+  type UpdateAssessmentInput,
+} from '@/api/assessments'
 
 export interface AssessmentFormDialogProps {
   open: boolean
   onClose: () => void
   onCreate: (data: CreateAssessmentInput) => Promise<unknown> | void
-  onUpdate: (codigo: string, data: UpdateAssessmentInput) => Promise<unknown> | void
+  onUpdate: (
+    codigo: string,
+    data: UpdateAssessmentInput
+  ) => Promise<unknown> | void
   mode: 'create' | 'edit'
   cursoId: string
   moduloId?: string
@@ -79,7 +85,8 @@ export default function AssessmentFormDialog({
         modulo_id: moduloId,
         titulo: titulo.trim(),
         tempo_limite: tempoLimite === '' ? undefined : Number(tempoLimite),
-        tentativas_permitidas: tentativas === '' ? undefined : Number(tentativas),
+        tentativas_permitidas:
+          tentativas === '' ? undefined : Number(tentativas),
         nota_minima: notaMinima === '' ? undefined : Number(notaMinima),
       }
       await onCreate(payload)
@@ -87,7 +94,8 @@ export default function AssessmentFormDialog({
       const payload: UpdateAssessmentInput = {
         titulo: titulo.trim(),
         tempo_limite: tempoLimite === '' ? undefined : Number(tempoLimite),
-        tentativas_permitidas: tentativas === '' ? undefined : Number(tentativas),
+        tentativas_permitidas:
+          tentativas === '' ? undefined : Number(tentativas),
         nota_minima: notaMinima === '' ? undefined : Number(notaMinima),
         ativo,
         modulo_id: moduloId,
@@ -103,7 +111,9 @@ export default function AssessmentFormDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
       <DialogTitle>
-        {mode === 'create' ? 'Nova Avaliação' : `Editar Avaliação (${assessment?.codigo})`}
+        {mode === 'create'
+          ? 'Nova Avaliação'
+          : `Editar Avaliação (${assessment?.codigo})`}
       </DialogTitle>
       <DialogContent sx={{ pt: 2 }}>
         <Grid container spacing={2}>
@@ -119,7 +129,7 @@ export default function AssessmentFormDialog({
               />
             </Grid>
           )}
-          <Grid size={{ xs: 12 }}  >
+          <Grid size={{ xs: 12 }}>
             <TextField
               label='Título'
               value={titulo}
@@ -133,7 +143,13 @@ export default function AssessmentFormDialog({
               label='Tempo Limite (min)'
               type='number'
               value={tempoLimite}
-              onChange={e => setTempoLimite(e.target.value === '' ? '' : Math.max(1, Number(e.target.value) || 1))}
+              onChange={e =>
+                setTempoLimite(
+                  e.target.value === ''
+                    ? ''
+                    : Math.max(1, Number(e.target.value) || 1)
+                )
+              }
               fullWidth
               inputProps={{ min: 1 }}
             />
@@ -143,7 +159,13 @@ export default function AssessmentFormDialog({
               label='Tentativas'
               type='number'
               value={tentativas}
-              onChange={e => setTentativas(e.target.value === '' ? '' : Math.max(1, Number(e.target.value) || 1))}
+              onChange={e =>
+                setTentativas(
+                  e.target.value === ''
+                    ? ''
+                    : Math.max(1, Number(e.target.value) || 1)
+                )
+              }
               fullWidth
               inputProps={{ min: 1 }}
             />

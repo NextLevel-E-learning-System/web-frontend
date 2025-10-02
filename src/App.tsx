@@ -18,6 +18,7 @@ import AdminCategories from './pages/admin/AdminCategories'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminInstructors from './pages/admin/AdminInstructors'
 import AdminCourses from './pages/admin/AdminCourses'
+import CourseEditorPage from './pages/admin/CourseEditorPage'
 import InstrutorDashboard from './pages/instrutor/InstrutorDashboard'
 import CoursesPage from './pages/employee/CoursesPage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
@@ -93,6 +94,22 @@ const App = () => (
             }
           />
           <Route
+            path='/admin/courses/new'
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+                <CourseEditorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/admin/courses/:codigo/edit'
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+                <CourseEditorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path='/dashboard/instrutor'
             element={
               <ProtectedRoute allowedRoles={['INSTRUTOR']}>
@@ -112,26 +129,26 @@ const App = () => (
           <Route
             path='/cursos'
             element={
-           <ProtectedRoute allowedRoles={['ALUNO']}>
+              <ProtectedRoute allowedRoles={['ALUNO']}>
                 <CoursesPage />
               </ProtectedRoute>
             }
           />
           <Route
-          path='/meu-progresso'
-          element={
+            path='/meu-progresso'
+            element={
               <ProtectedRoute allowedRoles={['ALUNO']}>
-              <ProgressPage/>
-            </ProtectedRoute>
-          }
+                <ProgressPage />
+              </ProtectedRoute>
+            }
           />
-            <Route
-          path='/ranking'
-          element={
-              <ProtectedRoute >
-              <RankingPage/>
-            </ProtectedRoute>
-          }
+          <Route
+            path='/ranking'
+            element={
+              <ProtectedRoute>
+                <RankingPage />
+              </ProtectedRoute>
+            }
           />
           <Route path='*' element={<NotFound />} />
         </Routes>

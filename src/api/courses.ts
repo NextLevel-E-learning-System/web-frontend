@@ -13,7 +13,6 @@ export interface Category {
   atualizado_em: string
 }
 
-
 export interface CategoriesListResponse {
   items: Category[]
   mensagem: string

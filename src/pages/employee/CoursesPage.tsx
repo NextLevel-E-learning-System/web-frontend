@@ -10,14 +10,14 @@ import BrushIcon from '@mui/icons-material/Brush'
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter'
 import CampaignIcon from '@mui/icons-material/Campaign'
 import ComputerIcon from '@mui/icons-material/Computer'
- import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
- import LocalShippingIcon from '@mui/icons-material/LocalShipping'
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import LocalShippingIcon from '@mui/icons-material/LocalShipping'
 import IntegrationInstructionsIcon from '@mui/icons-material/IntegrationInstructions'
- import GavelIcon from '@mui/icons-material/Gavel'
+import GavelIcon from '@mui/icons-material/Gavel'
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety'
 import GroupIcon from '@mui/icons-material/Group'
 import ConstructionIcon from '@mui/icons-material/Construction'
- import {
+import {
   useCourseCatalog,
   useCategories,
   type Course as Curso,
@@ -30,7 +30,14 @@ import CourseDialog from '@/components/employee/CourseDialog'
 import FilterBar from '@/components/common/FilterBar'
 import { Pagination, CircularProgress, Alert } from '@mui/material'
 import { useState, useMemo } from 'react'
-import { Psychology, School, Science, Security, Storefront, TrendingUp } from '@mui/icons-material'
+import {
+  Psychology,
+  School,
+  Science,
+  Security,
+  Storefront,
+  TrendingUp,
+} from '@mui/icons-material'
 
 export interface TileCategory {
   label: string

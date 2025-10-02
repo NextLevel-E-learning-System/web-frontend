@@ -20,15 +20,28 @@ import {
 import ModuleAssessmentsPanel from '@/components/assessments/ModuleAssessmentsPanel'
 import { useCourseModules, useCreateModule } from '@/api/courses'
 import AddIcon from '@mui/icons-material/Add'
-import { Accordion, AccordionSummary, AccordionDetails, Typography, Stack, Chip, Tabs as MuiTabs, Tab as MuiTab, IconButton, Tooltip } from '@mui/material'
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  Stack,
+  Chip,
+  Tabs as MuiTabs,
+  Tab as MuiTab,
+  IconButton,
+  Tooltip,
+} from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ModuleInfoForm from '@/components/modules/ModuleInfoForm'
 import ModuleMaterialsPanel from '@/components/modules/ModuleMaterialsPanel'
-import ModuleCreateDialog, { type CompositeModuleCreate } from '@/components/modules/ModuleCreateDialog'
+import ModuleCreateDialog, {
+  type CompositeModuleCreate,
+} from '@/components/modules/ModuleCreateDialog'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import DeleteIcon from '@mui/icons-material/Delete'
-import  ConfirmationDialog  from '@/components/common/ConfirmationDialog'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import { useState, useEffect } from 'react'
 import {
   type Course as Curso,
@@ -63,9 +76,9 @@ export default function CourseModal({
   funcionarios,
   cursos,
 }: CourseModalProps) {
-  const [tab, setTab] = useState<'general' | 'assignment' | 'content' | 'modules'>(
-    'general'
-  )
+  const [tab, setTab] = useState<
+    'general' | 'assignment' | 'content' | 'modules'
+  >('general')
   const [departamentoSelecionado, setDepartamentoSelecionado] =
     useState<string>('')
 
@@ -378,7 +391,9 @@ export default function CourseModal({
                       .map(curso => (
                         <MenuItem key={curso.codigo} value={curso.codigo}>
                           <Checkbox
-                            checked={form.pre_requisitos?.includes(curso.codigo)}
+                            checked={form.pre_requisitos?.includes(
+                              curso.codigo
+                            )}
                           />
                           <ListItemText primary={curso.titulo} />
                         </MenuItem>
@@ -387,12 +402,14 @@ export default function CourseModal({
                 </FormControl>
               </Grid>
             </Grid>
-
           </Box>
         )}
         {tab === 'modules' && mode === 'edit' && (
           <Box sx={{ mt: 1 }}>
-            <CourseModulesSection cursoCodigo={form.codigo} onTotalXpChange={handleModulesTotalXp} />
+            <CourseModulesSection
+              cursoCodigo={form.codigo}
+              onTotalXpChange={handleModulesTotalXp}
+            />
           </Box>
         )}
       </DialogContent>
@@ -414,18 +431,26 @@ export default function CourseModal({
 }
 
 // Seção interna para gerenciamento de módulos e avaliações
-interface ModulesSectionProps { cursoCodigo: string; onTotalXpChange?: (total: number) => void }
-function CourseModulesSection({ cursoCodigo, onTotalXpChange }: ModulesSectionProps) {
+interface ModulesSectionProps {
+  cursoCodigo: string
+  onTotalXpChange?: (total: number) => void
+}
+function CourseModulesSection({
+  cursoCodigo,
+  onTotalXpChange,
+}: ModulesSectionProps) {
   const { data: modulos = [], isLoading } = useCourseModules(cursoCodigo)
   const createModule = useCreateModule(cursoCodigo)
   const [createOpen, setCreateOpen] = useState(false)
   const [expanded, setExpanded] = useState<string | false>(false)
   const [moduleTab, setModuleTab] = useState<Record<string, string>>({})
-  const [confirm, setConfirm] = useState<{ open: boolean; moduloId?: string }>(() => ({ open: false }))
+  const [confirm, setConfirm] = useState<{ open: boolean; moduloId?: string }>(
+    () => ({ open: false })
+  )
 
   // Reordenação simples (front-end) - envia update de ordem individual
   const swapOrder = async (fromId: string, direction: 'up' | 'down') => {
-    const ordered = [...modulos].sort((a,b) => a.ordem - b.ordem)
+    const ordered = [...modulos].sort((a, b) => a.ordem - b.ordem)
     const idx = ordered.findIndex(m => m.id === fromId)
     if (idx === -1) return
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1
@@ -439,90 +464,179 @@ function CourseModulesSection({ cursoCodigo, onTotalXpChange }: ModulesSectionPr
     try {
       // Usa atualização individual (poderia ser uma rota bulk se existir)
       // Reaproveita hook de update criando dinamicamente (padrão já usado em outros pontos)
-      const updaterCurrent = (await import('@/api/courses')).useUpdateModule(cursoCodigo, current.id)
-      const updaterTarget = (await import('@/api/courses')).useUpdateModule(cursoCodigo, target.id)
+      const updaterCurrent = (await import('@/api/courses')).useUpdateModule(
+        cursoCodigo,
+        current.id
+      )
+      const updaterTarget = (await import('@/api/courses')).useUpdateModule(
+        cursoCodigo,
+        target.id
+      )
       await Promise.all([
         updaterCurrent.mutateAsync({ ordem: current.ordem }),
-        updaterTarget.mutateAsync({ ordem: target.ordem })
+        updaterTarget.mutateAsync({ ordem: target.ordem }),
       ])
-    } catch {
-    }
+    } catch {}
   }
 
   return (
     <Box>
-      <Stack direction='row' alignItems='center' justifyContent='space-between' sx={{ mb: 1 }}>
+      <Stack
+        direction='row'
+        alignItems='center'
+        justifyContent='space-between'
+        sx={{ mb: 1 }}
+      >
         <Typography variant='subtitle2'>Módulos</Typography>
-        <Button variant='outlined' size='small' startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>Novo Módulo</Button>
+        <Button
+          variant='outlined'
+          size='small'
+          startIcon={<AddIcon />}
+          onClick={() => setCreateOpen(true)}
+        >
+          Novo Módulo
+        </Button>
       </Stack>
       {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}><CircularProgress size={22} /></Box>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+          <CircularProgress size={22} />
+        </Box>
       ) : modulos.length === 0 ? (
-        <Typography variant='body2' color='text.secondary'>Nenhum módulo cadastrado.</Typography>
+        <Typography variant='body2' color='text.secondary'>
+          Nenhum módulo cadastrado.
+        </Typography>
       ) : (
         <Box sx={{ display: 'grid', gap: 1.5 }}>
-          {modulos.sort((a,b) => a.ordem - b.ordem).map((m, i, arr) => {
-            const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = ['info']
-            if (['video','pdf'].includes((m as any).tipo_conteudo)) allowedTabs.push('materiais')
-            if ((m as any).tipo_conteudo === 'quiz') allowedTabs.push('avaliacoes')
-            const stored = moduleTab[m.id]
-            const currentTab = (stored && allowedTabs.includes(stored as any) ? stored : 'info') as 'info' | 'materiais' | 'avaliacoes'
-            return (
-              <Accordion key={m.id} expanded={expanded === m.id} onChange={(_, isExp) => setExpanded(isExp ? m.id : false)} disableGutters>
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1 } }}>
-                  <Typography variant='body2' fontWeight={600}>{m.titulo}</Typography>
-                  <Chip size='small' label={`Ordem ${m.ordem}`} />
-                  {m.xp ? <Chip size='small' variant='outlined' label={`${m.xp} XP`} /> : null}
-                  <Stack direction='row' gap={0.5} sx={{ ml: 'auto' }}>
-                    <Tooltip title='Mover para cima'>
-                      <span>
-                        <IconButton size='small' disabled={i === 0} onClick={e => { e.stopPropagation(); swapOrder(m.id, 'up') }}>
-                          <ArrowUpwardIcon fontSize='inherit' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title='Mover para baixo'>
-                      <span>
-                        <IconButton size='small' disabled={i === arr.length - 1} onClick={e => { e.stopPropagation(); swapOrder(m.id, 'down') }}>
-                          <ArrowDownwardIcon fontSize='inherit' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title='Excluir módulo (não implementado)'>
-                      <span>
-                        <IconButton size='small' disabled onClick={e => { e.stopPropagation(); setConfirm({ open: true, moduloId: m.id }) }}>
-                          <DeleteIcon fontSize='inherit' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  </Stack>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Box sx={{ mb: 2, borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
-                    <MuiTabs
-                      value={currentTab}
-                      onChange={(_, val) => setModuleTab(prev => ({ ...prev, [m.id]: val }))}
-                      variant='scrollable'
-                      scrollButtons='auto'
+          {modulos
+            .sort((a, b) => a.ordem - b.ordem)
+            .map((m, i, arr) => {
+              const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = [
+                'info',
+              ]
+              if (['video', 'pdf'].includes((m as any).tipo_conteudo))
+                allowedTabs.push('materiais')
+              if ((m as any).tipo_conteudo === 'quiz')
+                allowedTabs.push('avaliacoes')
+              const stored = moduleTab[m.id]
+              const currentTab = (
+                stored && allowedTabs.includes(stored as any) ? stored : 'info'
+              ) as 'info' | 'materiais' | 'avaliacoes'
+              return (
+                <Accordion
+                  key={m.id}
+                  expanded={expanded === m.id}
+                  onChange={(_, isExp) => setExpanded(isExp ? m.id : false)}
+                  disableGutters
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      '& .MuiAccordionSummary-content': {
+                        alignItems: 'center',
+                        gap: 1,
+                      },
+                    }}
+                  >
+                    <Typography variant='body2' fontWeight={600}>
+                      {m.titulo}
+                    </Typography>
+                    <Chip size='small' label={`Ordem ${m.ordem}`} />
+                    {m.xp ? (
+                      <Chip
+                        size='small'
+                        variant='outlined'
+                        label={`${m.xp} XP`}
+                      />
+                    ) : null}
+                    <Stack direction='row' gap={0.5} sx={{ ml: 'auto' }}>
+                      <Tooltip title='Mover para cima'>
+                        <span>
+                          <IconButton
+                            size='small'
+                            disabled={i === 0}
+                            onClick={e => {
+                              e.stopPropagation()
+                              swapOrder(m.id, 'up')
+                            }}
+                          >
+                            <ArrowUpwardIcon fontSize='inherit' />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title='Mover para baixo'>
+                        <span>
+                          <IconButton
+                            size='small'
+                            disabled={i === arr.length - 1}
+                            onClick={e => {
+                              e.stopPropagation()
+                              swapOrder(m.id, 'down')
+                            }}
+                          >
+                            <ArrowDownwardIcon fontSize='inherit' />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title='Excluir módulo (não implementado)'>
+                        <span>
+                          <IconButton
+                            size='small'
+                            disabled
+                            onClick={e => {
+                              e.stopPropagation()
+                              setConfirm({ open: true, moduloId: m.id })
+                            }}
+                          >
+                            <DeleteIcon fontSize='inherit' />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Stack>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Box
+                      sx={{
+                        mb: 2,
+                        borderBottom: theme =>
+                          `1px solid ${theme.palette.divider}`,
+                      }}
                     >
-                      <MuiTab value='info' label='Info' />
-                      {allowedTabs.includes('materiais') && <MuiTab value='materiais' label='Materiais' />}
-                      {allowedTabs.includes('avaliacoes') && <MuiTab value='avaliacoes' label='Avaliações' />}
-                    </MuiTabs>
-                  </Box>
-                  {currentTab === 'info' && (
-                    <ModuleInfoForm cursoCodigo={cursoCodigo} modulo={m} />
-                  )}
-                  {currentTab === 'materiais' && allowedTabs.includes('materiais') && (
-                    <ModuleMaterialsPanel moduloId={m.id} />
-                  )}
-                  {currentTab === 'avaliacoes' && allowedTabs.includes('avaliacoes') && (
-                    <ModuleAssessmentsPanel cursoCodigo={cursoCodigo} moduloId={m.id} moduloTitulo={m.titulo} />
-                  )}
-                </AccordionDetails>
-              </Accordion>
-            )
-          })}
+                      <MuiTabs
+                        value={currentTab}
+                        onChange={(_, val) =>
+                          setModuleTab(prev => ({ ...prev, [m.id]: val }))
+                        }
+                        variant='scrollable'
+                        scrollButtons='auto'
+                      >
+                        <MuiTab value='info' label='Info' />
+                        {allowedTabs.includes('materiais') && (
+                          <MuiTab value='materiais' label='Materiais' />
+                        )}
+                        {allowedTabs.includes('avaliacoes') && (
+                          <MuiTab value='avaliacoes' label='Avaliações' />
+                        )}
+                      </MuiTabs>
+                    </Box>
+                    {currentTab === 'info' && (
+                      <ModuleInfoForm cursoCodigo={cursoCodigo} modulo={m} />
+                    )}
+                    {currentTab === 'materiais' &&
+                      allowedTabs.includes('materiais') && (
+                        <ModuleMaterialsPanel moduloId={m.id} />
+                      )}
+                    {currentTab === 'avaliacoes' &&
+                      allowedTabs.includes('avaliacoes') && (
+                        <ModuleAssessmentsPanel
+                          cursoCodigo={cursoCodigo}
+                          moduloId={m.id}
+                          moduloTitulo={m.titulo}
+                        />
+                      )}
+                  </AccordionDetails>
+                </Accordion>
+              )
+            })}
         </Box>
       )}
       {/* Efeito para comunicar total de XP ao pai */}
@@ -554,10 +668,18 @@ function CourseModulesSection({ cursoCodigo, onTotalXpChange }: ModulesSectionPr
 }
 
 // Componente auxiliar invisível para disparar atualização de XP total
-function XPNotifier({ modulos, onChange }: { modulos: Array<{ xp: number }>; onChange: (total: number) => void }) {
+function XPNotifier({
+  modulos,
+  onChange,
+}: {
+  modulos: Array<{ xp: number }>
+  onChange: (total: number) => void
+}) {
   const total = modulos.reduce((acc, m) => acc + (m.xp || 0), 0)
   // useEffect inline simples: executa sempre que total muda
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { onChange(total) }, [total])
+  useEffect(() => {
+    onChange(total)
+  }, [total])
   return null
 }

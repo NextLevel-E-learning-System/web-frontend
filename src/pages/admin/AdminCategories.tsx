@@ -53,7 +53,8 @@ export default function AdminCategories() {
 
   const { data: departamentos = [], isLoading: loadingDepartamentos } =
     useListarDepartamentosAdmin()
-  const { data: categorias = [], isLoading: loadingCategorias } = useCategories()
+  const { data: categorias = [], isLoading: loadingCategorias } =
+    useCategories()
 
   const createCategoryMutation = useCreateCategory()
   const updateCategoryMutation = useUpdateCategory()
@@ -96,8 +97,6 @@ export default function AdminCategories() {
   }
 
   const handleCreate = async () => {
-   
-
     try {
       await createCategoryMutation.mutateAsync({
         codigo: form.codigo,
@@ -265,7 +264,7 @@ export default function AdminCategories() {
   ]
 
   return (
-  <DashboardLayout items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box>
         <Box
           sx={{

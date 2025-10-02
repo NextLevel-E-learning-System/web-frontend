@@ -57,12 +57,12 @@ export function useNavigation() {
         {
           label: 'Ranking',
           href: '/ranking',
-        }
+        },
       ]
     }
 
     // INSTRUTOR - Gerencia próprios cursos e turmas
-  if (isInstrutor) {
+    if (isInstrutor) {
       return [
         {
           label: 'Dashboard',
