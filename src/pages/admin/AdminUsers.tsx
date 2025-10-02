@@ -2,8 +2,6 @@ import Grid from '@mui/material/Grid'
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Dialog,
   DialogActions,
   DialogContent,
@@ -421,22 +419,18 @@ export default function AdminUsers() {
           </Button>
         </Box>
 
-        <Card>
-          <CardContent>
             <DataTable
               columns={columns}
               data={filtered}
               loading={loadingUsers}
               getRowId={row => row.id}
             />
-          </CardContent>
-        </Card>
-
+     
         {/* Dialog Adicionar Usuário */}
         <Dialog
           open={isAddOpen}
           onClose={() => setIsAddOpen(false)}
-          maxWidth='md'
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>

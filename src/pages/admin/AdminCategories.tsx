@@ -281,7 +281,7 @@ export default function AdminCategories() {
               onChange={e => setSelectedDept(e.target.value)}
               label='Departamento'
             >
-              <MenuItem value='all'>
+              <MenuItem key='all' value='all'>
                 <em>Todos os Departamentos</em>
               </MenuItem>
               {departamentos.map((dept: { codigo: string; nome: string }) => (
