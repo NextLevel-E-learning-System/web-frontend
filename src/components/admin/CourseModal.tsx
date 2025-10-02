@@ -24,7 +24,7 @@ import { Accordion, AccordionSummary, AccordionDetails, Typography, Stack, Chip,
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ModuleInfoForm from '@/components/modules/ModuleInfoForm'
 import ModuleMaterialsPanel from '@/components/modules/ModuleMaterialsPanel'
-import ModuleCreateDialog from '@/components/modules/ModuleCreateDialog'
+import ModuleCreateDialog, { type CompositeModuleCreate } from '@/components/modules/ModuleCreateDialog'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -462,7 +462,11 @@ function CourseModulesSection({ cursoCodigo, onTotalXpChange }: ModulesSectionPr
       ) : (
         <Box sx={{ display: 'grid', gap: 1.5 }}>
           {modulos.sort((a,b) => a.ordem - b.ordem).map((m, i, arr) => {
-            const currentTab = moduleTab[m.id] || 'info'
+            const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = ['info']
+            if (['video','pdf'].includes((m as any).tipo_conteudo)) allowedTabs.push('materiais')
+            if ((m as any).tipo_conteudo === 'quiz') allowedTabs.push('avaliacoes')
+            const stored = moduleTab[m.id]
+            const currentTab = (stored && allowedTabs.includes(stored as any) ? stored : 'info') as 'info' | 'materiais' | 'avaliacoes'
             return (
               <Accordion key={m.id} expanded={expanded === m.id} onChange={(_, isExp) => setExpanded(isExp ? m.id : false)} disableGutters>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ '& .MuiAccordionSummary-content': { alignItems: 'center', gap: 1 } }}>
@@ -502,17 +506,17 @@ function CourseModulesSection({ cursoCodigo, onTotalXpChange }: ModulesSectionPr
                       scrollButtons='auto'
                     >
                       <MuiTab value='info' label='Info' />
-                      <MuiTab value='materiais' label='Materiais' />
-                      <MuiTab value='avaliacoes' label='Avaliações' />
+                      {allowedTabs.includes('materiais') && <MuiTab value='materiais' label='Materiais' />}
+                      {allowedTabs.includes('avaliacoes') && <MuiTab value='avaliacoes' label='Avaliações' />}
                     </MuiTabs>
                   </Box>
                   {currentTab === 'info' && (
                     <ModuleInfoForm cursoCodigo={cursoCodigo} modulo={m} />
                   )}
-                  {currentTab === 'materiais' && (
+                  {currentTab === 'materiais' && allowedTabs.includes('materiais') && (
                     <ModuleMaterialsPanel moduloId={m.id} />
                   )}
-                  {currentTab === 'avaliacoes' && (
+                  {currentTab === 'avaliacoes' && allowedTabs.includes('avaliacoes') && (
                     <ModuleAssessmentsPanel cursoCodigo={cursoCodigo} moduloId={m.id} moduloTitulo={m.titulo} />
                   )}
                 </AccordionDetails>
@@ -539,9 +543,11 @@ function CourseModulesSection({ cursoCodigo, onTotalXpChange }: ModulesSectionPr
         onClose={() => setCreateOpen(false)}
         nextOrder={(modulos?.length || 0) + 1}
         loading={createModule.isPending}
-        onCreate={async data => {
-          await createModule.mutateAsync(data)
-         }}
+        onCreate={async (data: CompositeModuleCreate) => {
+          const created = await createModule.mutateAsync(data.module)
+          // TODO: pipeline: upload materiais -> criar avaliação -> adicionar questões
+          return created
+        }}
       />
     </Box>
   )

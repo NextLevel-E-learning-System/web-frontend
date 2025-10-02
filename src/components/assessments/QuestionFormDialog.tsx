@@ -11,6 +11,10 @@ import {
   IconButton,
   Box,
   Chip,
+  Stack,
+  Tooltip,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -32,6 +36,45 @@ const TIPO_VF = 'VERDADEIRO_FALSO'
 const TIPO_DISS = 'DISSERTATIVA'
 
 type Opcao = { id: string; texto: string; correta?: boolean }
+interface AfirmaVF { id: string; texto: string; valor?: 'V' | 'F' }
+
+// Componente auxiliar para opção de múltipla escolha
+const PaperOption = ({
+  texto,
+  correta,
+  onChange,
+  onMarkCorrect,
+  onRemove,
+}: {
+  texto: string
+  correta: boolean
+  onChange: (val: string) => void
+  onMarkCorrect: () => void
+  onRemove: () => void
+}) => (
+  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+    <TextField
+      size='small'
+      label='Opção'
+      value={texto}
+      onChange={e => onChange(e.target.value)}
+      sx={{ flex: 1 }}
+    />
+    <Button
+      variant={correta ? 'contained' : 'outlined'}
+      color={correta ? 'success' : 'primary'}
+      disabled={!texto.trim()}
+      onClick={onMarkCorrect}
+    >
+      {correta ? 'Correta' : 'Marcar'}
+    </Button>
+    <Tooltip title='Remover opção'>
+      <IconButton onClick={onRemove}>
+        <DeleteIcon fontSize='small' />
+      </IconButton>
+    </Tooltip>
+  </Box>
+)
 
 export default function QuestionFormDialog({
   open,
@@ -48,6 +91,9 @@ export default function QuestionFormDialog({
   const [peso, setPeso] = useState<number | ''>(1)
   const [opcoes, setOpcoes] = useState<Opcao[]>([])
   const [respostaCorreta, setRespostaCorreta] = useState('')
+  // Verdadeiro/Falso com múltiplas afirmações
+  const [afirmacoesVF, setAfirmacoesVF] = useState<AfirmaVF[]>([])
+  const [usarPesoPorAfirma, setUsarPesoPorAfirma] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -69,6 +115,8 @@ export default function QuestionFormDialog({
         setPeso(1)
         setOpcoes([])
         setRespostaCorreta('')
+        setAfirmacoesVF([])
+        setUsarPesoPorAfirma(false)
       }
     }
   }, [open, mode, question])
@@ -90,7 +138,8 @@ export default function QuestionFormDialog({
   const disableSave =
     !enunciado.trim() ||
     isSubmitting ||
-    (tipo === TIPO_MULTIPLA && (opcoes.length < 2 || !respostaCorreta))
+    (tipo === TIPO_MULTIPLA && (opcoes.length < 2 || !respostaCorreta)) ||
+    (tipo === TIPO_VF && (afirmacoesVF.length === 0 || afirmacoesVF.some(a => !a.texto.trim() || !a.valor)))
 
   const handleSubmit = async () => {
     if (disableSave) return
@@ -100,12 +149,17 @@ export default function QuestionFormDialog({
         tipo_questao: tipo,
         enunciado: enunciado.trim(),
         peso: peso === '' ? 1 : Number(peso),
-        opcoes_resposta: tipo === TIPO_MULTIPLA ? opcoes.map(o => o.texto.trim()) : undefined,
+        opcoes_resposta:
+          tipo === TIPO_MULTIPLA
+            ? opcoes.map(o => o.texto.trim())
+            : tipo === TIPO_VF
+            ? afirmacoesVF.map(a => `${a.texto.trim()}::${a.valor}`)
+            : undefined,
         resposta_correta:
           tipo === TIPO_MULTIPLA
             ? respostaCorreta
             : tipo === TIPO_VF
-            ? 'VERDADEIRO' // placeholder, backend pode ignorar para VF se tratar diferente
+            ? afirmacoesVF.map(a => a.valor).join(',')
             : undefined,
       }
       await onCreate(payload)
@@ -114,12 +168,17 @@ export default function QuestionFormDialog({
         tipo_questao: tipo,
         enunciado: enunciado.trim(),
         peso: peso === '' ? 1 : Number(peso),
-        opcoes_resposta: tipo === TIPO_MULTIPLA ? opcoes.map(o => o.texto.trim()) : undefined,
+        opcoes_resposta:
+          tipo === TIPO_MULTIPLA
+            ? opcoes.map(o => o.texto.trim())
+            : tipo === TIPO_VF
+            ? afirmacoesVF.map(a => `${a.texto.trim()}::${a.valor}`)
+            : undefined,
         resposta_correta:
           tipo === TIPO_MULTIPLA
             ? respostaCorreta
             : tipo === TIPO_VF
-            ? 'VERDADEIRO'
+            ? afirmacoesVF.map(a => a.valor).join(',')
             : undefined,
       }
       await onUpdate(question.id, payload)
@@ -167,42 +226,21 @@ export default function QuestionFormDialog({
         />
         {tipo === TIPO_MULTIPLA && (
           <Box sx={{ display: 'grid', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Stack direction='row' alignItems='center' gap={1}>
               <Chip label='Alternativas' size='small' color='primary' />
-              <Button
-                startIcon={<AddIcon />}
-                size='small'
-                variant='outlined'
-                onClick={addOpcao}
-              >
+              <Button startIcon={<AddIcon />} size='small' variant='outlined' onClick={addOpcao}>
                 Adicionar
               </Button>
-            </Box>
+            </Stack>
             {opcoes.map(o => (
-              <Box
+              <PaperOption
                 key={o.id}
-                sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
-              >
-                <TextField
-                  size='small'
-                  label='Opção'
-                  value={o.texto}
-                  onChange={e => updateOpcao(o.id, e.target.value)}
-                  sx={{ flex: 1 }}
-                />
-                <Button
-                  variant={
-                    respostaCorreta === o.texto.trim() ? 'contained' : 'outlined'
-                  }
-                  disabled={!o.texto.trim()}
-                  onClick={() => setRespostaCorreta(o.texto.trim())}
-                >
-                  Correta
-                </Button>
-                <IconButton onClick={() => removeOpcao(o.id)}>
-                  <DeleteIcon fontSize='small' />
-                </IconButton>
-              </Box>
+                texto={o.texto}
+                correta={respostaCorreta === o.texto.trim()}
+                onChange={val => updateOpcao(o.id, val)}
+                onMarkCorrect={() => o.texto.trim() && setRespostaCorreta(o.texto.trim())}
+                onRemove={() => removeOpcao(o.id)}
+              />
             ))}
             {opcoes.length === 0 && (
               <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
@@ -212,8 +250,35 @@ export default function QuestionFormDialog({
           </Box>
         )}
         {tipo === TIPO_VF && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Chip label='Verdadeiro / Falso padrão' size='small' />
+          <Box sx={{ display: 'grid', gap: 1 }}>
+            <Stack direction='row' justifyContent='space-between' alignItems='center'>
+              <Chip label='Afirmações V / F' size='small' color='primary' />
+              <Button size='small' variant='outlined' startIcon={<AddIcon />} onClick={() => setAfirmacoesVF(a => [...a, { id: crypto.randomUUID(), texto: '', valor: undefined }])}>Adicionar Afirmação</Button>
+            </Stack>
+            {afirmacoesVF.map(a => (
+              <Box key={a.id} sx={{ display:'flex', gap:1, alignItems:'center' }}>
+                <TextField size='small' label='Afirmação' value={a.texto} onChange={e => setAfirmacoesVF(prev => prev.map(x => x.id === a.id ? { ...x, texto: e.target.value } : x))} sx={{ flex:1 }} />
+                <ToggleButtonGroup
+                  size='small'
+                  exclusive
+                  value={a.valor || null}
+                  onChange={(_, v) => v && setAfirmacoesVF(prev => prev.map(x => x.id === a.id ? { ...x, valor: v } : x))}
+                >
+                  <ToggleButton value='V'>V</ToggleButton>
+                  <ToggleButton value='F'>F</ToggleButton>
+                </ToggleButtonGroup>
+                <Tooltip title='Remover afirmação'>
+                  <IconButton onClick={() => setAfirmacoesVF(prev => prev.filter(x => x.id !== a.id))}><DeleteIcon fontSize='small' /></IconButton>
+                </Tooltip>
+              </Box>
+            ))}
+            {afirmacoesVF.length === 0 && (
+              <Box sx={{ typography: 'caption', color:'text.secondary' }}>Nenhuma afirmação adicionada.</Box>
+            )}
+            <FormControlLabel control={<Switch checked={usarPesoPorAfirma} onChange={e => setUsarPesoPorAfirma(e.target.checked)} />} label='Usar peso único (desmarque para manter peso por questão)' />
+            {!usarPesoPorAfirma && (
+              <Box sx={{ typography:'caption', color:'text.secondary' }}>Peso total da questão aplicado igualmente a cada afirmação (cálculo backend futuro).</Box>
+            )}
           </Box>
         )}
         {tipo === TIPO_DISS && (
