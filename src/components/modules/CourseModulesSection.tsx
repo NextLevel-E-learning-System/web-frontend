@@ -83,20 +83,6 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
                   {m.xp ? <Chip size='small' variant='outlined' label={`${m.xp} XP`} /> : null}
                   {/* Substitui Stack direto por Box para impedir propagação de semântica de botão dentro do botão do AccordionSummary */}
                   <Box component='span' sx={{ display:'flex', flexDirection:'row', gap: 0.5, ml: 'auto' }}>
-                    <Tooltip title='Mover para cima'>
-                      <span>
-                        <IconButton size='small' disabled={i === 0} onClick={e => { e.stopPropagation(); swapOrder(m.id, 'up') }}>
-                          <ArrowUpwardIcon fontSize='inherit' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title='Mover para baixo'>
-                      <span>
-                        <IconButton size='small' disabled={i === arr.length - 1} onClick={e => { e.stopPropagation(); swapOrder(m.id, 'down') }}>
-                          <ArrowDownwardIcon fontSize='inherit' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
                     <Tooltip title='Excluir módulo (não implementado)'>
                       <span>
                         <IconButton size='small' disabled onClick={e => { e.stopPropagation(); setConfirm({ open: true, moduloId: m.id }) }}>
@@ -108,7 +94,7 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
                 </AccordionSummary>
                 <AccordionDetails>
                   <Box sx={{ mb: 2, borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
-                    <Tabs value={currentTab} onChange={(_, val) => setModuleTab(prev => ({ ...prev, [m.id]: val }))} variant='scrollable' scrollButtons='auto'>
+                    <Tabs value={currentTab} onChange={(_, val) => setModuleTab(prev => ({ ...prev, [m.id]: val }))}   scrollButtons='auto'>
                       <Tab value='info' label='Info' />
                       {allowedTabs.includes('materiais') && <Tab value='materiais' label='Materiais' />}
                       {allowedTabs.includes('avaliacoes') && <Tab value='avaliacoes' label='Avaliações' />}
