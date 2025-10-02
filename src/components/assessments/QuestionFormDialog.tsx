@@ -106,28 +106,49 @@ export default function QuestionFormDialog({
   useEffect(() => {
     if (open) {
       if (mode === 'edit' && question) {
-        setTipo(question.tipo_questao)
-        setEnunciado(question.enunciado)
-        setPeso(question.peso)
-        setOpcoes(
-          (question.opcoes_resposta || []).map((t, idx) => ({
-            id: `${idx}`,
-            texto: t,
-            correta: question.resposta_correta === t,
-          }))
-        )
-        setRespostaCorreta(question.resposta_correta || '')
+        // Compara antes de atualizar para evitar loops
+        const newOpcoes = (question.opcoes_resposta || []).map((t, idx) => ({
+          id: `${idx}`,
+          texto: t,
+          correta: question.resposta_correta === t,
+        }))
+        const newResposta = question.resposta_correta || ''
+        
+        if (
+          tipo !== question.tipo_questao ||
+          enunciado !== question.enunciado ||
+          peso !== question.peso ||
+          JSON.stringify(opcoes) !== JSON.stringify(newOpcoes) ||
+          respostaCorreta !== newResposta
+        ) {
+          setTipo(question.tipo_questao)
+          setEnunciado(question.enunciado)
+          setPeso(question.peso)
+          setOpcoes(newOpcoes)
+          setRespostaCorreta(newResposta)
+        }
       } else {
-        setTipo(TIPO_MULTIPLA)
-        setEnunciado('')
-        setPeso(1)
-        setOpcoes([])
-        setRespostaCorreta('')
-        setAfirmacoesVF([])
-        setUsarPesoPorAfirma(false)
+        // Reset apenas se valores não estão já vazios
+        if (
+          tipo !== TIPO_MULTIPLA ||
+          enunciado !== '' ||
+          peso !== 1 ||
+          opcoes.length > 0 ||
+          respostaCorreta !== '' ||
+          afirmacoesVF.length > 0 ||
+          usarPesoPorAfirma !== false
+        ) {
+          setTipo(TIPO_MULTIPLA)
+          setEnunciado('')
+          setPeso(1)
+          setOpcoes([])
+          setRespostaCorreta('')
+          setAfirmacoesVF([])
+          setUsarPesoPorAfirma(false)
+        }
       }
     }
-  }, [open, mode, question])
+  }, [open, mode, question, tipo, enunciado, peso, opcoes, respostaCorreta, afirmacoesVF, usarPesoPorAfirma])
 
   // Helpers
   const addOpcao = () => {

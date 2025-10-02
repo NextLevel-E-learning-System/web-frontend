@@ -1,11 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Box, Stack, Typography, Button, CircularProgress, Accordion, AccordionSummary, AccordionDetails, Chip, IconButton, Tooltip, Tabs, Tab } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import AddIcon from '@mui/icons-material/Add'
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { useCourseModules, useCreateModule, useUpdateModule } from '@/api/courses'
+import { useCourseModules, useCreateModule } from '@/api/courses'
 import ModuleInfoForm from './ModuleInfoForm'
 import ModuleMaterialsPanel from './ModuleMaterialsPanel'
 import ModuleAssessmentsPanel from '../assessments/ModuleAssessmentsPanel'
@@ -25,6 +23,12 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
   const [moduleTab, setModuleTab] = useState<Record<string, string>>({})
   const [confirm, setConfirm] = useState<{ open: boolean; moduloId?: string }>({ open: false })
 
+  // Módulos ordenados memoizados (evita recriação constante de objetos)
+  const orderedModules = useMemo(() => 
+    [...modulos].sort((a, b) => a.ordem - b.ordem), 
+    [modulos]
+  )
+
   useEffect(() => {
     if (onTotalXpChange) {
       const total = modulos.reduce((acc, m: any) => acc + (m.xp || 0), 0)
@@ -32,30 +36,9 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
     }
   }, [modulos, onTotalXpChange])
 
-  // Instancia única de mutator: atualizamos dinamicamente pelo id
-  const updateModuleFactory = (id: string) => useUpdateModule(cursoCodigo, id)
-
-  const swapOrder = async (fromId: string, direction: 'up' | 'down') => {
-    const ordered = [...modulos].slice().sort((a, b) => a.ordem - b.ordem)
-    const idx = ordered.findIndex(m => m.id === fromId)
-    if (idx === -1) return
-    const targetIdx = direction === 'up' ? idx - 1 : idx + 1
-    if (targetIdx < 0 || targetIdx >= ordered.length) return
-    const current = ordered[idx]
-    const target = ordered[targetIdx]
-    const newCurrentOrder = target.ordem
-    const newTargetOrder = current.ordem
-    try {
-      const updaterCurrent = updateModuleFactory(current.id)
-      const updaterTarget = updateModuleFactory(target.id)
-      await Promise.all([
-        updaterCurrent.mutateAsync({ ordem: newCurrentOrder }),
-        updaterTarget.mutateAsync({ ordem: newTargetOrder }),
-      ])
-    } catch (e) {
-      // silencia por enquanto; TODO: snackbar
-    }
-  }
+  // Remove uso de hook dinâmico - callback para reordenar (temporariamente desabilitado)
+  // TODO: implementar reordenação via drag/drop ou endpoint batch
+  // const swapOrder = useCallback(async (fromId: string, direction: 'up' | 'down') => { ... }, [orderedModules])
 
   return (
     <Box>
@@ -69,7 +52,7 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
         <Typography variant='body2' color='text.secondary'>Nenhum módulo cadastrado.</Typography>
       ) : (
         <Box sx={{ display: 'grid', gap: 1.5 }}>
-          {modulos.sort((a, b) => a.ordem - b.ordem).map((m, i, arr) => {
+          {orderedModules.map((m) => {
             const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = ['info']
             if (['video', 'pdf'].includes((m as any).tipo_conteudo)) allowedTabs.push('materiais')
             if ((m as any).tipo_conteudo === 'quiz') allowedTabs.push('avaliacoes')
@@ -81,7 +64,7 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
                   <Typography variant='body2' fontWeight={600}>{m.titulo}</Typography>
                   <Chip size='small' label={`Ordem ${m.ordem}`} />
                   {m.xp ? <Chip size='small' variant='outlined' label={`${m.xp} XP`} /> : null}
-                  {/* Substitui Stack direto por Box para impedir propagação de semântica de botão dentro do botão do AccordionSummary */}
+                  {/* Container para ações sem semântica de botão */}
                   <Box component='span' sx={{ display:'flex', flexDirection:'row', gap: 0.5, ml: 'auto' }}>
                     <Tooltip title='Excluir módulo (não implementado)'>
                       <span>
@@ -94,7 +77,7 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
                 </AccordionSummary>
                 <AccordionDetails>
                   <Box sx={{ mb: 2, borderBottom: theme => `1px solid ${theme.palette.divider}` }}>
-                    <Tabs value={currentTab} onChange={(_, val) => setModuleTab(prev => ({ ...prev, [m.id]: val }))}   scrollButtons='auto'>
+                    <Tabs value={currentTab} onChange={(_, val) => setModuleTab(prev => ({ ...prev, [m.id]: val }))} scrollButtons='auto'>
                       <Tab value='info' label='Info' />
                       {allowedTabs.includes('materiais') && <Tab value='materiais' label='Materiais' />}
                       {allowedTabs.includes('avaliacoes') && <Tab value='avaliacoes' label='Avaliações' />}
