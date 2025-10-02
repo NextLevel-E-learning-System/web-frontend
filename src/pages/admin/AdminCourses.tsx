@@ -263,10 +263,10 @@ export default function AdminCourses() {
       render: (_, curso) => (
         <Box>
           <Typography variant='body2' fontWeight={500}>
-            {curso.total_inscritos || 0}
+            {curso.total_inscricoes || 0}
           </Typography>
           <Typography variant='caption' color='success.main'>
-            {curso.total_concluidos || 0} concluídos
+            {curso.total_conclusoes || 0} concluídos
           </Typography>
         </Box>
       ),
