@@ -49,7 +49,7 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
-  const { navigationItems } = useNavigation()
+  const { navigationItems, isInstrutor, user } = useNavigation()
 
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
@@ -83,8 +83,13 @@ export default function AdminCourses() {
     if (filtros.instrutor !== 'all') filters.instrutor = filtros.instrutor
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
 
+    // Se o usuário for INSTRUTOR, filtrar apenas seus cursos
+    if (isInstrutor && user?.id) {
+      filters.instrutor = user.id
+    }
+
     return filters
-  }, [filtros])
+  }, [filtros, isInstrutor, user?.id])
 
   const { data: cursosResponse, isLoading: loadingCursos } =
     useCourses(coursesFilters)
@@ -394,27 +399,30 @@ export default function AdminCourses() {
                 ))}
               </Select>
             </FormControl>
-            <FormControl sx={{ minWidth: 180 }}>
-              <InputLabel>Instrutor</InputLabel>
-              <Select
-                value={filtros.instrutor}
-                onChange={e =>
-                  setFiltros({ ...filtros, instrutor: e.target.value })
-                }
-                label='Instrutor'
-              >
-                <MenuItem value='all'>
-                  <em>Todos os Instrutores</em>
-                </MenuItem>
-                {funcionarios
-                  .filter(func => func.role === 'INSTRUTOR')
-                  .map(instrutor => (
-                    <MenuItem key={instrutor.id} value={instrutor.id}>
-                      {instrutor.nome}
-                    </MenuItem>
-                  ))}
-              </Select>
-            </FormControl>
+            {/* Filtro de instrutor - escondido para INSTRUTOR pois ele só vê seus próprios cursos */}
+            {!isInstrutor && (
+              <FormControl sx={{ minWidth: 180 }}>
+                <InputLabel>Instrutor</InputLabel>
+                <Select
+                  value={filtros.instrutor}
+                  onChange={e =>
+                    setFiltros({ ...filtros, instrutor: e.target.value })
+                  }
+                  label='Instrutor'
+                >
+                  <MenuItem value='all'>
+                    <em>Todos os Instrutores</em>
+                  </MenuItem>
+                  {funcionarios
+                    .filter(func => func.role === 'INSTRUTOR')
+                    .map(instrutor => (
+                      <MenuItem key={instrutor.id} value={instrutor.id}>
+                        {instrutor.nome}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            )}
             <FormControl sx={{ minWidth: 180 }}>
               <InputLabel>Nível</InputLabel>
               <Select

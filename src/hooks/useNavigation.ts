@@ -1,17 +1,3 @@
-import React from 'react'
-import {
-  Dashboard as DashboardIcon,
-  School as SchoolIcon,
-  Assignment as AssignmentIcon,
-  Grade as GradeIcon,
-  Settings as SettingsIcon,
-  Book as BookIcon,
-  EmojiEvents as EmojiEventsIcon,
-  WorkspacePremium as WorkspacePremiumIcon,
-  People as PeopleIcon,
-  Badge as BadgeIcon,
-  Apartment as ApartmentIcon,
-} from '@mui/icons-material'
 import { useMeuPerfil } from '@/api/users'
 import type { NavItem } from '@/components/layout/DashboardLayout'
 
@@ -76,8 +62,8 @@ export function useNavigation() {
               href: '/cursos',
             },
             {
-              label: 'Meus Cursos',
-              href: '/manage/cursos',
+              label: 'Gerenciar Cursos',
+              href: '/manage/courses',
             },
             {
               label: 'Avaliações',
@@ -107,7 +93,7 @@ export function useNavigation() {
               href: '/cursos',
             },
             {
-              label: 'Cursos do Departamento',
+              label: 'Gerenciar Cursos',
               href: '/manage/courses', // Filtrado por departamento
             }
           ],
