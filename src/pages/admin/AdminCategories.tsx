@@ -10,8 +10,6 @@ import {
   Select,
   TextField,
   Typography,
-  Chip,
-  Alert,
   Skeleton,
   Grid,
   FormControl,
@@ -35,7 +33,6 @@ import {
   useUpdateCategory,
   useDeleteCategory,
   type Category,
-  type CreateCategoryInput,
 } from '@/api/courses'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import DataTable, { type Column } from '@/components/common/DataTable'
@@ -51,10 +48,13 @@ interface CategoryForm {
 export default function AdminCategories() {
   const { navigationItems } = useNavigation()
 
-  const { data: departamentos = [], isLoading: loadingDepartamentos } =
+  const { data: departamentosResponse, isLoading: loadingDepartamentos } =
     useListarDepartamentosAdmin()
-  const { data: categorias = [], isLoading: loadingCategorias } =
+  const departamentos = (departamentosResponse as any)?.items || departamentosResponse || []
+  
+  const { data: categoriasResponse, isLoading: loadingCategorias } =
     useCategories()
+  const categorias = (categoriasResponse as any)?.items || categoriasResponse || []
 
   const createCategoryMutation = useCreateCategory()
   const updateCategoryMutation = useUpdateCategory()
