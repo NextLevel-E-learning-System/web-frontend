@@ -11,7 +11,6 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  Divider,
   TextField,
   FormControl,
   Select,
@@ -34,6 +33,7 @@ import {
 import { useFuncionarios } from '@/api/users'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useNavigation from '@/hooks/useNavigation'
+import CourseModulesSection from '@/components/modules/CourseModulesSection'
 // Componentes antigos (Advanced/Curriculum/Publish) removidos da UI direta nesta fase.
 
 interface TabDefinition {
@@ -177,62 +177,10 @@ export default function CourseEditorPage() {
     }
   }
 
-  // Painel de módulos simples placeholder (apenas lista com contagem) - poderá ser substituído por interface completa existente
-  const ModulesPanel = () => (
-    <Stack gap={2}>
-      <Typography variant='subtitle1'>Gerenciar Módulos</Typography>
-      {modulesQuery?.isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress size={28} />
-        </Box>
-      ) : (
-        <Stack gap={1}>
-          {modules.length === 0 && (
-            <Typography variant='body2' color='text.secondary'>
-              Nenhum módulo cadastrado ainda.
-            </Typography>
-          )}
-          {modules.map(m => (
-            <Paper key={m.id} variant='outlined' sx={{ p: 1.5 }}>
-              <Stack
-                direction='row'
-                justifyContent='space-between'
-                alignItems='center'
-              >
-                <Stack>
-                  <Typography fontWeight={600}>{m.titulo}</Typography>
-                  <Typography variant='caption' color='text.secondary'>
-                    Tipo: {m.tipo_conteudo || '—'} • XP: {m.xp || 0}
-                  </Typography>
-                </Stack>
-                <Button
-                  size='small'
-                  onClick={() =>
-                    navigate(`/admin/courses/${codigo}/edit?module=${m.id}`)
-                  }
-                >
-                  Abrir
-                </Button>
-              </Stack>
-            </Paper>
-          ))}
-        </Stack>
-      )}
-      <Divider />
-      <Stack direction='row' justifyContent='flex-end'>
-        <Button
-          variant='contained'
-          onClick={() =>
-            navigate(`/admin/courses/${codigo}/edit?createModule=1`)
-          }
-        >
-          Novo Módulo
-        </Button>
-      </Stack>
-    </Stack>
-  )
 
   const renderCurrent = () => {
+    // Evita piscar formulário vazio enquanto carrega dados em modo edição
+    if (isEdit && loadingCourse) return <Box sx={{ display:'flex', justifyContent:'center', py:4 }}><CircularProgress size={28} /></Box>
     if (tab === INFO_TAB.id) {
       return (
         <Stack gap={2}>
@@ -460,7 +408,7 @@ export default function CourseEditorPage() {
         </Stack>
       )
     }
-    if (tab === MODULES_TAB.id) return <ModulesPanel />
+    if (tab === MODULES_TAB.id) return <CourseModulesSection cursoCodigo={codigo!} onTotalXpChange={total => setForm((f:any)=>({...f, xp_oferecido: total}))} />
     return null
   }
 
