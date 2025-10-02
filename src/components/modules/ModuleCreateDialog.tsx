@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -13,56 +13,15 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Paper,
-  Stack,
-  IconButton,
-  Typography,
-  Chip,
-  Box,
 } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
-import { type CreateModuleInput, convertFileToBase64, useUploadMaterial } from '@/api/courses'
-import { useCreateAssessment, useCreateQuestion } from '@/api/assessments'
-
-export interface PendingMaterial {
-  nome_arquivo: string
-  base64: string
-  sizeKB: number
-  tipo_arquivo?: string
-}
-
-export interface PendingQuizQuestion {
-  id: string
-  tipo_questao: 'MULTIPLA_ESCOLHA'
-  enunciado: string
-  opcoes_resposta: string[]
-  resposta_correta: string
-  peso: number
-}
-
-export interface PendingQuizAssessment {
-  codigo: string
-  titulo: string
-  tempo_limite?: number
-  tentativas_permitidas?: number
-  nota_minima?: number
-  questions: PendingQuizQuestion[]
-}
-
-export interface CompositeModuleCreate {
-  module: CreateModuleInput
-  materials?: PendingMaterial[]
-  quiz?: PendingQuizAssessment
-}
+import { type CreateModuleInput } from '@/api/courses'
 
 interface Props {
   open: boolean
   onClose: () => void
-  onCreate: (data: CompositeModuleCreate) => Promise<unknown> | void
+  onCreate: (data: { module: CreateModuleInput }) => Promise<unknown> | void
   nextOrder: number
   loading?: boolean
-  cursoCodigo?: string
 }
 
 export default function ModuleCreateDialog({
@@ -77,55 +36,23 @@ export default function ModuleCreateDialog({
   const [xp, setXp] = useState<number>(0)
   const [obrigatorio, setObrigatorio] = useState(true)
   const [tipoConteudo, setTipoConteudo] = useState('texto')
-  const [createdModuleId, setCreatedModuleId] = useState<string | null>(null)
-  const [creatingEarly, setCreatingEarly] = useState(false)
   const [conteudo, setConteudo] = useState('')
-  const [materials, setMaterials] = useState<PendingMaterial[]>([])
-  const [quizCodigo, setQuizCodigo] = useState('')
-  const [quizTitulo, setQuizTitulo] = useState('')
-  const [quizTempo, setQuizTempo] = useState<number | ''>('')
-  const [quizTentativas, setQuizTentativas] = useState<number | ''>('')
-  const [quizNotaMin, setQuizNotaMin] = useState<number | ''>('')
-  const [questions, setQuestions] = useState<PendingQuizQuestion[]>([])
 
-  const openedRef = useRef(false)
-  const resetState = () => {
-    setTitulo('')
-    setOrdem(nextOrder)
-    setXp(0)
-    setObrigatorio(true)
-    setTipoConteudo('texto')
-    setConteudo('')
-    setMaterials([])
-    setQuizCodigo('')
-    setQuizTitulo('')
-    setQuizTempo('')
-    setQuizTentativas('')
-    setQuizNotaMin('')
-    setQuestions([])
-    setCreatedModuleId(null)
-    setCreatingEarly(false)
-  }
-  // Reset apenas na abertura inicial
   useEffect(() => {
-    if (open && !openedRef.current) {
-      resetState()
-      openedRef.current = true
-    }
-    if (!open && openedRef.current) {
-      openedRef.current = false
-    }
-  }, [open])
-  // Atualiza ordem sugerida se ainda não criou módulo (não limpar resto)
-  useEffect(() => {
-    if (open && !createdModuleId) {
+    if (open) {
+      setTitulo('')
       setOrdem(nextOrder)
+      setXp(0)
+      setObrigatorio(true)
+      setTipoConteudo('texto')
+      setConteudo('')
     }
-  }, [nextOrder, open, createdModuleId])
+  }, [open, nextOrder])
 
-  const buildModulePayload = useCallback((): CreateModuleInput | null => {
-    if (!titulo.trim()) return null
-    return {
+  const handleSubmit = async () => {
+    if (!titulo.trim()) return
+
+    const moduleData: CreateModuleInput = {
       titulo: titulo.trim(),
       ordem,
       xp,
@@ -133,93 +60,8 @@ export default function ModuleCreateDialog({
       tipo_conteudo: tipoConteudo,
       conteudo: conteudo.trim() || undefined,
     }
-  }, [titulo, ordem, xp, obrigatorio, tipoConteudo, conteudo])
 
-  // Salvamento antecipado quando tipo de conteúdo exige subseções
-  useEffect(() => {
-    const needsEarly = ['video', 'pdf', 'quiz'].includes(tipoConteudo)
-    if (needsEarly && !createdModuleId && !creatingEarly) {
-      const payload = buildModulePayload()
-      if (!payload) return // aguardar título
-      setCreatingEarly(true)
-      // Chama onCreate apenas com módulo base
-      Promise.resolve(onCreate({ module: payload }))
-        .then((result: any) => {
-          // Se callback retornar módulo, capturar id; senão confiar em invalidation (id desconhecido)
-          if (result && typeof result === 'object') {
-            const maybeId = (result as any).id
-            if (maybeId) setCreatedModuleId(maybeId)
-          }
-          // Caso não retorne, ainda marcamos como criado (id null) apenas para liberar UI
-          setCreatedModuleId(prev => prev || 'created')
-        })
-        .finally(() => setCreatingEarly(false))
-    }
-  }, [
-    tipoConteudo,
-    createdModuleId,
-    creatingEarly,
-    buildModulePayload,
-    onCreate,
-  ])
-
-  // Hooks para pipeline (lazy instantiation quando necessário)
-  const uploadMaterialMutation = useUploadMaterial(createdModuleId || '')
-  const createAssessment = useCreateAssessment()
-  // Função que executa pipeline pós criação (somente se módulo já está criado)
-  const runPipelineIfNeeded = async () => {
-    // Materiais
-    if (createdModuleId && (tipoConteudo === 'video' || tipoConteudo === 'pdf') && materials.length) {
-      for (const m of materials) {
-        try {
-          await uploadMaterialMutation.mutateAsync({ nome_arquivo: m.nome_arquivo, base64: m.base64 })
-        } catch {}
-      }
-    }
-    // Quiz
-    if (createdModuleId && tipoConteudo === 'quiz' && quizCodigo && quizTitulo) {
-      try {
-        const assessment = await createAssessment.mutateAsync({
-          codigo: quizCodigo,
-          curso_id: '', // backend pode inferir? se necessário, passar curso (não temos aqui)
-          modulo_id: createdModuleId,
-          titulo: quizTitulo,
-          tempo_limite: quizTempo === '' ? undefined : Number(quizTempo),
-          tentativas_permitidas: quizTentativas === '' ? undefined : Number(quizTentativas),
-          nota_minima: quizNotaMin === '' ? undefined : Number(quizNotaMin),
-        })
-        // Criar questões
-        if (assessment?.codigo) {
-          for (const q of questions) {
-            const cq = useCreateQuestion(assessment.codigo)
-            try {
-              await cq.mutateAsync({
-                avaliacao_id: assessment.codigo,
-                tipo_questao: q.tipo_questao,
-                enunciado: q.enunciado,
-                opcoes_resposta: q.opcoes_resposta,
-                resposta_correta: q.resposta_correta,
-                peso: q.peso,
-              })
-            } catch {}
-          }
-        }
-      } catch {}
-    }
-  }
-
-  const handleSubmit = async () => {
-    // Texto: criar agora e finalizar
-    if (!['video', 'pdf', 'quiz'].includes(tipoConteudo)) {
-      if (!createdModuleId) {
-        const modulePayload = buildModulePayload()
-        if (!modulePayload) return
-        await onCreate({ module: modulePayload })
-      }
-      onClose()
-      return
-    }
-    await runPipelineIfNeeded()
+    await onCreate({ module: moduleData })
     onClose()
   }
 
@@ -270,7 +112,6 @@ export default function ModuleCreateDialog({
                 value={tipoConteudo}
                 label='Tipo de Conteúdo'
                 onChange={e => setTipoConteudo(e.target.value)}
-                disabled={creatingEarly || !!createdModuleId}
               >
                 <MenuItem value='texto'>Texto</MenuItem>
                 <MenuItem value='video'>Vídeo</MenuItem>
@@ -295,11 +136,7 @@ export default function ModuleCreateDialog({
               label='Conteúdo / Descrição'
               value={conteudo}
               onChange={e => setConteudo(e.target.value)}
-              placeholder={
-                tipoConteudo === 'video' || tipoConteudo === 'pdf'
-                  ? 'Descrição do material ou observações'
-                  : 'Texto, instruções ou URL'
-              }
+              placeholder='Descrição, instruções ou URL (se aplicável)'
               multiline
               minRows={3}
               fullWidth
@@ -315,13 +152,9 @@ export default function ModuleCreateDialog({
         <Button
           variant='contained'
           onClick={handleSubmit}
-          disabled={loading || !titulo.trim() || creatingEarly}
+          disabled={loading || !titulo.trim()}
         >
-          {['video', 'pdf', 'quiz'].includes(tipoConteudo)
-            ? createdModuleId
-              ? 'Concluir'
-              : 'Salvando...'
-            : 'Criar'}
+          Criar Módulo
         </Button>
       </DialogActions>
     </Dialog>

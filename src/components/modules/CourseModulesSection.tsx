@@ -7,7 +7,7 @@ import ModuleInfoForm from './ModuleInfoForm'
 import ModuleMaterialsPanel from './ModuleMaterialsPanel'
 import ModuleAssessmentsPanel from '../assessments/ModuleAssessmentsPanel'
 import ConfirmationDialog from '../common/ConfirmationDialog'
-import ModuleCreateDialog, { type CompositeModuleCreate } from './ModuleCreateDialog'
+import ModuleCreateDialog from './ModuleCreateDialog'
 
 interface Props {
   cursoCodigo: string
@@ -87,7 +87,7 @@ export default function CourseModulesSection({ cursoCodigo, onTotalXpChange }: P
         </Box>
       )}
       <ConfirmationDialog open={confirm.open} title='Excluir módulo' message='Funcionalidade de exclusão ainda não implementada.' onConfirm={() => setConfirm({ open: false })} onClose={() => setConfirm({ open: false })} confirmText='Fechar' cancelText='' />
-      <ModuleCreateDialog open={createOpen} onClose={() => setCreateOpen(false)} nextOrder={(modulos?.length || 0) + 1} loading={createModule.isPending} onCreate={async (data: CompositeModuleCreate) => {
+      <ModuleCreateDialog open={createOpen} onClose={() => setCreateOpen(false)} nextOrder={(modulos?.length || 0) + 1} loading={createModule.isPending} onCreate={async (data) => {
         const created = await createModule.mutateAsync(data.module)
         return created
       }} />

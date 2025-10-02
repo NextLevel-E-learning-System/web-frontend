@@ -94,7 +94,6 @@ export default function ModuleInfoForm({
               <MenuItem value='video'>Vídeo</MenuItem>
               <MenuItem value='quiz'>Quiz</MenuItem>
               <MenuItem value='pdf'>PDF</MenuItem>
-              <MenuItem value='link'>Link</MenuItem>
             </Select>
           </FormControl>
         </Grid>
