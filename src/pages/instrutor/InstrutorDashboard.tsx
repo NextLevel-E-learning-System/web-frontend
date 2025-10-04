@@ -11,7 +11,14 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material'
+import {
+  School,
+  People,
+  CheckCircle,
+  Assignment,
+} from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import MetricCard from '@/components/common/StatCard'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboard, type DashboardInstrutor } from '@/api/users'
 
@@ -63,48 +70,56 @@ export default function InstrutorDashboard() {
         {/* Métricas Principais */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='primary'>
-                  {metricas.total_cursos}
-                </Typography>
-                <Typography color='text.secondary'>Total de Cursos</Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<School />}
+              value={metricas.total_cursos?.toString() || '0'}
+              label="Total de Cursos"
+              trendLabel="Cursos criados"
+              trendDirection="neutral"
+              iconColor="#1976d2"
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='info.main'>
-                  {metricas.total_alunos}
-                </Typography>
-                <Typography color='text.secondary'>Total de Alunos</Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<People />}
+              value={metricas.total_alunos?.toString() || '0'}
+              label="Total de Alunos"
+              trendLabel="Alunos inscritos"
+              trendDirection="up"
+              iconColor="#0288d1"
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='success.main'>
-                  {metricas.taxa_conclusao_geral.toFixed(1)}%
-                </Typography>
-                <Typography color='text.secondary'>
-                  Taxa de Conclusão
-                </Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<CheckCircle />}
+              value={`${metricas.taxa_conclusao_geral?.toFixed(1) || '0'}%`}
+              label="Taxa de Conclusão"
+              trendLabel="Performance geral"
+              trendDirection={
+                (metricas.taxa_conclusao_geral || 0) >= 75 
+                  ? "up" 
+                  : (metricas.taxa_conclusao_geral || 0) >= 50 
+                    ? "neutral" 
+                    : "down"
+              }
+              iconColor="#2e7d32"
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='warning.main'>
-                  {metricas.pendentes_correcao}
-                </Typography>
-                <Typography color='text.secondary'>
-                  Avaliações Pendentes
-                </Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<Assignment />}
+              value={metricas.pendentes_correcao?.toString() || '0'}
+              label="Avaliações Pendentes"
+              trendLabel="Pendentes de correção"
+              trendDirection={
+                (metricas.pendentes_correcao || 0) === 0 
+                  ? "up" 
+                  : (metricas.pendentes_correcao || 0) <= 5 
+                    ? "neutral" 
+                    : "down"
+              }
+              iconColor="#ed6c02"
+            />
           </Grid>
         </Grid>
 
