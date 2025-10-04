@@ -9,7 +9,6 @@ import {
   InputLabel,
   Skeleton,
   LinearProgress,
-  Rating,
   IconButton,
   Menu,
   FormControlLabel,
@@ -71,8 +70,6 @@ export default function AdminCourses() {
     action: 'duplicate' | 'toggle' | null
     curso: Curso | null
   }>({ open: false, action: null, curso: null })
-  // Gestão de avaliações passará a ser acionada no contexto de módulos (não no menu de curso)
-  // const [assessmentsDrawerCourse, setAssessmentsDrawerCourse] = useState<Curso | null>(null)
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
@@ -297,30 +294,6 @@ export default function AdminCourses() {
                   : 'error'
             }
           />
-        </Box>
-      ),
-    },
-    {
-      id: 'avaliacao',
-      label: 'Avaliação',
-      align: 'center',
-      render: (_, curso) => (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Rating
-            value={curso.avaliacao_media || 0}
-            readOnly
-            size='small'
-            precision={0.1}
-          />
-          <Typography variant='caption' color='text.secondary'>
-            {curso.avaliacao_media || 0} ({curso.total_avaliacoes || 0})
-          </Typography>
         </Box>
       ),
     },
