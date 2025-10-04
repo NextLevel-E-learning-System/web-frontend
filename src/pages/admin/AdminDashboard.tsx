@@ -12,12 +12,12 @@ import {
   Chip,
   Alert,
 } from '@mui/material'
-import { People, School, Assignment, CheckCircle } from '@mui/icons-material'
+import { People, School, CheckCircle } from '@mui/icons-material'
 import DashboardWrapper from '@/components/layout/DashboardWrapper'
-import StatCard from '@/components/common/StatCard'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import { type DashboardAdmin, type DashboardGerente } from '@/api/users'
+import MetricCard from '@/components/common/StatCard'
 
 export default function AdminDashboard() {
   return (
@@ -60,35 +60,49 @@ export default function AdminDashboard() {
               {/* Métricas Principais - ADMIN/GERENTE */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='Total de Funcionários'
-                    value={metricas_gerais.total_funcionarios}
+                  <MetricCard
+                    label='Total de Funcionários'
+                    trendLabel='Funcionários ativos'
+                    value={metricas_gerais.funcionarios_ativos.toString()}
                     icon={<People />}
-                    positive={true}
+                    trendDirection='neutral'
+                    iconColor='#1976d2'
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='Funcionários Ativos'
-                    value={metricas_gerais.funcionarios_ativos}
-                    icon={<CheckCircle />}
-                    positive={true}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='Alunos Ativos'
-                    value={metricas_gerais.alunos_ativos}
+                  <MetricCard
                     icon={<School />}
-                    positive={true}
+                    value={metricas_gerais.alunos_ativos?.toString()}
+                    label='Total de Alunos'
+                    trendLabel='Alunos ativos'
+                    trendDirection='up'
+                    iconColor='#0288d1'
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='Taxa de Conclusão'
+                  <MetricCard
+                    value={metricas_gerais.total_cursos.toString()}
+                    icon={<School />}
+                    label='Total de Cursos'
+                    trendLabel='Cursos criados'
+                    trendDirection='up'
+                    iconColor='#1976d2'
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <MetricCard
+                    label='Taxa de Conclusão'
+                    trendLabel='Performance geral'
                     value={`${(metricas_gerais.taxa_conclusao_media || 0).toFixed(1)}%`}
-                    icon={<Assignment />}
-                    positive={false}
+                    trendDirection={
+                      (metricas_gerais.taxa_conclusao_media || 0) >= 75
+                        ? 'up'
+                        : (metricas_gerais.taxa_conclusao_media || 0) >= 50
+                          ? 'neutral'
+                          : 'down'
+                    }
+                    icon={<CheckCircle />}
+                    iconColor='#2e7d32'
                   />
                 </Grid>
               </Grid>
@@ -339,35 +353,49 @@ export default function AdminDashboard() {
               {/* Métricas do Departamento - GERENTE */}
               <Grid container spacing={3} sx={{ mb: 3 }}>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='Total Funcionários'
-                    value={departamento.total_funcionarios}
+                  <MetricCard
+                    label='Total Funcionários'
+                    value={departamento.total_funcionarios.toString()}
                     icon={<People />}
-                    positive={true}
+                    trendDirection='neutral'
+                    iconColor='#1976d2'
+                    trendLabel='Funcionários do departamento'
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='Funcionários Ativos'
-                    value={departamento.funcionarios_ativos}
+                  <MetricCard
+                    label='Funcionários Ativos'
+                    value={departamento.funcionarios_ativos.toString()}
                     icon={<CheckCircle />}
-                    positive={true}
+                    trendDirection='neutral'
+                    iconColor='#1976d2'
+                    trendLabel='Funcionários ativos do departamento'
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='Taxa Conclusão Cursos'
-                    value={`${departamento.taxa_conclusao_cursos.toFixed(1)}%`}
-                    icon={<Assignment />}
-                    positive={false}
+                  <MetricCard
+                    label='Taxa de Conclusão de Cursos'
+                    trendLabel='Performance geral'
+                    value={`${(departamento.taxa_conclusao_cursos || 0).toFixed(1)}%`}
+                    trendDirection={
+                      (departamento.taxa_conclusao_cursos || 0) >= 75
+                        ? 'up'
+                        : (departamento.taxa_conclusao_cursos || 0) >= 50
+                          ? 'neutral'
+                          : 'down'
+                    }
+                    icon={<CheckCircle />}
+                    iconColor='#2e7d32'
                   />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <StatCard
-                    title='XP Médio'
-                    value={`${departamento.xp_medio_funcionarios.toFixed(0)} XP`}
+                  <MetricCard
+                    value={departamento.xp_medio_funcionarios.toString()}
                     icon={<School />}
-                    positive={true}
+                    label='XP Médio'
+                    trendLabel='Média dos alunos'
+                    trendDirection='up'
+                    iconColor='#1976d2'
                   />
                 </Grid>
               </Grid>

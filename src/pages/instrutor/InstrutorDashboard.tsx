@@ -11,12 +11,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material'
-import {
-  School,
-  People,
-  CheckCircle,
-  Assignment,
-} from '@mui/icons-material'
+import { School, People, CheckCircle, Assignment } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import MetricCard from '@/components/common/StatCard'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
@@ -73,52 +68,52 @@ export default function InstrutorDashboard() {
             <MetricCard
               icon={<School />}
               value={metricas.total_cursos?.toString() || '0'}
-              label="Total de Cursos"
-              trendLabel="Cursos criados"
-              trendDirection="neutral"
-              iconColor="#1976d2"
+              label='Total de Cursos'
+              trendLabel='Cursos criados'
+              trendDirection='neutral'
+              iconColor='#1976d2'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
               icon={<People />}
               value={metricas.total_alunos?.toString() || '0'}
-              label="Total de Alunos"
-              trendLabel="Alunos inscritos"
-              trendDirection="up"
-              iconColor="#0288d1"
+              label='Total de Alunos'
+              trendLabel='Alunos inscritos'
+              trendDirection='up'
+              iconColor='#0288d1'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
               icon={<CheckCircle />}
               value={`${metricas.taxa_conclusao_geral?.toFixed(1) || '0'}%`}
-              label="Taxa de Conclusão"
-              trendLabel="Performance geral"
+              label='Taxa de Conclusão'
+              trendLabel='Performance geral'
               trendDirection={
-                (metricas.taxa_conclusao_geral || 0) >= 75 
-                  ? "up" 
-                  : (metricas.taxa_conclusao_geral || 0) >= 50 
-                    ? "neutral" 
-                    : "down"
+                (metricas.taxa_conclusao_geral || 0) >= 75
+                  ? 'up'
+                  : (metricas.taxa_conclusao_geral || 0) >= 50
+                    ? 'neutral'
+                    : 'down'
               }
-              iconColor="#2e7d32"
+              iconColor='#2e7d32'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
               icon={<Assignment />}
               value={metricas.pendentes_correcao?.toString() || '0'}
-              label="Avaliações Pendentes"
-              trendLabel="Pendentes de correção"
+              label='Avaliações Pendentes'
+              trendLabel='Pendentes de correção'
               trendDirection={
-                (metricas.pendentes_correcao || 0) === 0 
-                  ? "up" 
-                  : (metricas.pendentes_correcao || 0) <= 5 
-                    ? "neutral" 
-                    : "down"
+                (metricas.pendentes_correcao || 0) === 0
+                  ? 'up'
+                  : (metricas.pendentes_correcao || 0) <= 5
+                    ? 'neutral'
+                    : 'down'
               }
-              iconColor="#ed6c02"
+              iconColor='#ed6c02'
             />
           </Grid>
         </Grid>
