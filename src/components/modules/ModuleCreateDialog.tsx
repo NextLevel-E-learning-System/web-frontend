@@ -73,40 +73,37 @@ export default function ModuleCreateDialog({
       fullWidth
     >
       <DialogTitle>Novo Módulo</DialogTitle>
-      <DialogContent sx={{ pt: 2 }}>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, md: 7 }}>
-            <TextField
-              label='Título'
-              value={titulo}
-              onChange={e => setTitulo(e.target.value)}
-              fullWidth
-              required
-              size='small'
-            />
-          </Grid>
-          <Grid size={{ xs: 6, md: 2 }}>
+      <DialogContent sx={{ py: 0 }}>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 6, md: 2 }}>
             <TextField
               label='Ordem'
               type='number'
               value={ordem}
               onChange={e => setOrdem(Number(e.target.value) || 1)}
               fullWidth
-              size='small'
+             />
+          </Grid>
+          <Grid size={{ xs: 18, md: 10 }}>
+            <TextField
+              label='Título'
+              value={titulo}
+              onChange={e => setTitulo(e.target.value)}
+              fullWidth
+              required
             />
           </Grid>
-          <Grid size={{ xs: 6, md: 3 }}>
+            <Grid size={{ xs: 4, md: 2 }}>
             <TextField
               label='XP'
               type='number'
               value={xp}
               onChange={e => setXp(Number(e.target.value) || 0)}
               fullWidth
-              size='small'
-            />
+             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <FormControl fullWidth size='small'>
+            <FormControl fullWidth>
               <InputLabel>Tipo de Conteúdo</InputLabel>
               <Select
                 value={tipoConteudo}
@@ -120,7 +117,7 @@ export default function ModuleCreateDialog({
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 8, md: 4 }}>
             <FormControlLabel
               control={
                 <Switch
@@ -140,12 +137,11 @@ export default function ModuleCreateDialog({
               multiline
               minRows={3}
               fullWidth
-              size='small'
-            />
+             />
           </Grid>
         </Grid>
       </DialogContent>
-      <DialogActions sx={{ p: 2 }}>
+      <DialogActions sx={{ p: 3 }}>
         <Button variant='outlined' onClick={onClose} disabled={loading}>
           Cancelar
         </Button>
