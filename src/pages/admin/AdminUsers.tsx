@@ -63,11 +63,12 @@ export default function AdminUsers() {
     refetch: refetchUsers,
   } = useFuncionarios()
   const usuarios = usuariosResponse?.items || []
-  
+
   const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
-  const departamentos = (departamentosResponse as any)?.items || departamentosResponse || []
-  
+  const departamentos =
+    (departamentosResponse as any)?.items || departamentosResponse || []
+
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
   const cargos = (cargosResponse as any)?.items || cargosResponse || []
   const criarUsuario = useRegisterFuncionario()
@@ -352,11 +353,16 @@ export default function AdminUsers() {
   }
 
   const getDepartmentName = (id: string) => {
-    return departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome || id
+    return (
+      departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome || id
+    )
   }
 
   const getCargoName = (codigo: string) => {
-    return cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome || codigo
+    return (
+      cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome ||
+      codigo
+    )
   }
 
   const getUserTypeIcon = (tipo: string) => {
@@ -419,13 +425,13 @@ export default function AdminUsers() {
           </Button>
         </Box>
 
-            <DataTable
-              columns={columns}
-              data={filtered}
-              loading={loadingUsers}
-              getRowId={row => row.id}
-            />
-     
+        <DataTable
+          columns={columns}
+          data={filtered}
+          loading={loadingUsers}
+          getRowId={row => row.id}
+        />
+
         {/* Dialog Adicionar Usuário */}
         <Dialog
           open={isAddOpen}
@@ -483,11 +489,13 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept: { codigo: string; nome: string }) => (
-                      <MenuItem key={dept.codigo} value={dept.codigo}>
-                        {dept.nome}
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { codigo: string; nome: string }) => (
+                        <MenuItem key={dept.codigo} value={dept.codigo}>
+                          {dept.nome}
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -627,11 +635,13 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept: { codigo: string; nome: string }) => (
-                      <MenuItem key={dept.codigo} value={dept.codigo}>
-                        {dept.nome}
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { codigo: string; nome: string }) => (
+                        <MenuItem key={dept.codigo} value={dept.codigo}>
+                          {dept.nome}
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>

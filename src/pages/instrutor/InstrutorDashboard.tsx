@@ -27,7 +27,7 @@ export default function InstrutorDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout  items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box
           display='flex'
           justifyContent='center'
@@ -42,7 +42,7 @@ export default function InstrutorDashboard() {
 
   if (error || !instrutorData) {
     return (
-      <DashboardLayout   items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Alert severity='error'>
           Erro ao carregar dados do dashboard. Tente novamente.
         </Alert>
@@ -53,7 +53,7 @@ export default function InstrutorDashboard() {
   const { metricas, cursos } = instrutorData || { metricas: {}, cursos: [] }
 
   return (
-    <DashboardLayout  items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box
         sx={{
           maxWidth: '100%',
@@ -186,7 +186,6 @@ export default function InstrutorDashboard() {
               </CardContent>
             </Card>
           </Grid>
-
         </Grid>
       </Box>
     </DashboardLayout>

@@ -57,7 +57,7 @@ export function useNavigation() {
         {
           label: 'Cursos',
           children: [
-             {
+            {
               label: 'Catálogo de Cursos',
               href: '/cursos',
             },
@@ -95,7 +95,7 @@ export function useNavigation() {
             {
               label: 'Gerenciar Cursos',
               href: '/manage/courses', // Filtrado por departamento
-            }
+            },
           ],
         },
         {

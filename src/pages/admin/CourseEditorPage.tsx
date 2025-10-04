@@ -32,14 +32,12 @@ import { useFuncionarios } from '@/api/users'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useNavigation from '@/hooks/useNavigation'
 import CourseModulesSection from '@/components/modules/CourseModulesSection'
-// Componentes antigos (Advanced/Curriculum/Publish) removidos da UI direta nesta fase.
 
 interface TabDefinition {
   id: string
   label: string
 }
 
-// Agora somente duas fases: Informações (criação completa) e Módulos (após curso existir)
 const INFO_TAB: TabDefinition = { id: 'info', label: 'Informações' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
 
@@ -48,8 +46,9 @@ export default function CourseEditorPage() {
   const isEdit = !!codigo
   const navigate = useNavigate()
   const location = useLocation() as any
-  const courseQuery = isEdit ? useCourse(codigo!) : null
-  // Normaliza possíveis formatos de retorno (Course direto ou envolto em item/data)
+
+  const courseQuery = isEdit && codigo ? useCourse(codigo) : null
+
   const rawCourseData: any = courseQuery?.data
   const course: Course | null | undefined = rawCourseData
     ? rawCourseData?.codigo
@@ -64,8 +63,10 @@ export default function CourseEditorPage() {
     : null
   const loadingCourse = courseQuery?.isLoading ?? false
   const createCourse = useCreateCourse()
-  const updateCourse = isEdit ? useUpdateCourse(codigo!) : null
-  const modulesQuery = isEdit ? useCourseModules(codigo!) : null
+  const updateCourse = isEdit && codigo ? useUpdateCourse(codigo) : null
+
+  // Só executa useCourseModules se temos um código válido
+  const modulesQuery = isEdit && codigo ? useCourseModules(codigo) : null
   const modules: Module[] = modulesQuery?.data || []
   const { navigationItems } = useNavigation()
   // Dados auxiliares para selects
@@ -100,17 +101,19 @@ export default function CourseEditorPage() {
         const next = {
           ...f,
           codigo: course.codigo,
-            titulo: course.titulo,
-            descricao: course.descricao ?? '',
-            categoria_id: course.categoria_id || '',
-            instrutor_id: course.instrutor_id || '',
-            duracao_estimada: course.duracao_estimada || 0,
-            xp_oferecido: course.xp_oferecido || 0,
-            nivel_dificuldade: course.nivel_dificuldade || 'Iniciante',
-            pre_requisitos: course.pre_requisitos || [],
-            ativo: course.ativo,
+          titulo: course.titulo,
+          descricao: course.descricao ?? '',
+          categoria_id: course.categoria_id || '',
+          instrutor_id: course.instrutor_id || '',
+          duracao_estimada: course.duracao_estimada || 0,
+          xp_oferecido: course.xp_oferecido || 0,
+          nivel_dificuldade: course.nivel_dificuldade || 'Iniciante',
+          pre_requisitos: course.pre_requisitos || [],
+          ativo: course.ativo,
         }
-        const changed = Object.keys(next).some(k => (next as any)[k] !== (f as any)[k])
+        const changed = Object.keys(next).some(
+          k => (next as any)[k] !== (f as any)[k]
+        )
         return changed ? next : f
       })
       if (course.departamento_codigo) {
@@ -138,20 +141,22 @@ export default function CourseEditorPage() {
       // Limpa para não reaplicar ao voltar
       navigate(location.pathname, { replace: true })
     }
-  }, [location, navigate, tab])
+  }, [location, navigate, tab, codigo])
 
   // Atualiza xp com base nos módulos se for edição
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit && codigo && modules && Array.isArray(modules)) {
       const totalXp = modules.reduce((acc, m: any) => acc + (m.xp || 0), 0)
-      setForm((f: any) => (f.xp_oferecido !== totalXp ? { ...f, xp_oferecido: totalXp } : f))
+      setForm((f: any) =>
+        f.xp_oferecido !== totalXp ? { ...f, xp_oferecido: totalXp } : f
+      )
     }
-  }, [modules.length, isEdit])
+  }, [modules?.length, isEdit, codigo])
 
   const handleSaveInfo = async (goToModules = false) => {
     try {
       if (!form.titulo?.trim()) return
-      
+
       if (isEdit && updateCourse) {
         const updateData = {
           titulo: form.titulo,
@@ -171,36 +176,19 @@ export default function CourseEditorPage() {
           setTimeout(() => navigate('/manage/courses'), 1500)
         }
       } else {
-        const response = await createCourse.mutateAsync({
-          codigo: form.codigo,
-          titulo: form.titulo,
-          descricao: form.descricao,
-          categoria_id: form.categoria_id,
-          instrutor_id: form.instrutor_id,
-          duracao_estimada: form.duracao_estimada,
-          xp_oferecido: form.xp_oferecido,
-          nivel_dificuldade: form.nivel_dificuldade,
-          pre_requisitos: form.pre_requisitos,
-          ativo: form.ativo,
-        })
-        
-           if (goToModules) {
-          navigate(`/manage/courses/${(response as any).curso?.codigo || response.codigo}/edit`, {
-            state: { nextTab: MODULES_TAB.id },
-          })
-        } else {
-          // Se não for para módulos, voltar para a lista de cursos
-          setTimeout(() => navigate('/manage/courses'), 1500)
-        }
+        setTimeout(() => navigate('/manage/courses'), 1500)
       }
-    } catch (e: any) {
-    }
+    } catch (e: any) {}
   }
-
 
   const renderCurrent = () => {
     // Evita piscar formulário vazio enquanto carrega dados em modo edição
-    if (isEdit && loadingCourse) return <Box sx={{ display:'flex', justifyContent:'center', py:4 }}><CircularProgress size={28} /></Box>
+    if (isEdit && loadingCourse)
+      return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress size={28} />
+        </Box>
+      )
     if (tab === INFO_TAB.id) {
       return (
         <Stack gap={2}>
@@ -405,10 +393,7 @@ export default function CourseEditorPage() {
             </Box>
           </Box>
           <Stack direction='row' gap={1} justifyContent='flex-end'>
-            <Button
-              variant='text'
-              onClick={() => navigate('/manage/courses')}
-            >
+            <Button variant='text' onClick={() => navigate('/manage/courses')}>
               Cancelar
             </Button>
             <Button
@@ -422,28 +407,38 @@ export default function CourseEditorPage() {
             >
               Salvar
             </Button>
-            <Button
-              variant='contained'
-              onClick={() => handleSaveInfo(true)}
-              disabled={
-                createCourse.isPending ||
-                updateCourse?.isPending ||
-                !form.titulo
-              }
-            >
-              Próximo
-            </Button>
+            {isEdit && (
+              <Button
+                variant='contained'
+                onClick={() => handleSaveInfo(true)}
+                disabled={
+                  createCourse.isPending ||
+                  updateCourse?.isPending ||
+                  !form.titulo
+                }
+              >
+                Próximo
+              </Button>
+            )}
           </Stack>
         </Stack>
       )
     }
-    if (tab === MODULES_TAB.id) return <CourseModulesSection cursoCodigo={codigo!} onTotalXpChange={total => setForm((f:any)=>({...f, xp_oferecido: total}))} />
+    if (tab === MODULES_TAB.id)
+      return (
+        <CourseModulesSection
+          cursoCodigo={codigo!}
+          onTotalXpChange={total =>
+            setForm((f: any) => ({ ...f, xp_oferecido: total }))
+          }
+        />
+      )
     return null
   }
 
   return (
     <DashboardLayout items={navigationItems}>
-      <Box sx={{   display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Stack
             direction='row'
@@ -451,9 +446,7 @@ export default function CourseEditorPage() {
             alignItems='center'
           >
             <Typography variant='h6'>
-              {isEdit
-                ? `Editar Curso — ${course?.titulo || form.titulo}`
-                : 'Novo Curso'}
+              {isEdit ? `${course?.titulo || form.titulo}` : 'Novo Curso'}
             </Typography>
           </Stack>
           <Tabs
@@ -463,11 +456,7 @@ export default function CourseEditorPage() {
             allowScrollButtonsMobile
           >
             <Tab value={INFO_TAB.id} label={INFO_TAB.label} />
-            <Tab
-              value={MODULES_TAB.id}
-              label={MODULES_TAB.label}
-              disabled={!isEdit}
-            />
+            {isEdit && <Tab value={MODULES_TAB.id} label={MODULES_TAB.label} />}
           </Tabs>
         </Paper>
         <Paper sx={{ p: 2, minHeight: 400 }}>

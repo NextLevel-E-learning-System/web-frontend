@@ -50,11 +50,13 @@ export default function AdminCategories() {
 
   const { data: departamentosResponse, isLoading: loadingDepartamentos } =
     useListarDepartamentosAdmin()
-  const departamentos = (departamentosResponse as any)?.items || departamentosResponse || []
-  
+  const departamentos =
+    (departamentosResponse as any)?.items || departamentosResponse || []
+
   const { data: categoriasResponse, isLoading: loadingCategorias } =
     useCategories()
-  const categorias = (categoriasResponse as any)?.items || categoriasResponse || []
+  const categorias =
+    (categoriasResponse as any)?.items || categoriasResponse || []
 
   const createCategoryMutation = useCreateCategory()
   const updateCategoryMutation = useUpdateCategory()
@@ -79,11 +81,17 @@ export default function AdminCategories() {
 
   const categoriasFiltradas = useMemo(() => {
     if (selectedDept === 'all') return categorias
-    return categorias.filter((cat: { departamento_codigo: string }) => cat.departamento_codigo === selectedDept)
+    return categorias.filter(
+      (cat: { departamento_codigo: string }) =>
+        cat.departamento_codigo === selectedDept
+    )
   }, [categorias, selectedDept])
 
   const getDepartmentName = (codigo: string) => {
-    return departamentos.find((d: { codigo: string }) => d.codigo === codigo)?.nome || codigo
+    return (
+      departamentos.find((d: { codigo: string }) => d.codigo === codigo)
+        ?.nome || codigo
+    )
   }
 
   const resetForm = () => {
@@ -394,11 +402,16 @@ export default function AdminCategories() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept: { departamento_codigo: string; nome: string }) => (
-                      <MenuItem key={dept.departamento_codigo} value={dept.departamento_codigo}>
-                        {dept.nome} ({dept.departamento_codigo})
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { departamento_codigo: string; nome: string }) => (
+                        <MenuItem
+                          key={dept.departamento_codigo}
+                          value={dept.departamento_codigo}
+                        >
+                          {dept.nome} ({dept.departamento_codigo})
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -539,11 +552,16 @@ export default function AdminCategories() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept: { departamento_codigo: string; nome: string }) => (
-                      <MenuItem key={dept.departamento_codigo} value={dept.departamento_codigo}>
-                        {dept.nome} ({dept.departamento_codigo})
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { departamento_codigo: string; nome: string }) => (
+                        <MenuItem
+                          key={dept.departamento_codigo}
+                          value={dept.departamento_codigo}
+                        >
+                          {dept.nome} ({dept.departamento_codigo})
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>

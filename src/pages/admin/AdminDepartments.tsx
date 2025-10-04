@@ -37,7 +37,7 @@ import {
   useDeleteDepartamento,
   type Departamento,
 } from '@/api/users'
-import DataTable,{ type Column }  from '@/components/common/DataTable'
+import DataTable, { type Column } from '@/components/common/DataTable'
 
 interface DepartmentForm {
   codigo: string
@@ -56,7 +56,8 @@ export default function AdminDepartments() {
     refetch,
   } = useListarDepartamentosAdmin()
   // A resposta da API vem como { items: [...] }
-  const departamentos = (departamentosResponse as any)?.items || departamentosResponse || []
+  const departamentos =
+    (departamentosResponse as any)?.items || departamentosResponse || []
   const { data: funcionariosResponse } = useFuncionarios()
   const funcionarios = funcionariosResponse?.items || []
   const criarDepartamento = useCriarDepartamento()
@@ -317,7 +318,7 @@ export default function AdminDepartments() {
   ]
 
   return (
-    <DashboardLayout   items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box>
         <Box
           sx={{

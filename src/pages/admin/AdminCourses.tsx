@@ -109,7 +109,7 @@ export default function AdminCourses() {
 
   // Handlers substituídos por navegação
   const handleCreateCourse = () => navigate('/manage/courses/new')
-  
+
   const handleEditCourse = (curso: Curso) => {
     navigate(`/manage/courses/${curso.codigo}/edit`)
   }
@@ -186,9 +186,9 @@ export default function AdminCourses() {
       align: 'left',
       render: (_, curso) => (
         <Box>
-            <Typography variant='body2' fontWeight={500}>
-              {curso.titulo}
-            </Typography>
+          <Typography variant='body2' fontWeight={500}>
+            {curso.titulo}
+          </Typography>
           <Box
             sx={{
               display: 'flex',
@@ -241,9 +241,9 @@ export default function AdminCourses() {
           <Typography variant='body2'>
             {instrutor?.nome
               ? (() => {
-                  const nome = instrutor.nome
-                    .trim().split(' ')
-                  return `${nome[0]}`})()
+                  const nome = instrutor.nome.trim().split(' ')
+                  return `${nome[0]}`
+                })()
               : '-'}
           </Typography>
         )
@@ -488,9 +488,16 @@ export default function AdminCourses() {
                 handleEditCourse(selectedCourseForMenu)
               }
             }}
-            disabled={selectedCourseForMenu ? !canEditCourse(selectedCourseForMenu) : false}
+            disabled={
+              selectedCourseForMenu
+                ? !canEditCourse(selectedCourseForMenu)
+                : false
+            }
             sx={{
-              opacity: selectedCourseForMenu && !canEditCourse(selectedCourseForMenu) ? 0.5 : 1
+              opacity:
+                selectedCourseForMenu && !canEditCourse(selectedCourseForMenu)
+                  ? 0.5
+                  : 1,
             }}
           >
             <EditIcon sx={{ mr: 1 }} fontSize='small' />

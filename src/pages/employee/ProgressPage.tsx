@@ -9,7 +9,6 @@ import {
 } from '@mui/material'
 import {
   MenuBook,
-  WorkspacePremium,
   StarRate,
   EmojiEvents,
   Nightlight,
@@ -23,17 +22,18 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import { type DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboardCompleto } from '@/api/users'
-import StatsCard from '@/components/common/StatCard'
-import TimeRangeToggle, { type TimeRange } from '@/components/common/TimeRangeToggle'
+import TimeRangeToggle, {
+  type TimeRange,
+} from '@/components/common/TimeRangeToggle'
 import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import AchievementCard from '@/components/employee/AchievementCard'
 import GoalCard from '@/components/employee/GoalCard'
+import MetricCard from '@/components/common/StatCard'
 
 export default function ProgressPage() {
   const { dashboard, isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
 
-  // Type guard para garantir que é um dashboard de aluno
   const alunoData =
     dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
 
@@ -83,7 +83,7 @@ export default function ProgressPage() {
           </Box>
           <TimeRangeToggle
             value={'all'}
-            onChange={function (value: TimeRange): void {
+            onChange={function (_value: TimeRange): void {
               throw new Error('Function not implemented.')
             }}
           />
@@ -95,35 +95,39 @@ export default function ProgressPage() {
           </Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatsCard
-                icon={<AccessTimeIcon />}
+              <MetricCard
+                icon={<AccessTimeIcon sx={{ fontSize: 26 }} />}
                 label='Total Learning Time'
                 value='11.1 hrs'
                 trendLabel='12% increase from last month'
+                iconColor='#2563eb'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatsCard
-                icon={<CheckCircleIcon />}
+              <MetricCard
+                icon={<CheckCircleIcon sx={{ fontSize: 26 }} />}
                 label='Courses Completed'
                 value='2'
                 trendLabel='1 more than last month'
+                iconColor='#10b981'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatsCard
-                icon={<MenuBook />}
+              <MetricCard
+                icon={<MenuBook sx={{ fontSize: 26 }} />}
                 label='Lessons Completed'
                 value='17'
                 trendLabel='3 more than last month'
+                iconColor='#8b5cf6'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatsCard
-                icon={<StarRate />}
+              <MetricCard
+                icon={<StarRate sx={{ fontSize: 26 }} />}
                 label='Avg. Rating Given'
                 value='4.9'
                 trendLabel='0.2 higher than last month'
+                iconColor='#f59e0b'
               />
             </Grid>
           </Grid>

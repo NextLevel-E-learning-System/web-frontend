@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react'
 import * as echarts from 'echarts/core'
 import {
-  
   type LegendComponentOption,
   type TooltipComponentOption,
   TooltipComponent,
   LegendComponent,
 } from 'echarts/components'
-import { PieChart, type PieSeriesOption,  } from 'echarts/charts'
+import { PieChart, type PieSeriesOption } from 'echarts/charts'
 import { LabelLayout } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
 

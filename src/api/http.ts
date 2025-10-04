@@ -1,4 +1,8 @@
-import axios, { AxiosError, type AxiosInstance, type AxiosRequestConfig,   } from 'axios'
+import axios, {
+  AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig,
+} from 'axios'
 import { API_BASE_URL } from './config'
 
 export type HttpOptions = AxiosRequestConfig & {

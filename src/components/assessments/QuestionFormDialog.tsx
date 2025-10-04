@@ -113,7 +113,7 @@ export default function QuestionFormDialog({
           correta: question.resposta_correta === t,
         }))
         const newResposta = question.resposta_correta || ''
-        
+
         if (
           tipo !== question.tipo_questao ||
           enunciado !== question.enunciado ||
@@ -148,7 +148,18 @@ export default function QuestionFormDialog({
         }
       }
     }
-  }, [open, mode, question, tipo, enunciado, peso, opcoes, respostaCorreta, afirmacoesVF, usarPesoPorAfirma])
+  }, [
+    open,
+    mode,
+    question,
+    tipo,
+    enunciado,
+    peso,
+    opcoes,
+    respostaCorreta,
+    afirmacoesVF,
+    usarPesoPorAfirma,
+  ])
 
   // Helpers
   const addOpcao = () => {

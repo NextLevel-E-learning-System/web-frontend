@@ -43,13 +43,23 @@ export default function AdminInstructors() {
   const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
-  
-  const instrutores = useMemo(() => instrutoresResponse || [], [instrutoresResponse])
-  const departamentos = useMemo(() => (departamentosResponse as any)?.items || departamentosResponse || [], [departamentosResponse])
-  const cargos = useMemo(() => (cargosResponse as any)?.items || cargosResponse || [], [cargosResponse])
-  
-  const [editingInstructor, setEditingInstructor] =
-    useState<Instructor | null>(null)
+
+  const instrutores = useMemo(
+    () => instrutoresResponse || [],
+    [instrutoresResponse]
+  )
+  const departamentos = useMemo(
+    () => (departamentosResponse as any)?.items || departamentosResponse || [],
+    [departamentosResponse]
+  )
+  const cargos = useMemo(
+    () => (cargosResponse as any)?.items || cargosResponse || [],
+    [cargosResponse]
+  )
+
+  const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(
+    null
+  )
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -57,109 +67,114 @@ export default function AdminInstructors() {
   const toggleStatusMutation = useToggleInstructorStatus()
 
   // Definir colunas da tabela
-  const instructorColumns = useMemo(() => [
-    {
-      id: 'nome',
-      label: 'Nome',
-      width: 200,
-      render: (_value: any, row: Instructor) => (
-        <Box>
-          <Typography variant='body2' fontWeight={500}>
-            {row?.nome}
-          </Typography>
-        </Box>
-      )
-    },
-    {
-      id: 'email',
-      label: 'Email',
-      width: 250,
-      render: (_value: any, row: Instructor) => (
-        <Typography variant='body2'>
-          {row?.email}
-        </Typography>
-      )
-    },
-    {
-      id: 'departamento',
-      label: 'Departamento',
-      width: 150,
-      render: (_value: any, row: Instructor) => (
-           <Typography variant='body2'>
+  const instructorColumns = useMemo(
+    () => [
+      {
+        id: 'nome',
+        label: 'Nome',
+        width: 200,
+        render: (_value: any, row: Instructor) => (
+          <Box>
+            <Typography variant='body2' fontWeight={500}>
+              {row?.nome}
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        width: 250,
+        render: (_value: any, row: Instructor) => (
+          <Typography variant='body2'>{row?.email}</Typography>
+        ),
+      },
+      {
+        id: 'departamento',
+        label: 'Departamento',
+        width: 150,
+        render: (_value: any, row: Instructor) => (
+          <Typography variant='body2'>
             {row?.departamento_nome || '-'}
-            </Typography>
-      )
-    },
-    {
-      id: 'cargo',
-      label: 'Cargo',
-      width: 150,
-      render: (_value: any, row: Instructor) => (
-           <Typography variant='body2'>
-            {row?.cargo_nome || '-'}
-            </Typography>
-      )
-    },
-    {
-      id: 'avaliacao',
-      label: 'Avaliação',
-      width: 100,
-      render: (_value: any, row: Instructor) => (
-        <Typography variant='body2'>
-          {row?.avaliacao_media && row.avaliacao_media !== '0' ? `${parseFloat(row.avaliacao_media).toFixed(1)}/5` : '-'}
-        </Typography>
-      )
-    },
-    {
-      id: 'status',
-      label: 'Status',
-      width: 120,
-      render: (_value: any, row: Instructor) => (
-        <Box display='flex' alignItems='center' gap={1}>
-          <Switch
-            checked={row?.ativo || false}
-            onChange={() => handleToggleAtivo(row?.funcionario_id || '', row?.nome || '', row?.ativo || false)}
-            size='small'
-          />
-          <Typography
-            variant='body2'
-            color={
-              row?.ativo ? 'success.main' : 'text.disabled'
-            }
-            fontWeight={500}
-          >
-            {row?.ativo ? 'Ativo' : 'Inativo'}
           </Typography>
-        </Box>
-      )
-    },
-    {
-      id: 'actions',
-      label: 'Ações',
-      width: 120,
-      align: 'right' as const,
-      render: (_value: any, row: Instructor) => (
-        <Box display='flex' gap={1} justifyContent='flex-end'>
-          <IconButton
-            size='small'
-            onClick={() => setEditingInstructor(row)}
-            aria-label='editar'
-            disabled={!row}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            size='small'
-            aria-label='excluir'
-            color='error'
-            disabled={!row}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Box>
-      )
-    }
-  ], [departamentos, cargos])
+        ),
+      },
+      {
+        id: 'cargo',
+        label: 'Cargo',
+        width: 150,
+        render: (_value: any, row: Instructor) => (
+          <Typography variant='body2'>{row?.cargo_nome || '-'}</Typography>
+        ),
+      },
+      {
+        id: 'avaliacao',
+        label: 'Avaliação',
+        width: 100,
+        render: (_value: any, row: Instructor) => (
+          <Typography variant='body2'>
+            {row?.avaliacao_media && row.avaliacao_media !== '0'
+              ? `${parseFloat(row.avaliacao_media).toFixed(1)}/5`
+              : '-'}
+          </Typography>
+        ),
+      },
+      {
+        id: 'status',
+        label: 'Status',
+        width: 120,
+        render: (_value: any, row: Instructor) => (
+          <Box display='flex' alignItems='center' gap={1}>
+            <Switch
+              checked={row?.ativo || false}
+              onChange={() =>
+                handleToggleAtivo(
+                  row?.funcionario_id || '',
+                  row?.nome || '',
+                  row?.ativo || false
+                )
+              }
+              size='small'
+            />
+            <Typography
+              variant='body2'
+              color={row?.ativo ? 'success.main' : 'text.disabled'}
+              fontWeight={500}
+            >
+              {row?.ativo ? 'Ativo' : 'Inativo'}
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: 'actions',
+        label: 'Ações',
+        width: 120,
+        align: 'right' as const,
+        render: (_value: any, row: Instructor) => (
+          <Box display='flex' gap={1} justifyContent='flex-end'>
+            <IconButton
+              size='small'
+              onClick={() => setEditingInstructor(row)}
+              aria-label='editar'
+              disabled={!row}
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              size='small'
+              aria-label='excluir'
+              color='error'
+              disabled={!row}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        ),
+      },
+    ],
+    [departamentos, cargos]
+  )
 
   const getRowId = useCallback((row: Instructor) => row.funcionario_id, [])
 
@@ -220,8 +235,12 @@ export default function AdminInstructors() {
             onChange={setTab}
             activeLabel='Instrutores Ativos'
             inactiveLabel='Instrutores Inativos'
-            activeCount={instrutores.filter((i: Instructor) => i.ativo === true).length}
-            inactiveCount={instrutores.filter((i: Instructor) => i.ativo === false).length}
+            activeCount={
+              instrutores.filter((i: Instructor) => i.ativo === true).length
+            }
+            inactiveCount={
+              instrutores.filter((i: Instructor) => i.ativo === false).length
+            }
           />
           <Button onClick={openAdd} startIcon={<AddIcon />} variant='contained'>
             Adicionar Instrutor
@@ -229,8 +248,8 @@ export default function AdminInstructors() {
         </Box>
 
         {filtered.length === 0 ? (
-          <Box p={3} textAlign="center">
-            <Typography color="text.secondary">
+          <Box p={3} textAlign='center'>
+            <Typography color='text.secondary'>
               {tab === 'all'
                 ? 'Nenhum instrutor cadastrado. Clique em "Adicionar Instrutor" para começar.'
                 : `Nenhum instrutor ${tab === 'active' ? 'ativo' : 'desabilitado'} encontrado.`}
@@ -290,11 +309,13 @@ export default function AdminInstructors() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept: { codigo: string; nome: string }) => (
-                      <MenuItem key={dept.codigo} value={dept.codigo}>
-                        {dept.nome}
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { codigo: string; nome: string }) => (
+                        <MenuItem key={dept.codigo} value={dept.codigo}>
+                          {dept.nome}
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -356,11 +377,13 @@ export default function AdminInstructors() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map((dept: { codigo: string; nome: string }) => (
-                      <MenuItem key={dept.codigo} value={dept.codigo}>
-                        {dept.nome}
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { codigo: string; nome: string }) => (
+                        <MenuItem key={dept.codigo} value={dept.codigo}>
+                          {dept.nome}
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>

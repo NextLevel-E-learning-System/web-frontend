@@ -42,7 +42,9 @@ function DataTableInner<T extends Record<string, any>>({
 
   const handleChangePage = (_: unknown, newPage: number) => setPage(newPage)
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(+event.target.value)
     setPage(0)
   }
@@ -79,36 +81,31 @@ function DataTableInner<T extends Record<string, any>>({
           </TableHead>
           <TableBody>
             {pageData.map((row, index) => {
-                const actualIndex = page * rowsPerPage + index
-                const rowId = getRowId(row, actualIndex)
-                return (
-                  <TableRow
-                    hover
-                    tabIndex={-1}
-                    key={rowId}
-                    onClick={
-                      onRowClick
-                        ? () => onRowClick(row, actualIndex)
-                        : undefined
-                    }
-                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                  >
-                    {columns.map(column => {
-                      const value = (row as any)[column.id]
-                      return (
-                        <TableCell
-                          key={column.id}
-                          align={column.align || 'left'}
-                        >
-                          {column.render
-                            ? column.render(value, row, actualIndex)
-                            : value}
-                        </TableCell>
-                      )
-                    })}
-                  </TableRow>
-                )
-              })}
+              const actualIndex = page * rowsPerPage + index
+              const rowId = getRowId(row, actualIndex)
+              return (
+                <TableRow
+                  hover
+                  tabIndex={-1}
+                  key={rowId}
+                  onClick={
+                    onRowClick ? () => onRowClick(row, actualIndex) : undefined
+                  }
+                  sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                >
+                  {columns.map(column => {
+                    const value = (row as any)[column.id]
+                    return (
+                      <TableCell key={column.id} align={column.align || 'left'}>
+                        {column.render
+                          ? column.render(value, row, actualIndex)
+                          : value}
+                      </TableCell>
+                    )
+                  })}
+                </TableRow>
+              )
+            })}
           </TableBody>
         </Table>
       </TableContainer>

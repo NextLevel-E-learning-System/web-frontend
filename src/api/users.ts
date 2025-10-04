@@ -480,9 +480,9 @@ export function useInstrutores() {
   return useQuery<Instructor[]>({
     queryKey: ['users', 'instrutores'],
     queryFn: () =>
-      authGet<{ items: Instructor[] }>(`${API_ENDPOINTS.USERS}/instrutores`).then(
-        response => response.items
-      ),
+      authGet<{ items: Instructor[] }>(
+        `${API_ENDPOINTS.USERS}/instrutores`
+      ).then(response => response.items),
   })
 }
 
@@ -491,9 +491,9 @@ export function useInstrutor(id: string) {
   return useQuery<Instructor>({
     queryKey: ['users', 'instrutores', id],
     queryFn: () =>
-      authGet<{ instrutor: Instructor }>(`${API_ENDPOINTS.USERS}/instrutores/${id}`).then(
-        response => response.instrutor
-      ),
+      authGet<{ instrutor: Instructor }>(
+        `${API_ENDPOINTS.USERS}/instrutores/${id}`
+      ).then(response => response.instrutor),
     enabled: !!id,
   })
 }
@@ -504,7 +504,10 @@ export function useCreateInstrutor() {
   return useMutation({
     mutationKey: ['users', 'instrutores', 'create'],
     mutationFn: (data: InstructorCreate) =>
-      authPost<{ instrutor: Instructor }>(`${API_ENDPOINTS.USERS}/instrutores`, data),
+      authPost<{ instrutor: Instructor }>(
+        `${API_ENDPOINTS.USERS}/instrutores`,
+        data
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
     },
@@ -517,10 +520,15 @@ export function useUpdateInstrutor() {
   return useMutation({
     mutationKey: ['users', 'instrutores', 'update'],
     mutationFn: ({ id, data }: { id: string; data: InstructorUpdate }) =>
-      authPut<{ instrutor: Instructor }>(`${API_ENDPOINTS.USERS}/instrutores/${id}`, data),
+      authPut<{ instrutor: Instructor }>(
+        `${API_ENDPOINTS.USERS}/instrutores/${id}`,
+        data
+      ),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
-      queryClient.invalidateQueries({ queryKey: ['users', 'instrutores', variables.id] })
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'instrutores', variables.id],
+      })
     },
   })
 }
@@ -544,7 +552,10 @@ export function useToggleInstructorStatus() {
   return useMutation({
     mutationKey: ['users', 'instrutores', 'toggle-status'],
     mutationFn: (id: string) =>
-      authPut<{ ativo: boolean; mensagem: string }>(`${API_ENDPOINTS.USERS}/instrutores/${id}/toggle-status`, {}),
+      authPut<{ ativo: boolean; mensagem: string }>(
+        `${API_ENDPOINTS.USERS}/instrutores/${id}/toggle-status`,
+        {}
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
     },
