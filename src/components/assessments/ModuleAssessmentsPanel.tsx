@@ -15,6 +15,7 @@ import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import ListAltIcon from '@mui/icons-material/ListAlt'
 import { Quiz } from '@mui/icons-material'
 import AssessmentFormDialog from './AssessmentFormDialog'
@@ -29,6 +30,7 @@ import {
   useUpdateQuestion,
   useDeleteQuestion,
   type Question,
+  type Assessment,
 } from '@/api/assessments'
 
 interface Props {
@@ -108,9 +110,26 @@ export default function ModuleAssessmentsPanel({
   )
   const [confirm, setConfirm] = useState<{
     open: boolean
-    kind: 'assessment' | 'question'
+    kind: 'assessment' | 'question' | 'toggle-assessment'
     id: string
+    assessment?: Assessment
   } | null>(null)
+
+  // Hook para toggle de status - usa um estado temporário
+  const [assessmentToToggle, setAssessmentToToggle] = useState<string | null>(
+    null
+  )
+  const toggleAssessmentHook = useUpdateAssessment(assessmentToToggle || '')
+
+  // Função para alternar status ativo/inativo
+  const handleToggleAssessmentStatus = (assessment: Assessment) => {
+    setConfirm({
+      open: true,
+      kind: 'toggle-assessment',
+      id: assessment.codigo,
+      assessment,
+    })
+  }
 
   return (
     <Paper variant='outlined' sx={{ p: 2, display: 'grid', gap: 2 }}>
@@ -312,22 +331,87 @@ export default function ModuleAssessmentsPanel({
                                       </Box>
                                     )}
 
-                                  {/* Mostrar resposta para Verdadeiro/Falso */}
+                                  {/* Mostrar opções para Verdadeiro/Falso */}
                                   {q.tipo === 'VERDADEIRO_FALSO' &&
-                                    q.resposta_correta && (
+                                    q.opcoes_resposta && (
                                       <Box sx={{ mt: 1 }}>
                                         <Typography
                                           variant='caption'
                                           color='text.secondary'
+                                          sx={{ display: 'block', mb: 0.5 }}
                                         >
-                                          Resposta correta:
-                                          <Chip
-                                            size='small'
-                                            label={q.resposta_correta}
-                                            color='success'
-                                            sx={{ ml: 1, fontSize: '0.7rem' }}
-                                          />
+                                          Afirmações:
                                         </Typography>
+                                        <Stack gap={0.5}>
+                                          {q.opcoes_resposta.map(
+                                            (opcao: string, idx: number) => {
+                                              // Parse do formato "texto::resposta"
+                                              const [texto, resposta] =
+                                                opcao.split('::')
+                                              const respostasCorretas =
+                                                q.resposta_correta?.split(
+                                                  ','
+                                                ) || []
+                                              const isCorrect =
+                                                respostasCorretas[idx] ===
+                                                resposta
+
+                                              return (
+                                                <Box
+                                                  key={idx}
+                                                  sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1,
+                                                  }}
+                                                >
+                                                  <Chip
+                                                    size='small'
+                                                    label={`${idx + 1}`}
+                                                    variant='outlined'
+                                                    sx={{
+                                                      minWidth: 32,
+                                                      fontSize: '0.7rem',
+                                                    }}
+                                                  />
+                                                  <Typography
+                                                    variant='caption'
+                                                    sx={{
+                                                      flex: 1,
+                                                      color: 'text.secondary',
+                                                    }}
+                                                  >
+                                                    {texto}
+                                                  </Typography>
+                                                  <Chip
+                                                    size='small'
+                                                    label={
+                                                      resposta === 'V'
+                                                        ? 'Verdadeiro'
+                                                        : 'Falso'
+                                                    }
+                                                    color={
+                                                      isCorrect
+                                                        ? 'success'
+                                                        : 'default'
+                                                    }
+                                                    variant={
+                                                      isCorrect
+                                                        ? 'filled'
+                                                        : 'outlined'
+                                                    }
+                                                    sx={{
+                                                      fontSize: '0.65rem',
+                                                      fontWeight: isCorrect
+                                                        ? 600
+                                                        : 400,
+                                                    }}
+                                                  />
+                                                </Box>
+                                              )
+                                            }
+                                          )}
+                                        </Stack>
                                       </Box>
                                     )}
 
@@ -417,18 +501,16 @@ export default function ModuleAssessmentsPanel({
                       <EditIcon fontSize='inherit' />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title='Inativar'>
+                  <Tooltip title={a.ativo ? 'Inativar' : 'Ativar'}>
                     <IconButton
                       size='small'
-                      onClick={() =>
-                        setConfirm({
-                          open: true,
-                          kind: 'assessment',
-                          id: a.codigo,
-                        })
-                      }
+                      onClick={() => handleToggleAssessmentStatus(a)}
                     >
-                      <DeleteIcon fontSize='inherit' />
+                      {a.ativo ? (
+                        <DeleteIcon fontSize='inherit' />
+                      ) : (
+                        <CheckCircleIcon fontSize='inherit' />
+                      )}
                     </IconButton>
                   </Tooltip>
                 </Stack>
@@ -479,12 +561,20 @@ export default function ModuleAssessmentsPanel({
         title={
           confirm?.kind === 'assessment'
             ? 'Inativar avaliação'
-            : 'Excluir questão'
+            : confirm?.kind === 'toggle-assessment'
+              ? confirm.assessment?.ativo
+                ? 'Inativar avaliação'
+                : 'Ativar avaliação'
+              : 'Excluir questão'
         }
         message={
           confirm?.kind === 'assessment'
             ? 'Tem certeza que deseja inativar esta avaliação?'
-            : 'Tem certeza que deseja excluir esta questão?'
+            : confirm?.kind === 'toggle-assessment'
+              ? confirm.assessment?.ativo
+                ? 'Tem certeza que deseja inativar esta avaliação?'
+                : 'Tem certeza que deseja ativar esta avaliação?'
+              : 'Tem certeza que deseja excluir esta questão?'
         }
         onClose={() => setConfirm(null)}
         onConfirm={async () => {
@@ -492,6 +582,15 @@ export default function ModuleAssessmentsPanel({
           try {
             if (confirm.kind === 'assessment') {
               await deleteAssessment.mutateAsync(confirm.id)
+            } else if (
+              confirm.kind === 'toggle-assessment' &&
+              confirm.assessment
+            ) {
+              // Usar o hook criado no nível superior
+              setAssessmentToToggle(confirm.id)
+              await toggleAssessmentHook.mutateAsync({
+                ativo: !confirm.assessment.ativo,
+              })
             } else {
               await deleteQuestion(confirm.id)
             }
@@ -499,9 +598,18 @@ export default function ModuleAssessmentsPanel({
             /* empty */
           } finally {
             setConfirm(null)
+            setAssessmentToToggle(null)
           }
         }}
-        confirmText={confirm?.kind === 'assessment' ? 'Inativar' : 'Excluir'}
+        confirmText={
+          confirm?.kind === 'assessment'
+            ? 'Inativar'
+            : confirm?.kind === 'toggle-assessment'
+              ? confirm.assessment?.ativo
+                ? 'Inativar'
+                : 'Ativar'
+              : 'Excluir'
+        }
       />
       <Divider sx={{ mt: 2 }} />
     </Paper>

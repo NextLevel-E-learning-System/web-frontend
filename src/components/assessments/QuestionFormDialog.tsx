@@ -229,9 +229,21 @@ export default function QuestionFormDialog({
                   }
                 }}
               >
-                <Tab value={TIPO_MULTIPLA} label='Múltipla Escolha' />
-                <Tab value={TIPO_VF} label='V / F' />
-                <Tab value={TIPO_DISS} label='Dissertativa' />
+                <Tab
+                  value={TIPO_MULTIPLA}
+                  label='Múltipla Escolha'
+                  disabled={mode === 'edit' && question?.tipo !== TIPO_MULTIPLA}
+                />
+                <Tab
+                  value={TIPO_VF}
+                  label='V / F'
+                  disabled={mode === 'edit' && question?.tipo !== TIPO_VF}
+                />
+                <Tab
+                  value={TIPO_DISS}
+                  label='Dissertativa'
+                  disabled={mode === 'edit' && question?.tipo !== TIPO_DISS}
+                />
               </Tabs>
             </Grid>
             <Grid size={{ xs: 2 }}>
@@ -351,8 +363,12 @@ export default function QuestionFormDialog({
                       )
                     }
                   >
-                    <ToggleButton value='V'>V</ToggleButton>
-                    <ToggleButton value='F'>F</ToggleButton>
+                    <ToggleButton value='V' color='success'>
+                      V
+                    </ToggleButton>
+                    <ToggleButton value='F' color='error'>
+                      F
+                    </ToggleButton>
                   </ToggleButtonGroup>
                   <Tooltip title='Remover afirmação'>
                     <IconButton
