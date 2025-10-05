@@ -115,11 +115,10 @@ export default function ModuleAssessmentsPanel({
     assessment?: Assessment
   } | null>(null)
 
-  // Hook para toggle de status - usa um estado temporário
-  const [assessmentToToggle, setAssessmentToToggle] = useState<string | null>(
-    null
+  // Hook para toggle de status
+  const toggleAssessmentHook = useUpdateAssessment(
+    confirm?.kind === 'toggle-assessment' ? confirm.id : ''
   )
-  const toggleAssessmentHook = useUpdateAssessment(assessmentToToggle || '')
 
   // Função para alternar status ativo/inativo
   const handleToggleAssessmentStatus = (assessment: Assessment) => {
@@ -586,10 +585,19 @@ export default function ModuleAssessmentsPanel({
               confirm.kind === 'toggle-assessment' &&
               confirm.assessment
             ) {
-              // Usar o hook criado no nível superior
-              setAssessmentToToggle(confirm.id)
               await toggleAssessmentHook.mutateAsync({
+                titulo: confirm.assessment.titulo,
+                tempo_limite: confirm.assessment.tempo_limite
+                  ? Number(confirm.assessment.tempo_limite)
+                  : undefined,
+                tentativas_permitidas: confirm.assessment.tentativas_permitidas
+                  ? Number(confirm.assessment.tentativas_permitidas)
+                  : undefined,
+                nota_minima: confirm.assessment.nota_minima
+                  ? Number(confirm.assessment.nota_minima)
+                  : undefined,
                 ativo: !confirm.assessment.ativo,
+                modulo_id: confirm.assessment.modulo_id,
               })
             } else {
               await deleteQuestion(confirm.id)
@@ -598,7 +606,6 @@ export default function ModuleAssessmentsPanel({
             /* empty */
           } finally {
             setConfirm(null)
-            setAssessmentToToggle(null)
           }
         }}
         confirmText={
