@@ -116,11 +116,13 @@ export interface UpdateModuleInput {
 
 export interface Material {
   id: string
+  modulo_id: string
   nome_arquivo: string
   storage_key: string
-  tamanho: number
+  tamanho: string | number // Vem como string do backend
   tipo_arquivo: string
-  url_download: string
+  url_download?: string
+  criado_em: string
 }
 
 export interface UploadMaterialInput {
@@ -350,10 +352,12 @@ export function useDeleteModule() {
 export function useModuleMaterials(moduloId: string) {
   return useQuery<Material[]>({
     queryKey: ['courses', 'materials', moduloId],
-    queryFn: () =>
-      authGet<Material[]>(
+    queryFn: async () => {
+      const response = await authGet<{ items: Material[]; mensagem: string }>(
         `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/materiais`
-      ),
+      )
+      return response.items || []
+    },
     enabled: !!moduloId,
   })
 }

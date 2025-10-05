@@ -31,6 +31,11 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
   const deleteMaterial = useDeleteMaterial()
   const [uploading, setUploading] = useState(false)
 
+  // Debug: log dos dados recebidos
+  console.log('ModuleMaterialsPanel - materialsRaw:', materialsRaw)
+  console.log('ModuleMaterialsPanel - materials:', materials)
+  console.log('ModuleMaterialsPanel - isLoading:', isLoading)
+
   const handleSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -95,7 +100,7 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
                   {m.nome_arquivo}
                 </Typography>
                 <Typography variant='caption' color='text.secondary'>
-                  {(m.tamanho / 1024).toFixed(1)} KB
+                  {(Number(m.tamanho) / 1024).toFixed(1)} KB
                 </Typography>
               </Box>
               <Tooltip title='Remover material'>
