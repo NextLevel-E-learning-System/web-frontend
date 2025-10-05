@@ -19,6 +19,7 @@ import {
   useDeleteMaterial,
 } from '@/api/courses'
 import { convertFileToBase64 } from '@/api/courses'
+import ConfirmationDialog from '../common/ConfirmationDialog'
 
 interface Props {
   moduloId: string
@@ -34,11 +35,11 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
   const upload = useUploadMaterial(moduloId)
   const deleteMaterial = useDeleteMaterial()
   const [uploading, setUploading] = useState(false)
-
-  // Debug: log dos dados recebidos
-  console.log('ModuleMaterialsPanel - materialsRaw:', materialsRaw)
-  console.log('ModuleMaterialsPanel - materials:', materials)
-  console.log('ModuleMaterialsPanel - isLoading:', isLoading)
+  const [confirmDelete, setConfirmDelete] = useState<{
+    open: boolean
+    materialId?: string
+    materialName?: string
+  }>({ open: false })
 
   const handleSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -53,12 +54,21 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
     }
   }
 
-  const handleDeleteMaterial = async (materialId: string) => {
-    if (!confirm('Tem certeza que deseja remover este material?')) return
+  const handleDeleteMaterial = async (
+    materialId: string,
+    materialName: string
+  ) => {
+    setConfirmDelete({ open: true, materialId, materialName })
+  }
+
+  const confirmDeleteMaterial = async () => {
+    if (!confirmDelete.materialId) return
     try {
-      await deleteMaterial.mutateAsync(materialId)
+      await deleteMaterial.mutateAsync(confirmDelete.materialId)
+      setConfirmDelete({ open: false })
     } catch (error) {
       console.error('Erro ao deletar material:', error)
+      setConfirmDelete({ open: false })
     }
   }
 
@@ -71,7 +81,7 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
   return (
     <Paper variant='outlined' sx={{ p: 2, display: 'grid', gap: 2 }}>
       <Stack direction='row' justifyContent='space-between' alignItems='center'>
-        <Typography variant='subtitle2'>Materiais</Typography>
+        <Typography variant='h6'>Materiais</Typography>
         <Button
           component='label'
           startIcon={<CloudUploadIcon />}
@@ -110,7 +120,7 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
               <Tooltip title='Remover material'>
                 <IconButton
                   size='small'
-                  onClick={() => handleDeleteMaterial(m.id)}
+                  onClick={() => handleDeleteMaterial(m.id, m.nome_arquivo)}
                   disabled={deleteMaterial.isPending}
                 >
                   <DeleteIcon fontSize='inherit' />
@@ -120,6 +130,17 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
           ))}
         </Stack>
       )}
+      <ConfirmationDialog
+        open={confirmDelete.open}
+        onClose={() => setConfirmDelete({ open: false })}
+        onConfirm={confirmDeleteMaterial}
+        title='Remover Material'
+        message={`Tem certeza que deseja remover o material "${confirmDelete.materialName}"? Esta ação não pode ser desfeita.`}
+        confirmText='Remover'
+        cancelText='Cancelar'
+        severity='error'
+        isLoading={deleteMaterial.isPending}
+      />
     </Paper>
   )
 }

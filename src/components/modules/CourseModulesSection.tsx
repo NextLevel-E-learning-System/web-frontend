@@ -117,10 +117,7 @@ export default function CourseModulesSection({
                     '& .MuiAccordionSummary-expandIconWrapper': { order: 3 },
                   }}
                 >
-                  <Typography variant='body2' fontWeight={600}>
-                    {m.titulo}
-                  </Typography>
-                  <Chip size='small' label={`Ordem ${m.ordem}`} />
+                  <Chip size='small' label={`Módulo: ${m.ordem}`} />
                   {m.xp ? (
                     <Chip
                       size='small'
@@ -128,6 +125,9 @@ export default function CourseModulesSection({
                       label={`${m.xp} XP`}
                     />
                   ) : null}
+                  <Typography variant='body2' fontWeight={600}>
+                    {m.titulo}
+                  </Typography>
                   <Box sx={{ marginLeft: 'auto', order: 2 }}>
                     <Tooltip title='Excluir módulo'>
                       <IconButton
@@ -159,7 +159,7 @@ export default function CourseModulesSection({
                       }
                       scrollButtons='auto'
                     >
-                      <Tab value='info' label='Info' />
+                      <Tab value='info' label={`Módulo ${m.ordem}`} />
                       {allowedTabs.includes('materiais') && (
                         <Tab value='materiais' label='Materiais' />
                       )}

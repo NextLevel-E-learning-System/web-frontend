@@ -39,7 +39,7 @@ interface TabDefinition {
   label: string
 }
 
-const INFO_TAB: TabDefinition = { id: 'info', label: 'Informações' }
+const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
 
 export default function CourseEditorPage() {
