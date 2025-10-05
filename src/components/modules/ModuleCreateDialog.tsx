@@ -75,14 +75,14 @@ export default function ModuleCreateDialog({
       <DialogTitle>Novo Módulo</DialogTitle>
       <DialogContent sx={{ py: 0 }}>
         <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 6, md: 2 }}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <TextField
               label='Ordem'
               type='number'
               value={ordem}
               onChange={e => setOrdem(Number(e.target.value) || 1)}
               fullWidth
-             />
+            />
           </Grid>
           <Grid size={{ xs: 18, md: 10 }}>
             <TextField
@@ -93,14 +93,14 @@ export default function ModuleCreateDialog({
               required
             />
           </Grid>
-            <Grid size={{ xs: 4, md: 2 }}>
+          <Grid size={{ xs: 4, md: 2 }}>
             <TextField
               label='XP'
               type='number'
               value={xp}
               onChange={e => setXp(Number(e.target.value) || 0)}
               fullWidth
-             />
+            />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth>
@@ -137,7 +137,7 @@ export default function ModuleCreateDialog({
               multiline
               minRows={3}
               fullWidth
-             />
+            />
           </Grid>
         </Grid>
       </DialogContent>
