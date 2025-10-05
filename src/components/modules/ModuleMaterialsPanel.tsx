@@ -13,7 +13,11 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { PictureAsPdf } from '@mui/icons-material'
 import DescriptionIcon from '@mui/icons-material/Description'
-import { useModuleMaterials, useUploadMaterial } from '@/api/courses'
+import {
+  useModuleMaterials,
+  useUploadMaterial,
+  useDeleteMaterial,
+} from '@/api/courses'
 import { convertFileToBase64 } from '@/api/courses'
 
 interface Props {
@@ -24,6 +28,7 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
   const { data: materialsRaw, isLoading } = useModuleMaterials(moduloId)
   const materials = Array.isArray(materialsRaw) ? materialsRaw : []
   const upload = useUploadMaterial(moduloId)
+  const deleteMaterial = useDeleteMaterial()
   const [uploading, setUploading] = useState(false)
 
   const handleSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +41,15 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
     } finally {
       setUploading(false)
       e.target.value = ''
+    }
+  }
+
+  const handleDeleteMaterial = async (materialId: string) => {
+    if (!confirm('Tem certeza que deseja remover este material?')) return
+    try {
+      await deleteMaterial.mutateAsync(materialId)
+    } catch (error) {
+      console.error('Erro ao deletar material:', error)
     }
   }
 
@@ -84,12 +98,14 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
                   {(m.tamanho / 1024).toFixed(1)} KB
                 </Typography>
               </Box>
-              <Tooltip title='Remover (não implementado)'>
-                <span>
-                  <IconButton size='small' disabled>
-                    <DeleteIcon fontSize='inherit' />
-                  </IconButton>
-                </span>
+              <Tooltip title='Remover material'>
+                <IconButton
+                  size='small'
+                  onClick={() => handleDeleteMaterial(m.id)}
+                  disabled={deleteMaterial.isPending}
+                >
+                  <DeleteIcon fontSize='inherit' />
+                </IconButton>
               </Tooltip>
             </Paper>
           ))}

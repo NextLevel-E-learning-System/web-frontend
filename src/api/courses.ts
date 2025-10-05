@@ -361,6 +361,21 @@ export function useUploadMaterial(moduloId: string) {
   })
 }
 
+export function useDeleteMaterial() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['courses', 'materials', 'delete'],
+    mutationFn: (materialId: string) =>
+      authDelete(`${API_ENDPOINTS.COURSES}/materiais/${materialId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['courses', 'materials'],
+      })
+    },
+  })
+}
+
 // Hooks para Catálogo/Listagem Unificada
 export function useCourseCatalog(filters: CatalogFilters = {}) {
   const searchParams = new URLSearchParams()
