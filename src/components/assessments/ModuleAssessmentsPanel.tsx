@@ -33,13 +33,11 @@ import {
 interface Props {
   cursoCodigo: string
   moduloId: string
-  moduloTitulo?: string
 }
 
 export default function ModuleAssessmentsPanel({
   cursoCodigo,
   moduloId,
-  moduloTitulo,
 }: Props) {
   const { data: assessments = [], isLoading } = useAssessments({
     curso_id: cursoCodigo,
@@ -102,14 +100,11 @@ export default function ModuleAssessmentsPanel({
   return (
     <Paper variant='outlined' sx={{ p: 2, display: 'grid', gap: 2 }}>
       <Stack direction='row' justifyContent='space-between' alignItems='center'>
-        <Typography variant='subtitle2'>
-          Avaliações do Módulo {moduloTitulo ? `— ${moduloTitulo}` : ''}
-        </Typography>
+        <Typography variant='h6'>Avaliações</Typography>
         <Button
           startIcon={<AddIcon />}
-          size='small'
           onClick={() => setAssessmentDialog({ open: true, mode: 'create' })}
-          variant='outlined'
+          variant='text'
         >
           Nova Avaliação
         </Button>
@@ -169,9 +164,8 @@ export default function ModuleAssessmentsPanel({
                         alignItems='center'
                         sx={{ mb: 1 }}
                       >
-                        <Typography variant='subtitle2'>Questões</Typography>
+                        <Typography variant='h6'>Questões</Typography>
                         <Button
-                          size='small'
                           startIcon={<AddIcon />}
                           onClick={() =>
                             setQuestionDialog({
@@ -180,7 +174,7 @@ export default function ModuleAssessmentsPanel({
                               assessmentCodigo: a.codigo,
                             })
                           }
-                          variant='outlined'
+                          variant='text'
                         >
                           Nova questão
                         </Button>
@@ -296,7 +290,7 @@ export default function ModuleAssessmentsPanel({
                       <EditIcon fontSize='inherit' />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title='Excluir'>
+                  <Tooltip title='Inativar'>
                     <IconButton
                       size='small'
                       onClick={() =>
@@ -357,12 +351,12 @@ export default function ModuleAssessmentsPanel({
         open={!!confirm?.open}
         title={
           confirm?.kind === 'assessment'
-            ? 'Excluir avaliação'
+            ? 'Inativar avaliação'
             : 'Excluir questão'
         }
         message={
           confirm?.kind === 'assessment'
-            ? 'Tem certeza que deseja excluir esta avaliação? Esta ação é irreversível.'
+            ? 'Tem certeza que deseja inativar esta avaliação?'
             : 'Tem certeza que deseja excluir esta questão?'
         }
         onClose={() => setConfirm(null)}
@@ -375,11 +369,12 @@ export default function ModuleAssessmentsPanel({
               await deleteQuestion(confirm.id)
             }
           } catch {
+            /* empty */
           } finally {
             setConfirm(null)
           }
         }}
-        confirmText='Excluir'
+        confirmText={confirm?.kind === 'assessment' ? 'Inativar' : 'Excluir'}
       />
       <Divider sx={{ mt: 2 }} />
     </Paper>

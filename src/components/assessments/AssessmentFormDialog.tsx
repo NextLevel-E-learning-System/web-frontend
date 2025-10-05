@@ -7,8 +7,6 @@ import {
   TextField,
   Grid,
   Button,
-  FormControlLabel,
-  Switch,
 } from '@mui/material'
 import {
   type CreateAssessmentInput,
@@ -111,25 +109,21 @@ export default function AssessmentFormDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
       <DialogTitle>
-        {mode === 'create'
-          ? 'Nova Avaliação'
-          : `Editar Avaliação (${assessment?.codigo})`}
+        {mode === 'create' ? 'Nova Avaliação' : `Editar Avaliação`}
       </DialogTitle>
-      <DialogContent sx={{ pt: 2 }}>
-        <Grid container spacing={2}>
-          {mode === 'create' && (
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                label='Código'
-                value={codigo}
-                onChange={e => setCodigo(e.target.value)}
-                fullWidth
-                required
-                helperText='Identificador único'
-              />
-            </Grid>
-          )}
-          <Grid size={{ xs: 12 }}>
+      <DialogContent sx={{ py: 0 }}>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid size={{ xs: 6, md: 3 }}>
+            <TextField
+              label='Código'
+              value={codigo}
+              onChange={e => setCodigo(e.target.value)}
+              fullWidth
+              required
+              disabled={mode === 'edit'}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 9 }}>
             <TextField
               label='Título'
               value={titulo}
@@ -186,29 +180,18 @@ export default function AssessmentFormDialog({
               inputProps={{ min: 0, max: 100 }}
             />
           </Grid>
-          {mode === 'edit' && (
-            <Grid size={{ xs: 12 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={ativo}
-                    onChange={e => setAtivo(e.target.checked)}
-                  />
-                }
-                label={ativo ? 'Ativa' : 'Inativa'}
-              />
-            </Grid>
-          )}
         </Grid>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
+      <DialogActions sx={{ p: 3 }}>
+        <Button variant='outlined' onClick={onClose}>
+          Cancelar
+        </Button>
         <Button
           variant='contained'
           onClick={handleSubmit}
           disabled={disableSave}
         >
-          {mode === 'create' ? 'Criar' : 'Salvar'}
+          Salvar
         </Button>
       </DialogActions>
     </Dialog>

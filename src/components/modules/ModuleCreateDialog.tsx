@@ -150,7 +150,7 @@ export default function ModuleCreateDialog({
           onClick={handleSubmit}
           disabled={loading || !titulo.trim()}
         >
-          Criar Módulo
+          Salvar
         </Button>
       </DialogActions>
     </Dialog>

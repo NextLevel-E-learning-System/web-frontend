@@ -161,10 +161,10 @@ export default function CourseModulesSection({
                     >
                       <Tab value='info' label={`Módulo ${m.ordem}`} />
                       {allowedTabs.includes('materiais') && (
-                        <Tab value='materiais' label='Materiais' />
+                        <Tab value='materiais' label='Material' />
                       )}
                       {allowedTabs.includes('avaliacoes') && (
-                        <Tab value='avaliacoes' label='Avaliações' />
+                        <Tab value='avaliacoes' label='Avaliação' />
                       )}
                     </Tabs>
                   </Box>
@@ -184,7 +184,6 @@ export default function CourseModulesSection({
                       <ModuleAssessmentsPanel
                         cursoCodigo={cursoCodigo}
                         moduloId={m.id}
-                        moduloTitulo={m.titulo}
                       />
                     )}
                 </AccordionDetails>
@@ -198,7 +197,7 @@ export default function CourseModulesSection({
         title='Excluir módulo'
         message={
           confirm.moduloId
-            ? `Tem certeza que deseja excluir este módulo? Esta ação não pode ser desfeita e todos os materiais do módulo também serão removidos.`
+            ? `Tem certeza que deseja excluir este módulo? Esta ação não pode ser desfeita.`
             : 'Selecione um módulo para excluir.'
         }
         onConfirm={async () => {

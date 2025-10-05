@@ -15,6 +15,10 @@ import {
   Tooltip,
   FormControlLabel,
   Switch,
+  Tabs,
+  Tab,
+  Grid,
+  Typography,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -232,53 +236,56 @@ export default function QuestionFormDialog({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth='md'>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
       <DialogTitle>
         {mode === 'create' ? 'Nova Questão' : 'Editar Questão'}
       </DialogTitle>
-      <DialogContent sx={{ pt: 2, display: 'grid', gap: 2 }}>
-        <ToggleButtonGroup
-          exclusive
-          value={tipo}
-          onChange={(_, v) => v && setTipo(v)}
-          size='small'
-        >
-          <ToggleButton value={TIPO_MULTIPLA}>Múltipla Escolha</ToggleButton>
-          <ToggleButton value={TIPO_VF}>V / F</ToggleButton>
-          <ToggleButton value={TIPO_DISS}>Dissertativa</ToggleButton>
-        </ToggleButtonGroup>
-        <TextField
-          label='Enunciado'
-          fullWidth
-          multiline
-          minRows={3}
-          value={enunciado}
-          onChange={e => setEnunciado(e.target.value)}
-        />
-        <TextField
-          label='Peso'
-          type='number'
-          value={peso}
-          onChange={e =>
-            setPeso(
-              e.target.value === ''
-                ? ''
-                : Math.max(1, Number(e.target.value) || 1)
-            )
-          }
-          inputProps={{ min: 1 }}
-          sx={{ maxWidth: 180 }}
-        />
+      <DialogContent sx={{ py: 0 }}>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          <Grid size={{ xs: 10, md: 10 }}>
+            <Tabs value={tipo} onChange={(_, v) => v && setTipo(v)}>
+              <Tab value={TIPO_MULTIPLA} label='Múltipla Escolha' />
+              <Tab value={TIPO_VF} label='V / F' />
+              <Tab value={TIPO_DISS} label='Dissertativa' />
+            </Tabs>
+          </Grid>
+          <Grid size={{ xs: 2, md: 2 }}>
+            <TextField
+              label='Peso'
+              variant='standard'
+              type='number'
+              value={peso}
+              onChange={e =>
+                setPeso(
+                  e.target.value === ''
+                    ? ''
+                    : Math.max(1, Number(e.target.value) || 1)
+                )
+              }
+              inputProps={{ min: 1 }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              label='Enunciado'
+              fullWidth
+              multiline
+              minRows={3}
+              value={enunciado}
+              onChange={e => setEnunciado(e.target.value)}
+            />
+          </Grid>
+        </Grid>
         {tipo === TIPO_MULTIPLA && (
-          <Box sx={{ display: 'grid', gap: 1 }}>
-            <Stack direction='row' alignItems='center' gap={1}>
-              <Chip label='Alternativas' size='small' color='primary' />
-              <Button
-                startIcon={<AddIcon />}
-                size='small'
-                variant='outlined'
-                onClick={addOpcao}
-              >
+          <Box sx={{ mt: 1.5 }}>
+            <Stack
+              direction='row'
+              justifyContent='space-between'
+              alignItems='center'
+              sx={{ mb: 1 }}
+            >
+              <Typography variant='h6'>Alternativas</Typography>
+              <Button startIcon={<AddIcon />} variant='text' onClick={addOpcao}>
                 Adicionar
               </Button>
             </Stack>
@@ -296,7 +303,7 @@ export default function QuestionFormDialog({
             ))}
             {opcoes.length === 0 && (
               <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
-                Nenhuma opção adicionada.
+                Nenhuma alternativa adicionada.
               </Box>
             )}
           </Box>
@@ -394,14 +401,16 @@ export default function QuestionFormDialog({
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancelar</Button>
+      <DialogActions sx={{ p: 3 }}>
+        <Button variant='outlined' onClick={onClose}>
+          Cancelar
+        </Button>
         <Button
           variant='contained'
           onClick={handleSubmit}
           disabled={disableSave}
         >
-          {mode === 'create' ? 'Criar' : 'Salvar'}
+          Salvar
         </Button>
       </DialogActions>
     </Dialog>

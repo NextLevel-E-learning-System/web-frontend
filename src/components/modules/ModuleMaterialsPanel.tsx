@@ -85,7 +85,6 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
         <Button
           component='label'
           startIcon={<CloudUploadIcon />}
-          size='small'
           disabled={uploading}
         >
           {uploading ? 'Enviando...' : 'Upload'}
