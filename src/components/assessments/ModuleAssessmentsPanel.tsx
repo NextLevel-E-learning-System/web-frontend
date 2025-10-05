@@ -28,11 +28,26 @@ import {
   useCreateQuestion,
   useUpdateQuestion,
   useDeleteQuestion,
+  type Question,
 } from '@/api/assessments'
 
 interface Props {
   cursoCodigo: string
   moduloId: string
+}
+
+// Função para formatar o tipo de questão
+const formatQuestionType = (tipo: string) => {
+  switch (tipo) {
+    case 'MULTIPLA_ESCOLHA':
+      return 'Múltipla Escolha'
+    case 'VERDADEIRO_FALSO':
+      return 'Verdadeiro ou Falso'
+    case 'DISSERTATIVA':
+      return 'Dissertativa'
+    default:
+      return tipo
+  }
 }
 
 export default function ModuleAssessmentsPanel({
@@ -195,59 +210,171 @@ export default function ModuleAssessmentsPanel({
                         </Typography>
                       ) : (
                         <Stack gap={1}>
-                          {questionsQuery?.data?.map((q: any) => (
+                          {questionsQuery?.data?.map((q: Question) => (
                             <Paper
                               key={q.id}
                               variant='outlined'
                               sx={{
-                                p: 1,
+                                p: 1.5,
                                 display: 'flex',
-                                alignItems: 'center',
+                                flexDirection: 'column',
                                 gap: 1,
                               }}
                             >
-                              <Box sx={{ flex: 1 }}>
-                                <Typography variant='body2' fontWeight={600}>
-                                  {q.enunciado}
-                                </Typography>
-                                <Typography
-                                  variant='caption'
-                                  color='text.secondary'
-                                >
-                                  Tipo: {q.tipo_questao} · Peso: {q.peso}
-                                </Typography>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'flex-start',
+                                  gap: 1,
+                                }}
+                              >
+                                <Box sx={{ flex: 1 }}>
+                                  <Typography
+                                    variant='body2'
+                                    fontWeight={600}
+                                    sx={{ mb: 0.5 }}
+                                  >
+                                    {q.enunciado}
+                                  </Typography>
+                                  <Typography
+                                    variant='caption'
+                                    color='text.secondary'
+                                    sx={{ display: 'block', mb: 1 }}
+                                  >
+                                    Tipo: {formatQuestionType(q.tipo)}
+                                    {' - '}
+                                    Peso: {q.peso}
+                                  </Typography>
+
+                                  {/* Mostrar opções de resposta para múltipla escolha */}
+                                  {q.tipo === 'MULTIPLA_ESCOLHA' &&
+                                    q.opcoes_resposta && (
+                                      <Box sx={{ mt: 1 }}>
+                                        <Typography
+                                          variant='caption'
+                                          color='text.secondary'
+                                          sx={{ display: 'block', mb: 0.5 }}
+                                        >
+                                          Opções:
+                                        </Typography>
+                                        <Stack gap={0.5}>
+                                          {q.opcoes_resposta.map(
+                                            (opcao: string, idx: number) => (
+                                              <Box
+                                                key={idx}
+                                                sx={{
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: 1,
+                                                }}
+                                              >
+                                                <Chip
+                                                  size='small'
+                                                  label={String.fromCharCode(
+                                                    65 + idx
+                                                  )} // A, B, C, D...
+                                                  variant={
+                                                    opcao === q.resposta_correta
+                                                      ? 'filled'
+                                                      : 'outlined'
+                                                  }
+                                                  color={
+                                                    opcao === q.resposta_correta
+                                                      ? 'success'
+                                                      : 'default'
+                                                  }
+                                                  sx={{
+                                                    minWidth: 32,
+                                                    fontSize: '0.7rem',
+                                                  }}
+                                                />
+                                                <Typography
+                                                  variant='caption'
+                                                  sx={{
+                                                    fontWeight:
+                                                      opcao ===
+                                                      q.resposta_correta
+                                                        ? 600
+                                                        : 400,
+                                                    color:
+                                                      opcao ===
+                                                      q.resposta_correta
+                                                        ? 'success.main'
+                                                        : 'text.secondary',
+                                                  }}
+                                                >
+                                                  {opcao}
+                                                </Typography>
+                                              </Box>
+                                            )
+                                          )}
+                                        </Stack>
+                                      </Box>
+                                    )}
+
+                                  {/* Mostrar resposta para Verdadeiro/Falso */}
+                                  {q.tipo === 'VERDADEIRO_FALSO' &&
+                                    q.resposta_correta && (
+                                      <Box sx={{ mt: 1 }}>
+                                        <Typography
+                                          variant='caption'
+                                          color='text.secondary'
+                                        >
+                                          Resposta correta:
+                                          <Chip
+                                            size='small'
+                                            label={q.resposta_correta}
+                                            color='success'
+                                            sx={{ ml: 1, fontSize: '0.7rem' }}
+                                          />
+                                        </Typography>
+                                      </Box>
+                                    )}
+
+                                  {/* Para dissertativa */}
+                                  {q.tipo === 'DISSERTATIVA' && (
+                                    <Typography
+                                      variant='caption'
+                                      color='text.secondary'
+                                      sx={{ mt: 1, fontStyle: 'italic' }}
+                                    >
+                                      Questão dissertativa - correção manual
+                                    </Typography>
+                                  )}
+                                </Box>
+
+                                <Stack direction='row' gap={0.5}>
+                                  <Tooltip title='Editar'>
+                                    <IconButton
+                                      size='small'
+                                      onClick={() =>
+                                        setQuestionDialog({
+                                          open: true,
+                                          mode: 'edit',
+                                          assessmentCodigo: a.codigo,
+                                          questionId: q.id,
+                                        })
+                                      }
+                                    >
+                                      <EditIcon fontSize='inherit' />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title='Remover'>
+                                    <IconButton
+                                      size='small'
+                                      onClick={() =>
+                                        setConfirm({
+                                          open: true,
+                                          kind: 'question',
+                                          id: q.id,
+                                        })
+                                      }
+                                    >
+                                      <DeleteIcon fontSize='inherit' />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Stack>
                               </Box>
-                              <Stack direction='row' gap={0.5}>
-                                <Tooltip title='Editar'>
-                                  <IconButton
-                                    size='small'
-                                    onClick={() =>
-                                      setQuestionDialog({
-                                        open: true,
-                                        mode: 'edit',
-                                        assessmentCodigo: a.codigo,
-                                        questionId: q.id,
-                                      })
-                                    }
-                                  >
-                                    <EditIcon fontSize='inherit' />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title='Remover'>
-                                  <IconButton
-                                    size='small'
-                                    onClick={() =>
-                                      setConfirm({
-                                        open: true,
-                                        kind: 'question',
-                                        id: q.id,
-                                      })
-                                    }
-                                  >
-                                    <DeleteIcon fontSize='inherit' />
-                                  </IconButton>
-                                </Tooltip>
-                              </Stack>
                             </Paper>
                           ))}
                         </Stack>

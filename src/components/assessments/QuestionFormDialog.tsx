@@ -116,7 +116,7 @@ export default function QuestionFormDialog({
           correta: question.resposta_correta === t,
         }))
 
-        setTipo(question.tipo_questao)
+        setTipo(question.tipo) // Corrigido para usar 'tipo' em vez de 'tipo_questao'
         setEnunciado(question.enunciado)
         setPeso(question.peso)
         setOpcoes(newOpcoes)

@@ -38,7 +38,7 @@ export interface UpdateAssessmentInput {
 export interface Question {
   id: string
   avaliacao_id: string // REFERENCES avaliacoes(codigo)
-  tipo_questao: string // Campo como vem do backend
+  tipo: string // Campo como vem do backend (corrigido)
   enunciado: string
   opcoes_resposta?: string[]
   resposta_correta?: string
