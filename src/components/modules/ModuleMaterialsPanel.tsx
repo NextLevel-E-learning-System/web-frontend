@@ -26,7 +26,11 @@ interface Props {
 
 export default function ModuleMaterialsPanel({ moduloId }: Props) {
   const { data: materialsRaw, isLoading } = useModuleMaterials(moduloId)
-  const materials = Array.isArray(materialsRaw) ? materialsRaw : []
+  const materials = Array.isArray(materialsRaw)
+    ? materialsRaw.sort((a, b) =>
+        a.nome_arquivo.localeCompare(b.nome_arquivo, 'pt-BR', { numeric: true })
+      )
+    : []
   const upload = useUploadMaterial(moduloId)
   const deleteMaterial = useDeleteMaterial()
   const [uploading, setUploading] = useState(false)
