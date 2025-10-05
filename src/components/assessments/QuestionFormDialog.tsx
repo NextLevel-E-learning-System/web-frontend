@@ -17,9 +17,9 @@ import {
   Switch,
   Tabs,
   Tab,
-  Grid,
   Typography,
 } from '@mui/material'
+import { Grid } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import {
@@ -107,6 +107,9 @@ export default function QuestionFormDialog({
   const [afirmacoesVF, setAfirmacoesVF] = useState<AfirmaVF[]>([])
   const [usarPesoPorAfirma, setUsarPesoPorAfirma] = useState(false)
 
+  // Debug: log do estado atual
+  console.log('QuestionFormDialog estado:', { tipo, opcoes, afirmacoesVF })
+
   useEffect(() => {
     if (open) {
       if (mode === 'edit' && question) {
@@ -167,7 +170,13 @@ export default function QuestionFormDialog({
 
   // Helpers
   const addOpcao = () => {
-    setOpcoes(prev => [...prev, { id: crypto.randomUUID(), texto: '' }])
+    console.log('Adicionando nova opção...')
+    const newOpcao = { id: crypto.randomUUID(), texto: '' }
+    setOpcoes(prev => {
+      const updated = [...prev, newOpcao]
+      console.log('Opções atualizadas:', updated)
+      return updated
+    })
   }
   const updateOpcao = (id: string, texto: string) => {
     setOpcoes(prev => prev.map(o => (o.id === id ? { ...o, texto } : o)))
@@ -241,41 +250,49 @@ export default function QuestionFormDialog({
         {mode === 'create' ? 'Nova Questão' : 'Editar Questão'}
       </DialogTitle>
       <DialogContent sx={{ py: 0 }}>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid size={{ xs: 10, md: 10 }}>
-            <Tabs value={tipo} onChange={(_, v) => v && setTipo(v)}>
-              <Tab value={TIPO_MULTIPLA} label='Múltipla Escolha' />
-              <Tab value={TIPO_VF} label='V / F' />
-              <Tab value={TIPO_DISS} label='Dissertativa' />
-            </Tabs>
+        <Box sx={{ mt: 1 }}>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 10 }}>
+              <Tabs
+                value={tipo}
+                onChange={(_, v) => {
+                  console.log('Mudando tipo de questão para:', v)
+                  if (v) setTipo(v)
+                }}
+              >
+                <Tab value={TIPO_MULTIPLA} label='Múltipla Escolha' />
+                <Tab value={TIPO_VF} label='V / F' />
+                <Tab value={TIPO_DISS} label='Dissertativa' />
+              </Tabs>
+            </Grid>
+            <Grid size={{ xs: 2 }}>
+              <TextField
+                label='Peso'
+                variant='standard'
+                type='number'
+                value={peso}
+                onChange={e =>
+                  setPeso(
+                    e.target.value === ''
+                      ? ''
+                      : Math.max(1, Number(e.target.value) || 1)
+                  )
+                }
+                inputProps={{ min: 1 }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                label='Enunciado'
+                fullWidth
+                multiline
+                minRows={3}
+                value={enunciado}
+                onChange={e => setEnunciado(e.target.value)}
+              />
+            </Grid>
           </Grid>
-          <Grid size={{ xs: 2, md: 2 }}>
-            <TextField
-              label='Peso'
-              variant='standard'
-              type='number'
-              value={peso}
-              onChange={e =>
-                setPeso(
-                  e.target.value === ''
-                    ? ''
-                    : Math.max(1, Number(e.target.value) || 1)
-                )
-              }
-              inputProps={{ min: 1 }}
-            />
-          </Grid>
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              label='Enunciado'
-              fullWidth
-              multiline
-              minRows={3}
-              value={enunciado}
-              onChange={e => setEnunciado(e.target.value)}
-            />
-          </Grid>
-        </Grid>
+        </Box>
         {tipo === TIPO_MULTIPLA && (
           <Box sx={{ mt: 1.5 }}>
             <Stack
@@ -289,18 +306,20 @@ export default function QuestionFormDialog({
                 Adicionar
               </Button>
             </Stack>
-            {opcoes.map(o => (
-              <PaperOption
-                key={o.id}
-                texto={o.texto}
-                correta={respostaCorreta === o.texto.trim()}
-                onChange={val => updateOpcao(o.id, val)}
-                onMarkCorrect={() =>
-                  o.texto.trim() && setRespostaCorreta(o.texto.trim())
-                }
-                onRemove={() => removeOpcao(o.id)}
-              />
-            ))}
+            <Stack spacing={1}>
+              {opcoes.map(o => (
+                <PaperOption
+                  key={o.id}
+                  texto={o.texto}
+                  correta={respostaCorreta === o.texto.trim()}
+                  onChange={val => updateOpcao(o.id, val)}
+                  onMarkCorrect={() =>
+                    o.texto.trim() && setRespostaCorreta(o.texto.trim())
+                  }
+                  onRemove={() => removeOpcao(o.id)}
+                />
+              ))}
+            </Stack>
             {opcoes.length === 0 && (
               <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
                 Nenhuma alternativa adicionada.
@@ -309,7 +328,7 @@ export default function QuestionFormDialog({
           </Box>
         )}
         {tipo === TIPO_VF && (
-          <Box sx={{ display: 'grid', gap: 1 }}>
+          <Box sx={{ mt: 1.5, display: 'grid', gap: 1 }}>
             <Stack
               direction='row'
               justifyContent='space-between'
@@ -330,49 +349,51 @@ export default function QuestionFormDialog({
                 Adicionar Afirmação
               </Button>
             </Stack>
-            {afirmacoesVF.map(a => (
-              <Box
-                key={a.id}
-                sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
-              >
-                <TextField
-                  size='small'
-                  label='Afirmação'
-                  value={a.texto}
-                  onChange={e =>
-                    setAfirmacoesVF(prev =>
-                      prev.map(x =>
-                        x.id === a.id ? { ...x, texto: e.target.value } : x
-                      )
-                    )
-                  }
-                  sx={{ flex: 1 }}
-                />
-                <ToggleButtonGroup
-                  size='small'
-                  exclusive
-                  value={a.valor || null}
-                  onChange={(_, v) =>
-                    v &&
-                    setAfirmacoesVF(prev =>
-                      prev.map(x => (x.id === a.id ? { ...x, valor: v } : x))
-                    )
-                  }
+            <Stack spacing={1}>
+              {afirmacoesVF.map(a => (
+                <Box
+                  key={a.id}
+                  sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
                 >
-                  <ToggleButton value='V'>V</ToggleButton>
-                  <ToggleButton value='F'>F</ToggleButton>
-                </ToggleButtonGroup>
-                <Tooltip title='Remover afirmação'>
-                  <IconButton
-                    onClick={() =>
-                      setAfirmacoesVF(prev => prev.filter(x => x.id !== a.id))
+                  <TextField
+                    size='small'
+                    label='Afirmação'
+                    value={a.texto}
+                    onChange={e =>
+                      setAfirmacoesVF(prev =>
+                        prev.map(x =>
+                          x.id === a.id ? { ...x, texto: e.target.value } : x
+                        )
+                      )
+                    }
+                    sx={{ flex: 1 }}
+                  />
+                  <ToggleButtonGroup
+                    size='small'
+                    exclusive
+                    value={a.valor || null}
+                    onChange={(_, v) =>
+                      v &&
+                      setAfirmacoesVF(prev =>
+                        prev.map(x => (x.id === a.id ? { ...x, valor: v } : x))
+                      )
                     }
                   >
-                    <DeleteIcon fontSize='small' />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            ))}
+                    <ToggleButton value='V'>V</ToggleButton>
+                    <ToggleButton value='F'>F</ToggleButton>
+                  </ToggleButtonGroup>
+                  <Tooltip title='Remover afirmação'>
+                    <IconButton
+                      onClick={() =>
+                        setAfirmacoesVF(prev => prev.filter(x => x.id !== a.id))
+                      }
+                    >
+                      <DeleteIcon fontSize='small' />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ))}
+            </Stack>
             {afirmacoesVF.length === 0 && (
               <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
                 Nenhuma afirmação adicionada.
