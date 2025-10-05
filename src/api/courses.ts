@@ -286,7 +286,7 @@ export function useCourseModules(codigo: string) {
       const raw = await authGet<ModuleResponse | Module[]>(
         `${API_ENDPOINTS.COURSES}/${codigo}/modulos`
       )
-      const list: any[] = Array.isArray(raw)
+      const list: Module[] = Array.isArray(raw)
         ? raw
         : (raw as ModuleResponse).items || []
       return list.map(m => ({
@@ -326,6 +326,21 @@ export function useUpdateModule(codigo: string, moduloId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['courses', 'modules', codigo],
+      })
+    },
+  })
+}
+
+export function useDeleteModule() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['courses', 'modules', 'delete'],
+    mutationFn: (moduloId: string) =>
+      authDelete(`${API_ENDPOINTS.COURSES}/modulos/${moduloId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['courses', 'modules'],
       })
     },
   })

@@ -11,10 +11,17 @@ import {
   Chip,
   Tabs,
   Tab,
+  IconButton,
+  Tooltip,
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import AddIcon from '@mui/icons-material/Add'
-import { useCourseModules, useCreateModule } from '@/api/courses'
+import DeleteIcon from '@mui/icons-material/Delete'
+import {
+  useCourseModules,
+  useCreateModule,
+  useDeleteModule,
+} from '@/api/courses'
 import ModuleInfoForm from './ModuleInfoForm'
 import ModuleMaterialsPanel from './ModuleMaterialsPanel'
 import ModuleAssessmentsPanel from '../assessments/ModuleAssessmentsPanel'
@@ -32,6 +39,7 @@ export default function CourseModulesSection({
 }: Props) {
   const { data: modulos = [], isLoading } = useCourseModules(cursoCodigo)
   const createModule = useCreateModule(cursoCodigo)
+  const deleteModule = useDeleteModule()
   const [createOpen, setCreateOpen] = useState(false)
   const [expanded, setExpanded] = useState<string | false>(false)
   const [moduleTab, setModuleTab] = useState<Record<string, string>>({})
@@ -47,7 +55,7 @@ export default function CourseModulesSection({
 
   useEffect(() => {
     if (onTotalXpChange) {
-      const total = modulos.reduce((acc, m: any) => acc + (m.xp || 0), 0)
+      const total = modulos.reduce((acc, m) => acc + (m.xp || 0), 0)
       onTotalXpChange(total)
     }
   }, [modulos, onTotalXpChange])
@@ -60,9 +68,9 @@ export default function CourseModulesSection({
         justifyContent='space-between'
         sx={{ mb: 1 }}
       >
-        <Typography variant='subtitle2'>Módulos</Typography>
+        <Typography variant='h6'>Módulos</Typography>
         <Button
-          variant='outlined'
+          variant='contained'
           size='small'
           startIcon={<AddIcon />}
           onClick={() => setCreateOpen(true)}
@@ -106,7 +114,7 @@ export default function CourseModulesSection({
                       alignItems: 'center',
                       gap: 1,
                     },
-                    '& .MuiAccordionSummary-expandIconWrapper': { order: 2 },
+                    '& .MuiAccordionSummary-expandIconWrapper': { order: 3 },
                   }}
                 >
                   <Typography variant='body2' fontWeight={600}>
@@ -120,7 +128,21 @@ export default function CourseModulesSection({
                       label={`${m.xp} XP`}
                     />
                   ) : null}
-                  {/* Removido IconButton para evitar button aninhado - funcionalidade será reimplementada */}
+                  <Box sx={{ marginLeft: 'auto', order: 2 }}>
+                    <Tooltip title='Excluir módulo'>
+                      <IconButton
+                        size='small'
+                        color='error'
+                        onClick={e => {
+                          e.stopPropagation()
+                          setConfirm({ open: true, moduloId: m.id })
+                        }}
+                        disabled={deleteModule.isPending}
+                      >
+                        <DeleteIcon fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Box
@@ -174,11 +196,24 @@ export default function CourseModulesSection({
       <ConfirmationDialog
         open={confirm.open}
         title='Excluir módulo'
-        message='Funcionalidade de exclusão ainda não implementada.'
-        onConfirm={() => setConfirm({ open: false })}
+        message={
+          confirm.moduloId
+            ? `Tem certeza que deseja excluir este módulo? Esta ação não pode ser desfeita e todos os materiais do módulo também serão removidos.`
+            : 'Selecione um módulo para excluir.'
+        }
+        onConfirm={async () => {
+          if (confirm.moduloId) {
+            try {
+              await deleteModule.mutateAsync(confirm.moduloId)
+              setConfirm({ open: false })
+            } catch (error) {
+              console.error('Erro ao deletar módulo:', error)
+            }
+          }
+        }}
         onClose={() => setConfirm({ open: false })}
-        confirmText='Fechar'
-        cancelText=''
+        confirmText='Excluir'
+        cancelText='Cancelar'
       />
       <ModuleCreateDialog
         open={createOpen}

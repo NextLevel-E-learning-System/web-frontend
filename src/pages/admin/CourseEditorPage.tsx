@@ -17,6 +17,7 @@ import {
   Checkbox,
   ListItemText,
 } from '@mui/material'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import {
   useCourse,
   useCreateCourse,
@@ -151,7 +152,7 @@ export default function CourseEditorPage() {
         f.xp_oferecido !== totalXp ? { ...f, xp_oferecido: totalXp } : f
       )
     }
-  }, [modules?.length, isEdit, codigo])
+  }, [modules.length, isEdit, codigo, modules])
 
   const handleSaveInfo = async (goToModules = false) => {
     try {
@@ -178,7 +179,9 @@ export default function CourseEditorPage() {
       } else {
         setTimeout(() => navigate('/manage/courses'), 1500)
       }
-    } catch (e: any) {}
+    } catch (e: any) {
+      /* empty */
+    }
   }
 
   const renderCurrent = () => {
@@ -448,6 +451,14 @@ export default function CourseEditorPage() {
             <Typography variant='h6'>
               {isEdit ? `${course?.titulo || form.titulo}` : 'Novo Curso'}
             </Typography>
+            <Button
+              startIcon={<ArrowBackIcon />}
+              variant='text'
+              size='small'
+              onClick={() => navigate('/manage/courses')}
+            >
+              Voltar para Cursos
+            </Button>
           </Stack>
           <Tabs
             value={tab}
