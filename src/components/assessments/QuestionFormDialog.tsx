@@ -10,7 +10,6 @@ import {
   ToggleButton,
   IconButton,
   Box,
-  Chip,
   Stack,
   Tooltip,
   FormControlLabel,
@@ -107,76 +106,37 @@ export default function QuestionFormDialog({
   const [afirmacoesVF, setAfirmacoesVF] = useState<AfirmaVF[]>([])
   const [usarPesoPorAfirma, setUsarPesoPorAfirma] = useState(false)
 
-  // Debug: log do estado atual
-  console.log('QuestionFormDialog estado:', { tipo, opcoes, afirmacoesVF })
-
   useEffect(() => {
     if (open) {
       if (mode === 'edit' && question) {
-        // Compara antes de atualizar para evitar loops
+        // Carregar dados da questão em edição
         const newOpcoes = (question.opcoes_resposta || []).map((t, idx) => ({
           id: `${idx}`,
           texto: t,
           correta: question.resposta_correta === t,
         }))
-        const newResposta = question.resposta_correta || ''
 
-        if (
-          tipo !== question.tipo_questao ||
-          enunciado !== question.enunciado ||
-          peso !== question.peso ||
-          JSON.stringify(opcoes) !== JSON.stringify(newOpcoes) ||
-          respostaCorreta !== newResposta
-        ) {
-          setTipo(question.tipo_questao)
-          setEnunciado(question.enunciado)
-          setPeso(question.peso)
-          setOpcoes(newOpcoes)
-          setRespostaCorreta(newResposta)
-        }
+        setTipo(question.tipo_questao)
+        setEnunciado(question.enunciado)
+        setPeso(question.peso)
+        setOpcoes(newOpcoes)
+        setRespostaCorreta(question.resposta_correta || '')
       } else {
-        // Reset apenas se valores não estão já vazios
-        if (
-          tipo !== TIPO_MULTIPLA ||
-          enunciado !== '' ||
-          peso !== 1 ||
-          opcoes.length > 0 ||
-          respostaCorreta !== '' ||
-          afirmacoesVF.length > 0 ||
-          usarPesoPorAfirma !== false
-        ) {
-          setTipo(TIPO_MULTIPLA)
-          setEnunciado('')
-          setPeso(1)
-          setOpcoes([])
-          setRespostaCorreta('')
-          setAfirmacoesVF([])
-          setUsarPesoPorAfirma(false)
-        }
+        // Reset para nova questão
+        setTipo(TIPO_MULTIPLA)
+        setEnunciado('')
+        setPeso(1)
+        setOpcoes([])
+        setRespostaCorreta('')
+        setAfirmacoesVF([])
+        setUsarPesoPorAfirma(false)
       }
     }
-  }, [
-    open,
-    mode,
-    question,
-    tipo,
-    enunciado,
-    peso,
-    opcoes,
-    respostaCorreta,
-    afirmacoesVF,
-    usarPesoPorAfirma,
-  ])
+  }, [open, mode, question]) // Dependências mais específicas
 
   // Helpers
   const addOpcao = () => {
-    console.log('Adicionando nova opção...')
-    const newOpcao = { id: crypto.randomUUID(), texto: '' }
-    setOpcoes(prev => {
-      const updated = [...prev, newOpcao]
-      console.log('Opções atualizadas:', updated)
-      return updated
-    })
+    setOpcoes(prev => [...prev, { id: crypto.randomUUID(), texto: '' }])
   }
   const updateOpcao = (id: string, texto: string) => {
     setOpcoes(prev => prev.map(o => (o.id === id ? { ...o, texto } : o)))
@@ -204,7 +164,7 @@ export default function QuestionFormDialog({
     if (mode === 'create') {
       const payload: CreateQuestionInput = {
         avaliacao_id: avaliacaoCodigo,
-        tipo_questao: tipo,
+        tipo: tipo, // Corrigido para corresponder ao backend
         enunciado: enunciado.trim(),
         peso: peso === '' ? 1 : Number(peso),
         opcoes_resposta:
@@ -223,7 +183,7 @@ export default function QuestionFormDialog({
       await onCreate(payload)
     } else if (question) {
       const payload: UpdateQuestionInput = {
-        tipo_questao: tipo,
+        tipo: tipo, // Corrigido para corresponder ao backend
         enunciado: enunciado.trim(),
         peso: peso === '' ? 1 : Number(peso),
         opcoes_resposta:
@@ -255,9 +215,18 @@ export default function QuestionFormDialog({
             <Grid size={{ xs: 10 }}>
               <Tabs
                 value={tipo}
-                onChange={(_, v) => {
-                  console.log('Mudando tipo de questão para:', v)
-                  if (v) setTipo(v)
+                onChange={(_, newValue) => {
+                  if (newValue) {
+                    setTipo(newValue)
+                    // Limpar dados específicos do tipo anterior
+                    if (newValue !== TIPO_MULTIPLA) {
+                      setOpcoes([])
+                      setRespostaCorreta('')
+                    }
+                    if (newValue !== TIPO_VF) {
+                      setAfirmacoesVF([])
+                    }
+                  }
                 }}
               >
                 <Tab value={TIPO_MULTIPLA} label='Múltipla Escolha' />
@@ -302,7 +271,13 @@ export default function QuestionFormDialog({
               sx={{ mb: 1 }}
             >
               <Typography variant='h6'>Alternativas</Typography>
-              <Button startIcon={<AddIcon />} variant='text' onClick={addOpcao}>
+              <Button
+                startIcon={<AddIcon />}
+                variant='text'
+                onClick={() => {
+                  addOpcao()
+                }}
+              >
                 Adicionar
               </Button>
             </Stack>
@@ -334,10 +309,9 @@ export default function QuestionFormDialog({
               justifyContent='space-between'
               alignItems='center'
             >
-              <Chip label='Afirmações V / F' size='small' color='primary' />
+              <Typography variant='h6'>Afirmações V / F</Typography>
               <Button
-                size='small'
-                variant='outlined'
+                variant='text'
                 startIcon={<AddIcon />}
                 onClick={() =>
                   setAfirmacoesVF(a => [
@@ -356,7 +330,6 @@ export default function QuestionFormDialog({
                   sx={{ display: 'flex', gap: 1, alignItems: 'center' }}
                 >
                   <TextField
-                    size='small'
                     label='Afirmação'
                     value={a.texto}
                     onChange={e =>
@@ -369,7 +342,6 @@ export default function QuestionFormDialog({
                     sx={{ flex: 1 }}
                   />
                   <ToggleButtonGroup
-                    size='small'
                     exclusive
                     value={a.valor || null}
                     onChange={(_, v) =>
@@ -414,11 +386,6 @@ export default function QuestionFormDialog({
                 (cálculo backend futuro).
               </Box>
             )}
-          </Box>
-        )}
-        {tipo === TIPO_DISS && (
-          <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
-            Resposta aberta — será corrigida manualmente.
           </Box>
         )}
       </DialogContent>
