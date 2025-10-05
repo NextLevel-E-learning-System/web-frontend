@@ -84,7 +84,6 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            {' '}
             Olá {name}!
           </Typography>
           <Typography color='text.secondary' sx={{ mt: 0.5 }}>

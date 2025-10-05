@@ -1,26 +1,28 @@
 import {
-  Card,
-  CardContent,
   Grid,
   Typography,
   Box,
   CircularProgress,
   Alert,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
+  TableContainer,
+  TableCell,
+  TableRow,
+  TableBody,
+  Table,
+  Paper,
+  TableHead,
 } from '@mui/material'
+import { School, People, CheckCircle, Assignment } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import MetricCard from '@/components/common/StatCard'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboard, DashboardInstrutor } from '@/api/users'
+import { useDashboard, type DashboardInstrutor } from '@/api/users'
 
 export default function InstrutorDashboard() {
-  const { title, navigationItems } = useDashboardLayout()
+  const { navigationItems } = useDashboardLayout()
   const { data: dashboardData, isLoading, error } = useDashboard()
 
-  // Type guard para garantir que é um dashboard de instrutor
   const instrutorData =
     dashboardData?.dashboard?.tipo_dashboard === 'instrutor'
       ? (dashboardData.dashboard as DashboardInstrutor)
@@ -28,7 +30,7 @@ export default function InstrutorDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title={title} items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box
           display='flex'
           justifyContent='center'
@@ -43,7 +45,7 @@ export default function InstrutorDashboard() {
 
   if (error || !instrutorData) {
     return (
-      <DashboardLayout title={title} items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Alert severity='error'>
           Erro ao carregar dados do dashboard. Tente novamente.
         </Alert>
@@ -51,10 +53,10 @@ export default function InstrutorDashboard() {
     )
   }
 
-  const { metricas, cursos, alertas, atividades_recentes } = instrutorData
+  const { metricas, cursos } = instrutorData || { metricas: {}, cursos: [] }
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box
         sx={{
           maxWidth: '100%',
@@ -64,215 +66,132 @@ export default function InstrutorDashboard() {
         {/* Métricas Principais */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='primary'>
-                  {metricas.total_cursos}
-                </Typography>
-                <Typography color='text.secondary'>Total de Cursos</Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<School />}
+              value={metricas.total_cursos?.toString() || '0'}
+              label='Total de Cursos'
+              trendLabel='Cursos criados'
+              trendDirection='neutral'
+              iconColor='#1976d2'
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='info.main'>
-                  {metricas.total_alunos}
-                </Typography>
-                <Typography color='text.secondary'>Total de Alunos</Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<People />}
+              value={metricas.total_alunos?.toString() || '0'}
+              label='Total de Alunos'
+              trendLabel='Alunos inscritos'
+              trendDirection='up'
+              iconColor='#0288d1'
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='success.main'>
-                  {metricas.taxa_conclusao_geral.toFixed(1)}%
-                </Typography>
-                <Typography color='text.secondary'>
-                  Taxa de Conclusão
-                </Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<CheckCircle />}
+              value={`${metricas.taxa_conclusao_geral?.toFixed(1) || '0'}%`}
+              label='Taxa de Conclusão'
+              trendLabel='Performance geral'
+              trendDirection={
+                (metricas.taxa_conclusao_geral || 0) >= 75
+                  ? 'up'
+                  : (metricas.taxa_conclusao_geral || 0) >= 50
+                    ? 'neutral'
+                    : 'down'
+              }
+              iconColor='#2e7d32'
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Card>
-              <CardContent>
-                <Typography variant='h4' fontWeight={700} color='warning.main'>
-                  {metricas.pendentes_correcao}
-                </Typography>
-                <Typography color='text.secondary'>
-                  Avaliações Pendentes
-                </Typography>
-              </CardContent>
-            </Card>
+            <MetricCard
+              icon={<Assignment />}
+              value={metricas.pendentes_correcao?.toString() || '0'}
+              label='Avaliações Pendentes'
+              trendLabel='Pendentes de correção'
+              trendDirection={
+                (metricas.pendentes_correcao || 0) === 0
+                  ? 'up'
+                  : (metricas.pendentes_correcao || 0) <= 5
+                    ? 'neutral'
+                    : 'down'
+              }
+              iconColor='#ed6c02'
+            />
           </Grid>
         </Grid>
 
         <Grid container spacing={3}>
           {/* Lista de Cursos */}
-          <Grid size={{ xs: 12, lg: 8 }}>
-            <Card
+          <Grid size={{ xs: 12 }}>
+            <Paper
               sx={{
+                p: 3,
+                borderRadius: 3,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                 maxWidth: '100%',
                 overflow: 'auto',
               }}
             >
-              <CardContent>
-                <Typography fontWeight={700} gutterBottom variant='h6'>
-                  Meus Cursos ({cursos.length})
-                </Typography>
-                {cursos.length > 0 ? (
-                  <List>
-                    {cursos.map((curso, index) => (
-                      <ListItem
-                        key={curso.codigo}
-                        divider={index < cursos.length - 1}
-                      >
-                        <ListItemText
-                          primary={
-                            <Box
-                              display='flex'
-                              alignItems='center'
-                              gap={1}
-                              sx={{ flexWrap: 'wrap' }}
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                Meus Cursos ({cursos.length})
+              </Typography>
+              {cursos.length > 0 ? (
+                <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Curso</TableCell>
+                        <TableCell align='right'>Inscrições</TableCell>
+                        <TableCell align='right'>Taxa Conclusão</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {cursos.map((curso, index) => (
+                        <TableRow key={curso.codigo || index} hover>
+                          <TableCell>
+                            <Typography variant='body2' fontWeight={500}>
+                              {curso.titulo}
+                            </Typography>
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
                             >
-                              <Typography fontWeight={600}>
-                                {curso.titulo}
-                              </Typography>
-                              <Chip
-                                label={curso.status}
-                                size='small'
-                                color={
-                                  curso.status === 'Ativo'
-                                    ? 'success'
-                                    : 'default'
-                                }
-                              />
-                            </Box>
-                          }
-                          secondary={
-                            <Box sx={{ mt: 1 }}>
-                              <Typography
-                                variant='body2'
-                                color='text.secondary'
-                              >
-                                {curso.inscritos} inscritos • {curso.concluidos}{' '}
-                                concluídos • {curso.taxa_conclusao.toFixed(1)}%
-                                taxa de conclusão
-                              </Typography>
-                              {curso.avaliacao_media && (
-                                <Typography
-                                  variant='body2'
-                                  color='text.secondary'
-                                >
-                                  Avaliação média:{' '}
-                                  {curso.avaliacao_media.toFixed(1)}/5
-                                </Typography>
-                              )}
-                            </Box>
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography
-                    color='text.secondary'
-                    sx={{ textAlign: 'center', py: 3 }}
-                  >
-                    Nenhum curso criado ainda.
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Alertas e Atividades */}
-          <Grid size={{ xs: 12, lg: 4 }}>
-            <Card
-              sx={{
-                mb: 2,
-                maxWidth: '100%',
-                overflow: 'auto',
-              }}
-            >
-              <CardContent>
-                <Typography fontWeight={700} gutterBottom>
-                  Alertas ({alertas.length})
-                </Typography>
-                {alertas.length > 0 ? (
-                  <List dense>
-                    {alertas.map((alerta: any, index: number) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={alerta.tipo || 'Alerta'}
-                          secondary={alerta.descricao || alerta.mensagem}
-                        />
-                        <Chip
-                          label={alerta.prioridade || 'Normal'}
-                          size='small'
-                          color={
-                            alerta.prioridade === 'alta'
-                              ? 'error'
-                              : alerta.prioridade === 'media'
-                                ? 'warning'
-                                : 'default'
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                ) : (
-                  <Typography
-                    color='text.secondary'
-                    sx={{ textAlign: 'center', py: 2 }}
-                  >
-                    Nenhum alerta no momento.
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card
-              sx={{
-                maxWidth: '100%',
-                overflow: 'auto',
-              }}
-            >
-              <CardContent>
-                <Typography fontWeight={700} gutterBottom>
-                  Atividades Recentes
-                </Typography>
-                {atividades_recentes.length > 0 ? (
-                  <List dense>
-                    {atividades_recentes
-                      .slice(0, 5)
-                      .map((atividade: any, index: number) => (
-                        <ListItem key={index}>
-                          <ListItemText
-                            primary={
-                              atividade.descricao ||
-                              atividade.titulo ||
-                              'Atividade'
-                            }
-                            secondary={
-                              atividade.data || atividade.timestamp || 'Recente'
-                            }
-                          />
-                        </ListItem>
+                              {curso.codigo}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <Typography variant='body2'>
+                              {curso.inscritos}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='right'>
+                            <Chip
+                              label={`${((curso.taxa_conclusao || 0) * 100).toFixed(1)}%`}
+                              size='small'
+                              color={
+                                (curso.taxa_conclusao || 0) > 0.7
+                                  ? 'success'
+                                  : (curso.taxa_conclusao || 0) > 0.4
+                                    ? 'warning'
+                                    : 'error'
+                              }
+                              variant='filled'
+                            />
+                          </TableCell>
+                        </TableRow>
                       ))}
-                  </List>
-                ) : (
-                  <Typography
-                    color='text.secondary'
-                    sx={{ textAlign: 'center', py: 2 }}
-                  >
-                    Nenhuma atividade recente.
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography
+                  color='text.secondary'
+                  align='center'
+                  sx={{ py: 3 }}
+                >
+                  Nenhum curso encontrado
+                </Typography>
+              )}
+            </Paper>
           </Grid>
         </Grid>
       </Box>

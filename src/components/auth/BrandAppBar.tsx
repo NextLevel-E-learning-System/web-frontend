@@ -1,56 +1,38 @@
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material'
-import ArrowOutwardIcon from '@mui/icons-material/ArrowOutward'
+import { AppBar, Box, Button, Container, Toolbar } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
 
 export default function BrandAppBar() {
   return (
-    <AppBar
-      position='fixed'
-      color='transparent'
-      elevation={0}
-      sx={{
-        background: 'transparent',
-        borderBottom: t => `1px solid ${t.palette.divider}`,
-      }}
-    >
-      <Box sx={{ width: '100%', px: 2 }}>
-        <Toolbar
-          disableGutters
-          sx={{ justifyContent: 'space-between', minHeight: 48, width: '100%' }}
-        >
+    <AppBar position='sticky' elevation={0}>
+      <Box
+        sx={{
+          background:
+            'linear-gradient(90deg, rgba(99,102,241,0.10), rgba(59,130,246,0.10), rgba(16,185,129,0.10))',
+          borderBottom: 1,
+          borderColor: 'divider',
+          px: 2,
+        }}
+      >
+        <Toolbar disableGutters sx={{ gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <img src={logoIcon} alt='NextLevel Logo' style={{ height: 60 }} />
+          </Box>
           <Box
             sx={{
-              display: 'flex',
+              display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
-              gap: 1,
-              textDecoration: 'none',
+              justifyContent: 'center',
+              flex: 1,
+              gap: 2,
             }}
-            component={RouterLink}
-            to='/'
-          >
-            <Box
-              sx={{
-                display: 'grid',
-                placeItems: 'center',
-              }}
-            >
-              <img
-                src={logoIcon}
-                alt='NextLevel Logo'
-                style={{ height: 40, width: 'auto', display: 'block' }}
-              />
-            </Box>
-            <Typography variant='h6' fontWeight={800} color='primary'>
-              NextLevel
-            </Typography>
-          </Box>
+          ></Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Button component={RouterLink} to='/login' variant='outlined'>
-              Entrar
+            <Button component={RouterLink} to='/login' variant='text'>
+              Login
             </Button>
             <Button component={RouterLink} to='/register' variant='contained'>
-              Cadastrar
+              Cadastro
             </Button>
           </Box>
         </Toolbar>

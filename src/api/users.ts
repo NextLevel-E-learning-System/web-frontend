@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { authGet, authPost, authPut, authPatch, authDelete } from './http'
+import { authGet, authPost, authPut, authDelete } from './http'
 import { API_ENDPOINTS } from './config'
 
 // Types alinhados com o schema do banco de dados
@@ -8,10 +8,12 @@ export interface Departamento {
   nome: string
   descricao?: string | null
   gestor_funcionario_id?: string | null
-  ativo: boolean
-  inactivated_at?: string | null
+  gestor_nome?: string | null
+  gestor_email?: string | null
   criado_em: string
   atualizado_em: string
+  total_funcionarios?: number
+  total_categorias?: number
 }
 
 export interface DepartamentoCreate {
@@ -81,6 +83,35 @@ export interface ResetPasswordResponse {
   sucesso: boolean
 }
 
+// Instructor Types
+export interface Instructor {
+  id: string
+  funcionario_id: string
+  nome: string
+  email: string
+  cpf?: string | null
+  departamento_id?: string | null
+  departamento_nome?: string | null
+  cargo_nome?: string | null
+  biografia?: string | null
+  especialidades?: string[] | null
+  avaliacao_media?: string | null // Vem como string da API
+  ativo: boolean
+  criado_em: string
+  atualizado_em: string
+}
+
+export interface InstructorCreate {
+  funcionario_id: string
+  biografia?: string
+  especialidades?: string[]
+}
+
+export interface InstructorUpdate {
+  biografia?: string
+  especialidades?: string[]
+}
+
 // Dashboard Types
 export interface DashboardAluno {
   tipo_dashboard: 'aluno'
@@ -123,7 +154,6 @@ export interface DashboardInstrutor {
     avaliacao_media?: number
     status: string
   }[]
-  alertas: any[]
   atividades_recentes: any[]
 }
 
@@ -138,7 +168,6 @@ export interface DashboardGerente {
   }
   top_performers: any[]
   cursos_departamento: any[]
-  alertas: any[]
 }
 
 export interface DashboardAdmin {
@@ -149,9 +178,8 @@ export interface DashboardAdmin {
     alunos_ativos: number
     total_instrutores: number
     total_cursos: number
-    taxa_conclusao_geral: number
+    taxa_conclusao_media: number
     inscricoes_30d: number
-    avaliacao_media_plataforma: number
   }
   engajamento_departamentos: {
     codigo: string
@@ -161,7 +189,6 @@ export interface DashboardAdmin {
     funcionarios_ativos: number
   }[]
   cursos_populares: any[]
-  alertas: any[]
 }
 
 export type DashboardData =
@@ -222,6 +249,23 @@ export function useListarDepartamentos() {
   })
 }
 
+export function useListarDepartamentosAdmin() {
+  return useQuery<Departamento[]>({
+    queryKey: ['users', 'departamentos', 'admin'],
+    queryFn: () =>
+      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos/admin`),
+  })
+}
+
+export function useBuscarDepartamento(codigo: string) {
+  return useQuery<Departamento>({
+    queryKey: ['users', 'departamentos', codigo],
+    queryFn: () =>
+      authGet<Departamento>(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`),
+    enabled: !!codigo,
+  })
+}
+
 export function useCriarDepartamento() {
   const queryClient = useQueryClient()
 
@@ -251,7 +295,7 @@ export function useAtualizarDepartamento(codigo: string) {
   })
 }
 
-export function useExcluirDepartamento() {
+export function useDeleteDepartamento() {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -311,6 +355,12 @@ export function useExcluirCargo() {
   })
 }
 
+// Resposta paginada para funcionários
+export interface FuncionariosResponse {
+  items: Funcionario[]
+  mensagem: string
+}
+
 // Hooks para Funcionários
 export function useRegisterFuncionario() {
   return useMutation({
@@ -321,10 +371,10 @@ export function useRegisterFuncionario() {
 }
 
 export function useFuncionarios() {
-  return useQuery<Funcionario[]>({
+  return useQuery<FuncionariosResponse>({
     queryKey: ['users', 'funcionarios'],
     queryFn: () =>
-      authGet<Funcionario[]>(`${API_ENDPOINTS.USERS}/funcionarios`),
+      authGet<FuncionariosResponse>(`${API_ENDPOINTS.USERS}/funcionarios`),
   })
 }
 
@@ -417,6 +467,97 @@ export function useExcluirFuncionario() {
       authDelete(`${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
+    },
+  })
+}
+
+// ===============================================
+// INSTRUCTORS API HOOKS
+// ===============================================
+
+// Hook para listar instrutores
+export function useInstrutores() {
+  return useQuery<Instructor[]>({
+    queryKey: ['users', 'instrutores'],
+    queryFn: () =>
+      authGet<{ items: Instructor[] }>(
+        `${API_ENDPOINTS.USERS}/instrutores`
+      ).then(response => response.items),
+  })
+}
+
+// Hook para buscar instrutor específico
+export function useInstrutor(id: string) {
+  return useQuery<Instructor>({
+    queryKey: ['users', 'instrutores', id],
+    queryFn: () =>
+      authGet<{ instrutor: Instructor }>(
+        `${API_ENDPOINTS.USERS}/instrutores/${id}`
+      ).then(response => response.instrutor),
+    enabled: !!id,
+  })
+}
+
+// Hook para criar instrutor
+export function useCreateInstrutor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['users', 'instrutores', 'create'],
+    mutationFn: (data: InstructorCreate) =>
+      authPost<{ instrutor: Instructor }>(
+        `${API_ENDPOINTS.USERS}/instrutores`,
+        data
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
+    },
+  })
+}
+
+// Hook para atualizar instrutor
+export function useUpdateInstrutor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['users', 'instrutores', 'update'],
+    mutationFn: ({ id, data }: { id: string; data: InstructorUpdate }) =>
+      authPut<{ instrutor: Instructor }>(
+        `${API_ENDPOINTS.USERS}/instrutores/${id}`,
+        data
+      ),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'instrutores', variables.id],
+      })
+    },
+  })
+}
+
+// Hook para remover instrutor
+export function useDeleteInstrutor() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['users', 'instrutores', 'delete'],
+    mutationFn: (id: string) =>
+      authDelete(`${API_ENDPOINTS.USERS}/instrutores/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
+    },
+  })
+}
+
+// Hook para ativar/desativar instrutor
+export function useToggleInstructorStatus() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['users', 'instrutores', 'toggle-status'],
+    mutationFn: (id: string) =>
+      authPut<{ ativo: boolean; mensagem: string }>(
+        `${API_ENDPOINTS.USERS}/instrutores/${id}/toggle-status`,
+        {}
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
     },
   })
 }

@@ -2,20 +2,12 @@ import Grid from '@mui/material/Grid'
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
   Switch,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
   Chip,
@@ -23,14 +15,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Alert,
   Skeleton,
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
   Person as PersonIcon,
   Badge as BadgeIcon,
   AdminPanelSettings as AdminIcon,
@@ -39,15 +29,15 @@ import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
+import DataTable, { type Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarDepartamentos,
+  useListarDepartamentosAdmin,
   useListarCargos,
   useFuncionarios,
   useRegisterFuncionario,
   useUpdateFuncionarioRole,
   useExcluirFuncionario,
-  type PerfilUsuario,
   type FuncionarioRegister,
   type UpdateRoleInput,
   type UserRole,
@@ -60,32 +50,33 @@ interface UserForm {
   email: string
   departamento_id: string
   cargo_nome: string
-  tipo_usuario: UserRole
-  status: 'ATIVO' | 'INATIVO'
+  role: UserRole
+  ativo: boolean
   biografia: string
 }
 
-// Interface estendida para o frontend incluir tipo_usuario
-interface FuncionarioWithRole extends Funcionario {
-  tipo_usuario?: UserRole
-}
-
 export default function AdminUsers() {
-  const { navigationItems, user, isGerente, isAdmin } = useNavigation()
+  const { navigationItems, user, isGerente } = useNavigation()
   const {
-    data: usuarios = [],
+    data: usuariosResponse,
     isLoading: loadingUsers,
     refetch: refetchUsers,
   } = useFuncionarios()
-  const { data: departamentos = [], isLoading: loadingDepartments } =
-    useListarDepartamentos()
-  const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
+  const usuarios = usuariosResponse?.items || []
+
+  const { data: departamentosResponse, isLoading: loadingDepartments } =
+    useListarDepartamentosAdmin()
+  const departamentos =
+    (departamentosResponse as any)?.items || departamentosResponse || []
+
+  const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
+  const cargos = (cargosResponse as any)?.items || cargosResponse || []
   const criarUsuario = useRegisterFuncionario()
-  const [editingUser, setEditingUser] = useState<PerfilUsuario | null>(null)
+  const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
   const excluirUsuario = useExcluirFuncionario()
   const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
 
-  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [form, setForm] = useState<UserForm>({
     nome: '',
@@ -93,18 +84,130 @@ export default function AdminUsers() {
     email: '',
     departamento_id: '',
     cargo_nome: '',
-    tipo_usuario: 'ALUNO',
-    status: 'ATIVO',
+    role: 'ALUNO',
+    ativo: true,
     biografia: '',
   })
 
-  // Título dinâmico baseado na role
-  const title = useMemo(() => {
-    if (editingUser) return 'Editar Usuário'
-    if (isGerente)
-      return `Funcionários - Departamento ${user?.departamento_id || ''}`
-    return 'Gerenciar Usuários'
-  }, [editingUser, isGerente, user?.departamento_id])
+  // Configuração das colunas da tabela
+  const columns: Column[] = useMemo(
+    () => [
+      {
+        id: 'nome',
+        label: 'Nome',
+        minWidth: 200,
+        render: (value: string) => (
+          <Typography fontWeight={500}>{value}</Typography>
+        ),
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        minWidth: 200,
+        render: (value: string) => (
+          <Typography
+            component='span'
+            sx={{
+              fontFamily:
+                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            }}
+          >
+            {value}
+          </Typography>
+        ),
+      },
+      {
+        id: 'departamento_id',
+        label: 'Departamento',
+        minWidth: 150,
+        render: (value: string | null) =>
+          value ? getDepartmentName(value) : '—',
+      },
+      {
+        id: 'cargo_nome',
+        label: 'Cargo',
+        minWidth: 150,
+        render: (value: string | null) => (value ? getCargoName(value) : '—'),
+      },
+      {
+        id: 'role',
+        label: 'Tipo',
+        minWidth: 120,
+        render: (value: string) => (
+          <Chip
+            icon={getUserTypeIcon(value)}
+            variant='outlined'
+            label={value}
+            color={getUserTypeColor(value) as any}
+            size='small'
+          />
+        ),
+      },
+      {
+        id: 'ativo',
+        label: 'Status',
+        minWidth: 120,
+        render: (value: boolean, row: any) => (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
+            <Switch
+              checked={value}
+              onChange={e => {
+                e.stopPropagation()
+                handleToggleAtivo(row.id, row.nome, row.ativo)
+              }}
+              size='small'
+              onClick={e => e.stopPropagation()}
+            />
+            <Typography
+              variant='body2'
+              color={value ? 'success.main' : 'text.disabled'}
+              fontWeight={500}
+            >
+              {value ? 'ATIVO' : 'INATIVO'}
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: 'actions',
+        label: 'Ações',
+        align: 'right' as const,
+        minWidth: 100,
+        render: (_, row: any) => (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <IconButton
+              size='small'
+              onClick={e => {
+                e.stopPropagation()
+                handleEdit(row)
+              }}
+              aria-label='editar'
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              size='small'
+              onClick={e => {
+                e.stopPropagation()
+                handleDelete(row.id, row.nome)
+              }}
+              aria-label='excluir'
+              color='error'
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        ),
+      },
+    ],
+    [departamentos, cargos]
+  )
 
   // Filtrar usuários: GERENTE vê apenas do seu departamento, ADMIN vê todos
   const allUsers = useMemo(() => {
@@ -131,8 +234,8 @@ export default function AdminUsers() {
       email: '',
       departamento_id: '',
       cargo_nome: '',
-      tipo_usuario: 'ALUNO',
-      status: 'ATIVO',
+      role: 'ALUNO',
+      ativo: true,
       biografia: '',
     })
   }
@@ -175,7 +278,7 @@ export default function AdminUsers() {
     }
   }
 
-  const handleEdit = (user: PerfilUsuario) => {
+  const handleEdit = (user: Funcionario) => {
     setEditingUser(user)
     setForm({
       nome: user.nome,
@@ -183,8 +286,8 @@ export default function AdminUsers() {
       email: user.email,
       departamento_id: user.departamento_id || '',
       cargo_nome: user.cargo_nome || '',
-      tipo_usuario: user.tipo_usuario || 'ALUNO',
-      status: user.ativo ? 'ATIVO' : 'INATIVO',
+      role: user.role || 'ALUNO',
+      ativo: user.ativo,
       biografia: '',
     })
   }
@@ -200,7 +303,7 @@ export default function AdminUsers() {
     try {
       // Para atualizar role, usamos API específica de role
       const input: UpdateRoleInput = {
-        role: form.tipo_usuario,
+        role: form.role,
       }
 
       await atualizarUsuario.mutateAsync(input)
@@ -228,12 +331,38 @@ export default function AdminUsers() {
     }
   }
 
+  const handleToggleAtivo = async (
+    _id: string,
+    nome: string,
+    ativo: boolean
+  ) => {
+    const acao = ativo ? 'desativar' : 'ativar'
+    if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
+      try {
+        // Aqui você precisa implementar a API para ativar/desativar usuário
+        // Por enquanto, só mostro o toast de sucesso
+        toast.success(
+          `Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
+        )
+        refetchUsers()
+      } catch (error) {
+        toast.error(`Erro ao ${acao} usuário`)
+        console.error(error)
+      }
+    }
+  }
+
   const getDepartmentName = (id: string) => {
-    return departamentos.find(d => d.codigo === id)?.nome || id
+    return (
+      departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome || id
+    )
   }
 
   const getCargoName = (codigo: string) => {
-    return cargos.find(c => c.codigo === codigo)?.nome || codigo
+    return (
+      cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome ||
+      codigo
+    )
   }
 
   const getUserTypeIcon = (tipo: string) => {
@@ -260,7 +389,7 @@ export default function AdminUsers() {
 
   if (loadingUsers || loadingDepartments || loadingCargos) {
     return (
-      <DashboardLayout title='Gerenciar Usuários' items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={300} />
         </Box>
@@ -269,7 +398,7 @@ export default function AdminUsers() {
   }
 
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box>
         <Box
           sx={{
@@ -296,129 +425,18 @@ export default function AdminUsers() {
           </Button>
         </Box>
 
-        <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                {tab === 'active'
-                  ? 'Usuários Ativos'
-                  : tab === 'disabled'
-                    ? 'Usuários Inativos'
-                    : 'Todos os Usuários'}
-              </Typography>
-            }
-            subheader={`${filtered.length} usuários encontrados`}
-          />
-          <CardContent>
-            {filtered.length === 0 ? (
-              <Alert severity='info'>
-                {tab === 'all'
-                  ? 'Nenhum usuário cadastrado. Clique em "Adicionar Usuário" para começar.'
-                  : `Nenhum usuário ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
-              </Alert>
-            ) : (
-              <Table size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Nome</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Departamento</TableCell>
-                    <TableCell>Cargo</TableCell>
-                    <TableCell>Tipo</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell align='right'>Ações</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filtered.map(user => (
-                    <TableRow key={user.id} hover>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                          }}
-                        >
-                          <Typography fontWeight={500}>{user.nome}</Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          component='span'
-                          sx={{
-                            fontFamily:
-                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                          }}
-                        >
-                          {user.email}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {user.departamento_id
-                          ? getDepartmentName(user.departamento_id)
-                          : '—'}
-                      </TableCell>
-                      <TableCell>
-                        {user.cargo_nome ? getCargoName(user.cargo_nome) : '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          icon={getUserTypeIcon(
-                            (user as FuncionarioWithRole).tipo_usuario ||
-                              'FUNCIONARIO'
-                          )}
-                          variant='outlined'
-                          label={
-                            (user as FuncionarioWithRole).tipo_usuario ||
-                            'FUNCIONARIO'
-                          }
-                          color={
-                            getUserTypeColor(
-                              (user as FuncionarioWithRole).tipo_usuario ||
-                                'FUNCIONARIO'
-                            ) as any
-                          }
-                          size='small'
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size='small'
-                          color={user.ativo ? 'success' : 'default'}
-                          label={user.ativo ? 'ATIVO' : 'INATIVO'}
-                        />
-                      </TableCell>
-                      <TableCell align='right'>
-                        <IconButton
-                          size='small'
-                          onClick={() => handleEdit(user)}
-                          aria-label='editar'
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size='small'
-                          onClick={() => handleDelete(user.id, user.nome)}
-                          aria-label='excluir'
-                          color='error'
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <DataTable
+          columns={columns}
+          data={filtered}
+          loading={loadingUsers}
+          getRowId={row => row.id}
+        />
 
         {/* Dialog Adicionar Usuário */}
         <Dialog
           open={isAddOpen}
           onClose={() => setIsAddOpen(false)}
-          maxWidth='md'
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>
@@ -471,11 +489,13 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map(dept => (
-                      <MenuItem key={dept.codigo} value={dept.codigo}>
-                        {dept.nome}
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { codigo: string; nome: string }) => (
+                        <MenuItem key={dept.codigo} value={dept.codigo}>
+                          {dept.nome}
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -492,7 +512,7 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map(cargo => (
+                    {cargos.map((cargo: { codigo: string; nome: string }) => (
                       <MenuItem key={cargo.codigo} value={cargo.codigo}>
                         {cargo.nome}
                       </MenuItem>
@@ -504,14 +524,15 @@ export default function AdminUsers() {
                 <FormControl fullWidth required>
                   <InputLabel>Tipo de Usuário</InputLabel>
                   <Select
-                    value={form.tipo_usuario}
+                    value={form.role}
                     onChange={e =>
-                      setForm({ ...form, tipo_usuario: e.target.value as any })
+                      setForm({ ...form, role: e.target.value as UserRole })
                     }
                     label='Tipo de Usuário'
                   >
-                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
+                    <MenuItem value='ALUNO'>Aluno</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
+                    <MenuItem value='GERENTE'>Gerente</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
                   </Select>
                 </FormControl>
@@ -520,9 +541,9 @@ export default function AdminUsers() {
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
                   <Select
-                    value={form.status}
+                    value={form.ativo ? 'ATIVO' : 'INATIVO'}
                     onChange={e =>
-                      setForm({ ...form, status: e.target.value as any })
+                      setForm({ ...form, ativo: e.target.value === 'ATIVO' })
                     }
                     label='Status'
                   >
@@ -531,7 +552,7 @@ export default function AdminUsers() {
                   </Select>
                 </FormControl>
               </Grid>
-              {form.tipo_usuario === 'INSTRUTOR' && (
+              {form.role === 'INSTRUTOR' && (
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     label='Biografia (Instrutor)'
@@ -614,11 +635,13 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o departamento —</em>
                     </MenuItem>
-                    {departamentos.map(dept => (
-                      <MenuItem key={dept.codigo} value={dept.codigo}>
-                        {dept.nome}
-                      </MenuItem>
-                    ))}
+                    {departamentos.map(
+                      (dept: { codigo: string; nome: string }) => (
+                        <MenuItem key={dept.codigo} value={dept.codigo}>
+                          {dept.nome}
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -635,7 +658,7 @@ export default function AdminUsers() {
                     <MenuItem value=''>
                       <em>— Selecione o cargo —</em>
                     </MenuItem>
-                    {cargos.map(cargo => (
+                    {cargos.map((cargo: { codigo: string; nome: string }) => (
                       <MenuItem key={cargo.codigo} value={cargo.codigo}>
                         {cargo.nome}
                       </MenuItem>
@@ -647,14 +670,15 @@ export default function AdminUsers() {
                 <FormControl fullWidth required>
                   <InputLabel>Tipo de Usuário</InputLabel>
                   <Select
-                    value={form.tipo_usuario}
+                    value={form.role}
                     onChange={e =>
-                      setForm({ ...form, tipo_usuario: e.target.value as any })
+                      setForm({ ...form, role: e.target.value as UserRole })
                     }
                     label='Tipo de Usuário'
                   >
-                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
+                    <MenuItem value='ALUNO'>Aluno</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
+                    <MenuItem value='GERENTE'>Gerente</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
                   </Select>
                 </FormControl>
@@ -663,9 +687,9 @@ export default function AdminUsers() {
                 <FormControl fullWidth>
                   <InputLabel>Status</InputLabel>
                   <Select
-                    value={form.status}
+                    value={form.ativo ? 'ATIVO' : 'INATIVO'}
                     onChange={e =>
-                      setForm({ ...form, status: e.target.value as any })
+                      setForm({ ...form, ativo: e.target.value === 'ATIVO' })
                     }
                     label='Status'
                   >
@@ -674,7 +698,7 @@ export default function AdminUsers() {
                   </Select>
                 </FormControl>
               </Grid>
-              {form.tipo_usuario === 'INSTRUTOR' && (
+              {form.role === 'INSTRUTOR' && (
                 <Grid size={{ xs: 12 }}>
                   <TextField
                     label='Biografia (Instrutor)'

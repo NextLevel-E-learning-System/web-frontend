@@ -33,10 +33,12 @@ export default function NotificationDropdown() {
   const open = Boolean(anchorEl)
 
   // Hooks para dados
-  const { data: unreadData, isLoading: unreadLoading } = useUnreadNotificationsCount()
-  const { data: notificationsData, isLoading: notificationsLoading } = useNotifications({
-    limit: 10,
-  })
+  const { data: unreadData, isLoading: unreadLoading } =
+    useUnreadNotificationsCount()
+  const { data: notificationsData, isLoading: notificationsLoading } =
+    useNotifications({
+      limit: 10,
+    })
   const markAsReadMutation = useMarkNotificationAsRead()
   const markAllAsReadMutation = useMarkAllNotificationsAsRead()
 
@@ -77,12 +79,12 @@ export default function NotificationDropdown() {
   return (
     <>
       <IconButton
-        color="inherit"
-        aria-label="notifications"
+        color='inherit'
+        aria-label='notifications'
         onClick={handleClick}
         sx={{ color: 'text.secondary' }}
       >
-        <Badge badgeContent={unreadCount} color="error">
+        <Badge badgeContent={unreadCount} color='error'>
           <NotificationIcon />
         </Badge>
       </IconButton>
@@ -102,14 +104,27 @@ export default function NotificationDropdown() {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         {/* Header */}
-        <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h6" fontWeight={600}>
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Typography variant='h6' fontWeight={600}>
               Notificações
             </Typography>
             {unreadCount > 0 && (
               <Button
-                size="small"
+                size='small'
                 startIcon={<MarkReadIcon />}
                 onClick={handleMarkAllAsRead}
                 disabled={markAllAsReadMutation.isPending}
@@ -119,7 +134,7 @@ export default function NotificationDropdown() {
             )}
           </Box>
           {unreadCount > 0 && (
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant='caption' color='text.secondary'>
               {unreadCount} não lida{unreadCount > 1 ? 's' : ''}
             </Typography>
           )}
@@ -135,7 +150,7 @@ export default function NotificationDropdown() {
         {/* Empty State */}
         {!notificationsLoading && notifications.length === 0 && (
           <Box sx={{ p: 3, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant='body2' color='text.secondary'>
               Nenhuma notificação encontrada
             </Typography>
           </Box>
@@ -150,19 +165,31 @@ export default function NotificationDropdown() {
                   sx={{
                     py: 1.5,
                     px: 2,
-                    backgroundColor: !notification.lida ? 'action.hover' : 'transparent',
+                    backgroundColor: !notification.lida
+                      ? 'action.hover'
+                      : 'transparent',
                     cursor: !notification.lida ? 'pointer' : 'default',
                     '&:hover': {
-                      backgroundColor: !notification.lida ? 'action.selected' : 'action.hover',
+                      backgroundColor: !notification.lida
+                        ? 'action.selected'
+                        : 'action.hover',
                     },
                   }}
-                  onClick={() => !notification.lida && handleMarkAsRead(notification.id)}
+                  onClick={() =>
+                    !notification.lida && handleMarkAsRead(notification.id)
+                  }
                 >
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 1,
+                        }}
+                      >
                         <Typography
-                          variant="subtitle2"
+                          variant='subtitle2'
                           fontWeight={!notification.lida ? 600 : 400}
                           sx={{ flex: 1 }}
                         >
@@ -185,8 +212,8 @@ export default function NotificationDropdown() {
                     secondary={
                       <Box sx={{ mt: 0.5 }}>
                         <Typography
-                          variant="body2"
-                          color="text.secondary"
+                          variant='body2'
+                          color='text.secondary'
                           sx={{
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
@@ -204,14 +231,14 @@ export default function NotificationDropdown() {
                             mt: 1,
                           }}
                         >
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant='caption' color='text.secondary'>
                             {formatNotificationTime(notification.data_criacao)}
                           </Typography>
                           {notification.tipo && (
                             <Chip
                               label={notification.tipo}
-                              size="small"
-                              variant="outlined"
+                              size='small'
+                              variant='outlined'
                               sx={{ height: 20, fontSize: '0.6875rem' }}
                             />
                           )}
@@ -233,7 +260,7 @@ export default function NotificationDropdown() {
             <Box sx={{ p: 1 }}>
               <Button
                 fullWidth
-                size="small"
+                size='small'
                 onClick={handleClose}
                 sx={{ textTransform: 'none' }}
               >

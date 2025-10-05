@@ -114,9 +114,7 @@ export function useUnreadNotificationsCount() {
   return useQuery<UnreadCountResponse>({
     queryKey: ['notifications', 'unread-count'],
     queryFn: () =>
-      authGet<UnreadCountResponse>(
-        `${API_ENDPOINTS.NOTIFICATIONS}/count`
-      ),
+      authGet<UnreadCountResponse>(`${API_ENDPOINTS.NOTIFICATIONS}/count`),
     refetchInterval: 30000, // Refetch every 30 seconds
   })
 }
@@ -127,10 +125,7 @@ export function useCreateNotification() {
   return useMutation({
     mutationKey: ['notifications', 'create'],
     mutationFn: (input: CreateNotificationInput) =>
-      authPost<Notification>(
-        `${API_ENDPOINTS.NOTIFICATIONS}`,
-        input
-      ),
+      authPost<Notification>(`${API_ENDPOINTS.NOTIFICATIONS}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
       queryClient.invalidateQueries({
@@ -146,9 +141,7 @@ export function useMarkNotificationAsRead() {
   return useMutation({
     mutationKey: ['notifications', 'mark-read'],
     mutationFn: (notificationId: number) =>
-      authPut(
-        `${API_ENDPOINTS.NOTIFICATIONS}/${notificationId}/read`
-      ),
+      authPut(`${API_ENDPOINTS.NOTIFICATIONS}/${notificationId}/read`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
       queryClient.invalidateQueries({
@@ -164,9 +157,7 @@ export function useMarkAllNotificationsAsRead() {
   return useMutation({
     mutationKey: ['notifications', 'mark-all-read'],
     mutationFn: () =>
-      authPut<MarkAllAsReadResponse>(
-        `${API_ENDPOINTS.NOTIFICATIONS}/read-all`
-      ),
+      authPut<MarkAllAsReadResponse>(`${API_ENDPOINTS.NOTIFICATIONS}/read-all`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
       queryClient.invalidateQueries({

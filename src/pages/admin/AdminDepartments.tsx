@@ -1,43 +1,43 @@
 import {
-  Avatar,
   Box,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
-  Alert,
   Skeleton,
   Grid,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  useMediaQuery,
+  useTheme,
+  Stack,
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  ArrowBack as ArrowBackIcon,
   Business as BusinessIcon,
 } from '@mui/icons-material'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useListarDepartamentos,
+  useListarDepartamentosAdmin,
+  useFuncionarios,
   useCriarDepartamento,
   useAtualizarDepartamento,
+  useDeleteDepartamento,
   type Departamento,
 } from '@/api/users'
+import DataTable, { type Column } from '@/components/common/DataTable'
 
 interface DepartmentForm {
   codigo: string
@@ -47,19 +47,36 @@ interface DepartmentForm {
 }
 
 export default function AdminDepartments() {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const { navigationItems } = useNavigation()
   const {
-    data: departamentos = [],
+    data: departamentosResponse,
     isLoading,
     refetch,
-  } = useListarDepartamentos()
+  } = useListarDepartamentosAdmin()
+  // A resposta da API vem como { items: [...] }
+  const departamentos =
+    (departamentosResponse as any)?.items || departamentosResponse || []
+  const { data: funcionariosResponse } = useFuncionarios()
+  const funcionarios = funcionariosResponse?.items || []
   const criarDepartamento = useCriarDepartamento()
+  const deleteDepartamento = useDeleteDepartamento()
   const [editingDept, setEditingDept] = useState<Departamento | null>(null)
   const atualizarDepartamento = useAtualizarDepartamento(
     editingDept?.codigo || ''
   )
 
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    titulo: '',
+    mensagem: '',
+    confirmText: 'Confirmar',
+    isLoading: false,
+    severity: 'warning' as 'error' | 'warning' | 'info',
+    onConfirm: () => {},
+  })
   const [form, setForm] = useState<DepartmentForm>({
     codigo: '',
     nome: '',
@@ -67,10 +84,21 @@ export default function AdminDepartments() {
     gestor_id: '',
   })
 
-  const title = useMemo(
-    () => (editingDept ? 'Editar Departamento' : 'Gerenciar Departamentos'),
-    [editingDept]
+  // Função para buscar o nome do gestor
+  const getGestorNome = (gestorId: string | null) => {
+    if (!gestorId) return null
+    const gestor = funcionarios.find(f => f.id === gestorId)
+    return gestor ? gestor.nome : `ID: ${gestorId}`
+  }
+
+  // Filtrar apenas funcionários que podem ser gestores (GERENTE, ADMIN)
+  const funcionariosGestores = funcionarios.filter(
+    f => f.role === 'GERENTE' || f.role === 'ADMIN'
   )
+
+  // Filtrar departamentos por status
+  // Usar todos os departamentos diretamente (sem filtro de status)
+  const departamentosFiltrados = departamentos
 
   const resetForm = () => {
     setForm({
@@ -146,29 +174,40 @@ export default function AdminDepartments() {
     }
   }
 
-  const DepartmentAvatar = ({
-    codigo,
-    nome,
-  }: {
-    codigo: string
-    nome: string
-  }) => (
-    <Avatar
-      sx={{
-        width: 40,
-        height: 40,
-        bgcolor: 'primary.main',
-        color: 'white',
-        fontWeight: 'bold',
-      }}
-    >
-      {codigo.slice(0, 2).toUpperCase()}
-    </Avatar>
-  )
+  const handleDelete = (codigo: string, nome: string) => {
+    setConfirmDialog({
+      open: true,
+      titulo: 'Excluir Departamento',
+      mensagem: `Tem certeza que deseja excluir permanentemente o departamento "${nome}"? Esta ação não pode ser revertida e só é possível se não houver categorias ou funcionários associados.`,
+      confirmText: 'Excluir',
+      isLoading: false,
+      severity: 'error',
+      onConfirm: async () => {
+        try {
+          setConfirmDialog(prev => ({ ...prev, isLoading: true }))
+          await deleteDepartamento.mutateAsync(codigo)
+          toast.success('Departamento excluído com sucesso!')
+          setConfirmDialog({
+            ...confirmDialog,
+            open: false,
+            isLoading: false,
+            severity: 'warning',
+          })
+          refetch()
+        } catch (error: any) {
+          const errorMessage =
+            error?.response?.data?.message || 'Erro ao excluir departamento'
+          toast.error(errorMessage)
+          console.error(error)
+          setConfirmDialog(prev => ({ ...prev, isLoading: false }))
+        }
+      },
+    })
+  }
 
   if (isLoading) {
     return (
-      <DashboardLayout title='Gerenciar Departamentos' items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={200} />
         </Box>
@@ -176,12 +215,115 @@ export default function AdminDepartments() {
     )
   }
 
+  // Definição das colunas para o DataTable
+  const departmentColumns: Column[] = [
+    {
+      id: 'codigo',
+      label: 'Código',
+      align: 'left',
+      minWidth: 80,
+      render: (_, dept) => (
+        <Typography fontWeight={500}>{dept.codigo}</Typography>
+      ),
+    },
+    {
+      id: 'nome',
+      label: 'Departamento',
+      align: 'left',
+      minWidth: 150,
+      render: (_, dept) => (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 0.5,
+          }}
+        >
+          <Typography fontWeight={500}>{dept.nome}</Typography>
+          {isMobile && dept.descricao && (
+            <Typography variant='caption' color='text.secondary'>
+              {dept.descricao}
+            </Typography>
+          )}
+          {isMobile && getGestorNome(dept.gestor_funcionario_id) && (
+            <Typography variant='caption' color='text.secondary'>
+              Gestor: {getGestorNome(dept.gestor_funcionario_id)}
+            </Typography>
+          )}
+        </Box>
+      ),
+    },
+    ...(isMobile
+      ? []
+      : ([
+          {
+            id: 'descricao',
+            label: 'Descrição',
+            align: 'left',
+            minWidth: 200,
+            render: (_, dept) => (
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{
+                  maxWidth: 300,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {dept.descricao || '—'}
+              </Typography>
+            ),
+          },
+          {
+            id: 'gestor',
+            label: 'Gestor',
+            align: 'left',
+            minWidth: 150,
+            render: (_, dept) => (
+              <Typography variant='body2' color='text.secondary'>
+                {getGestorNome(dept.gestor_funcionario_id) || '—'}
+              </Typography>
+            ),
+          },
+        ] as Column[])),
+    {
+      id: 'acoes',
+      label: 'Ações',
+      align: 'right',
+      minWidth: 120,
+      render: (_, dept) => (
+        <Stack direction='row' spacing={1} justifyContent='flex-end'>
+          <IconButton
+            size='small'
+            onClick={() => handleEdit(dept)}
+            aria-label='editar'
+            color='primary'
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            size='small'
+            onClick={() => handleDelete(dept.codigo, dept.nome)}
+            aria-label='excluir'
+            color='error'
+            disabled={deleteDepartamento.isPending || confirmDialog.isLoading}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Stack>
+      ),
+    },
+  ]
+
   return (
-    <DashboardLayout title={title} items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box>
         <Box
           sx={{
             display: 'flex',
+            alignItems: 'center',
             justifyContent: 'end',
             mb: 3,
           }}
@@ -196,106 +338,12 @@ export default function AdminDepartments() {
           </Button>
         </Box>
 
-        <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                Todos os Departamentos
-              </Typography>
-            }
-          />
-          <CardContent>
-            {departamentos.length === 0 ? (
-              <Alert severity='info' sx={{ mt: 2 }}>
-                Nenhum departamento cadastrado. Clique em "Adicionar
-                Departamento" para começar.
-              </Alert>
-            ) : (
-              <Table size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Código</TableCell>
-                    <TableCell>Departamento</TableCell>
-                    <TableCell>Descrição</TableCell>
-                    <TableCell>Gestor ID</TableCell>
-                    <TableCell align='right'>Ações</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {departamentos.map(dept => (
-                    <TableRow key={dept.codigo} hover>
-                      <TableCell>
-                        <Typography fontWeight={500}>{dept.codigo}</Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                          }}
-                        >
-                          <DepartmentAvatar
-                            codigo={dept.codigo}
-                            nome={dept.nome}
-                          />
-                          <Typography fontWeight={500}>{dept.nome}</Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{
-                            maxWidth: 400,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {dept.descricao || '—'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant='body2' color='text.secondary'>
-                          {dept.gestor_funcionario_id || '—'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align='right'>
-                        <IconButton
-                          size='small'
-                          onClick={() => handleEdit(dept)}
-                          aria-label='editar'
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size='small'
-                          onClick={() => {
-                            if (
-                              confirm(
-                                `Tem certeza que deseja excluir o departamento "${dept.nome}"?`
-                              )
-                            ) {
-                              // TODO: Implementar exclusão quando endpoint estiver disponível
-                              toast.info(
-                                'Funcionalidade de exclusão será implementada em breve'
-                              )
-                            }
-                          }}
-                          aria-label='excluir'
-                          color='error'
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+        <DataTable
+          data={departamentosFiltrados}
+          columns={departmentColumns}
+          loading={isLoading}
+          getRowId={dept => dept.codigo}
+        />
 
         {/* Dialog Adicionar Departamento */}
         <Dialog
@@ -326,15 +374,25 @@ export default function AdminDepartments() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='ID do Gestor'
-                  value={form.gestor_id}
-                  onChange={e =>
-                    setForm({ ...form, gestor_id: e.target.value })
-                  }
-                  placeholder='ID do usuário gestor (opcional)'
-                  fullWidth
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Gestor do Departamento</InputLabel>
+                  <Select
+                    value={form.gestor_id}
+                    onChange={e =>
+                      setForm({ ...form, gestor_id: e.target.value })
+                    }
+                    label='Gestor do Departamento'
+                  >
+                    <MenuItem value=''>
+                      <em>Nenhum gestor</em>
+                    </MenuItem>
+                    {funcionariosGestores.map(funcionario => (
+                      <MenuItem key={funcionario.id} value={funcionario.id}>
+                        {funcionario.nome} ({funcionario.role})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
@@ -405,15 +463,25 @@ export default function AdminDepartments() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='ID do Gestor'
-                  value={form.gestor_id}
-                  onChange={e =>
-                    setForm({ ...form, gestor_id: e.target.value })
-                  }
-                  placeholder='ID do usuário gestor (opcional)'
-                  fullWidth
-                />
+                <FormControl fullWidth>
+                  <InputLabel>Gestor do Departamento</InputLabel>
+                  <Select
+                    value={form.gestor_id}
+                    onChange={e =>
+                      setForm({ ...form, gestor_id: e.target.value })
+                    }
+                    label='Gestor do Departamento'
+                  >
+                    <MenuItem value=''>
+                      <em>Nenhum gestor</em>
+                    </MenuItem>
+                    {funcionariosGestores.map(funcionario => (
+                      <MenuItem key={funcionario.id} value={funcionario.id}>
+                        {funcionario.nome} ({funcionario.role})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
@@ -457,6 +525,19 @@ export default function AdminDepartments() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Modal de Confirmação de Exclusão */}
+        <ConfirmationDialog
+          open={confirmDialog.open}
+          onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.titulo}
+          message={confirmDialog.mensagem}
+          confirmText={confirmDialog.confirmText}
+          cancelText='Cancelar'
+          isLoading={confirmDialog.isLoading}
+          severity={confirmDialog.severity}
+        />
       </Box>
     </DashboardLayout>
   )

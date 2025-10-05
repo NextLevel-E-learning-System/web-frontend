@@ -4,15 +4,15 @@ import {
   useLogin as useLoginAPI,
   useLogout as useLogoutAPI,
   useRefreshToken as useRefreshTokenAPI,
-  LoginRequest,
+  type LoginRequest,
 } from '@/api/auth'
 import {
   useRegisterFuncionario,
   useResetPassword as useResetPasswordAPI,
-  ResetPasswordInput,
+  type ResetPasswordInput,
 } from '@/api/users'
 import { setAccessToken, clearAccessToken, isTokenPersistent } from '@/api/http'
-import { showToast } from '@/utils/toast'
+import { showSuccessToast, showErrorToast } from '@/utils/toast'
 
 // Types específicos para hooks (estendendo os da API)
 export interface LoginCredentials extends LoginRequest {
@@ -45,7 +45,8 @@ export function useLogin() {
       return result
     },
     onSuccess: result => {
-      showToast.success('Login realizado com sucesso!')
+      // Usar apenas mensagem do backend
+      showSuccessToast(result)
 
       // Invalidar cache para forçar nova busca dos dados
       queryClient.invalidateQueries({ queryKey: ['users'] })
@@ -53,7 +54,10 @@ export function useLogin() {
       // Extrair role do token JWT para redirecionamento correto
       try {
         const tokenPayload = JSON.parse(atob(result.accessToken.split('.')[1]))
-        const userRole = tokenPayload.roles?.[0] || 'ALUNO'
+        // Tratar tanto string quanto array para roles
+        const userRole = Array.isArray(tokenPayload.roles)
+          ? tokenPayload.roles[0]
+          : tokenPayload.roles || 'ALUNO'
 
         console.log('[useLogin] User role from token:', userRole)
 
@@ -81,7 +85,7 @@ export function useLogin() {
     },
     onError: (error: any) => {
       console.error('[useLogin] Erro:', error)
-      showToast.error('Erro ao fazer login. Verifique suas credenciais.')
+      showErrorToast(error)
     },
   })
 }
@@ -109,12 +113,15 @@ export function useLogout() {
       clearAccessToken()
       queryClient.clear()
     },
-    onSuccess: () => {
-      showToast.success('Logout realizado com sucesso!')
+    onSuccess: (result: any) => {
+      // Usar apenas mensagem do backend
+      showSuccessToast(result)
       navigate('/login')
     },
     onError: (error: any) => {
       console.error('[useLogout] Erro:', error)
+      showErrorToast(error)
+
       // Mesmo com erro, fazer logout local
       clearAccessToken()
       queryClient.clear()
@@ -132,14 +139,13 @@ export function useRegister() {
     mutationFn: async (data: RegisterData) => {
       return await registerAPI.mutateAsync(data)
     },
-    onSuccess: () => {
-      showToast.success(
-        'Conta criada com sucesso! Verifique seu email para obter a senha.'
-      )
+    onSuccess: (result: any) => {
+      // Usar apenas mensagem do backend
+      showSuccessToast(result)
     },
     onError: (error: any) => {
       console.error('[useRegister] Erro:', error)
-      showToast.error('Erro ao criar conta. Tente novamente.')
+      showErrorToast(error)
     },
   })
 }
@@ -153,12 +159,13 @@ export function useResetPassword() {
     mutationFn: async (data: ResetPasswordInput) => {
       return await resetAPI.mutateAsync(data)
     },
-    onSuccess: () => {
-      showToast.success('Se o email existir, uma nova senha foi enviada.')
+    onSuccess: (result: any) => {
+      // Usar apenas mensagem do backend
+      showSuccessToast(result)
     },
     onError: (error: any) => {
       console.error('[useResetPassword] Erro:', error)
-      showToast.error('Erro ao processar solicitação. Tente novamente.')
+      showErrorToast(error)
     },
   })
 }

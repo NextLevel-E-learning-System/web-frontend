@@ -1,96 +1,55 @@
-import Grid from '@mui/material/Grid'
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
   Chip,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  Alert,
   Skeleton,
-  Avatar,
   LinearProgress,
-  Rating,
-  Paper,
+  IconButton,
+  Menu,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import {
-  ArrowBack as ArrowBackIcon,
-  FilterAlt as FilterAltIcon,
-  School as SchoolIcon,
-  Person as PersonIcon,
-  Star as StarIcon,
   TrendingUp as TrendingUpIcon,
-  Group as GroupIcon,
-  CheckCircle as CheckCircleIcon,
   Schedule as ScheduleIcon,
+  FileCopy,
+  Add as AddIcon,
+  Edit as EditIcon,
+  MoreVert as MoreVertIcon,
 } from '@mui/icons-material'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
-import CourseDetailsDialog from '@/components/admin/CourseDetailsDialog'
+import DataTable, { type Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
-  useCourseCatalog,
+  useCourses,
   useCategories,
+  useDuplicateCourse,
+  useToggleCourseStatus,
   type Course as Curso,
 } from '@/api/courses'
-import { useListarDepartamentos, useFuncionarios } from '@/api/users'
-
-interface CursoMetricas extends Curso {
-  total_inscritos: number
-  total_concluidos: number
-  em_andamento: number
-  taxa_conclusao: number
-  avaliacao_media: number
-  total_avaliacoes: number
-  tempo_medio_conclusao: number // em dias
-  status_visual: 'active' | 'inactive' | 'draft'
-}
-
-// Mock data para demonstração
-const mockMetricas: CursoMetricas[] = [
-  {
-    codigo: 'MKT-002',
-    total_inscritos: 0,
-    total_concluidos: 0,
-    em_andamento: 0,
-    taxa_conclusao: 0,
-    avaliacao_media: 0,
-    total_avaliacoes: 0,
-    tempo_medio_conclusao: 0,
-    status_visual: 'active',
-    titulo: '',
-    ativo: false,
-    criado_em: '',
-    atualizado_em: '',
-  },
-]
+import { useFuncionarios } from '@/api/users'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 
 interface Filtros {
   categoria: string
   instrutor: string
-  status: string
+  status: 'all' | 'active' | 'inactive'
   nivel: string
 }
 
 export default function AdminCourses() {
-  const { navigationItems } = useNavigation()
+  const { navigationItems, isInstrutor, user } = useNavigation()
 
   // Estados
-  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('active')
-  const [selectedCourse, setSelectedCourse] = useState<CursoMetricas | null>(
-    null
-  )
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [filtros, setFiltros] = useState<Filtros>({
     categoria: 'all',
     instrutor: 'all',
@@ -98,62 +57,114 @@ export default function AdminCourses() {
     nivel: 'all',
   })
 
-  // Hooks de dados reais (quando disponíveis)
-  const { data: cursosReais = [], isLoading: loadingCursos } =
-    useCourseCatalog()
+  // Navegação para editor dedicado
+  const navigate = useNavigate()
+
+  // Estados para ações
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [selectedCourseForMenu, setSelectedCourseForMenu] =
+    useState<Curso | null>(null)
+  const [courseToToggle, setCourseToToggle] = useState<string>('')
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean
+    action: 'duplicate' | 'toggle' | null
+    curso: Curso | null
+  }>({ open: false, action: null, curso: null })
+
+  // Hooks de dados
+  const coursesFilters = useMemo(() => {
+    const filters: any = {}
+    if (filtros.categoria !== 'all') filters.categoria = filtros.categoria
+    if (filtros.instrutor !== 'all') filters.instrutor = filtros.instrutor
+    if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
+
+    // Se o usuário for INSTRUTOR, filtrar apenas seus cursos
+    if (isInstrutor && user?.id) {
+      filters.instrutor = user.id
+    }
+
+    return filters
+  }, [filtros, isInstrutor, user?.id])
+
+  const { data: cursosResponse, isLoading: loadingCursos } =
+    useCourses(coursesFilters)
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
-  const { data: departamentos = [] } = useListarDepartamentos()
-  const { data: usuarios = [] } = useFuncionarios()
+  const { data: funcionariosResponse, isLoading: loadingFuncionarios } =
+    useFuncionarios()
+  const cursos = cursosResponse?.items || []
+  const funcionarios = funcionariosResponse?.items || []
 
-  // Usar dados mock por enquanto
-  const cursos = mockMetricas
-  const instrutores = usuarios || []
+  // Mutations
+  // Criação/Edição agora ocorrem em CourseEditorPage
+  const duplicateCourseMutation = useDuplicateCourse()
+  const toggleStatusMutation = useToggleCourseStatus(courseToToggle)
 
-  // Filtros aplicados
-  const cursosAtivos = cursos.filter(c => c.ativo === true)
-  const cursosInativos = cursos.filter(c => c.ativo === false)
+  // Contadores para as tabs (baseados nos cursos já filtrados pela API, mas sem filtro de status)
+  const cursosAtivos = cursos.filter(c => c.ativo === true).length
+  const cursosInativos = cursos.filter(c => c.ativo === false).length
 
-  const filtered = cursos.filter(curso => {
-    if (tab === 'active' && !curso.ativo) return false
-    if (tab === 'disabled' && curso.ativo) return false
+  // Handlers substituídos por navegação
+  const handleCreateCourse = () => navigate('/manage/courses/new')
 
-    return (
-      (filtros.instrutor === 'all' ||
-        curso.instrutor_id === filtros.instrutor) &&
-      (filtros.nivel === 'all' || curso.nivel_dificuldade === filtros.nivel)
-    )
-  })
+  const handleEditCourse = (curso: Curso) => {
+    navigate(`/manage/courses/${curso.codigo}/edit`)
+  }
 
-  // Estatísticas gerais
-  const estatisticas = useMemo(() => {
-    const totalCursos = cursos.length
-    const totalInscritos = cursos.reduce(
-      (acc, curso) => acc + curso.total_inscritos,
-      0
-    )
-    const totalConcluidos = cursos.reduce(
-      (acc, curso) => acc + curso.total_concluidos,
-      0
-    )
-    const taxaMediaConclusao =
-      totalInscritos > 0 ? (totalConcluidos / totalInscritos) * 100 : 0
-    const avaliacaoMedia =
-      cursos.reduce((acc, curso) => acc + curso.avaliacao_media, 0) /
-      totalCursos
-
-    return {
-      totalCursos,
-      totalInscritos,
-      totalConcluidos,
-      taxaMediaConclusao,
-      avaliacaoMedia,
+  const canEditCourse = (curso: Curso) => {
+    if (isInstrutor && (curso.total_inscricoes || 0) > 0) {
+      return false
     }
-  }, [cursos])
+    return true
+  }
+
+  const handleDuplicateCourse = async (curso: Curso) => {
+    try {
+      await duplicateCourseMutation.mutateAsync(curso.codigo)
+      setAnchorEl(null)
+    } catch (error) {
+      // erro ao duplicar curso
+    }
+  }
+
+  const handleToggleStatus = async (curso: Curso) => {
+    try {
+      setCourseToToggle(curso.codigo)
+      await toggleStatusMutation.mutateAsync(!curso.ativo)
+      setAnchorEl(null)
+    } catch (error) {
+      console.error('Erro ao alterar status do curso:', error)
+    }
+  }
+
+  // Menu handlers
+  const handleOpenMenu = (
+    event: React.MouseEvent<HTMLElement>,
+    curso: Curso
+  ) => {
+    event.stopPropagation()
+    setAnchorEl(event.currentTarget)
+    setSelectedCourseForMenu(curso)
+  }
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null)
+    setSelectedCourseForMenu(null)
+  }
+
+  const filtered = useMemo(() => {
+    return cursos.filter(curso => {
+      if (tab === 'active' && !curso.ativo) return false
+      if (tab === 'disabled' && curso.ativo) return false
+      return true
+    })
+  }, [cursos, tab])
+
+  const getRowId = useCallback((curso: Curso) => curso.codigo, [])
 
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
-      case 'Básico':
+      case 'Iniciante':
         return 'success'
       case 'Intermediário':
         return 'warning'
@@ -164,13 +175,171 @@ export default function AdminCourses() {
     }
   }
 
-  const getStatusColor = (ativo: boolean) => {
-    return ativo ? 'success' : 'default'
-  }
+  // Definição das colunas para o DataTable
+  const courseColumns: Column[] = [
+    {
+      id: 'titulo',
+      label: 'Curso',
+      align: 'left',
+      render: (_, curso) => (
+        <Box>
+          <Typography variant='body2' fontWeight={500}>
+            {curso.titulo}
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mt: 0.5,
+            }}
+          >
+            <ScheduleIcon fontSize='small' color='action' />
+            <Typography variant='caption' color='text.secondary'>
+              {curso.duracao_estimada}h
+            </Typography>
+            <TrendingUpIcon fontSize='small' color='action' />
+            <Typography variant='caption' color='text.secondary'>
+              {curso.xp_oferecido} XP
+            </Typography>
+          </Box>
+        </Box>
+      ),
+    },
+    {
+      id: 'categoria',
+      label: 'Categoria',
+      align: 'center',
+      render: (_, curso) => {
+        const categoria = categorias.find(c => c.codigo === curso.categoria_id)
+        return (
+          <Chip
+            variant='outlined'
+            size='small'
+            label={categoria?.codigo}
+            sx={{
+              borderColor: categoria?.cor_hex || '#ccc',
+              color: categoria?.cor_hex || '#666',
+              backgroundColor: categoria?.cor_hex
+                ? `${categoria.cor_hex}15`
+                : 'transparent',
+            }}
+          />
+        )
+      },
+    },
+    {
+      id: 'instrutor',
+      label: 'Instrutor',
+      align: 'center',
+      render: (_, curso) => {
+        const instrutor = funcionarios.find(f => f.id === curso.instrutor_id)
+        return (
+          <Typography variant='body2'>
+            {instrutor?.nome
+              ? (() => {
+                  const nome = instrutor.nome.trim().split(' ')
+                  return `${nome[0]}`
+                })()
+              : '-'}
+          </Typography>
+        )
+      },
+    },
+    {
+      id: 'nivel',
+      label: 'Nível',
+      align: 'center',
+      render: (_, curso) => (
+        <Chip
+          size='small'
+          label={curso.nivel_dificuldade}
+          color={getNivelColor(curso.nivel_dificuldade) as any}
+        />
+      ),
+    },
+    {
+      id: 'inscritos',
+      label: 'Inscritos',
+      align: 'center',
+      render: (_, curso) => (
+        <Box>
+          <Typography variant='body2' fontWeight={500}>
+            {curso.total_inscricoes || 0}
+          </Typography>
+          <Typography variant='caption' color='success.main'>
+            {curso.total_conclusoes || 0} concluídos
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      id: 'taxa_conclusao',
+      label: 'Taxa Conclusão',
+      align: 'center',
+      render: (_, curso) => (
+        <Box sx={{ minWidth: 80 }}>
+          <Typography variant='body2' fontWeight={500}>
+            {curso.taxa_conclusao || 0}%
+          </Typography>
+          <LinearProgress
+            variant='determinate'
+            value={curso.taxa_conclusao || 0}
+            sx={{ mt: 0.5 }}
+            color={
+              curso.taxa_conclusao > 70
+                ? 'success'
+                : curso.taxa_conclusao > 40
+                  ? 'warning'
+                  : 'error'
+            }
+          />
+        </Box>
+      ),
+    },
+    {
+      id: 'status',
+      label: 'Status',
+      align: 'center',
+      render: (_, curso) => (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={curso.ativo}
+              onChange={async e => {
+                e.stopPropagation()
+                await handleToggleStatus(curso)
+              }}
+              onClick={e => e.stopPropagation()}
+              color='primary'
+              disabled={!canEditCourse(curso)}
+            />
+          }
+          label={curso.ativo ? 'Ativo' : 'Inativo'}
+        />
+      ),
+    },
+    {
+      id: 'acoes',
+      label: 'Ações',
+      align: 'center',
+      render: (_, curso) => (
+        <IconButton
+          size='small'
+          onClick={e => {
+            e.stopPropagation()
+            handleOpenMenu(e, curso)
+          }}
+        >
+          <MoreVertIcon />
+        </IconButton>
+      ),
+    },
+  ]
 
-  if (loadingCursos || loadingCategorias) {
+  if (loadingCursos || loadingCategorias || loadingFuncionarios) {
     return (
-      <DashboardLayout title='Cursos' items={navigationItems}>
+      <DashboardLayout items={navigationItems}>
         <Box>
           <Skeleton variant='rectangular' height={300} />
         </Box>
@@ -179,12 +348,20 @@ export default function AdminCourses() {
   }
 
   return (
-    <DashboardLayout title='Cursos' items={navigationItems}>
+    <DashboardLayout items={navigationItems}>
       <Box>
-        {/* Filtros */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid size={{ xs: 12, md: 3 }}>
-            <FormControl fullWidth>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 3,
+            gap: 2,
+            flexWrap: 'wrap',
+          }}
+        >
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            <FormControl sx={{ minWidth: 180 }}>
               <InputLabel>Categoria</InputLabel>
               <Select
                 value={filtros.categoria}
@@ -197,36 +374,37 @@ export default function AdminCourses() {
                   <em>Todas as Categorias</em>
                 </MenuItem>
                 {categorias.map(cat => (
-                  <MenuItem key={cat.codigo} value={cat.nome}>
+                  <MenuItem key={cat.codigo} value={cat.codigo}>
                     {cat.nome}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
-            <FormControl fullWidth>
-              <InputLabel>Instrutor</InputLabel>
-              <Select
-                value={filtros.instrutor}
-                onChange={e =>
-                  setFiltros({ ...filtros, instrutor: e.target.value })
-                }
-                label='Instrutor'
-              >
-                <MenuItem value='all'>
-                  <em>Todos os Instrutores</em>
-                </MenuItem>
-                {instrutores.map(instrutor => (
-                  <MenuItem key={instrutor.id} value={instrutor.id}>
-                    {instrutor.nome}
+            {/* Filtro de instrutor - escondido para INSTRUTOR pois ele só vê seus próprios cursos */}
+            {!isInstrutor && (
+              <FormControl sx={{ minWidth: 180 }}>
+                <InputLabel>Instrutor</InputLabel>
+                <Select
+                  value={filtros.instrutor}
+                  onChange={e =>
+                    setFiltros({ ...filtros, instrutor: e.target.value })
+                  }
+                  label='Instrutor'
+                >
+                  <MenuItem value='all'>
+                    <em>Todos os Instrutores</em>
                   </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
-            <FormControl fullWidth>
+                  {funcionarios
+                    .filter(func => func.role === 'INSTRUTOR')
+                    .map(instrutor => (
+                      <MenuItem key={instrutor.id} value={instrutor.id}>
+                        {instrutor.nome}
+                      </MenuItem>
+                    ))}
+                </Select>
+              </FormControl>
+            )}
+            <FormControl sx={{ minWidth: 180 }}>
               <InputLabel>Nível</InputLabel>
               <Select
                 value={filtros.nivel}
@@ -238,199 +416,119 @@ export default function AdminCourses() {
                 <MenuItem value='all'>
                   <em>Todos os Níveis</em>
                 </MenuItem>
-                <MenuItem value='Básico'>Básico</MenuItem>
+                <MenuItem value='Iniciante'>Iniciante</MenuItem>
                 <MenuItem value='Intermediário'>Intermediário</MenuItem>
                 <MenuItem value='Avançado'>Avançado</MenuItem>
               </Select>
             </FormControl>
-          </Grid>
-        </Grid>
-
+          </Box>
+          <Button
+            variant='contained'
+            startIcon={<AddIcon />}
+            onClick={handleCreateCourse}
+            sx={{ minWidth: 160 }}
+          >
+            Adicionar Curso
+          </Button>
+        </Box>
         {/* Tabs de Status */}
         <StatusFilterTabs
           value={tab}
           onChange={setTab}
-          activeCount={cursosAtivos.length}
-          inactiveCount={cursosInativos.length}
+          activeCount={cursosAtivos}
+          inactiveCount={cursosInativos}
           activeLabel='Cursos Ativos'
           inactiveLabel='Cursos Inativos'
         />
-
         {/* Tabela de Cursos */}
-        <Card>
-          <CardHeader
-            title={
-              <Typography variant='h6' fontWeight={600}>
-                {tab === 'active'
-                  ? 'Cursos Ativos'
-                  : tab === 'disabled'
-                    ? 'Cursos Inativos'
-                    : 'Todos os Cursos'}
-              </Typography>
+        <DataTable
+          data={filtered}
+          columns={courseColumns}
+          loading={loadingCursos || loadingCategorias || loadingFuncionarios}
+          getRowId={getRowId}
+        />
+        {/* Menu de ações */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleCloseMenu}
+        >
+          {/* Ação de Avaliações removida: agora ficará dentro da gestão de módulos do curso */}
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu()
+              if (selectedCourseForMenu) {
+                handleEditCourse(selectedCourseForMenu)
+              }
+            }}
+            disabled={
+              selectedCourseForMenu
+                ? !canEditCourse(selectedCourseForMenu)
+                : false
             }
-            subheader={`${filtered.length} cursos encontrados`}
-          />
-          <CardContent>
-            {filtered.length === 0 ? (
-              <Alert severity='info'>
-                {tab === 'all'
-                  ? 'Nenhum curso encontrado com os filtros selecionados.'
-                  : `Nenhum curso ${tab === 'active' ? 'ativo' : 'inativo'} encontrado.`}
-              </Alert>
-            ) : (
-              <Table size='small'>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Curso</TableCell>
-                    <TableCell>Categoria</TableCell>
-                    <TableCell>Instrutor</TableCell>
-                    <TableCell>Nível</TableCell>
-                    <TableCell align='center'>Inscritos</TableCell>
-                    <TableCell align='center'>Taxa Conclusão</TableCell>
-                    <TableCell align='center'>Avaliação</TableCell>
-                    <TableCell align='center'>Status</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filtered.map(curso => (
-                    <TableRow
-                      hover
-                      sx={{ cursor: 'pointer' }}
-                      onClick={() => setSelectedCourse(curso)}
-                    >
-                      <TableCell>
-                        <Box>
-                          <Typography variant='body2' fontWeight={500}>
-                            {curso.titulo}
-                          </Typography>
-                          <Typography
-                            variant='caption'
-                            sx={{
-                              fontFamily:
-                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                              color: 'text.secondary',
-                            }}
-                          >
-                            {curso.codigo}
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              mt: 0.5,
-                            }}
-                          >
-                            <ScheduleIcon fontSize='small' color='action' />
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              {curso.duracao_estimada}h
-                            </Typography>
-                            <TrendingUpIcon fontSize='small' color='action' />
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              {curso.xp_oferecido} XP
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip variant='outlined' size='small' />
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                        >
-                          <Avatar
-                            sx={{ width: 24, height: 24, fontSize: '0.75rem' }}
-                          ></Avatar>
-                          <Typography variant='body2'></Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          size='small'
-                          label={curso.nivel_dificuldade}
-                          color={
-                            getNivelColor(
-                              curso.nivel_dificuldade || 'Básico'
-                            ) as any
-                          }
-                        />
-                      </TableCell>
-                      <TableCell align='center'>
-                        <Box>
-                          <Typography variant='body2' fontWeight={500}>
-                            {curso.total_inscritos}
-                          </Typography>
-                          <Typography variant='caption' color='success.main'>
-                            {curso.total_concluidos} concluídos
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align='center'>
-                        <Box sx={{ minWidth: 80 }}>
-                          <Typography variant='body2' fontWeight={500}>
-                            {curso.taxa_conclusao.toFixed(1)}%
-                          </Typography>
-                          <LinearProgress
-                            variant='determinate'
-                            value={curso.taxa_conclusao}
-                            sx={{ mt: 0.5 }}
-                            color={
-                              curso.taxa_conclusao > 70
-                                ? 'success'
-                                : curso.taxa_conclusao > 40
-                                  ? 'warning'
-                                  : 'error'
-                            }
-                          />
-                        </Box>
-                      </TableCell>
-                      <TableCell align='center'>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Rating
-                            value={curso.avaliacao_media}
-                            readOnly
-                            size='small'
-                            precision={0.1}
-                          />
-                          <Typography variant='caption' color='text.secondary'>
-                            {curso.avaliacao_media.toFixed(1)} (
-                            {curso.total_avaliacoes})
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align='center'>
-                        <Chip
-                          size='small'
-                          label={curso.ativo ? 'Ativo' : 'Inativo'}
-                          color={getStatusColor(curso.ativo)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Dialog de Detalhes do Curso */}
-        <CourseDetailsDialog
-          open={!!selectedCourse}
-          onClose={() => setSelectedCourse(null)}
-          curso={selectedCourse as any}
+            sx={{
+              opacity:
+                selectedCourseForMenu && !canEditCourse(selectedCourseForMenu)
+                  ? 0.5
+                  : 1,
+            }}
+          >
+            <EditIcon sx={{ mr: 1 }} fontSize='small' />
+            Editar
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu()
+              if (selectedCourseForMenu) {
+                setConfirmDialog({
+                  open: true,
+                  action: 'duplicate',
+                  curso: selectedCourseForMenu,
+                })
+              }
+            }}
+          >
+            <FileCopy sx={{ mr: 1 }} fontSize='small' />
+            Duplicar
+          </MenuItem>
+        </Menu>
+        {/* Dialog de confirmação para duplicar/inativar */}
+        <ConfirmationDialog
+          open={confirmDialog.open}
+          onClose={() =>
+            setConfirmDialog({ open: false, action: null, curso: null })
+          }
+          onConfirm={async () => {
+            if (confirmDialog.action === 'duplicate' && confirmDialog.curso) {
+              await handleDuplicateCourse(confirmDialog.curso)
+              setConfirmDialog({ open: false, action: null, curso: null })
+            }
+            if (confirmDialog.action === 'toggle' && confirmDialog.curso) {
+              await handleToggleStatus(confirmDialog.curso)
+              setConfirmDialog({ open: false, action: null, curso: null })
+            }
+          }}
+          title={
+            confirmDialog.action === 'duplicate'
+              ? 'Duplicar Curso'
+              : 'Alterar Status do Curso'
+          }
+          message={
+            confirmDialog.action === 'duplicate'
+              ? `Deseja duplicar o curso "${confirmDialog.curso?.titulo}"?`
+              : confirmDialog.curso?.ativo
+                ? `Deseja inativar o curso "${confirmDialog.curso?.titulo}"?`
+                : `Deseja ativar o curso "${confirmDialog.curso?.titulo}"?`
+          }
+          confirmText={
+            confirmDialog.action === 'duplicate'
+              ? 'Duplicar'
+              : confirmDialog.curso?.ativo
+                ? 'Inativar'
+                : 'Ativar'
+          }
+          cancelText='Cancelar'
+          severity={confirmDialog.action === 'duplicate' ? 'info' : 'warning'}
         />
       </Box>
     </DashboardLayout>
