@@ -13,12 +13,13 @@ import ListItemText from '@mui/material/ListItemText'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
-import PersonIcon from '@mui/icons-material/Person'
-
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
-import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay'
+import {
+  Person,
+  PeopleAlt,
+  AccessTime,
+  WorkspacePremium,
+  PlaylistPlay,
+} from '@mui/icons-material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import React from 'react'
@@ -79,13 +80,6 @@ export default function CourseDialog({
 
   if (!course) return null
 
-  const orig = course.priceOriginal
-    ? Number(String(course.priceOriginal).replace(/[^0-9.]/g, ''))
-    : undefined
-  const curr = course.price
-    ? Number(String(course.price).replace(/[^0-9.]/g, ''))
-    : undefined
-
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='md'>
       <Box
@@ -139,14 +133,14 @@ export default function CourseDialog({
             </Box>
           )}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <PeopleAltIcon sx={{ fontSize: 18 }} />
+            <PeopleAlt sx={{ fontSize: 18 }} />
             <Typography variant='body2'>
               {course.totalEnrollments || 0} inscritos
             </Typography>
           </Box>
           <Typography variant='body2'>{course.level}</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 18 }} />
+            <AccessTime sx={{ fontSize: 18 }} />
             <Typography variant='body2'>
               {course.hours.replace(' total', '')}
             </Typography>
@@ -195,7 +189,7 @@ export default function CourseDialog({
                     mb: 1,
                   }}
                 >
-                  <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Person sx={{ fontSize: 16, color: 'text.secondary' }} />
                   <Typography variant='body1' fontWeight={600}>
                     {course.instructorName}
                   </Typography>
@@ -212,7 +206,7 @@ export default function CourseDialog({
                     mb: 1,
                   }}
                 >
-                  <PeopleAltIcon fontSize='small' color='primary' />
+                  <PeopleAlt fontSize='small' color='primary' />
                   <Typography variant='body2'>
                     <strong>{course.totalEnrollments}</strong> inscrições
                   </Typography>
@@ -237,15 +231,15 @@ export default function CourseDialog({
                 </Typography>
                 {[
                   {
-                    icon: <AccessTimeIcon fontSize='small' />,
+                    icon: <AccessTime fontSize='small' />,
                     text: `${course.hours} de conteúdo`,
                   },
                   {
-                    icon: <PlaylistPlayIcon fontSize='small' />,
+                    icon: <PlaylistPlay fontSize='small' />,
                     text: `${modules?.length || 0} módulos`,
                   },
                   {
-                    icon: <WorkspacePremiumIcon fontSize='small' />,
+                    icon: <WorkspacePremium fontSize='small' />,
                     text: `${course.xpOffered || 0} XP ao completar`,
                   },
                   {

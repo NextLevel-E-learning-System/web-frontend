@@ -285,17 +285,6 @@ export default function Courses() {
     return category?.nome || 'Sem categoria'
   }
 
-  // Função para formatar duração
-  const formatDuration = (minutes?: number) => {
-    if (!minutes) return 'Duração não informada'
-    if (minutes < 60) return `${minutes}min`
-    const hours = Math.floor(minutes / 60)
-    const remainingMinutes = minutes % 60
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}min`
-      : `${hours}h`
-  }
-
   // Função para limpar todos os filtros
   const clearAllFilters = () => {
     setSearchTerm('')
@@ -336,7 +325,7 @@ export default function Courses() {
       reviews: course.total_avaliacoes || 0,
       students: course.total_inscritos || 0,
       level: course.nivel_dificuldade,
-      hours: formatDuration(course.duracao_estimada),
+      hours: course.duracao_estimada + ' h',
       gradientFrom: gradient.gradientFrom,
       gradientTo: gradient.gradientTo,
       courseCode: course.codigo,
@@ -446,7 +435,7 @@ export default function Courses() {
                   <CourseCard
                     title={course.titulo}
                     category={getCategoryName(course.categoria_id)}
-                    hours={formatDuration(course.duracao_estimada)}
+                    hours={course.duracao_estimada + ' h'}
                     description={course.descricao}
                     rating={course.avaliacao_media || 0}
                     gradientFrom={gradient.gradientFrom}
