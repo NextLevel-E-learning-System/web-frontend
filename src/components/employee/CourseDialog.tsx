@@ -307,7 +307,7 @@ export default function CourseDialog({
               <List>
                 {modules
                   .sort((a, b) => a.ordem - b.ordem)
-                  .map((module, index) => (
+                  .map(module => (
                     <ListItem key={module.id} sx={{ pl: 0 }}>
                       <ListItemIcon>
                         <Box
@@ -324,7 +324,7 @@ export default function CourseDialog({
                             fontWeight: 700,
                           }}
                         >
-                          {index + 1}
+                          {module.ordem}
                         </Box>
                       </ListItemIcon>
                       <ListItemText
