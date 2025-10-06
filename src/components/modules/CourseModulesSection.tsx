@@ -22,6 +22,7 @@ import {
   useCreateModule,
   useDeleteModule,
 } from '@/api/courses'
+import { toast } from 'react-toastify'
 import ModuleInfoForm from './ModuleInfoForm'
 import ModuleMaterialsPanel from './ModuleMaterialsPanel'
 import ModuleAssessmentsPanel from '../assessments/ModuleAssessmentsPanel'
@@ -37,7 +38,11 @@ export default function CourseModulesSection({
   cursoCodigo,
   onTotalXpChange,
 }: Props) {
-  const { data: modulos = [], isLoading } = useCourseModules(cursoCodigo)
+  const {
+    data: modulos = [],
+    isLoading,
+    refetch: refetchModules,
+  } = useCourseModules(cursoCodigo)
   const createModule = useCreateModule(cursoCodigo)
   const deleteModule = useDeleteModule()
   const [createOpen, setCreateOpen] = useState(false)
@@ -92,13 +97,17 @@ export default function CourseModulesSection({
             const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = [
               'info',
             ]
-            if (['video', 'pdf'].includes((m as any).tipo_conteudo))
+            if (m.tipo_conteudo && ['video', 'pdf'].includes(m.tipo_conteudo))
               allowedTabs.push('materiais')
-            if ((m as any).tipo_conteudo === 'quiz')
-              allowedTabs.push('avaliacoes')
+            if (m.tipo_conteudo === 'quiz') allowedTabs.push('avaliacoes')
             const stored = moduleTab[m.id]
             const currentTab = (
-              stored && allowedTabs.includes(stored as any) ? stored : 'info'
+              stored &&
+              allowedTabs.includes(
+                stored as 'info' | 'materiais' | 'avaliacoes'
+              )
+                ? stored
+                : 'info'
             ) as 'info' | 'materiais' | 'avaliacoes'
             return (
               <Accordion
@@ -203,10 +212,14 @@ export default function CourseModulesSection({
         onConfirm={async () => {
           if (confirm.moduloId) {
             try {
-              await deleteModule.mutateAsync(confirm.moduloId)
+              const response = await deleteModule.mutateAsync(confirm.moduloId)
+              if (response?.mensagem) {
+                toast.success(response.mensagem)
+              }
               setConfirm({ open: false })
-            } catch (error) {
-              console.error('Erro ao deletar módulo:', error)
+              refetchModules()
+            } catch {
+              toast.error('Erro ao deletar módulo')
             }
           }
         }}
@@ -220,8 +233,16 @@ export default function CourseModulesSection({
         nextOrder={(modulos?.length || 0) + 1}
         loading={createModule.isPending}
         onCreate={async data => {
-          const created = await createModule.mutateAsync(data.module)
-          return created
+          try {
+            const response = await createModule.mutateAsync(data.module)
+            if (response?.mensagem) {
+              toast.success(response.mensagem)
+            }
+            refetchModules()
+            return response
+          } catch {
+            toast.error('Erro ao criar módulo')
+          }
         }}
       />
     </Box>

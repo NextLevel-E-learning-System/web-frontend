@@ -306,7 +306,10 @@ export function useCreateModule(codigo: string) {
   return useMutation({
     mutationKey: ['courses', 'modules', 'create', codigo],
     mutationFn: (input: CreateModuleInput) =>
-      authPost<Module>(`${API_ENDPOINTS.COURSES}/${codigo}/modulos`, input),
+      authPost<{ modulo: Module; mensagem: string }>(
+        `${API_ENDPOINTS.COURSES}/${codigo}/modulos`,
+        input
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['courses', 'modules', codigo],
@@ -321,7 +324,7 @@ export function useUpdateModule(codigo: string, moduloId: string) {
   return useMutation({
     mutationKey: ['courses', 'modules', 'update', codigo, moduloId],
     mutationFn: (input: UpdateModuleInput) =>
-      authPatch<Module>(
+      authPatch<{ modulo: Module; mensagem: string }>(
         `${API_ENDPOINTS.COURSES}/${codigo}/modulos/${moduloId}`,
         input
       ),
@@ -339,7 +342,9 @@ export function useDeleteModule() {
   return useMutation({
     mutationKey: ['courses', 'modules', 'delete'],
     mutationFn: (moduloId: string) =>
-      authDelete(`${API_ENDPOINTS.COURSES}/modulos/${moduloId}`),
+      authDelete<{ mensagem: string }>(
+        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}`
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['courses', 'modules'],

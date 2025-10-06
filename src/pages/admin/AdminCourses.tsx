@@ -22,7 +22,8 @@ import {
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
 } from '@mui/icons-material'
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
@@ -86,8 +87,21 @@ export default function AdminCourses() {
     return filters
   }, [filtros, isInstrutor, user?.id])
 
-  const { data: cursosResponse, isLoading: loadingCursos } =
-    useCourses(coursesFilters)
+  const {
+    data: cursosResponse,
+    isLoading: loadingCursos,
+    refetch,
+  } = useCourses(coursesFilters)
+  const location = useLocation()
+  // Refetch cursos ao voltar para a página
+  useEffect(() => {
+    // Se vier de uma navegação (ex: edição de curso/módulo), faz refetch
+    if (location.state?.fromEditor) {
+      refetch()
+    }
+    // Sempre faz refetch ao montar
+    refetch()
+  }, [location.key])
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
   const { data: funcionariosResponse, isLoading: loadingFuncionarios } =

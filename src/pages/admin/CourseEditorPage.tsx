@@ -455,7 +455,9 @@ export default function CourseEditorPage() {
               startIcon={<ArrowBackIcon />}
               variant='text'
               size='small'
-              onClick={() => navigate('/manage/courses')}
+              onClick={() =>
+                navigate('/manage/courses', { state: { fromEditor: true } })
+              }
             >
               Voltar para Cursos
             </Button>

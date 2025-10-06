@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'react-toastify'
 import {
   Box,
   TextField,
@@ -35,21 +36,24 @@ export default function ModuleInfoForm({
   )
   const updateModule = useUpdateModule(cursoCodigo, modulo.id)
 
-  // Estado inicializado diretamente com valores do módulo
-  // Componente será remontado via key quando módulo mudar
-
   const handleSave = async () => {
-    await updateModule.mutateAsync({
-      titulo,
-      ordem,
-      xp,
-      obrigatorio,
-      conteudo,
-      tipo_conteudo: tipoConteudo,
-    })
-    onSaved?.()
+    try {
+      const response = await updateModule.mutateAsync({
+        titulo,
+        ordem,
+        xp,
+        obrigatorio,
+        conteudo,
+        tipo_conteudo: tipoConteudo,
+      })
+      if (response?.mensagem) {
+        toast.success(response.mensagem)
+      }
+      onSaved?.()
+    } catch {
+      toast.error('Erro ao atualizar módulo')
+    }
   }
-
   return (
     <Box sx={{ display: 'grid', gap: 2 }}>
       <Grid container spacing={2}>
