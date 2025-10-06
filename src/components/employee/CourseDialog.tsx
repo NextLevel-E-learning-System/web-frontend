@@ -355,29 +355,6 @@ export default function CourseDialog({
                             )}
                           </Box>
                         }
-                        secondary={
-                          <Box sx={{ mt: 1 }}>
-                            {module.conteudo && (
-                              <Typography
-                                variant='body2'
-                                color='text.secondary'
-                                sx={{ mb: 1 }}
-                              >
-                                {module.conteudo.length > 200
-                                  ? `${module.conteudo.substring(0, 200)}...`
-                                  : module.conteudo}
-                              </Typography>
-                            )}
-                            {module.tipo_conteudo && (
-                              <Chip
-                                label={module.tipo_conteudo}
-                                size='small'
-                                variant='outlined'
-                                sx={{ mr: 1 }}
-                              />
-                            )}
-                          </Box>
-                        }
                       />
                     </ListItem>
                   ))}
