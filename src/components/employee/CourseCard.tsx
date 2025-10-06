@@ -1,28 +1,24 @@
 import Card from '@mui/material/Card'
+import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
 import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import Button from '@mui/material/Button'
-import StarIcon from '@mui/icons-material/Star'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import PersonIcon from '@mui/icons-material/Person'
+import { EmojiEvents } from '@mui/icons-material'
 export interface CourseCardProps {
   title: string
   category: string
   hours: string
   description?: string
-  rating?: number
   gradientFrom: string
   gradientTo: string
   onViewCourse?: () => void
-  // Novas propriedades
   completionRate?: number
   totalEnrollments?: number
   instructorName?: string
+  xpOffered?: number
+  level?: string
 }
 
 export default function CourseCard({
@@ -30,19 +26,20 @@ export default function CourseCard({
   category,
   hours,
   description,
-  rating = 0,
   gradientFrom,
   gradientTo,
   onViewCourse,
   completionRate: _completionRate,
   totalEnrollments: _totalEnrollments,
   instructorName: _instructorName,
+  xpOffered,
+  level,
 }: CourseCardProps) {
   return (
     <Card
       sx={{
         overflow: 'hidden',
-        height: 380, // Altura fixa para todos os cards
+        height: 340,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -51,13 +48,30 @@ export default function CourseCard({
         sx={{
           height: 120,
           background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
-          flexShrink: 0, // Não encolhe
+          flexShrink: 0,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'flex-end',
+          p: 1,
         }}
-      />
+      >
+        {level && (
+          <Chip
+            label={level}
+            size='small'
+            sx={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              fontWeight: 600,
+              backdropFilter: 'blur(10px)',
+            }}
+          />
+        )}
+      </Box>
       <CardContent
         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
       >
-        {/* Linha com Chip à esquerda e Rating à direita */}
         <Box
           sx={{
             display: 'flex',
@@ -76,16 +90,7 @@ export default function CourseCard({
               borderRadius: '16px',
             }}
           />
-          {rating > 0 && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <StarIcon sx={{ fontSize: 18, color: '#f59e0b' }} />
-              <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                {rating.toFixed(1)}
-              </Typography>
-            </Box>
-          )}
         </Box>
-
         <Typography
           variant='h6'
           fontWeight={700}
@@ -94,10 +99,8 @@ export default function CourseCard({
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             display: '-webkit-box',
-            WebkitLineClamp: 2, // Máximo 2 linhas para o título
+            WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
-            lineHeight: 1.2,
-            height: '2.4em', // 2 linhas * 1.2 line-height
           }}
         >
           {title}
@@ -111,38 +114,50 @@ export default function CourseCard({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               display: '-webkit-box',
-              WebkitLineClamp: 3, // Máximo 3 linhas para a descrição
+              WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
               lineHeight: 1.4,
-              height: '4.2em', // 3 linhas * 1.4 line-height
-              flexGrow: 1, // Ocupa o espaço restante
+              height: '4.2em',
+              flexGrow: 1,
             }}
           >
             {description}
           </Typography>
         ) : (
-          <Box sx={{ flexGrow: 1 }} /> // Espaço vazio quando não há descrição
+          <Box sx={{ flexGrow: 1 }} />
         )}
-        {/* Informações do curso */}
         <Box
           sx={{
             display: 'flex',
-            flexDirection: 'column',
-            gap: 0.5,
-            mt: 'auto',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mt: 2,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-            <Typography variant='body2'>{hours}</Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <AccessTimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant='body2'>{hours}</Typography>
+            </Box>
+            {xpOffered && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <EmojiEvents sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant='body2'>{xpOffered} XP</Typography>
+              </Box>
+            )}
           </Box>
+
+          <Button variant='outlined' size='small' onClick={onViewCourse}>
+            Ver curso
+          </Button>
         </Box>
       </CardContent>
-      <CardActions sx={{ px: 2, pb: 2, flexShrink: 0 }}>
-        <Button variant='outlined' size='small' onClick={onViewCourse}>
-          Ver curso
-        </Button>
-      </CardActions>
     </Card>
   )
 }

@@ -437,14 +437,14 @@ export default function Courses() {
                     category={getCategoryName(course.categoria_id)}
                     hours={course.duracao_estimada + ' h'}
                     description={course.descricao}
-                    rating={course.avaliacao_media || 0}
                     gradientFrom={gradient.gradientFrom}
                     gradientTo={gradient.gradientTo}
                     onViewCourse={() => handleViewCourse(course)}
-                    // Novas propriedades
                     completionRate={course.taxa_conclusao}
                     totalEnrollments={course.total_inscricoes}
                     instructorName={course.instrutor_nome}
+                    xpOffered={course.xp_oferecido}
+                    level={course.nivel_dificuldade}
                   />
                 </Grid>
               )
