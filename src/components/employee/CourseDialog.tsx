@@ -23,7 +23,7 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import React from 'react'
-import { useCourseModules } from '@/api/courses'
+import { useCourseModules, type Module } from '@/api/courses'
 
 export interface CourseData {
   title: string
@@ -47,7 +47,7 @@ export interface CourseData {
   prerequisites?: string[]
   completionRate?: number
   totalEnrollments?: number
-  modules?: any[] // Módulos já carregados, se disponível
+  modules?: Module[]
 }
 
 interface Props {
@@ -73,7 +73,7 @@ export default function CourseDialog({
     data: fetchedModules,
     isLoading: modulesLoading,
     error: modulesError,
-  } = useCourseModules(shouldFetchModules ? course.courseCode : '')
+  } = useCourseModules(shouldFetchModules ? course.courseCode! : '')
 
   // Usar módulos já disponíveis ou os buscados via API
   const modules = course?.modules || fetchedModules
