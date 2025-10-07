@@ -48,6 +48,7 @@ export interface CourseData {
   completionRate?: number
   totalEnrollments?: number
   modules?: Module[]
+  isEnrolled?: boolean
 }
 
 interface Props {
@@ -55,6 +56,7 @@ interface Props {
   onClose: () => void
   course?: CourseData | null
   onEnroll?: (courseCode: string) => void
+  onGoToCourse?: (courseCode: string) => void
   isEnrolling?: boolean
 }
 
@@ -63,6 +65,7 @@ export default function CourseDialog({
   onClose,
   course,
   onEnroll,
+  onGoToCourse,
   isEnrolling,
 }: Props) {
   const [tab, setTab] = React.useState(0)
@@ -276,16 +279,30 @@ export default function CourseDialog({
               }}
             >
               {course.isActive && (
-                <Button
-                  variant='contained'
-                  sx={{ bgcolor: '#0f172a' }}
-                  onClick={() =>
-                    course.courseCode && onEnroll?.(course.courseCode)
-                  }
-                  disabled={isEnrolling}
-                >
-                  {isEnrolling ? 'Inscrevendo...' : 'Inscrever-se'}
-                </Button>
+                <>
+                  {course.isEnrolled ? (
+                    <Button
+                      variant='contained'
+                      sx={{ bgcolor: '#0f172a' }}
+                      onClick={() =>
+                        course.courseCode && onGoToCourse?.(course.courseCode)
+                      }
+                    >
+                      Ir para o curso
+                    </Button>
+                  ) : (
+                    <Button
+                      variant='contained'
+                      sx={{ bgcolor: '#0f172a' }}
+                      onClick={() =>
+                        course.courseCode && onEnroll?.(course.courseCode)
+                      }
+                      disabled={isEnrolling}
+                    >
+                      {isEnrolling ? 'Inscrevendo...' : 'Inscrever-se'}
+                    </Button>
+                  )}
+                </>
               )}
             </Box>
           </Box>

@@ -23,13 +23,15 @@ import {
   type Course as Curso,
   type CatalogFilters as FiltrosCatalogo,
 } from '@/api/courses'
-import { useCreateEnrollment } from '@/api/progress'
+import { useCreateEnrollment, useUserEnrollments } from '@/api/progress'
 import CategoryChips from '@/components/employee/CategoryChips'
 import CourseCard from '@/components/employee/CourseCard'
 import CourseDialog from '@/components/employee/CourseDialog'
 import FilterBar from '@/components/common/FilterBar'
 import { Pagination, CircularProgress, Alert } from '@mui/material'
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import {
   Psychology,
   School,
@@ -116,6 +118,7 @@ const getCategoryIcon = (categoryCodigo: string) => {
 export default function Courses() {
   const { data: user } = useMeuPerfil()
   const { navigationItems } = useNavigation()
+  const navigate = useNavigate()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -171,6 +174,9 @@ export default function Courses() {
   } = useCourseCatalog(filters)
   const { mutate: createEnrollment, isPending: isEnrolling } =
     useCreateEnrollment()
+
+  // Buscar inscrições do usuário para verificar se já está inscrito
+  const { data: userEnrollments } = useUserEnrollments(user?.id || '')
 
   // Função para converter hex para rgba
   const hexToRgb = (hex: string) => {
@@ -312,10 +318,23 @@ export default function Courses() {
     setSelectedCourse(null)
   }
 
+  // Função para verificar se o usuário está inscrito no curso
+  const isUserEnrolled = (courseCode: string) => {
+    return userEnrollments?.some(
+      enrollment => enrollment.curso_id === courseCode
+    )
+  }
+
+  // Função para navegar para o curso
+  const handleGoToCourse = (courseCode: string) => {
+    navigate(`/cursos/${courseCode}`)
+  }
+
   // Função para converter dados do curso para o formato do dialog
   const convertCourseToDialogData = (course: Curso) => {
     const gradient = getCourseCardGradient(course.categoria_id)
     const categoryName = getCategoryName(course.categoria_id)
+    const isEnrolled = isUserEnrolled(course.codigo)
 
     return {
       title: course.titulo,
@@ -337,6 +356,7 @@ export default function Courses() {
       completionRate: course.taxa_conclusao || 0,
       totalEnrollments: course.total_inscricoes || 0,
       modules: course.modulos, // Módulos se disponível
+      isEnrolled, // Se o usuário já está inscrito
     }
   }
 
@@ -357,13 +377,12 @@ export default function Courses() {
           // Fechar o dialog e mostrar sucesso
           setDialogOpen(false)
           setSelectedCourse(null)
-          // Aqui você pode adicionar uma notificação de sucesso
-          console.log('Inscrição realizada com sucesso!')
+          toast.success('Inscrição realizada com sucesso!')
         },
         onError: error => {
           // Mostrar erro
           console.error('Erro ao se inscrever:', error)
-          // Aqui você pode adicionar uma notificação de erro
+          toast.error('Erro ao se inscrever no curso. Tente novamente.')
         },
       }
     )
@@ -485,6 +504,7 @@ export default function Courses() {
           onClose={handleCloseDialog}
           course={convertCourseToDialogData(selectedCourse)}
           onEnroll={handleEnrollCourse}
+          onGoToCourse={handleGoToCourse}
           isEnrolling={isEnrolling}
         />
       )}

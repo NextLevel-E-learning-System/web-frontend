@@ -50,7 +50,7 @@ export function useNavigation() {
             },
             {
               label: 'Gerenciar Cursos',
-              href: '/manage/courses',
+              href: '/gerenciar/cursos',
             },
             {
               label: 'Avaliações',
@@ -81,7 +81,7 @@ export function useNavigation() {
             },
             {
               label: 'Gerenciar Cursos',
-              href: '/manage/courses', // Filtrado por departamento
+              href: '/gerenciar/cursos', // Filtrado por departamento
             },
           ],
         },
@@ -122,7 +122,7 @@ export function useNavigation() {
         },
         {
           label: 'Cursos',
-          href: '/manage/courses',
+          href: '/gerenciar/cursos',
         },
         {
           label: 'Usuários',

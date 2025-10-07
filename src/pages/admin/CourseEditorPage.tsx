@@ -174,10 +174,10 @@ export default function CourseEditorPage() {
         if (goToModules) {
           setTab(MODULES_TAB.id)
         } else {
-          setTimeout(() => navigate('/manage/courses'), 1500)
+          setTimeout(() => navigate('/gerenciar/cursos'), 1500)
         }
       } else {
-        setTimeout(() => navigate('/manage/courses'), 1500)
+        setTimeout(() => navigate('/gerenciar/cursos'), 1500)
       }
     } catch (e: any) {
       /* empty */
@@ -396,7 +396,7 @@ export default function CourseEditorPage() {
             </Box>
           </Box>
           <Stack direction='row' gap={1} justifyContent='flex-end'>
-            <Button variant='text' onClick={() => navigate('/manage/courses')}>
+            <Button variant='text' onClick={() => navigate('/gerenciar/cursos')}>
               Cancelar
             </Button>
             <Button
@@ -456,7 +456,7 @@ export default function CourseEditorPage() {
               variant='text'
               size='small'
               onClick={() =>
-                navigate('/manage/courses', { state: { fromEditor: true } })
+                navigate('/gerenciar/cursos', { state: { fromEditor: true } })
               }
             >
               Voltar para Cursos

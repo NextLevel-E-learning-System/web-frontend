@@ -21,6 +21,7 @@ import AdminCourses from './pages/admin/AdminCourses'
 import CourseEditorPage from './pages/admin/CourseEditorPage'
 import InstrutorDashboard from './pages/instrutor/InstrutorDashboard'
 import CoursesPage from './pages/employee/CoursesPage'
+import CoursePage from './pages/employee/CoursePage'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
 import theme from './theme'
@@ -86,7 +87,7 @@ const App = () => (
             }
           />
           <Route
-            path='/manage/courses'
+            path='/gerenciar/cursos'
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
                 <AdminCourses />
@@ -94,7 +95,7 @@ const App = () => (
             }
           />
           <Route
-            path='/manage/courses/new'
+            path='/gerenciar/cursos/new'
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
                 <CourseEditorPage />
@@ -102,7 +103,7 @@ const App = () => (
             }
           />
           <Route
-            path='/manage/courses/:codigo/edit'
+            path='/gerenciar/cursos/:codigo/edit'
             element={
               <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
                 <CourseEditorPage />
@@ -122,6 +123,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <CoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/curso/:codigo'
+            element={
+              <ProtectedRoute allowedRoles={['ALUNO']}>
+                <CoursePage />
               </ProtectedRoute>
             }
           />
