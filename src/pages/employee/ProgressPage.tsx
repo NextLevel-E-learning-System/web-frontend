@@ -62,7 +62,7 @@ export default function ProgressPage() {
 
   return (
     <DashboardLayout items={navigationItems}>
-      <Box sx={{ py: { xs: 3, md: 5 } }}>
+      <Box sx={{ mb: 2 }}>
         <Box
           sx={{
             display: 'flex',
@@ -144,7 +144,7 @@ export default function ProgressPage() {
               title='Node.js Backend'
               description='Build scalable backend applications with Node.js and Express.'
               progress={45}
-              timeLeft='8h left'
+              timeLeft='8h'
               gradientFrom='#22c55e'
               gradientTo='#0ea5e9'
             />
@@ -180,7 +180,6 @@ export default function ProgressPage() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-              {' '}
               <AchievementCard
                 title='Night Owl'
                 subtitle='Study for 2 hours after 10pm'
@@ -190,7 +189,6 @@ export default function ProgressPage() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-              {' '}
               <AchievementCard
                 title='Consistent'
                 subtitle='Study for 7 days in a row'
@@ -200,7 +198,6 @@ export default function ProgressPage() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-              {' '}
               <AchievementCard
                 title='Perfectionist'
                 subtitle='Score 100% on 3 quizzes'
@@ -210,7 +207,6 @@ export default function ProgressPage() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-              {' '}
               <AchievementCard
                 title='Speed Demon'
                 subtitle='Complete a course in record time'
@@ -220,7 +216,6 @@ export default function ProgressPage() {
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
-              {' '}
               <AchievementCard
                 title='Explorer'
                 subtitle='Try courses from 5 categories'

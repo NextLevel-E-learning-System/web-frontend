@@ -21,20 +21,7 @@ export function useNavigation() {
         },
         {
           label: 'Cursos',
-          children: [
-            {
-              label: 'Catálogo de Cursos',
-              href: '/cursos',
-            },
-            {
-              label: 'Meus Cursos',
-              href: '/meus-cursos',
-            },
-            {
-              label: 'Certificados',
-              href: '/certificados',
-            },
-          ],
+          href: '/cursos',
         },
         {
           label: 'Progresso',
