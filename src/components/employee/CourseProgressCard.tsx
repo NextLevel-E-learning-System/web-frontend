@@ -13,6 +13,8 @@ interface Props {
   timeLeft: string
   gradientFrom: string
   gradientTo: string
+  courseCode: string
+  onContinueLearning: (courseCode: string) => void
 }
 
 export default function CourseProgressCard({
@@ -22,6 +24,8 @@ export default function CourseProgressCard({
   timeLeft,
   gradientFrom,
   gradientTo,
+  courseCode,
+  onContinueLearning,
 }: Props) {
   return (
     <Card variant='outlined' sx={{ overflow: 'hidden', height: '100%' }}>
@@ -70,7 +74,11 @@ export default function CourseProgressCard({
           <Typography variant='caption' color='text.secondary'>
             {timeLeft} left
           </Typography>
-          <Button variant='contained' size='small'>
+          <Button
+            variant='contained'
+            size='small'
+            onClick={() => onContinueLearning(courseCode)}
+          >
             Continue Learning
           </Button>
         </Box>

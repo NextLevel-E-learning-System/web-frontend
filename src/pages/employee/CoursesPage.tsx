@@ -26,6 +26,7 @@ import {
 import { useCreateEnrollment, useUserEnrollments } from '@/api/progress'
 import CategoryChips from '@/components/employee/CategoryChips'
 import CourseCard from '@/components/employee/CourseCard'
+import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import CourseDialog from '@/components/employee/CourseDialog'
 import FilterBar from '@/components/common/FilterBar'
 import { Pagination, CircularProgress, Alert } from '@mui/material'
@@ -328,6 +329,31 @@ export default function Courses() {
     )
   }
 
+  // Função para obter dados de progresso do usuário para um curso
+  const getUserCourseProgress = (courseCode: string) => {
+    if (!userEnrollments || !Array.isArray(userEnrollments)) {
+      return null
+    }
+    return userEnrollments.find(
+      enrollment => enrollment.curso_id === courseCode
+    )
+  }
+
+  // Função para calcular tempo restante estimado
+  const calculateTimeLeft = (
+    courseDuration: number,
+    progressPercent: number
+  ) => {
+    const remainingMinutes = (courseDuration * (100 - progressPercent)) / 100
+    const hours = Math.floor(remainingMinutes / 60)
+    const minutes = Math.floor(remainingMinutes % 60)
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`
+    }
+    return `${minutes}m`
+  }
+
   // Função para navegar para o curso
   const handleGoToCourse = (courseCode: string) => {
     navigate(`/cursos/${courseCode}`)
@@ -452,22 +478,41 @@ export default function Courses() {
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {paginatedCourses.map(course => {
               const gradient = getCourseCardGradient(course.categoria_id)
+              const userProgress = getUserCourseProgress(course.codigo)
+              const isEnrolled = isUserEnrolled(course.codigo)
+
               return (
                 <Grid size={{ xs: 12, md: 4 }} key={course.codigo}>
-                  <CourseCard
-                    title={course.titulo}
-                    category={getCategoryName(course.categoria_id)}
-                    hours={course.duracao_estimada + ' h'}
-                    description={course.descricao}
-                    gradientFrom={gradient.gradientFrom}
-                    gradientTo={gradient.gradientTo}
-                    onViewCourse={() => handleViewCourse(course)}
-                    completionRate={course.taxa_conclusao}
-                    totalEnrollments={course.total_inscricoes}
-                    instructorName={course.instrutor_nome}
-                    xpOffered={course.xp_oferecido}
-                    level={course.nivel_dificuldade}
-                  />
+                  {isEnrolled && userProgress ? (
+                    <CourseProgressCard
+                      title={course.titulo}
+                      description={course.descricao || ''}
+                      progress={userProgress.progresso_percentual}
+                      timeLeft={calculateTimeLeft(
+                        course.duracao_estimada || 0,
+                        userProgress.progresso_percentual
+                      )}
+                      gradientFrom={gradient.gradientFrom}
+                      gradientTo={gradient.gradientTo}
+                      courseCode={course.codigo}
+                      onContinueLearning={handleGoToCourse}
+                    />
+                  ) : (
+                    <CourseCard
+                      title={course.titulo}
+                      category={getCategoryName(course.categoria_id)}
+                      hours={course.duracao_estimada + ' h'}
+                      description={course.descricao}
+                      gradientFrom={gradient.gradientFrom}
+                      gradientTo={gradient.gradientTo}
+                      onViewCourse={() => handleViewCourse(course)}
+                      completionRate={course.taxa_conclusao}
+                      totalEnrollments={course.total_inscricoes}
+                      instructorName={course.instrutor_nome}
+                      xpOffered={course.xp_oferecido}
+                      level={course.nivel_dificuldade}
+                    />
+                  )}
                 </Grid>
               )
             })}
