@@ -34,21 +34,36 @@ export interface CompleteModuleResponse {
 
 export interface UserEnrollment {
   id: string
+  funcionario_id: string
   curso_id: string
-  status: string
+  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
   progresso_percentual: number
   data_inscricao: string
+  data_inicio?: string
+  data_conclusao?: string
+  criado_em: string
+  atualizado_em: string
 }
 
-// Hooks para Inscrições
-export function useEnrollment(id: string) {
-  return useQuery<Enrollment>({
-    queryKey: ['progress', 'enrollment', id],
-    queryFn: () =>
-      authGet<Enrollment>(`${API_ENDPOINTS.PROGRESS}/inscricoes/${id}`),
-    enabled: !!id,
-  })
+export interface UserEnrollmentsResponse {
+  items: UserEnrollment[]
+  total: number
+  mensagem: string
 }
+
+export interface ModuleProgress {
+  id: string
+  inscricao_id: string
+  modulo_id: string
+  data_inicio?: string
+  data_conclusao?: string
+  tempo_gasto?: number
+  criado_em: string
+  atualizado_em: string
+}
+
+// Hooks para Inscrições - REMOVIDO: useEnrollment individual
+// Use useUserEnrollments para buscar inscrições de um usuário
 
 export function useCreateEnrollment() {
   const queryClient = useQueryClient()
@@ -57,10 +72,10 @@ export function useCreateEnrollment() {
     mutationKey: ['progress', 'enrollment', 'create'],
     mutationFn: (input: CreateEnrollmentInput) =>
       authPost<Enrollment>(`${API_ENDPOINTS.PROGRESS}/inscricoes`, input),
-    onSuccess: (_, variables) => {
+    onSuccess: (_, _variables) => {
       queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'user', variables.funcionario_id],
+        queryKey: ['progress', 'user', _variables.funcionario_id],
       })
     },
   })
@@ -68,10 +83,10 @@ export function useCreateEnrollment() {
 
 // Hooks para Progresso do Usuário
 export function useUserEnrollments(userId: string) {
-  return useQuery<UserEnrollment[]>({
+  return useQuery<UserEnrollmentsResponse>({
     queryKey: ['progress', 'user', userId],
     queryFn: () =>
-      authGet<UserEnrollment[]>(
+      authGet<UserEnrollmentsResponse>(
         `${API_ENDPOINTS.PROGRESS}/inscricoes/usuario/${userId}`
       ),
     enabled: !!userId,
@@ -88,7 +103,7 @@ export function useUpdateProgress(enrollmentId: string) {
         `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/progresso`,
         input
       ),
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['progress', 'enrollment', enrollmentId],
       })
@@ -108,20 +123,88 @@ export function useUpdateProgress(enrollmentId: string) {
   })
 }
 
-export function useCompleteModule(enrollmentId: string, moduleId: string) {
+// Hook para iniciar módulo
+export function useStartModule() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['progress', 'complete-module', enrollmentId, moduleId],
+    mutationKey: ['progress', 'start-module'],
+    mutationFn: ({
+      enrollmentId,
+      moduleId,
+    }: {
+      enrollmentId: string
+      moduleId: string
+    }) =>
+      authPost<{ progresso_modulo: ModuleProgress; mensagem: string }>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/iniciar`,
+        {}
+      ),
+    onSuccess: (_, _variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'user'],
+      })
+      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
+    },
+  })
+}
+
+// Hook para concluir módulo (novo endpoint)
+export function useCompleteModule() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['progress', 'complete-module'],
+    mutationFn: ({
+      enrollmentId,
+      moduleId,
+    }: {
+      enrollmentId: string
+      moduleId: string
+    }) =>
+      authPatch<{
+        resultado: {
+          inscricao_id: string
+          modulo_id: string
+          progresso_percentual: number
+          curso_concluido: boolean
+          funcionario_id: string
+          curso_id: string
+        }
+        mensagem: string
+      }>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/concluir`,
+        {}
+      ),
+    onSuccess: (data, _variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'user', data.resultado.funcionario_id],
+      })
+      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
+
+      // If course was completed, invalidate gamification data
+      if (data.resultado.curso_concluido) {
+        queryClient.invalidateQueries({ queryKey: ['gamification'] })
+      }
+    },
+  })
+}
+
+// Hook para concluir módulo (endpoint legado para compatibilidade)
+export function useCompleteModuleLegacy(
+  enrollmentId: string,
+  moduleId: string
+) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['progress', 'complete-module-legacy', enrollmentId, moduleId],
     mutationFn: () =>
       authPost<CompleteModuleResponse>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/progresso`,
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/concluir`,
         {}
       ),
     onSuccess: data => {
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'enrollment', enrollmentId],
-      })
       queryClient.invalidateQueries({
         queryKey: ['progress', 'user', data.userId],
       })
@@ -210,4 +293,28 @@ export function useReactivateEnrollment() {
       queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
     },
   })
+}
+
+// Utility functions para filtragem no frontend
+export const filterEnrollmentsByStatus = (
+  enrollments: UserEnrollment[],
+  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
+) => {
+  return enrollments.filter(enrollment => enrollment.status === status)
+}
+
+export const getEnrollmentStats = (enrollments: UserEnrollment[]) => {
+  const emAndamento = filterEnrollmentsByStatus(enrollments, 'EM_ANDAMENTO')
+  const concluidos = filterEnrollmentsByStatus(enrollments, 'CONCLUIDO')
+  const cancelados = filterEnrollmentsByStatus(enrollments, 'CANCELADO')
+
+  return {
+    total: enrollments.length,
+    emAndamento: emAndamento.length,
+    concluidos: concluidos.length,
+    cancelados: cancelados.length,
+    cursosEmAndamento: emAndamento,
+    cursosConcluidos: concluidos,
+    cursosCancelados: cancelados,
+  }
 }
