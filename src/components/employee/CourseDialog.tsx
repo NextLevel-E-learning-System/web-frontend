@@ -363,9 +363,9 @@ export default function CourseDialog({
                                 color='warning'
                               />
                             )}
-                            {module.xp > 0 && (
+                            {module.xp_modulo > 0 && (
                               <Chip
-                                label={`${module.xp} XP`}
+                                label={`${module.xp_modulo} XP`}
                                 size='small'
                                 color='primary'
                               />

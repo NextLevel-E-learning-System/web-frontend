@@ -320,7 +320,10 @@ export default function Courses() {
 
   // Função para verificar se o usuário está inscrito no curso
   const isUserEnrolled = (courseCode: string) => {
-    return userEnrollments?.some(
+    if (!userEnrollments || !Array.isArray(userEnrollments)) {
+      return false
+    }
+    return userEnrollments.some(
       enrollment => enrollment.curso_id === courseCode
     )
   }

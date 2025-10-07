@@ -84,12 +84,15 @@ export interface UpdateCourseInput {
 export interface Module {
   id: string
   titulo: string
-  conteudo?: string
+  conteudo?: string | null
   ordem: number
   obrigatorio: boolean
-  xp: number
-  xp_modulo?: number // campo retornado pelo backend; normalizado para xp
-  tipo_conteudo?: string
+  xp?: number
+  xp_modulo: number // campo correto do backend
+  tipo_conteudo?: string | null
+  curso_id?: string
+  criado_em?: string
+  atualizado_em?: string
 }
 
 export interface ModuleResponse {
@@ -293,7 +296,7 @@ export function useCourseModules(codigo: string) {
         : (raw as ModuleResponse).items || []
       return list.map(m => ({
         ...m,
-        xp: m.xp !== undefined ? m.xp : (m.xp_modulo ?? 0),
+        xp: m.xp_modulo ?? 0,
       }))
     },
     enabled: !!codigo,

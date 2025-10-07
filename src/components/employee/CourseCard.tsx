@@ -39,7 +39,7 @@ export default function CourseCard({
     <Card
       sx={{
         overflow: 'hidden',
-        height: 340,
+        height: 360,
         display: 'flex',
         flexDirection: 'column',
       }}

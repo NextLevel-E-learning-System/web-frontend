@@ -260,7 +260,11 @@ function ModuleAccordion({
                 size='small'
                 color={module.obrigatorio ? 'primary' : 'default'}
               />
-              <Chip label={`${module.xp} XP`} size='small' color='secondary' />
+              <Chip
+                label={`${module.xp_modulo} XP`}
+                size='small'
+                color='secondary'
+              />
             </Box>
           </Stack>
           <Stack
