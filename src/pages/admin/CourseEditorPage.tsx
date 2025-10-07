@@ -396,7 +396,10 @@ export default function CourseEditorPage() {
             </Box>
           </Box>
           <Stack direction='row' gap={1} justifyContent='flex-end'>
-            <Button variant='text' onClick={() => navigate('/gerenciar/cursos')}>
+            <Button
+              variant='text'
+              onClick={() => navigate('/gerenciar/cursos')}
+            >
               Cancelar
             </Button>
             <Button
