@@ -21,7 +21,7 @@ import AdminCourses from './pages/admin/AdminCourses'
 import CourseEditorPage from './pages/admin/CourseEditorPage'
 import InstrutorDashboard from './pages/instrutor/InstrutorDashboard'
 import CoursesPage from './pages/employee/CoursesPage'
-import CoursePage from './pages/employee/CoursePage'
+import CourseContent from './pages/employee/CourseContent'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { queryClient } from './config/queryClient'
 import theme from './theme'
@@ -127,10 +127,10 @@ const App = () => (
             }
           />
           <Route
-            path='/curso/:codigo'
+            path='/cursos/:codigo'
             element={
               <ProtectedRoute allowedRoles={['ALUNO']}>
-                <CoursePage />
+                <CourseContent />
               </ProtectedRoute>
             }
           />
