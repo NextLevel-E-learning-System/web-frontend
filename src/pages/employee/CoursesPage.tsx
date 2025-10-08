@@ -508,6 +508,7 @@ export default function Courses() {
                     <CourseProgressCard
                       title={course.titulo}
                       description={course.descricao || ''}
+                      category={getCategoryName(course.categoria_id)}
                       progress={userProgress.progresso_percentual}
                       timeLeft={calculateTimeLeft(
                         course.duracao_estimada || 0,

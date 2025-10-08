@@ -39,7 +39,7 @@ export default function CourseCard({
     <Card
       sx={{
         overflow: 'hidden',
-        height: 360,
+        height: 340,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -56,18 +56,16 @@ export default function CourseCard({
           p: 1,
         }}
       >
-        {level && (
-          <Chip
-            label={level}
-            size='small'
-            sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              fontWeight: 600,
-              backdropFilter: 'blur(10px)',
-            }}
-          />
-        )}
+        <Chip
+          label={level}
+          size='small'
+          sx={{
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            color: '#fff',
+            fontWeight: 600,
+            backdropFilter: 'blur(10px)',
+          }}
+        />
       </Box>
       <CardContent
         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
@@ -92,7 +90,7 @@ export default function CourseCard({
           />
         </Box>
         <Typography
-          variant='h6'
+          variant='subtitle1'
           fontWeight={700}
           gutterBottom
           sx={{
@@ -101,31 +99,30 @@ export default function CourseCard({
             display: '-webkit-box',
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
+            lineHeight: 1.3,
+            minHeight: '1.6em',
           }}
         >
           {title}
         </Typography>
-        {description ? (
-          <Typography
-            variant='body2'
-            color='text.secondary'
-            sx={{
-              mb: 1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              lineHeight: 1.4,
-              height: '4.2em',
-              flexGrow: 1,
-            }}
-          >
-            {description}
-          </Typography>
-        ) : (
-          <Box sx={{ flexGrow: 1 }} />
-        )}
+        <Typography
+          variant='body2'
+          color='text.secondary'
+          sx={{
+            mb: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            textAlign: 'justify',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            lineHeight: 1.4,
+            height: '2.8em',
+            flexGrow: 1,
+          }}
+        >
+          {description}
+        </Typography>
         <Box
           sx={{
             display: 'flex',

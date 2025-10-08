@@ -100,6 +100,21 @@ export default function ProgressPage() {
       : null
   }
 
+  const getCategoryName = (categoryId?: string) => {
+    console.log(
+      'getCategoryName - categoryId:',
+      categoryId,
+      'categories:',
+      categories
+    )
+    if (!categoryId || !categories) return 'Sem categoria'
+    const category = Array.isArray(categories)
+      ? categories.find(c => c.codigo === categoryId)
+      : undefined
+    console.log('Found category:', category)
+    return category?.nome || 'Sem categoria'
+  }
+
   // Função para calcular gradiente baseado na categoria real do curso
   const getCourseCardGradient = (categoryId?: string) => {
     if (!categoryId || !categories) {
@@ -266,11 +281,13 @@ export default function ProgressPage() {
                 if (!course) return null
 
                 const gradient = getCourseCardGradient(course.categoria_id)
+                const categoryName = getCategoryName(course.categoria_id)
                 return (
                   <Grid size={{ xs: 12, md: 4 }} key={enrollment.id}>
                     <CourseProgressCard
                       title={course.titulo}
                       description={course.descricao || ''}
+                      category={categoryName}
                       progress={enrollment.progresso_percentual}
                       timeLeft={calculateTimeLeft(
                         course.duracao_estimada || 0,
