@@ -52,12 +52,13 @@ export default function CourseContent() {
   const { data: modules, isLoading: modulesLoading } = useCourseModules(
     codigo || ''
   )
-  const { data: userEnrollments } = useUserEnrollments(user?.id || '')
+  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
 
   const [activeTab, setActiveTab] = useState<TabIndex>(TAB_INDEX.curriculum)
 
   // Verificar se o usuário está inscrito no curso
-  const enrollment = userEnrollments?.find(e => e.curso_id === codigo)
+  const userEnrollments = userEnrollmentsResponse?.items || []
+  const enrollment = userEnrollments.find(e => e.curso_id === codigo)
   const isEnrolled = !!enrollment
 
   // Se não estiver inscrito, redirecionar para a página de cursos
