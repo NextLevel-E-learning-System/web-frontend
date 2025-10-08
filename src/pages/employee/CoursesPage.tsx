@@ -54,7 +54,6 @@ export interface TileCategory {
 const getCategoryIcon = (categoryCodigo: string) => {
   const codigo = categoryCodigo.toLowerCase()
 
-  // Códigos existentes
   switch (codigo) {
     case 'compliance':
       return <GavelIcon sx={{ color: '#fff' }} />
@@ -78,7 +77,6 @@ const getCategoryIcon = (categoryCodigo: string) => {
     case 'vendas':
       return <Storefront sx={{ color: '#fff' }} />
 
-    // Códigos adicionais prováveis
     case 'ti':
     case 'tecnologia':
     case 'informatica':
@@ -128,11 +126,9 @@ export default function Courses() {
   const [currentPage, setCurrentPage] = useState(1)
   const coursesPerPage = 6
 
-  // Estados para o dialog do curso
   const [selectedCourse, setSelectedCourse] = useState<Curso | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  // Filtros para a API
   const filters: FiltrosCatalogo = useMemo(() => {
     const f: FiltrosCatalogo = {}
 
@@ -151,14 +147,11 @@ export default function Courses() {
     if (selectedDuration && selectedDuration !== 'all') {
       switch (selectedDuration) {
         case 'lt5':
-          f.duracaoMax = 300 // 5 horas em minutos
+          f.duracaoMax = 5
           break
         case '5-10':
-          // Para range 5-10h, vamos usar uma lógica de filtragem local
-          // pois a API pode não suportar range complexo
           break
         case '>10':
-          // Também será filtrado localmente
           break
       }
     }
@@ -166,7 +159,6 @@ export default function Courses() {
     return f
   }, [searchTerm, selectedCategory, selectedLevel, selectedDuration])
 
-  // Hooks da API
   const { data: categories, error: categoriesError } = useCategories()
   const {
     data: courses,
@@ -176,11 +168,9 @@ export default function Courses() {
   const { mutate: createEnrollment, isPending: isEnrolling } =
     useCreateEnrollment()
 
-  // Buscar inscrições do usuário para verificar se já está inscrito
   const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
   const userEnrollments = userEnrollmentsResponse?.items || []
 
-  // Função para converter hex para rgba
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
@@ -192,34 +182,30 @@ export default function Courses() {
       : null
   }
 
-  // Filtragem adicional local (para casos não suportados pela API)
   const filteredCourses = useMemo(() => {
     if (!courses) return []
 
     let filtered = courses
 
-    // Filtro de duração local para ranges complexos
     if (selectedDuration === '5-10') {
       filtered = filtered.filter(course => {
         const duration = course.duracao_estimada || 0
-        return duration >= 300 && duration <= 600 // 5-10 horas
+        return duration >= 5 && duration <= 10
       })
     } else if (selectedDuration === '>10') {
       filtered = filtered.filter(course => {
         const duration = course.duracao_estimada || 0
-        return duration > 600 // mais de 10 horas
+        return duration > 10
       })
     }
 
     return filtered
   }, [courses, selectedDuration])
 
-  // Processamento das categorias para o componente CategoryChips
   const processedCategories: TileCategory[] = useMemo(() => {
     if (!categories || !Array.isArray(categories)) return []
 
     return categories.map(category => {
-      // Sempre usar cor do backend (cor_hex sempre existe)
       const rgb = hexToRgb(category.cor_hex)
       const gradientColors = rgb
         ? {
@@ -231,7 +217,6 @@ export default function Courses() {
             gradientTo: '#374151',
           }
 
-      // Contar cursos por categoria (usando cursos filtrados)
       const courseCount =
         filteredCourses?.filter(
           course => course.categoria_id === category.codigo
@@ -247,7 +232,6 @@ export default function Courses() {
     })
   }, [categories, filteredCourses])
 
-  // Paginação dos cursos filtrados
   const paginatedCourses = useMemo(() => {
     const startIndex = (currentPage - 1) * coursesPerPage
     return filteredCourses.slice(startIndex, startIndex + coursesPerPage)
@@ -255,7 +239,6 @@ export default function Courses() {
 
   const totalPages = Math.ceil((filteredCourses?.length || 0) / coursesPerPage)
 
-  // Função para obter cor da categoria para o CourseCard
   const getCourseCardGradient = (categoryId?: string) => {
     if (!categoryId || !categories) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
@@ -268,13 +251,11 @@ export default function Courses() {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
 
-    // Sempre usar cor do backend (cor_hex sempre existe)
     const rgb = hexToRgb(category.cor_hex)
     if (!rgb) {
       return { gradientFrom: '#6b7280', gradientTo: '#374151' }
     }
 
-    // Criar gradient com diferentes opacidades
     const gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)` // 100% opacidade
     const gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)` // 70% opacidade
 
@@ -340,27 +321,24 @@ export default function Courses() {
     )
   }
 
-  // Função para calcular tempo restante estimado
   const calculateTimeLeft = (
-    courseDuration: number,
+    courseDurationHours: number,
     progressPercent: number
   ) => {
-    const remainingMinutes = (courseDuration * (100 - progressPercent)) / 100
-    const hours = Math.floor(remainingMinutes / 60)
-    const minutes = Math.floor(remainingMinutes % 60)
+    const remainingHours = (courseDurationHours * (100 - progressPercent)) / 100
+    const hours = Math.floor(remainingHours)
+    const minutes = Math.floor((remainingHours % 1) * 60)
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
     }
-    return `${minutes}m`
+    return minutes > 0 ? `${minutes}m` : '< 1m'
   }
 
-  // Função para navegar para o curso
   const handleGoToCourse = (courseCode: string) => {
     navigate(`/cursos/${courseCode}`)
   }
 
-  // Função para converter dados do curso para o formato do dialog
   const convertCourseToDialogData = (course: Curso) => {
     const gradient = getCourseCardGradient(course.categoria_id)
     const categoryName = getCategoryName(course.categoria_id)
@@ -374,23 +352,21 @@ export default function Courses() {
       reviews: course.total_avaliacoes || 0,
       students: course.total_inscritos || 0,
       level: course.nivel_dificuldade,
-      hours: course.duracao_estimada + ' h',
+      hours: `${course.duracao_estimada}h`,
       gradientFrom: gradient.gradientFrom,
       gradientTo: gradient.gradientTo,
       courseCode: course.codigo,
       xpOffered: course.xp_oferecido || 0,
       isActive: course.ativo,
-      // Novas propriedades
       instructorName: course.instrutor_nome,
       prerequisites: course.pre_requisitos || [],
       completionRate: course.taxa_conclusao || 0,
       totalEnrollments: course.total_inscricoes || 0,
-      modules: course.modulos, // Módulos se disponível
-      isEnrolled, // Se o usuário já está inscrito
+      modules: course.modulos,
+      isEnrolled,
     }
   }
 
-  // Função para inscrever-se no curso
   const handleEnrollCourse = (courseCode: string) => {
     if (!user?.id) {
       console.error('Usuário não encontrado')
@@ -404,7 +380,6 @@ export default function Courses() {
       },
       {
         onSuccess: () => {
-          // Fechar o dialog e mostrar sucesso
           setDialogOpen(false)
           setSelectedCourse(null)
           toast.success('Inscrição realizada com sucesso!')
@@ -412,7 +387,6 @@ export default function Courses() {
         onError: (error: unknown) => {
           console.error('Erro ao se inscrever:', error)
 
-          // Interfaces para tipagem dos erros
           interface ErrorResponse {
             mensagem?: string
             pendentes?: Array<{ titulo: string }>
@@ -425,7 +399,6 @@ export default function Courses() {
             }
           }
 
-          // Verificar se é um erro de resposta HTTP
           const isHttpError = (err: unknown): err is HttpError => {
             return typeof err === 'object' && err !== null && 'response' in err
           }
@@ -435,15 +408,12 @@ export default function Courses() {
             return
           }
 
-          // Tratar diferentes tipos de erro baseados no status HTTP
           if (error.response.status === 409) {
-            // Inscrição duplicada
             const errorData = error.response.data
             toast.error(
               errorData?.mensagem || 'Você já está inscrito neste curso'
             )
           } else if (error.response.status === 422) {
-            // Pré-requisitos não atendidos
             const errorData = error.response.data
             if (errorData?.pendentes && Array.isArray(errorData.pendentes)) {
               const coursesList = errorData.pendentes
@@ -454,11 +424,9 @@ export default function Courses() {
               toast.error(errorData?.mensagem || 'Pré-requisitos não atendidos')
             }
           } else if (error.response.status === 404) {
-            // Curso não encontrado
             const errorData = error.response.data
             toast.error(errorData?.mensagem || 'Curso não encontrado')
           } else {
-            // Erro genérico
             const errorData = error.response.data
             toast.error(
               errorData?.mensagem ||
@@ -554,7 +522,7 @@ export default function Courses() {
                     <CourseCard
                       title={course.titulo}
                       category={getCategoryName(course.categoria_id)}
-                      hours={course.duracao_estimada + ' h'}
+                      hours={`${course.duracao_estimada}h`}
                       description={course.descricao}
                       gradientFrom={gradient.gradientFrom}
                       gradientTo={gradient.gradientTo}

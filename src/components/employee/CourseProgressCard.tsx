@@ -37,7 +37,7 @@ export default function CourseProgressCard({
         }}
       >
         <Chip
-          label='In Progress'
+          label='Em Andamento'
           size='small'
           sx={{
             position: 'absolute',
@@ -57,7 +57,7 @@ export default function CourseProgressCard({
           {description}
         </Typography>
         <Typography variant='caption' color='text.secondary'>
-          Progress: {progress}%
+          Progresso: {progress}%
         </Typography>
         <LinearProgress
           variant='determinate'
