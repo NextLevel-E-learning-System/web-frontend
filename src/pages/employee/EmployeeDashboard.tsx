@@ -115,59 +115,6 @@ export default function EmployeeDashboard() {
           />
         </Grid>
       </Grid>
-
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mt: 4,
-          mb: 2,
-        }}
-      >
-        <Typography variant='h6' fontWeight={800}>
-          Continue Learning
-        </Typography>
-        <Typography
-          variant='body2'
-          color='primary.main'
-          sx={{ cursor: 'pointer' }}
-        >
-          View all courses
-        </Typography>
-      </Box>
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <CourseProgressCard
-            title='React Fundamentals'
-            description='Master the basics of React and build modern web applications.'
-            progress={75}
-            timeLeft='3h left'
-            gradientFrom='#6366f1'
-            gradientTo='#06b6d4'
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <CourseProgressCard
-            title='Node.js Backend'
-            description='Build scalable backend applications with Node.js and Express.'
-            progress={45}
-            timeLeft='8h left'
-            gradientFrom='#22c55e'
-            gradientTo='#0ea5e9'
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 4 }}>
-          <CourseProgressCard
-            title='UI/UX Design'
-            description='Design principles and create beautiful user interfaces.'
-            progress={20}
-            timeLeft='12h left'
-            gradientFrom='#f97316'
-            gradientTo='#ef4444'
-          />
-        </Grid>
-      </Grid>
     </DashboardLayout>
   )
 }

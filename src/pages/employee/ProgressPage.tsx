@@ -21,10 +21,17 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { type DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboardCompleto } from '@/api/users'
+import { useDashboardCompleto, useMeuPerfil } from '@/api/users'
+import {
+  useUserEnrollments,
+  filterEnrollmentsByStatus,
+  getEnrollmentStats,
+} from '@/api/progress'
+import { useCourseCatalog, useCategories } from '@/api/courses'
 import TimeRangeToggle, {
   type TimeRange,
 } from '@/components/common/TimeRangeToggle'
+import { useNavigate } from 'react-router-dom'
 import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import AchievementCard from '@/components/employee/AchievementCard'
 import GoalCard from '@/components/employee/GoalCard'
@@ -33,9 +40,92 @@ import MetricCard from '@/components/common/StatCard'
 export default function ProgressPage() {
   const { dashboard, isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
+  const { data: user } = useMeuPerfil()
+  const navigate = useNavigate()
+
+  // Buscar inscrições do usuário
+  const {
+    data: userEnrollmentsResponse,
+    isLoading: enrollmentsLoading,
+    error: enrollmentsError,
+  } = useUserEnrollments(user?.id || '')
+
+  // Buscar catálogo de cursos para obter dados completos
+  const { data: courses } = useCourseCatalog({})
+  const { data: categories } = useCategories()
 
   const alunoData =
     dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
+
+  // Processar dados das inscrições
+  const enrollments = userEnrollmentsResponse?.items || []
+  const enrollmentStats = getEnrollmentStats(enrollments)
+  const cursosEmAndamento = filterEnrollmentsByStatus(
+    enrollments,
+    'EM_ANDAMENTO'
+  )
+
+  // Função para calcular tempo restante estimado (assumindo 2h por curso como exemplo)
+  const calculateTimeLeft = (progressPercent: number, estimatedHours = 2) => {
+    const remainingHours = (estimatedHours * (100 - progressPercent)) / 100
+    const hours = Math.floor(remainingHours)
+    const minutes = Math.floor((remainingHours % 1) * 60)
+
+    if (hours > 0) {
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+    }
+    return minutes > 0 ? `${minutes}m` : '< 1m'
+  }
+
+  // Função para navegar para o curso
+  const handleGoToCourse = (courseCode: string) => {
+    navigate(`/cursos/${courseCode}`)
+  }
+
+  // Função para obter dados completos do curso a partir da inscrição
+  const getCourseFromEnrollment = (enrollment: { curso_id: string }) => {
+    if (!courses || !Array.isArray(courses)) return null
+    return courses.find(course => course.codigo === enrollment.curso_id)
+  }
+
+  // Função para converter hex para RGB
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null
+  }
+
+  // Função para calcular gradiente baseado na categoria real do curso
+  const getCourseCardGradient = (categoryId?: string) => {
+    if (!categoryId || !categories) {
+      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
+    }
+
+    const category = Array.isArray(categories)
+      ? categories.find(c => c.codigo === categoryId)
+      : undefined
+    if (!category) {
+      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
+    }
+
+    const rgb = hexToRgb(category.cor_hex)
+    if (!rgb) {
+      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
+    }
+
+    const gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)` // 100% opacidade
+    const gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)` // 70% opacidade
+
+    return {
+      gradientFrom,
+      gradientTo,
+    }
+  }
 
   if (isLoading) {
     return (
@@ -97,9 +187,11 @@ export default function ProgressPage() {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 icon={<AccessTimeIcon sx={{ fontSize: 26 }} />}
-                label='Total Learning Time'
-                value='11.1 hrs'
-                trendLabel='12% increase from last month'
+                label='Total Enrollments'
+                value={
+                  enrollmentsLoading ? '...' : `${enrollmentStats.total} cursos`
+                }
+                trendLabel='All course enrollments'
                 iconColor='#2563eb'
               />
             </Grid>
@@ -107,26 +199,38 @@ export default function ProgressPage() {
               <MetricCard
                 icon={<CheckCircleIcon sx={{ fontSize: 26 }} />}
                 label='Courses Completed'
-                value='2'
-                trendLabel='1 more than last month'
+                value={
+                  enrollmentsLoading
+                    ? '...'
+                    : enrollmentStats.concluidos.toString()
+                }
+                trendLabel='Successfully completed courses'
                 iconColor='#10b981'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 icon={<MenuBook sx={{ fontSize: 26 }} />}
-                label='Lessons Completed'
-                value='17'
-                trendLabel='3 more than last month'
+                label='Courses in Progress'
+                value={
+                  enrollmentsLoading
+                    ? '...'
+                    : enrollmentStats.emAndamento.toString()
+                }
+                trendLabel='Currently enrolled courses'
                 iconColor='#8b5cf6'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 icon={<StarRate sx={{ fontSize: 26 }} />}
-                label='Avg. Rating Given'
-                value='4.9'
-                trendLabel='0.2 higher than last month'
+                label='Cancelled Courses'
+                value={
+                  enrollmentsLoading
+                    ? '...'
+                    : enrollmentStats.cancelados.toString()
+                }
+                trendLabel='All time course enrollments'
                 iconColor='#f59e0b'
               />
             </Grid>
@@ -140,14 +244,47 @@ export default function ProgressPage() {
             Course Progress
           </Typography>
           <Grid container spacing={2}>
-            <CourseProgressCard
-              title='Node.js Backend'
-              description='Build scalable backend applications with Node.js and Express.'
-              progress={45}
-              timeLeft='8h'
-              gradientFrom='#22c55e'
-              gradientTo='#0ea5e9'
-            />
+            {enrollmentsLoading ? (
+              <Grid size={{ xs: 12 }}>
+                <Typography>Carregando...</Typography>
+              </Grid>
+            ) : enrollmentsError ? (
+              <Grid size={{ xs: 12 }}>
+                <Typography color='error'>
+                  Erro ao carregar cursos: {enrollmentsError.message}
+                </Typography>
+              </Grid>
+            ) : cursosEmAndamento.length === 0 ? (
+              <Grid size={{ xs: 12 }}>
+                <Typography color='text.secondary'>
+                  Nenhum curso em andamento
+                </Typography>
+              </Grid>
+            ) : (
+              cursosEmAndamento.map(enrollment => {
+                const course = getCourseFromEnrollment(enrollment)
+                if (!course) return null
+
+                const gradient = getCourseCardGradient(course.categoria_id)
+                return (
+                  <Grid size={{ xs: 12, md: 4 }} key={enrollment.id}>
+                    <CourseProgressCard
+                      title={course.titulo}
+                      description={course.descricao || ''}
+                      progress={enrollment.progresso_percentual}
+                      timeLeft={calculateTimeLeft(
+                        course.duracao_estimada || 0,
+                        enrollment.progresso_percentual
+                      )}
+                      gradientFrom={gradient.gradientFrom}
+                      gradientTo={gradient.gradientTo}
+                      courseCode={course.codigo}
+                      onContinueLearning={handleGoToCourse}
+                    />
+                  </Grid>
+                )
+              })
+            )}
           </Grid>
         </Box>
 
