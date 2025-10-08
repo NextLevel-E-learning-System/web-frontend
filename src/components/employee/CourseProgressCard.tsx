@@ -72,14 +72,14 @@ export default function CourseProgressCard({
           }}
         >
           <Typography variant='caption' color='text.secondary'>
-            {timeLeft} left
+            {timeLeft} restantes
           </Typography>
           <Button
             variant='contained'
             size='small'
             onClick={() => onContinueLearning(courseCode)}
           >
-            Continue Learning
+            Continue Aprendendo
           </Button>
         </Box>
       </CardContent>

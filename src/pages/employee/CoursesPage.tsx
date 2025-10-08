@@ -177,7 +177,8 @@ export default function Courses() {
     useCreateEnrollment()
 
   // Buscar inscrições do usuário para verificar se já está inscrito
-  const { data: userEnrollments } = useUserEnrollments(user?.id || '')
+  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
+  const userEnrollments = userEnrollmentsResponse?.items || []
 
   // Função para converter hex para rgba
   const hexToRgb = (hex: string) => {
@@ -408,10 +409,62 @@ export default function Courses() {
           setSelectedCourse(null)
           toast.success('Inscrição realizada com sucesso!')
         },
-        onError: error => {
-          // Mostrar erro
+        onError: (error: unknown) => {
           console.error('Erro ao se inscrever:', error)
-          toast.error('Erro ao se inscrever no curso. Tente novamente.')
+
+          // Interfaces para tipagem dos erros
+          interface ErrorResponse {
+            mensagem?: string
+            pendentes?: Array<{ titulo: string }>
+          }
+
+          interface HttpError {
+            response: {
+              status: number
+              data: ErrorResponse
+            }
+          }
+
+          // Verificar se é um erro de resposta HTTP
+          const isHttpError = (err: unknown): err is HttpError => {
+            return typeof err === 'object' && err !== null && 'response' in err
+          }
+
+          if (!isHttpError(error)) {
+            toast.error('Erro ao se inscrever no curso. Tente novamente.')
+            return
+          }
+
+          // Tratar diferentes tipos de erro baseados no status HTTP
+          if (error.response.status === 409) {
+            // Inscrição duplicada
+            const errorData = error.response.data
+            toast.error(
+              errorData?.mensagem || 'Você já está inscrito neste curso'
+            )
+          } else if (error.response.status === 422) {
+            // Pré-requisitos não atendidos
+            const errorData = error.response.data
+            if (errorData?.pendentes && Array.isArray(errorData.pendentes)) {
+              const coursesList = errorData.pendentes
+                .map(course => `• ${course.titulo}`)
+                .join('\n')
+              toast.error(`Pré-requisitos não atendidos:\n${coursesList}`)
+            } else {
+              toast.error(errorData?.mensagem || 'Pré-requisitos não atendidos')
+            }
+          } else if (error.response.status === 404) {
+            // Curso não encontrado
+            const errorData = error.response.data
+            toast.error(errorData?.mensagem || 'Curso não encontrado')
+          } else {
+            // Erro genérico
+            const errorData = error.response.data
+            toast.error(
+              errorData?.mensagem ||
+                'Erro ao se inscrever no curso. Tente novamente.'
+            )
+          }
         },
       }
     )
