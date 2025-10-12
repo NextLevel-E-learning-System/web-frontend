@@ -1,18 +1,17 @@
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Chip from '@mui/material/Chip'
 import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { StarRateRounded } from '@mui/icons-material'
-import IosShareIcon from '@mui/icons-material/IosShare'
-import CloudDownloadRoundedIcon from '@mui/icons-material/CloudDownloadRounded'
+import {
+  AccessTimeRounded,
+  MenuBookRounded,
+  ArrowBackIosNewRounded,
+} from '@mui/icons-material'
+import { Link as RouterLink } from 'react-router-dom'
 
 interface CourseContentHeaderProps {
   title: string
-  subtitle: string
-  rating: number
-  ratingCount: number
   lessons: number
   totalHours: number
   progressPercent: number
@@ -23,9 +22,6 @@ interface CourseContentHeaderProps {
 
 export default function CourseContentHeader({
   title,
-  subtitle,
-  rating,
-  ratingCount,
   lessons,
   totalHours,
   progressPercent,
@@ -34,141 +30,116 @@ export default function CourseContentHeader({
   categoryName,
 }: CourseContentHeaderProps) {
   return (
-    <Box
-      sx={{
-        borderRadius: 4,
-        p: { xs: 3, md: 5 },
-        background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
-        color: 'common.white',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          opacity: 0.2,
-          background:
-            'radial-gradient(circle at top right, rgba(255,255,255,0.6), transparent 55%)',
-        }}
-      />
+    <Stack spacing={{ xs: 3, md: 4 }}>
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={{ xs: 2, md: 3 }}
+        alignItems={{ md: 'stretch' }}
+      >
+        <Box
+          sx={{
+            flex: 1,
+            borderRadius: 1,
+            px: { xs: 3, md: 5 },
+            py: { xs: 3, md: 4 },
+            background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+            color: 'common.white',
+            position: 'relative',
+            boxShadow: '0 12px 30px rgba(79, 70, 229, 0.25)',
+          }}
+        >
+          <Button
+            component={RouterLink}
+            to='/meu-progresso'
+            startIcon={<ArrowBackIosNewRounded fontSize='small' />}
+            sx={{
+              position: 'absolute',
+              top: { xs: 12, md: 16 },
+              right: { xs: 12, md: 20 },
+              fontWeight: 600,
+              color: 'common.white',
+              backdropFilter: 'blur(10px)',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.2)',
+              },
+            }}
+          >
+            Voltar
+          </Button>
 
-      <Stack spacing={4} position='relative' zIndex={1}>
-        <Stack spacing={1.5}>
-          {categoryName && (
-            <Chip
-              label={categoryName}
-              size='small'
+          {/* Conteúdo principal */}
+          <Box sx={{ pr: { xs: 10, md: 12 } }}>
+            <Typography
+              variant='h4'
+              fontWeight={800}
+              lineHeight={1.2}
+              sx={{ mb: 1.5 }}
+            >
+              {title}
+            </Typography>
+            <Typography
+              variant='body2'
               sx={{
                 alignSelf: 'flex-start',
-                background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
-                color: '#fff',
                 fontWeight: 600,
-                letterSpacing: 1.2,
-                padding: '6px 8px',
-                borderRadius: '16px',
               }}
-            />
-          )}
-          <Typography variant='h3' fontWeight={900} lineHeight={1.1}>
-            {title}
-          </Typography>
-          <Typography variant='body1' sx={{ maxWidth: 720, opacity: 0.9 }}>
-            {subtitle}
-          </Typography>
-        </Stack>
+            >
+              {categoryName}
+            </Typography>
+          </Box>
+        </Box>
+      </Stack>
 
+      <Stack spacing={{ xs: 2, md: 2.5 }} sx={{ px: { xs: 2, md: 3 } }}>
         <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={{ xs: 3, md: 5 }}
-          alignItems={{ xs: 'flex-start', md: 'center' }}
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={{ xs: 1.5, sm: 3 }}
+          sx={{ flexWrap: 'wrap', rowGap: 1.5, columnGap: 3 }}
+          alignItems={{ sm: 'center' }}
         >
-          <Stack direction='row' spacing={3} alignItems='center'>
-            <Stack direction='row' spacing={1} alignItems='center'>
-              <StarRateRounded sx={{ color: '#fbbf24' }} />
-              <Typography variant='h6' fontWeight={700}>
-                {rating.toFixed(1)}
-              </Typography>
-            </Stack>
-            <Typography variant='body2' sx={{ opacity: 0.85 }}>
-              {ratingCount.toLocaleString()} reviews
+          <Stack direction='row' spacing={1} alignItems='center'>
+            <MenuBookRounded color='primary' fontSize='small' />
+            <Typography variant='body2' fontWeight={600}>
+              {lessons} módulos
             </Typography>
           </Stack>
 
-          <Stack direction='row' spacing={2}>
-            <Chip
-              label={`${lessons} lessons`}
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.15)',
-                color: 'common.white',
-                fontWeight: 600,
-              }}
-            />
-            <Chip
-              label={`${totalHours} hours`}
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.15)',
-                color: 'common.white',
-                fontWeight: 600,
-              }}
-            />
-          </Stack>
-
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.5}
-            sx={{ ml: { md: 'auto' } }}
-          >
-            <Button
-              variant='contained'
-              color='secondary'
-              startIcon={<IosShareIcon />}
-              sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'common.white' }}
-            >
-              Share
-            </Button>
-            <Button
-              variant='contained'
-              startIcon={<CloudDownloadRoundedIcon />}
-              sx={{
-                bgcolor: 'common.white',
-                color: 'grey.900',
-                fontWeight: 600,
-              }}
-            >
-              Download Resources
-            </Button>
+          <Stack direction='row' spacing={1} alignItems='center'>
+            <AccessTimeRounded color='primary' fontSize='small' />
+            <Typography variant='body2' fontWeight={600}>
+              {totalHours} horas
+            </Typography>
           </Stack>
         </Stack>
 
-        <Stack spacing={1.5} maxWidth={400}>
+        <Box>
           <Stack
             direction='row'
             justifyContent='space-between'
             alignItems='center'
+            sx={{ mb: 1 }}
           >
-            <Typography variant='body2' sx={{ opacity: 0.85 }}>
-              Progress
+            <Typography variant='body2' color='text.secondary'>
+              Progresso
             </Typography>
             <Typography variant='subtitle2' fontWeight={700}>
-              {progressPercent}% Complete
+              {progressPercent}% Completo
             </Typography>
           </Stack>
           <LinearProgress
             variant='determinate'
             value={progressPercent}
             sx={{
-              height: 10,
+              height: 6,
               borderRadius: 999,
-              backgroundColor: 'rgba(255,255,255,0.2)',
+              backgroundColor: 'grey.200',
               '& .MuiLinearProgress-bar': {
-                backgroundColor: 'common.white',
+                borderRadius: 999,
               },
             }}
           />
-        </Stack>
+        </Box>
       </Stack>
-    </Box>
+    </Stack>
   )
 }
