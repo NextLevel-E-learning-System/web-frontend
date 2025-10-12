@@ -2,33 +2,17 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   Box,
-  Container,
   Typography,
   Tabs,
   Tab,
-  Grid,
-  Card,
-  CardContent,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
   CircularProgress,
   Alert,
-  Button,
   Paper,
   Divider,
   Stack,
   Avatar,
 } from '@mui/material'
-import {
-  SchoolOutlined,
-  AccessTimeOutlined,
-  ChatBubbleOutlineOutlined,
-  ArrowBackIosNewRounded,
-  CheckRounded,
-  ForumRounded,
-} from '@mui/icons-material'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import CourseContentHeader from '../../components/employee/CourseContentHeader'
 import { useNavigation } from '../../hooks/useNavigation'
@@ -40,7 +24,6 @@ import {
 } from '../../api/courses'
 import { useUserEnrollments } from '../../api/progress'
 import { useMeuPerfil } from '../../api/users'
-import { Link as RouterLink } from 'react-router-dom'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 
 const TAB_INDEX = {
@@ -150,7 +133,7 @@ export default function CourseContent() {
         <Divider />
         <Box sx={{ p: { xs: 2, md: 3 } }}>
           {activeTab === TAB_INDEX.curriculum && (
-            <CourseCurriculum modules={modules} />
+            <CourseCurriculum modules={modules || []} />
           )}
 
           {activeTab === TAB_INDEX.overview && (
@@ -164,20 +147,20 @@ export default function CourseContent() {
                   color='text.secondary'
                   sx={{ maxWidth: 860 }}
                 >
-                  {completesCourse.descricao}
+                  {completesCourse.descricao || 'Descrição não disponível'}
                 </Typography>
               </Stack>
 
               <Stack spacing={2}>
                 <Typography variant='h6' fontWeight={700}>
-                  O que você vai aprender
+                  Informações do curso
                 </Typography>
                 <Box
                   sx={{
                     display: 'grid',
                     gridTemplateColumns: {
                       xs: '1fr',
-                      md: 'repeat(2, minmax(0, 1fr))',
+                      md: 'repeat(3, minmax(0, 1fr))',
                     },
                     gap: { xs: 2, md: 2.5 },
                   }}
@@ -192,6 +175,7 @@ export default function CourseContent() {
                       sx={{
                         background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
                         color: '#fff',
+                        mt: 0.5,
                       }}
                     />
                   </Box>
@@ -199,50 +183,88 @@ export default function CourseContent() {
                     <Typography variant='body2' color='text.secondary'>
                       Nível
                     </Typography>
-                    <Typography variant='body1'>
+                    <Typography variant='body1' sx={{ mt: 0.5 }}>
                       {completesCourse.nivel_dificuldade || 'Não informado'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      XP Oferecido
+                    </Typography>
+                    <Typography variant='body1' sx={{ mt: 0.5 }}>
+                      {completesCourse.xp_oferecido || 0} XP
                     </Typography>
                   </Box>
                 </Box>
               </Stack>
 
               <Stack spacing={2}>
-                <Typography variant='h6' fontWeight={700}>
-                  Sobre o instrutor
-                </Typography>
-                <Stack
-                  direction={{ xs: 'column', sm: 'row' }}
-                  spacing={2.5}
-                  alignItems={{ sm: 'center' }}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      md: 'repeat(2, minmax(0, 1fr))',
+                    },
+                    gap: { xs: 2, md: 2.5 },
+                  }}
                 >
-                  <Avatar
-                    sx={{
-                      bgcolor: 'primary.main',
-                      width: 64,
-                      height: 64,
-                      fontSize: 24,
-                      fontWeight: 700,
-                    }}
-                  >
-                    IS
-                  </Avatar>
-                  <Stack spacing={0.5} sx={{ maxWidth: 720 }}>
-                    <Typography variant='subtitle1' fontWeight={700}>
-                      {completesCourse.instructor.name}
-                    </Typography>
+                  <Box>
                     <Typography variant='body2' color='text.secondary'>
-                      {completesCourse.instructor.title}
+                      Total de Módulos
                     </Typography>
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ mt: 0.5 }}
+                    <Typography variant='body1' sx={{ mt: 0.5 }}>
+                      {modules?.length || 0}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      Duração Estimada
+                    </Typography>
+                    <Typography variant='body1' sx={{ mt: 0.5 }}>
+                      {completesCourse.duracao_estimada || 0} horas
+                    </Typography>
+                  </Box>
+                </Box>
+              </Stack>
+
+              {completesCourse.instrutor_nome && (
+                <Stack spacing={2}>
+                  <Typography variant='h6' fontWeight={700}>
+                    Sobre o instrutor
+                  </Typography>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    spacing={2.5}
+                    alignItems={{ sm: 'center' }}
+                  >
+                    <Avatar
+                      sx={{
+                        bgcolor: 'primary.main',
+                        width: 64,
+                        height: 64,
+                        fontSize: 24,
+                        fontWeight: 700,
+                      }}
                     >
-                      {completesCourse.instructor.bio}
-                    </Typography>
+                      {completesCourse.instrutor_nome
+                        .split(' ')
+                        .map((n: string) => n[0])
+                        .join('')
+                        .toUpperCase()
+                        .slice(0, 2)}
+                    </Avatar>
+                    <Stack spacing={0.5} sx={{ maxWidth: 720 }}>
+                      <Typography variant='subtitle1' fontWeight={700}>
+                        {completesCourse.instrutor_nome}
+                      </Typography>
+                      <Typography variant='body2' color='text.secondary'>
+                        Instrutor do curso
+                      </Typography>
+                    </Stack>
                   </Stack>
                 </Stack>
-              </Stack>
+              )}
             </Stack>
           )}
         </Box>
