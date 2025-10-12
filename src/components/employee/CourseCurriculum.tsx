@@ -252,7 +252,7 @@ function ModuleAccordion({
               {module.titulo}
             </Typography>
             <Typography variant='body2' color='text.secondary'>
-              {module.conteudo || 'Conteúdo do módulo'}
+              {module.conteudo}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
               <Chip
@@ -260,11 +260,7 @@ function ModuleAccordion({
                 size='small'
                 color={module.obrigatorio ? 'primary' : 'default'}
               />
-              <Chip
-                label={`${module.xp_modulo} XP`}
-                size='small'
-                color='secondary'
-              />
+              <Chip label={`${module.xp} XP`} size='small' color='secondary' />
             </Box>
           </Stack>
           <Stack
@@ -275,10 +271,6 @@ function ModuleAccordion({
               {materials.length > 0
                 ? `${materials.length} materiais`
                 : 'Módulo teórico'}
-            </Typography>
-            <Typography variant='caption' color='text.secondary'>
-              {moduleItems.length}{' '}
-              {moduleItems.length > 1 ? 'atividades' : 'atividade'}
             </Typography>
           </Stack>
         </Stack>
