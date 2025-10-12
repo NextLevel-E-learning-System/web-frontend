@@ -15,11 +15,19 @@ import {
   ListItemText,
   CircularProgress,
   Alert,
+  Button,
+  Paper,
+  Divider,
+  Stack,
+  Avatar,
 } from '@mui/material'
 import {
   SchoolOutlined,
   AccessTimeOutlined,
   ChatBubbleOutlineOutlined,
+  ArrowBackIosNewRounded,
+  CheckRounded,
+  ForumRounded,
 } from '@mui/icons-material'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import CourseContentHeader from '../../components/employee/CourseContentHeader'
@@ -32,6 +40,8 @@ import {
 } from '../../api/courses'
 import { useUserEnrollments } from '../../api/progress'
 import { useMeuPerfil } from '../../api/users'
+import { Link as RouterLink } from 'react-router-dom'
+import CourseCurriculum from '@/components/employee/CourseCurriculum'
 
 const TAB_INDEX = {
   curriculum: 0,
@@ -110,187 +120,133 @@ export default function CourseContent() {
     )
   }
 
-  if (!isEnrolled) {
-    return (
-      <DashboardLayout items={navigationItems}>
-        <Alert severity='warning' sx={{ mb: 2 }}>
-          Você não está inscrito neste curso. Redirecionando...
-        </Alert>
-      </DashboardLayout>
-    )
-  }
-
   const handleTabChange = (_: React.SyntheticEvent, newValue: TabIndex) => {
     setActiveTab(newValue)
   }
 
   return (
     <DashboardLayout items={navigationItems}>
-      <Container maxWidth='xl' sx={{ py: 3 }}>
-        <CourseContentHeader
-          title={completesCourse.titulo || 'Curso sem título'}
-          subtitle={completesCourse.descricao || 'Sem descrição disponível'}
-          rating={completesCourse.avaliacao_media || 0}
-          ratingCount={completesCourse.total_avaliacoes || 0}
-          lessons={modules?.length || 0}
-          totalHours={completesCourse.duracao_estimada || 0}
-          progressPercent={enrollment?.progresso_percentual || 0}
-          gradientFrom={gradientFrom}
-          gradientTo={gradientTo}
-          categoryName={categoryName}
-        />
+      <CourseContentHeader
+        title={completesCourse.titulo || 'Curso sem título'}
+        lessons={modules?.length || 0}
+        totalHours={completesCourse.duracao_estimada || 0}
+        progressPercent={enrollment?.progresso_percentual || 0}
+        gradientFrom={gradientFrom}
+        gradientTo={gradientTo}
+        categoryName={categoryName}
+      />
 
-        <Box sx={{ mt: 4 }}>
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            variant='fullWidth'
-            sx={{
-              mb: 3,
-              '& .MuiTab-root': {
-                textTransform: 'none',
-                fontSize: '1rem',
-                fontWeight: 500,
-              },
-            }}
-          >
-            <Tab
-              icon={<SchoolOutlined />}
-              iconPosition='start'
-              label='Currículo'
-            />
-            <Tab
-              icon={<AccessTimeOutlined />}
-              iconPosition='start'
-              label='Visão Geral'
-            />
-            <Tab
-              icon={<ChatBubbleOutlineOutlined />}
-              iconPosition='start'
-              label='Discussões'
-            />
-          </Tabs>
-
+      <Paper variant='outlined' sx={{ mt: 4 }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          variant='scrollable'
+          scrollButtons='auto'
+          sx={{ px: { xs: 1.5, md: 3 }, pt: 1.5 }}
+        >
+          <Tab label='Conteúdo' value={TAB_INDEX.curriculum} />
+          <Tab label='Visão Geral' value={TAB_INDEX.overview} />
+        </Tabs>
+        <Divider />
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
           {activeTab === TAB_INDEX.curriculum && (
-            <Box>
-              <Typography variant='h6' gutterBottom>
-                Módulos do Curso
-              </Typography>
-              {modules?.map((module, index) => (
-                <Card key={module.id} sx={{ mb: 2 }}>
-                  <CardContent>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Box>
-                        <Typography variant='h6'>{module.titulo}</Typography>
-                        <Typography variant='body2' color='text.secondary'>
-                          Módulo {index + 1} • {module.xp} XP
-                        </Typography>
-                      </Box>
-                      <Chip
-                        label={module.obrigatorio ? 'Obrigatório' : 'Opcional'}
-                        color={module.obrigatorio ? 'primary' : 'default'}
-                        size='small'
-                      />
-                    </Box>
-                    {module.conteudo && (
-                      <Typography variant='body2' sx={{ mt: 1 }}>
-                        {module.conteudo}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
+            <CourseCurriculum modules={modules} />
           )}
 
           {activeTab === TAB_INDEX.overview && (
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 8 }}>
-                <Card>
-                  <CardContent>
-                    <Typography variant='h6' gutterBottom>
-                      Sobre este curso
-                    </Typography>
-                    <Typography variant='body1' paragraph>
-                      {completesCourse.descricao}
-                    </Typography>
+            <Stack spacing={{ xs: 3, md: 4 }}>
+              <Stack spacing={1.5}>
+                <Typography variant='h6' fontWeight={700}>
+                  Sobre este curso
+                </Typography>
+                <Typography
+                  variant='body1'
+                  color='text.secondary'
+                  sx={{ maxWidth: 860 }}
+                >
+                  {completesCourse.descricao}
+                </Typography>
+              </Stack>
 
-                    <Typography variant='h6' gutterBottom sx={{ mt: 3 }}>
-                      O que você vai aprender
+              <Stack spacing={2}>
+                <Typography variant='h6' fontWeight={700}>
+                  O que você vai aprender
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      md: 'repeat(2, minmax(0, 1fr))',
+                    },
+                    gap: { xs: 2, md: 2.5 },
+                  }}
+                >
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      Categoria
                     </Typography>
-                    <List>
-                      <ListItem>
-                        <ListItemText primary='Conceitos fundamentais do curso' />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemText primary='Aplicação prática dos conhecimentos' />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemText primary='Projetos práticos' />
-                      </ListItem>
-                    </List>
-                  </CardContent>
-                </Card>
-              </Grid>
+                    <Chip
+                      label={categoryName || 'Sem categoria'}
+                      size='small'
+                      sx={{
+                        background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+                        color: '#fff',
+                      }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant='body2' color='text.secondary'>
+                      Nível
+                    </Typography>
+                    <Typography variant='body1'>
+                      {completesCourse.nivel_dificuldade || 'Não informado'}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Stack>
 
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Card>
-                  <CardContent>
-                    <Typography variant='h6' gutterBottom>
-                      Detalhes do curso
+              <Stack spacing={2}>
+                <Typography variant='h6' fontWeight={700}>
+                  Sobre o instrutor
+                </Typography>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={2.5}
+                  alignItems={{ sm: 'center' }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: 'primary.main',
+                      width: 64,
+                      height: 64,
+                      fontSize: 24,
+                      fontWeight: 700,
+                    }}
+                  >
+                    IS
+                  </Avatar>
+                  <Stack spacing={0.5} sx={{ maxWidth: 720 }}>
+                    <Typography variant='subtitle1' fontWeight={700}>
+                      {completesCourse.instructor.name}
                     </Typography>
-                    <Box
-                      sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                    <Typography variant='body2' color='text.secondary'>
+                      {completesCourse.instructor.title}
+                    </Typography>
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ mt: 0.5 }}
                     >
-                      <Box>
-                        <Typography variant='body2' color='text.secondary'>
-                          Categoria
-                        </Typography>
-                        <Chip
-                          label={categoryName || 'Sem categoria'}
-                          size='small'
-                          sx={{
-                            background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
-                            color: '#fff',
-                          }}
-                        />
-                      </Box>
-                      <Box>
-                        <Typography variant='body2' color='text.secondary'>
-                          Nível
-                        </Typography>
-                        <Typography variant='body1'>
-                          {completesCourse.nivel_dificuldade || 'Não informado'}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-          )}
-
-          {activeTab === TAB_INDEX.discussions && (
-            <Card>
-              <CardContent>
-                <Typography variant='h6' gutterBottom>
-                  Discussões do curso
-                </Typography>
-                <Typography variant='body1' color='text.secondary'>
-                  Em breve: seção de discussões e fórum para interação entre
-                  alunos.
-                </Typography>
-              </CardContent>
-            </Card>
+                      {completesCourse.instructor.bio}
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Stack>
+            </Stack>
           )}
         </Box>
-      </Container>
+      </Paper>
     </DashboardLayout>
   )
 }
