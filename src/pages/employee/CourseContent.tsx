@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   Box,
   Container,
@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Rating,
   List,
   ListItem,
   ListItemText,
@@ -25,7 +24,12 @@ import {
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import CourseContentHeader from '../../components/employee/CourseContentHeader'
 import { useNavigation } from '../../hooks/useNavigation'
-import { useCourse, useCourseModules } from '../../api/courses'
+import { useCategoryColors } from '../../hooks/useCategoryColors'
+import {
+  useCourse,
+  useCourseModules,
+  useCourseCatalog,
+} from '../../api/courses'
 import { useUserEnrollments } from '../../api/progress'
 import { useMeuPerfil } from '../../api/users'
 
@@ -40,8 +44,13 @@ type TabIndex = (typeof TAB_INDEX)[keyof typeof TAB_INDEX]
 export default function CourseContent() {
   const { codigo } = useParams<{ codigo: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { data: user } = useMeuPerfil()
   const { navigationItems } = useNavigation()
+
+  // Dados passados via state (quando vem da ProgressPage)
+  const passedCourseData = location.state?.courseData
+  const passedEnrollment = location.state?.enrollment
 
   // Buscar dados do curso
   const {
@@ -54,12 +63,25 @@ export default function CourseContent() {
   )
   const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
 
+  // Buscar todos os cursos como backup para garantir dados completos
+  const { data: allCourses } = useCourseCatalog({})
+
   const [activeTab, setActiveTab] = useState<TabIndex>(TAB_INDEX.curriculum)
 
   // Verificar se o usuário está inscrito no curso
   const userEnrollments = userEnrollmentsResponse?.items || []
-  const enrollment = userEnrollments.find(e => e.curso_id === codigo)
+  const enrollment =
+    passedEnrollment || userEnrollments.find(e => e.curso_id === codigo)
   const isEnrolled = !!enrollment
+
+  // Usar dados passados via state quando disponíveis, senão buscar no backend
+  const completesCourse =
+    passedCourseData || course || allCourses?.find(c => c.codigo === codigo)
+
+  // Usar hook para obter cores e nome da categoria
+  const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
+    completesCourse?.categoria_id
+  )
 
   // Se não estiver inscrito, redirecionar para a página de cursos
   useEffect(() => {
@@ -78,11 +100,10 @@ export default function CourseContent() {
     )
   }
 
-  if (courseError || !course) {
+  if (courseError || !completesCourse) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error' sx={{ mb: 2 }}>
-          Erro ao carregar o curso:{' '}
           {courseError?.message || 'Curso não encontrado'}
         </Alert>
       </DashboardLayout>
@@ -107,15 +128,16 @@ export default function CourseContent() {
     <DashboardLayout items={navigationItems}>
       <Container maxWidth='xl' sx={{ py: 3 }}>
         <CourseContentHeader
-          title={course.titulo}
-          subtitle={course.descricao || ''}
-          rating={4.5}
-          ratingCount={150}
+          title={completesCourse.titulo || 'Curso sem título'}
+          subtitle={completesCourse.descricao || 'Sem descrição disponível'}
+          rating={completesCourse.avaliacao_media || 0}
+          ratingCount={completesCourse.total_avaliacoes || 0}
           lessons={modules?.length || 0}
-          totalHours={8}
+          totalHours={completesCourse.duracao_estimada || 0}
           progressPercent={enrollment?.progresso_percentual || 0}
-          gradientFrom='#4f46e5'
-          gradientTo='#0ea5e9'
+          gradientFrom={gradientFrom}
+          gradientTo={gradientTo}
+          categoryName={categoryName}
         />
 
         <Box sx={{ mt: 4 }}>
@@ -196,7 +218,7 @@ export default function CourseContent() {
                       Sobre este curso
                     </Typography>
                     <Typography variant='body1' paragraph>
-                      {course.descricao}
+                      {completesCourse.descricao}
                     </Typography>
 
                     <Typography variant='h6' gutterBottom sx={{ mt: 3 }}>
@@ -230,35 +252,22 @@ export default function CourseContent() {
                         <Typography variant='body2' color='text.secondary'>
                           Categoria
                         </Typography>
-                        <Chip label='Geral' size='small' color='primary' />
+                        <Chip
+                          label={categoryName || 'Sem categoria'}
+                          size='small'
+                          sx={{
+                            background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+                            color: '#fff',
+                          }}
+                        />
                       </Box>
                       <Box>
                         <Typography variant='body2' color='text.secondary'>
                           Nível
                         </Typography>
-                        <Typography variant='body1'>Iniciante</Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant='body2' color='text.secondary'>
-                          Avaliação
+                        <Typography variant='body1'>
+                          {completesCourse.nivel_dificuldade || 'Não informado'}
                         </Typography>
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                        >
-                          <Rating
-                            value={4.5}
-                            precision={0.1}
-                            readOnly
-                            size='small'
-                          />
-                          <Typography variant='body2'>4.5 (150)</Typography>
-                        </Box>
-                      </Box>
-                      <Box>
-                        <Typography variant='body2' color='text.secondary'>
-                          Idioma
-                        </Typography>
-                        <Typography variant='body1'>Português</Typography>
                       </Box>
                     </Box>
                   </CardContent>

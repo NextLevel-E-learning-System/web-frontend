@@ -18,6 +18,7 @@ interface CourseContentHeaderProps {
   progressPercent: number
   gradientFrom: string
   gradientTo: string
+  categoryName?: string
 }
 
 export default function CourseContentHeader({
@@ -30,6 +31,7 @@ export default function CourseContentHeader({
   progressPercent,
   gradientFrom,
   gradientTo,
+  categoryName,
 }: CourseContentHeaderProps) {
   return (
     <Box
@@ -54,17 +56,21 @@ export default function CourseContentHeader({
 
       <Stack spacing={4} position='relative' zIndex={1}>
         <Stack spacing={1.5}>
-          <Chip
-            label='Course'
-            color='default'
-            sx={{
-              alignSelf: 'flex-start',
-              bgcolor: 'rgba(255,255,255,0.15)',
-              color: 'common.white',
-              fontWeight: 600,
-              letterSpacing: 1.2,
-            }}
-          />
+          {categoryName && (
+            <Chip
+              label={categoryName}
+              size='small'
+              sx={{
+                alignSelf: 'flex-start',
+                background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+                color: '#fff',
+                fontWeight: 600,
+                letterSpacing: 1.2,
+                padding: '6px 8px',
+                borderRadius: '16px',
+              }}
+            />
+          )}
           <Typography variant='h3' fontWeight={900} lineHeight={1.1}>
             {title}
           </Typography>

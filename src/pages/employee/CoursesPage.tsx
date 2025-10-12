@@ -24,6 +24,7 @@ import {
   type CatalogFilters as FiltrosCatalogo,
 } from '@/api/courses'
 import { useCreateEnrollment, useUserEnrollments } from '@/api/progress'
+import { useCategoryColors } from '@/hooks/useCategoryColors'
 import CategoryChips from '@/components/employee/CategoryChips'
 import CourseCard from '@/components/employee/CourseCard'
 import CourseProgressCard from '@/components/employee/CourseProgressCard'
@@ -114,6 +115,69 @@ const getCategoryIcon = (categoryCodigo: string) => {
   }
 }
 
+interface CourseItemProps {
+  course: Curso
+  isEnrolled: boolean
+  userProgress?: {
+    progresso_percentual: number
+  }
+  calculateTimeLeft: (
+    courseDurationHours: number,
+    progressPercent: number
+  ) => string
+  handleViewCourse: (course: Curso) => void
+  handleGoToCourse: (courseCode: string) => void
+}
+
+function CourseItem({
+  course,
+  isEnrolled,
+  userProgress,
+  calculateTimeLeft,
+  handleViewCourse,
+  handleGoToCourse,
+}: CourseItemProps) {
+  const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
+    course.categoria_id
+  )
+
+  return (
+    <Grid size={{ xs: 12, md: 4 }}>
+      {isEnrolled && userProgress ? (
+        <CourseProgressCard
+          title={course.titulo}
+          description={course.descricao || ''}
+          category={categoryName}
+          progress={userProgress.progresso_percentual}
+          timeLeft={calculateTimeLeft(
+            course.duracao_estimada || 0,
+            userProgress.progresso_percentual
+          )}
+          gradientFrom={gradientFrom}
+          gradientTo={gradientTo}
+          courseCode={course.codigo}
+          onContinueLearning={handleGoToCourse}
+        />
+      ) : (
+        <CourseCard
+          title={course.titulo}
+          category={categoryName}
+          hours={`${course.duracao_estimada}h`}
+          description={course.descricao}
+          gradientFrom={gradientFrom}
+          gradientTo={gradientTo}
+          onViewCourse={() => handleViewCourse(course)}
+          completionRate={course.taxa_conclusao}
+          totalEnrollments={course.total_inscricoes}
+          instructorName={course.instrutor_nome}
+          xpOffered={course.xp_oferecido}
+          level={course.nivel_dificuldade}
+        />
+      )}
+    </Grid>
+  )
+}
+
 export default function Courses() {
   const { data: user } = useMeuPerfil()
   const { navigationItems } = useNavigation()
@@ -171,6 +235,7 @@ export default function Courses() {
   const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
   const userEnrollments = userEnrollmentsResponse?.items || []
 
+  // Função para converter hex para rgb (necessária para processedCategories)
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
@@ -239,41 +304,6 @@ export default function Courses() {
 
   const totalPages = Math.ceil((filteredCourses?.length || 0) / coursesPerPage)
 
-  const getCourseCardGradient = (categoryId?: string) => {
-    if (!categoryId || !categories) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    const category = Array.isArray(categories)
-      ? categories.find(c => c.codigo === categoryId)
-      : undefined
-    if (!category) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    const rgb = hexToRgb(category.cor_hex)
-    if (!rgb) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    const gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)` // 100% opacidade
-    const gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)` // 70% opacidade
-
-    return {
-      gradientFrom,
-      gradientTo,
-    }
-  }
-
-  // Função para obter nome da categoria
-  const getCategoryName = (categoryId?: string) => {
-    if (!categoryId || !categories) return 'Sem categoria'
-    const category = Array.isArray(categories)
-      ? categories.find(c => c.codigo === categoryId)
-      : undefined
-    return category?.nome || 'Sem categoria'
-  }
-
   // Função para limpar todos os filtros
   const clearAllFilters = () => {
     setSearchTerm('')
@@ -336,13 +366,38 @@ export default function Courses() {
   }
 
   const handleGoToCourse = (courseCode: string) => {
-    navigate(`/cursos/${courseCode}`)
+    const courseData = filteredCourses.find(
+      course => course.codigo === courseCode
+    )
+    const enrollment = getUserCourseProgress(courseCode)
+
+    navigate(`/cursos/${courseCode}`, {
+      state: {
+        courseData,
+        enrollment,
+        fromCatalog: true,
+      },
+    })
   }
 
-  const convertCourseToDialogData = (course: Curso) => {
-    const gradient = getCourseCardGradient(course.categoria_id)
-    const categoryName = getCategoryName(course.categoria_id)
+  // Função para criar dados do curso para o dialog
+  const createCourseDialogData = (course: Curso) => {
     const isEnrolled = isUserEnrolled(course.codigo)
+
+    // Obter dados da categoria manualmente para o dialog
+    const category = categories?.find(c => c.codigo === course.categoria_id)
+    const categoryName = category?.nome || 'Sem categoria'
+
+    let gradientFrom = '#6b7280'
+    let gradientTo = '#374151'
+
+    if (category?.cor_hex) {
+      const rgb = hexToRgb(category.cor_hex)
+      if (rgb) {
+        gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`
+        gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`
+      }
+    }
 
     return {
       title: course.titulo,
@@ -353,8 +408,8 @@ export default function Courses() {
       students: course.total_inscritos || 0,
       level: course.nivel_dificuldade,
       hours: `${course.duracao_estimada}h`,
-      gradientFrom: gradient.gradientFrom,
-      gradientTo: gradient.gradientTo,
+      gradientFrom,
+      gradientTo,
       courseCode: course.codigo,
       xpOffered: course.xp_oferecido || 0,
       isActive: course.ativo,
@@ -498,44 +553,26 @@ export default function Courses() {
         <>
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {paginatedCourses.map(course => {
-              const gradient = getCourseCardGradient(course.categoria_id)
               const userProgress = getUserCourseProgress(course.codigo)
               const isEnrolled = isUserEnrolled(course.codigo)
 
               return (
-                <Grid size={{ xs: 12, md: 4 }} key={course.codigo}>
-                  {isEnrolled && userProgress ? (
-                    <CourseProgressCard
-                      title={course.titulo}
-                      description={course.descricao || ''}
-                      category={getCategoryName(course.categoria_id)}
-                      progress={userProgress.progresso_percentual}
-                      timeLeft={calculateTimeLeft(
-                        course.duracao_estimada || 0,
-                        userProgress.progresso_percentual
-                      )}
-                      gradientFrom={gradient.gradientFrom}
-                      gradientTo={gradient.gradientTo}
-                      courseCode={course.codigo}
-                      onContinueLearning={handleGoToCourse}
-                    />
-                  ) : (
-                    <CourseCard
-                      title={course.titulo}
-                      category={getCategoryName(course.categoria_id)}
-                      hours={`${course.duracao_estimada}h`}
-                      description={course.descricao}
-                      gradientFrom={gradient.gradientFrom}
-                      gradientTo={gradient.gradientTo}
-                      onViewCourse={() => handleViewCourse(course)}
-                      completionRate={course.taxa_conclusao}
-                      totalEnrollments={course.total_inscricoes}
-                      instructorName={course.instrutor_nome}
-                      xpOffered={course.xp_oferecido}
-                      level={course.nivel_dificuldade}
-                    />
-                  )}
-                </Grid>
+                <CourseItem
+                  key={course.codigo}
+                  course={course}
+                  isEnrolled={isEnrolled}
+                  userProgress={
+                    userProgress
+                      ? {
+                          progresso_percentual:
+                            userProgress.progresso_percentual,
+                        }
+                      : undefined
+                  }
+                  calculateTimeLeft={calculateTimeLeft}
+                  handleViewCourse={handleViewCourse}
+                  handleGoToCourse={handleGoToCourse}
+                />
               )
             })}
           </Grid>
@@ -572,7 +609,7 @@ export default function Courses() {
         <CourseDialog
           open={dialogOpen}
           onClose={handleCloseDialog}
-          course={convertCourseToDialogData(selectedCourse)}
+          course={createCourseDialogData(selectedCourse)}
           onEnroll={handleEnrollCourse}
           onGoToCourse={handleGoToCourse}
           isEnrolling={isEnrolling}

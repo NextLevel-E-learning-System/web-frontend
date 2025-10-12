@@ -27,7 +27,8 @@ import {
   filterEnrollmentsByStatus,
   getEnrollmentStats,
 } from '@/api/progress'
-import { useCourseCatalog, useCategories } from '@/api/courses'
+import { useCategoryColors } from '@/hooks/useCategoryColors'
+import { useCourseCatalog } from '@/api/courses'
 import TimeRangeToggle, {
   type TimeRange,
 } from '@/components/common/TimeRangeToggle'
@@ -36,6 +37,58 @@ import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import AchievementCard from '@/components/employee/AchievementCard'
 import GoalCard from '@/components/employee/GoalCard'
 import MetricCard from '@/components/common/StatCard'
+
+/* Lines 30-39 omitted */
+
+interface CourseProgressItemProps {
+  enrollment: {
+    id: string
+    progresso_percentual: number
+    curso_id: string
+  }
+  course: {
+    codigo: string
+    titulo: string
+    descricao?: string
+    categoria_id?: string
+    duracao_estimada?: number
+  }
+  calculateTimeLeft: (
+    progressPercent: number,
+    estimatedHours?: number
+  ) => string
+  handleGoToCourse: (courseCode: string) => void
+}
+
+function CourseProgressItem({
+  enrollment,
+  course,
+  calculateTimeLeft,
+  handleGoToCourse,
+}: CourseProgressItemProps) {
+  const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
+    course.categoria_id
+  )
+
+  return (
+    <Grid size={{ xs: 12, md: 4 }}>
+      <CourseProgressCard
+        title={course.titulo}
+        description={course.descricao || ''}
+        category={categoryName}
+        progress={enrollment.progresso_percentual}
+        timeLeft={calculateTimeLeft(
+          enrollment.progresso_percentual,
+          course.duracao_estimada || 2
+        )}
+        gradientFrom={gradientFrom}
+        gradientTo={gradientTo}
+        courseCode={course.codigo}
+        onContinueLearning={handleGoToCourse}
+      />
+    </Grid>
+  )
+}
 
 export default function ProgressPage() {
   const { dashboard, isLoading, error } = useDashboardCompleto()
@@ -52,7 +105,6 @@ export default function ProgressPage() {
 
   // Buscar catálogo de cursos para obter dados completos
   const { data: courses } = useCourseCatalog({})
-  const { data: categories } = useCategories()
 
   const alunoData =
     dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
@@ -77,69 +129,22 @@ export default function ProgressPage() {
     return minutes > 0 ? `${minutes}m` : '< 1m'
   }
 
-  // Função para navegar para o curso
   const handleGoToCourse = (courseCode: string) => {
-    navigate(`/cursos/${courseCode}`)
+    const courseData = getCourseFromEnrollment({ curso_id: courseCode })
+    const enrollment = cursosEmAndamento.find(e => e.curso_id === courseCode)
+
+    navigate(`/cursos/${courseCode}`, {
+      state: {
+        courseData,
+        enrollment,
+        fromProgress: true,
+      },
+    })
   }
 
-  // Função para obter dados completos do curso a partir da inscrição
   const getCourseFromEnrollment = (enrollment: { curso_id: string }) => {
     if (!courses || !Array.isArray(courses)) return null
     return courses.find(course => course.codigo === enrollment.curso_id)
-  }
-
-  // Função para converter hex para RGB
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : null
-  }
-
-  const getCategoryName = (categoryId?: string) => {
-    console.log(
-      'getCategoryName - categoryId:',
-      categoryId,
-      'categories:',
-      categories
-    )
-    if (!categoryId || !categories) return 'Sem categoria'
-    const category = Array.isArray(categories)
-      ? categories.find(c => c.codigo === categoryId)
-      : undefined
-    console.log('Found category:', category)
-    return category?.nome || 'Sem categoria'
-  }
-
-  // Função para calcular gradiente baseado na categoria real do curso
-  const getCourseCardGradient = (categoryId?: string) => {
-    if (!categoryId || !categories) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    const category = Array.isArray(categories)
-      ? categories.find(c => c.codigo === categoryId)
-      : undefined
-    if (!category) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    const rgb = hexToRgb(category.cor_hex)
-    if (!rgb) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    const gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)` // 100% opacidade
-    const gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)` // 70% opacidade
-
-    return {
-      gradientFrom,
-      gradientTo,
-    }
   }
 
   if (isLoading) {
@@ -280,25 +285,14 @@ export default function ProgressPage() {
                 const course = getCourseFromEnrollment(enrollment)
                 if (!course) return null
 
-                const gradient = getCourseCardGradient(course.categoria_id)
-                const categoryName = getCategoryName(course.categoria_id)
                 return (
-                  <Grid size={{ xs: 12, md: 4 }} key={enrollment.id}>
-                    <CourseProgressCard
-                      title={course.titulo}
-                      description={course.descricao || ''}
-                      category={categoryName}
-                      progress={enrollment.progresso_percentual}
-                      timeLeft={calculateTimeLeft(
-                        course.duracao_estimada || 0,
-                        enrollment.progresso_percentual
-                      )}
-                      gradientFrom={gradient.gradientFrom}
-                      gradientTo={gradient.gradientTo}
-                      courseCode={course.codigo}
-                      onContinueLearning={handleGoToCourse}
-                    />
-                  </Grid>
+                  <CourseProgressItem
+                    key={enrollment.id}
+                    enrollment={enrollment}
+                    course={course}
+                    calculateTimeLeft={calculateTimeLeft}
+                    handleGoToCourse={handleGoToCourse}
+                  />
                 )
               })
             )}
