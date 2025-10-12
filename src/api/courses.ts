@@ -296,7 +296,6 @@ export function useCourseModules(codigo: string) {
         : (raw as ModuleResponse).items || []
       return list.map(m => ({
         ...m,
-        xp: m.xp_modulo ?? 0,
       }))
     },
     enabled: !!codigo,
