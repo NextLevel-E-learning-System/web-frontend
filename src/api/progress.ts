@@ -295,6 +295,18 @@ export function useReactivateEnrollment() {
   })
 }
 
+// Hook para buscar progresso dos módulos de uma inscrição
+export function useEnrollmentModuleProgress(enrollmentId: string) {
+  return useQuery<ModuleProgress[]>({
+    queryKey: ['progress', 'enrollment', enrollmentId, 'modules'],
+    queryFn: () =>
+      authGet<ModuleProgress[]>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos`
+      ),
+    enabled: !!enrollmentId,
+  })
+}
+
 // Utility functions para filtragem no frontend
 export const filterEnrollmentsByStatus = (
   enrollments: UserEnrollment[],

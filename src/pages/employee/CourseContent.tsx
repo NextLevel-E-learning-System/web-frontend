@@ -22,7 +22,10 @@ import {
   useCourseModules,
   useCourseCatalog,
 } from '../../api/courses'
-import { useUserEnrollments } from '../../api/progress'
+import {
+  useUserEnrollments,
+  useEnrollmentModuleProgress,
+} from '../../api/progress'
 import { useMeuPerfil } from '../../api/users'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 
@@ -66,6 +69,11 @@ export default function CourseContent() {
   const enrollment =
     passedEnrollment || userEnrollments.find(e => e.curso_id === codigo)
   const isEnrolled = !!enrollment
+
+  // Buscar progresso dos módulos
+  const { data: moduleProgressData } = useEnrollmentModuleProgress(
+    enrollment?.id || ''
+  )
 
   // Usar dados passados via state quando disponíveis, senão buscar no backend
   const completesCourse =
@@ -132,8 +140,12 @@ export default function CourseContent() {
         </Tabs>
         <Divider />
         <Box sx={{ p: { xs: 2, md: 3 } }}>
-          {activeTab === TAB_INDEX.curriculum && (
-            <CourseCurriculum modules={modules || []} />
+          {activeTab === TAB_INDEX.curriculum && enrollment && (
+            <CourseCurriculum
+              modules={modules || []}
+              enrollmentId={enrollment.id}
+              moduleProgress={moduleProgressData}
+            />
           )}
 
           {activeTab === TAB_INDEX.overview && (

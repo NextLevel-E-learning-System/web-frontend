@@ -8,6 +8,7 @@ import Divider from '@mui/material/Divider'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
+import CircularProgress from '@mui/material/CircularProgress'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
@@ -15,28 +16,29 @@ import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
 import { QuizRounded, PlayCircleFilledWhiteRounded } from '@mui/icons-material'
 import type { Module } from '../../api/courses'
 import { useModuleMaterials } from '../../api/courses'
+import { useStartModule } from '../../api/progress'
 
 // Tipos baseados no backend (course-service)
 type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
-type ModuleContentType =
-  | 'video'
-  | 'document'
-  | 'exercise'
-  | 'quiz'
-  | 'text'
-  | null
+type ModuleContentType = 'video' | 'document' | 'quiz' | 'text' | null
 
 interface ModuleItem {
   id: string
   title: string
-  duration: string
   type: ModuleContentType
+  conteudo: string
   status: ModuleItemStatus
   actionLabel: string
 }
 
 interface CourseCurriculumProps {
   modules: Module[]
+  enrollmentId: string
+  moduleProgress?: Array<{
+    modulo_id: string
+    data_inicio?: string
+    data_conclusao?: string
+  }>
 }
 
 const statusIconMap: Record<ModuleItemStatus, typeof CheckCircleRoundedIcon> = {
@@ -72,12 +74,6 @@ const typeConfig: Record<
     background: 'rgba(16,185,129,0.12)',
     color: '#047857',
   },
-  exercise: {
-    label: 'Exercise',
-    icon: DescriptionRoundedIcon,
-    background: 'rgba(237,108,2,0.16)',
-    color: '#e65100',
-  },
   quiz: {
     label: 'Quiz',
     icon: QuizRounded,
@@ -92,7 +88,15 @@ const typeConfig: Record<
   },
 }
 
-function ModuleItemRow({ item }: { item: ModuleItem }) {
+function ModuleItemRow({
+  item,
+  onStart,
+  isStarting,
+}: {
+  item: ModuleItem
+  onStart: () => void
+  isStarting: boolean
+}) {
   const Icon = statusIconMap[item.status]
   const isLocked = item.status === 'locked'
   const isCompleted = item.status === 'completed'
@@ -133,13 +137,8 @@ function ModuleItemRow({ item }: { item: ModuleItem }) {
           <Icon fontSize='small' />
         </Box>
         <Stack spacing={0.5} minWidth={0} flex={1}>
-          <Typography
-            variant='subtitle2'
-            fontWeight={600}
-            noWrap
-            sx={{ textOverflow: 'ellipsis' }}
-          >
-            {item.title}
+          <Typography variant='body1' fontWeight={600}>
+            {item.conteudo}
           </Typography>
           <Stack direction='row' spacing={1.5} alignItems='center'>
             <Chip
@@ -156,9 +155,6 @@ function ModuleItemRow({ item }: { item: ModuleItem }) {
                 },
               }}
             />
-            <Typography variant='body2' color='text.secondary'>
-              {item.duration}
-            </Typography>
           </Stack>
         </Stack>
       </Stack>
@@ -167,13 +163,17 @@ function ModuleItemRow({ item }: { item: ModuleItem }) {
         size='small'
         variant={isCompleted ? 'outlined' : 'contained'}
         color='primary'
-        disabled={isLocked}
+        disabled={isLocked || isStarting}
+        onClick={onStart}
+        startIcon={
+          isStarting ? <CircularProgress size={16} color='inherit' /> : null
+        }
         sx={{
           width: { xs: '100%', sm: 'auto' },
           bgcolor: isCompleted ? 'transparent' : undefined,
         }}
       >
-        {item.actionLabel}
+        {isStarting ? 'Iniciando...' : item.actionLabel}
       </Button>
     </Stack>
   )
@@ -182,38 +182,79 @@ function ModuleItemRow({ item }: { item: ModuleItem }) {
 // Componente para um módulo individual que busca seus materiais
 function ModuleAccordion({
   module,
-  index,
   expanded,
   onToggle,
+  enrollmentId,
+  moduleProgress,
 }: {
   module: Module
-  index: number
   expanded: boolean
   onToggle: () => void
+  enrollmentId: string
+  moduleProgress?: Array<{
+    modulo_id: string
+    data_inicio?: string
+    data_conclusao?: string
+  }>
 }) {
   const { data: materials = [] } = useModuleMaterials(module.id)
+  const startModuleMutation = useStartModule()
+  const [startingModuleId, setStartingModuleId] = useState<string | null>(null)
 
-  // Converter materiais em itens do módulo
-  const moduleItems: ModuleItem[] = materials.map(material => ({
+  // Buscar progresso deste módulo no banco
+  const moduleProgressData = moduleProgress?.find(
+    p => p.modulo_id === module.id
+  )
+
+  // Determinar status do módulo baseado no progresso
+  const getModuleStatus = (): ModuleItemStatus => {
+    if (moduleProgressData?.data_conclusao) return 'completed'
+    if (moduleProgressData?.data_inicio) return 'in_progress'
+    return 'locked'
+  }
+
+  const moduleStatus = getModuleStatus()
+
+  // Handler para iniciar módulo
+  const handleStartModule = async (moduleId: string) => {
+    setStartingModuleId(moduleId)
+    try {
+      await startModuleMutation.mutateAsync({
+        enrollmentId,
+        moduleId,
+      })
+    } catch (error) {
+      console.error('Erro ao iniciar módulo:', error)
+    } finally {
+      setStartingModuleId(null)
+    }
+  }
+
+  // Criar item do módulo principal
+  const moduleItem: ModuleItem = {
+    id: module.id,
+    title: module.titulo,
+    conteudo: module.conteudo || '',
+    type: (module.tipo_conteudo as ModuleContentType) || 'text',
+    status: moduleStatus,
+    actionLabel:
+      moduleStatus === 'completed'
+        ? 'Revisar'
+        : moduleStatus === 'in_progress'
+          ? 'Continuar'
+          : 'Iniciar',
+  }
+
+  // Se houver materiais, adicionar como itens secundários (bloqueados por enquanto)
+  const materialItems: ModuleItem[] = materials.map(material => ({
     id: material.id,
     title: material.nome_arquivo,
-    duration: formatFileSize(material.tamanho),
     type: mapFileTypeToContentType(material.tipo_arquivo),
-    status: index === 0 ? 'completed' : 'locked',
-    actionLabel: index === 0 ? 'Visualizar' : 'Em breve',
+    status: 'locked', // Materiais ficam bloqueados até implementar lógica específica
+    actionLabel: 'Em breve',
   }))
 
-  // Se não há materiais, criar um item padrão baseado no módulo
-  if (moduleItems.length === 0) {
-    moduleItems.push({
-      id: `${module.id}-content`,
-      title: module.titulo,
-      duration: 'Conteúdo do módulo',
-      type: (module.tipo_conteudo as ModuleContentType) || 'text',
-      status: index === 0 ? 'completed' : 'locked',
-      actionLabel: index === 0 ? 'Visualizar' : 'Em breve',
-    })
-  }
+  const allItems = [moduleItem, ...materialItems]
 
   return (
     <Accordion
@@ -263,23 +304,18 @@ function ModuleAccordion({
               <Chip label={`${module.xp} XP`} size='small' color='secondary' />
             </Box>
           </Stack>
-          <Stack
-            spacing={0.5}
-            alignItems={{ xs: 'flex-start', md: 'flex-end' }}
-          >
-            <Typography variant='body2' color='text.secondary' fontWeight={600}>
-              {materials.length > 0
-                ? `${materials.length} materiais`
-                : 'Módulo teórico'}
-            </Typography>
-          </Stack>
         </Stack>
       </AccordionSummary>
       <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3, pt: 0 }}>
         <Divider sx={{ my: 2 }} />
         <Stack spacing={1.5}>
-          {moduleItems.map(item => (
-            <ModuleItemRow key={item.id} item={item} />
+          {allItems.map(item => (
+            <ModuleItemRow
+              key={item.id}
+              item={item}
+              onStart={() => handleStartModule(item.id)}
+              isStarting={startingModuleId === item.id}
+            />
           ))}
         </Stack>
       </AccordionDetails>
@@ -287,23 +323,19 @@ function ModuleAccordion({
   )
 }
 
-// Funções helper
-function formatFileSize(size: string | number): string {
-  const sizeNum = typeof size === 'string' ? parseInt(size) : size
-  if (sizeNum < 1024) return `${sizeNum} B`
-  if (sizeNum < 1024 * 1024) return `${(sizeNum / 1024).toFixed(1)} KB`
-  return `${(sizeNum / (1024 * 1024)).toFixed(1)} MB`
-}
-
 function mapFileTypeToContentType(fileType: string): ModuleContentType {
   if (fileType.includes('video')) return 'video'
   if (fileType.includes('pdf') || fileType.includes('document'))
     return 'document'
-  if (fileType.includes('quiz') || fileType.includes('test')) return 'quiz'
+  if (fileType.includes('quiz')) return 'quiz'
   return 'document'
 }
 
-export default function CourseCurriculum({ modules }: CourseCurriculumProps) {
+export default function CourseCurriculum({
+  modules,
+  enrollmentId,
+  moduleProgress,
+}: CourseCurriculumProps) {
   const [expandedModule, setExpandedModule] = useState<string | false>(
     modules[0]?.id ?? false
   )
@@ -314,7 +346,6 @@ export default function CourseCurriculum({ modules }: CourseCurriculumProps) {
         <ModuleAccordion
           key={module.id}
           module={module}
-          index={index}
           expanded={
             expandedModule === module.id ||
             (expandedModule === false && index === 0)
@@ -322,6 +353,8 @@ export default function CourseCurriculum({ modules }: CourseCurriculumProps) {
           onToggle={() =>
             setExpandedModule(expandedModule === module.id ? false : module.id)
           }
+          enrollmentId={enrollmentId}
+          moduleProgress={moduleProgress}
         />
       ))}
     </Stack>
