@@ -13,23 +13,13 @@ import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
-import { QuizRounded, PlayCircleFilledWhiteRounded } from '@mui/icons-material'
+import { PlayCircleFilled, PictureAsPdfRounded } from '@mui/icons-material'
 import type { Module } from '../../api/courses'
 import { useModuleMaterials } from '../../api/courses'
 import { useStartModule } from '../../api/progress'
 
 // Tipos baseados no backend (course-service)
 type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
-type ModuleContentType = 'video' | 'document' | 'quiz' | 'text' | null
-
-interface ModuleItem {
-  id: string
-  title: string
-  type: ModuleContentType
-  conteudo: string
-  status: ModuleItemStatus
-  actionLabel: string
-}
 
 interface CourseCurriculumProps {
   modules: Module[]
@@ -43,143 +33,17 @@ interface CourseCurriculumProps {
 
 const statusIconMap: Record<ModuleItemStatus, typeof CheckCircleRoundedIcon> = {
   completed: CheckCircleRoundedIcon,
-  in_progress: PlayCircleFilledWhiteRounded,
+  in_progress: PlayCircleFilled,
   locked: LockRoundedIcon,
 }
 
-const statusBackgroundMap: Record<ModuleItemStatus, string> = {
-  completed: 'rgba(34,197,94,0.16)',
-  in_progress: 'rgba(59,130,246,0.16)',
-  locked: 'rgba(15,23,42,0.12)',
+const statusColorMap: Record<ModuleItemStatus, string> = {
+  completed: 'success.main',
+  in_progress: 'primary.main',
+  locked: 'text.disabled',
 }
 
-const typeConfig: Record<
-  NonNullable<ModuleContentType>,
-  {
-    label: string
-    icon: typeof PlayCircleFilledWhiteRounded
-    background: string
-    color: string
-  }
-> = {
-  video: {
-    label: 'Video lesson',
-    icon: PlayCircleFilledWhiteRounded,
-    background: 'rgba(59,130,246,0.12)',
-    color: '#1d4ed8',
-  },
-  document: {
-    label: 'Resource',
-    icon: DescriptionRoundedIcon,
-    background: 'rgba(16,185,129,0.12)',
-    color: '#047857',
-  },
-  quiz: {
-    label: 'Quiz',
-    icon: QuizRounded,
-    background: 'rgba(234,179,8,0.16)',
-    color: '#b45309',
-  },
-  text: {
-    label: 'Text',
-    icon: DescriptionRoundedIcon,
-    background: 'rgba(156,39,176,0.16)',
-    color: '#7b1fa2',
-  },
-}
-
-function ModuleItemRow({
-  item,
-  onStart,
-  isStarting,
-}: {
-  item: ModuleItem
-  onStart: () => void
-  isStarting: boolean
-}) {
-  const Icon = statusIconMap[item.status]
-  const isLocked = item.status === 'locked'
-  const isCompleted = item.status === 'completed'
-  const type = item.type ? typeConfig[item.type] : typeConfig.text
-  const TypeIcon = type.icon
-
-  return (
-    <Stack
-      direction={{ xs: 'column', sm: 'row' }}
-      spacing={2}
-      alignItems={{ xs: 'flex-start', sm: 'center' }}
-      justifyContent='space-between'
-      sx={{ py: 1.5 }}
-    >
-      <Stack
-        direction='row'
-        spacing={2}
-        alignItems='center'
-        flex={1}
-        minWidth={0}
-      >
-        <Box
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: statusBackgroundMap[item.status],
-            color: isLocked
-              ? 'text.secondary'
-              : item.status === 'in_progress'
-                ? 'primary.main'
-                : 'success.main',
-          }}
-        >
-          <Icon fontSize='small' />
-        </Box>
-        <Stack spacing={0.5} minWidth={0} flex={1}>
-          <Typography variant='body1' fontWeight={600}>
-            {item.conteudo}
-          </Typography>
-          <Stack direction='row' spacing={1.5} alignItems='center'>
-            <Chip
-              icon={<TypeIcon fontSize='small' />}
-              label={type.label}
-              size='small'
-              sx={{
-                bgcolor: type.background,
-                color: type.color,
-                fontWeight: 600,
-                '& .MuiChip-icon': {
-                  color: type.color,
-                  ml: 0.5,
-                },
-              }}
-            />
-          </Stack>
-        </Stack>
-      </Stack>
-
-      <Button
-        size='small'
-        variant={isCompleted ? 'outlined' : 'contained'}
-        color='primary'
-        disabled={isLocked || isStarting}
-        onClick={onStart}
-        startIcon={
-          isStarting ? <CircularProgress size={16} color='inherit' /> : null
-        }
-        sx={{
-          width: { xs: '100%', sm: 'auto' },
-          bgcolor: isCompleted ? 'transparent' : undefined,
-        }}
-      >
-        {isStarting ? 'Iniciando...' : item.actionLabel}
-      </Button>
-    </Stack>
-  )
-}
-
-// Componente para um módulo individual que busca seus materiais
+// Componente para um módulo individual
 function ModuleAccordion({
   module,
   expanded,
@@ -197,9 +61,22 @@ function ModuleAccordion({
     data_conclusao?: string
   }>
 }) {
-  const { data: materials = [] } = useModuleMaterials(module.id)
   const startModuleMutation = useStartModule()
-  const [startingModuleId, setStartingModuleId] = useState<string | null>(null)
+  const [isStarting, setIsStarting] = useState(false)
+
+  // Buscar materiais APENAS se tipo_conteudo for video ou document E se o módulo estiver expandido
+  const shouldFetchMaterials =
+    (module.tipo_conteudo === 'video' || module.tipo_conteudo === 'pdf') &&
+    expanded
+
+  const {
+    data: materialsData,
+    isLoading: materialsLoading,
+    error: materialsError,
+  } = useModuleMaterials(module.id)
+
+  // Só usar os materiais se deveríamos buscá-los
+  const materials = shouldFetchMaterials ? materialsData || [] : []
 
   // Buscar progresso deste módulo no banco
   const moduleProgressData = moduleProgress?.find(
@@ -214,47 +91,39 @@ function ModuleAccordion({
   }
 
   const moduleStatus = getModuleStatus()
+  const StatusIcon = statusIconMap[moduleStatus]
 
   // Handler para iniciar módulo
-  const handleStartModule = async (moduleId: string) => {
-    setStartingModuleId(moduleId)
+  const handleStartModule = async (e: React.MouseEvent) => {
+    e.stopPropagation() // Previne expansão do accordion
+
+    if (moduleStatus !== 'locked') {
+      // Se já está iniciado ou concluído, apenas expande o accordion
+      onToggle()
+      return
+    }
+
+    setIsStarting(true)
     try {
       await startModuleMutation.mutateAsync({
         enrollmentId,
-        moduleId,
+        moduleId: module.id,
       })
+      // Após iniciar com sucesso, expande o accordion
+      onToggle()
     } catch (error) {
       console.error('Erro ao iniciar módulo:', error)
     } finally {
-      setStartingModuleId(null)
+      setIsStarting(false)
     }
   }
 
-  // Criar item do módulo principal
-  const moduleItem: ModuleItem = {
-    id: module.id,
-    title: module.titulo,
-    conteudo: module.conteudo || '',
-    type: (module.tipo_conteudo as ModuleContentType) || 'text',
-    status: moduleStatus,
-    actionLabel:
-      moduleStatus === 'completed'
-        ? 'Revisar'
-        : moduleStatus === 'in_progress'
-          ? 'Continuar'
-          : 'Iniciar',
+  const getActionLabel = () => {
+    if (isStarting) return 'Iniciando...'
+    if (moduleStatus === 'completed') return 'Revisar'
+    if (moduleStatus === 'in_progress') return 'Continuar'
+    return 'Iniciar'
   }
-
-  // Se houver materiais, adicionar como itens secundários (bloqueados por enquanto)
-  const materialItems: ModuleItem[] = materials.map(material => ({
-    id: material.id,
-    title: material.nome_arquivo,
-    type: mapFileTypeToContentType(material.tipo_arquivo),
-    status: 'locked', // Materiais ficam bloqueados até implementar lógica específica
-    actionLabel: 'Em breve',
-  }))
-
-  const allItems = [moduleItem, ...materialItems]
 
   return (
     <Accordion
@@ -280,55 +149,366 @@ function ModuleAccordion({
           py: 2,
           bgcolor: expanded ? 'rgba(59,130,246,0.07)' : 'background.paper',
           transition: 'background-color 0.2s ease',
+          '& .MuiAccordionSummary-content': {
+            my: 1.5,
+          },
         }}
       >
         <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={1.5}
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={2}
           justifyContent='space-between'
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
           flex={1}
+          sx={{ pr: 2 }}
         >
-          <Stack spacing={0.5} maxWidth={{ xs: '100%', md: '70%' }}>
-            <Typography variant='subtitle1' fontWeight={700}>
-              {module.titulo}
-            </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              {module.conteudo}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-              <Chip
-                label={module.obrigatorio ? 'Obrigatório' : 'Opcional'}
-                size='small'
-                color={module.obrigatorio ? 'primary' : 'default'}
-              />
-              <Chip label={`${module.xp} XP`} size='small' color='secondary' />
+          <Stack direction='row' spacing={2} alignItems='center' flex={1}>
+            {/* Status Icon */}
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor:
+                  moduleStatus === 'completed'
+                    ? 'rgba(34,197,94,0.16)'
+                    : moduleStatus === 'in_progress'
+                      ? 'rgba(59,130,246,0.16)'
+                      : 'rgba(15,23,42,0.08)',
+                color: statusColorMap[moduleStatus],
+              }}
+            >
+              <StatusIcon fontSize='small' />
             </Box>
+
+            {/* Module Info */}
+            <Stack spacing={0.5} flex={1} minWidth={0}>
+              <Typography variant='subtitle1' fontWeight={700}>
+                {module.titulo}
+              </Typography>
+              {module.conteudo && (
+                <Typography
+                  variant='body2'
+                  color='text.secondary'
+                  sx={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {module.conteudo}
+                </Typography>
+              )}
+              <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                <Chip
+                  label={module.obrigatorio ? 'Obrigatório' : 'Opcional'}
+                  size='small'
+                  color={module.obrigatorio ? 'primary' : 'default'}
+                  variant='outlined'
+                />
+                <Chip
+                  label={`${module.xp} XP`}
+                  size='small'
+                  color='secondary'
+                  variant='outlined'
+                />
+              </Box>
+            </Stack>
           </Stack>
+
+          {/* Action Button */}
+          <Button
+            size='small'
+            variant={
+              moduleStatus === 'completed' || moduleStatus === 'in_progress'
+                ? 'outlined'
+                : 'contained'
+            }
+            color='primary'
+            disabled={isStarting}
+            onClick={handleStartModule}
+            startIcon={
+              isStarting ? <CircularProgress size={16} color='inherit' /> : null
+            }
+            sx={{
+              minWidth: 120,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {getActionLabel()}
+          </Button>
         </Stack>
       </AccordionSummary>
+
       <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3, pt: 0 }}>
-        <Divider sx={{ my: 2 }} />
-        <Stack spacing={1.5}>
-          {allItems.map(item => (
-            <ModuleItemRow
-              key={item.id}
-              item={item}
-              onStart={() => handleStartModule(item.id)}
-              isStarting={startingModuleId === item.id}
-            />
-          ))}
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Conteúdo do módulo */}
+        <Stack spacing={2}>
+          {module.conteudo && (
+            <Typography variant='body1' color='text.secondary'>
+              {module.conteudo}
+            </Typography>
+          )}
+
+          {/* Materiais de Vídeo */}
+          {module.tipo_conteudo === 'video' && (
+            <Box>
+              {materialsLoading && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    p: 4,
+                  }}
+                >
+                  <CircularProgress size={32} />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ ml: 2 }}
+                  >
+                    Carregando materiais...
+                  </Typography>
+                </Box>
+              )}
+
+              {!materialsLoading && materialsError && (
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(239, 68, 68, 0.08)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                  }}
+                >
+                  <Typography variant='body2' color='error'>
+                    Erro ao carregar materiais de vídeo
+                  </Typography>
+                </Box>
+              )}
+
+              {!materialsLoading &&
+                !materialsError &&
+                materials.length === 0 && (
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(59,130,246,0.08)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <PlayCircleFilled
+                      sx={{ fontSize: 48, color: 'primary.main', mb: 1 }}
+                    />
+                    <Typography variant='body2' color='text.secondary'>
+                      Nenhum vídeo disponível ainda
+                    </Typography>
+                  </Box>
+                )}
+
+              {!materialsLoading && materials.length > 0 && (
+                <Stack spacing={1.5}>
+                  {materials.map(material => (
+                    <Box
+                      key={material.id}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: 'rgba(59,130,246,0.08)',
+                        border: '1px solid rgba(59,130,246,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          bgcolor: 'rgba(59,130,246,0.12)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      <PlayCircleFilled
+                        sx={{ color: 'primary.main', fontSize: 32 }}
+                      />
+                      <Stack flex={1}>
+                        <Typography variant='body1' fontWeight={600}>
+                          {material.nome_arquivo}
+                        </Typography>
+                        {material.tamanho && (
+                          <Typography variant='caption' color='text.secondary'>
+                            {(Number(material.tamanho) / 1024 / 1024).toFixed(
+                              2
+                            )}{' '}
+                            MB
+                          </Typography>
+                        )}
+                      </Stack>
+                      <Button size='small' variant='outlined'>
+                        Assistir
+                      </Button>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Box>
+          )}
+
+          {/* Materiais de Documento */}
+          {module.tipo_conteudo === 'pdf' && (
+            <Box>
+              {materialsLoading && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    p: 4,
+                  }}
+                >
+                  <CircularProgress size={32} />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    sx={{ ml: 2 }}
+                  >
+                    Carregando documentos...
+                  </Typography>
+                </Box>
+              )}
+
+              {!materialsLoading && materialsError && (
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(239, 68, 68, 0.08)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                  }}
+                >
+                  <Typography variant='body2' color='error'>
+                    Erro ao carregar documentos
+                  </Typography>
+                </Box>
+              )}
+
+              {!materialsLoading &&
+                !materialsError &&
+                materials.length === 0 && (
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(16,185,129,0.08)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <DescriptionRoundedIcon
+                      sx={{ fontSize: 48, color: '#047857', mb: 1 }}
+                    />
+                    <Typography variant='body2' color='text.secondary'>
+                      Nenhum documento disponível ainda
+                    </Typography>
+                  </Box>
+                )}
+
+              {!materialsLoading && materials.length > 0 && (
+                <Stack spacing={1.5}>
+                  {materials.map(material => (
+                    <Box
+                      key={material.id}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: 'rgba(16,185,129,0.08)',
+                        border: '1px solid rgba(16,185,129,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          bgcolor: 'rgba(16,185,129,0.12)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      {material.tipo_arquivo?.includes('pdf') ? (
+                        <PictureAsPdfRounded
+                          sx={{ color: '#047857', fontSize: 32 }}
+                        />
+                      ) : (
+                        <DescriptionRoundedIcon
+                          sx={{ color: '#047857', fontSize: 32 }}
+                        />
+                      )}
+                      <Stack flex={1}>
+                        <Typography variant='body1' fontWeight={600}>
+                          {material.nome_arquivo}
+                        </Typography>
+                        {material.tamanho && (
+                          <Typography variant='caption' color='text.secondary'>
+                            {(Number(material.tamanho) / 1024 / 1024).toFixed(
+                              2
+                            )}{' '}
+                            MB
+                          </Typography>
+                        )}
+                      </Stack>
+                      <Button size='small' variant='outlined' color='success'>
+                        Abrir
+                      </Button>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Box>
+          )}
+
+          {/* Quiz */}
+          {module.tipo_conteudo === 'quiz' && (
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: 2,
+                bgcolor: 'rgba(234,179,8,0.08)',
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant='body2' color='text.secondary'>
+                Quiz será carregado aqui
+              </Typography>
+            </Box>
+          )}
+
+          {/* Outros tipos de conteúdo */}
+          {!module.tipo_conteudo ||
+            (module.tipo_conteudo !== 'video' &&
+              module.tipo_conteudo !== 'pdf' &&
+              module.tipo_conteudo !== 'quiz' && (
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(156,39,176,0.08)',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Typography variant='body2' color='text.secondary'>
+                    Conteúdo do módulo
+                  </Typography>
+                </Box>
+              ))}
         </Stack>
       </AccordionDetails>
     </Accordion>
   )
-}
-
-function mapFileTypeToContentType(fileType: string): ModuleContentType {
-  if (fileType.includes('video')) return 'video'
-  if (fileType.includes('pdf') || fileType.includes('document'))
-    return 'document'
-  if (fileType.includes('quiz')) return 'quiz'
-  return 'document'
 }
 
 export default function CourseCurriculum({
@@ -336,20 +516,15 @@ export default function CourseCurriculum({
   enrollmentId,
   moduleProgress,
 }: CourseCurriculumProps) {
-  const [expandedModule, setExpandedModule] = useState<string | false>(
-    modules[0]?.id ?? false
-  )
+  const [expandedModule, setExpandedModule] = useState<string | false>(false)
 
   return (
     <Stack spacing={2.5}>
-      {modules.map((module, index) => (
+      {modules.map(module => (
         <ModuleAccordion
           key={module.id}
           module={module}
-          expanded={
-            expandedModule === module.id ||
-            (expandedModule === false && index === 0)
-          }
+          expanded={expandedModule === module.id}
           onToggle={() =>
             setExpandedModule(expandedModule === module.id ? false : module.id)
           }
