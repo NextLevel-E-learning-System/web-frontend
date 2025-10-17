@@ -70,11 +70,8 @@ function ModuleAccordion({
     (module.tipo_conteudo === 'video' || module.tipo_conteudo === 'pdf') &&
     expanded
 
-  const {
-    data: materialsData,
-    isLoading: materialsLoading,
-    error: materialsError,
-  } = useModuleMaterials(module.id)
+  const { data: materialsData, isLoading: materialsLoading } =
+    useModuleMaterials(module.id)
 
   // Só usar os materiais se deveríamos buscá-los
   const materials = shouldFetchMaterials ? materialsData || [] : []
@@ -299,70 +296,9 @@ function ModuleAccordion({
         {/* Conteúdo do módulo - só exibir se iniciado ou concluído */}
         {(isInProgress || isCompleted) && (
           <Stack spacing={2}>
-            {module.conteudo && (
-              <Typography variant='body1' color='text.secondary'>
-                {module.conteudo}
-              </Typography>
-            )}
-
             {/* Materiais de Vídeo */}
             {module.tipo_conteudo === 'video' && (
               <Box>
-                {materialsLoading && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      p: 4,
-                    }}
-                  >
-                    <CircularProgress size={32} />
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ ml: 2 }}
-                    >
-                      Carregando materiais...
-                    </Typography>
-                  </Box>
-                )}
-
-                {!materialsLoading && materialsError && (
-                  <Box
-                    sx={{
-                      p: 3,
-                      borderRadius: 2,
-                      bgcolor: 'rgba(239, 68, 68, 0.08)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                    }}
-                  >
-                    <Typography variant='body2' color='error'>
-                      Erro ao carregar materiais de vídeo
-                    </Typography>
-                  </Box>
-                )}
-
-                {!materialsLoading &&
-                  !materialsError &&
-                  materials.length === 0 && (
-                    <Box
-                      sx={{
-                        p: 3,
-                        borderRadius: 2,
-                        bgcolor: 'rgba(59,130,246,0.08)',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <PlayCircleFilled
-                        sx={{ fontSize: 48, color: 'primary.main', mb: 1 }}
-                      />
-                      <Typography variant='body2' color='text.secondary'>
-                        Nenhum vídeo disponível ainda
-                      </Typography>
-                    </Box>
-                  )}
-
                 {!materialsLoading && materials.length > 0 && (
                   <Stack spacing={1.5}>
                     {materials.map(material => (
@@ -416,61 +352,6 @@ function ModuleAccordion({
             {/* Materiais de Documento */}
             {module.tipo_conteudo === 'pdf' && (
               <Box>
-                {materialsLoading && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      p: 4,
-                    }}
-                  >
-                    <CircularProgress size={32} />
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ ml: 2 }}
-                    >
-                      Carregando documentos...
-                    </Typography>
-                  </Box>
-                )}
-
-                {!materialsLoading && materialsError && (
-                  <Box
-                    sx={{
-                      p: 3,
-                      borderRadius: 2,
-                      bgcolor: 'rgba(239, 68, 68, 0.08)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)',
-                    }}
-                  >
-                    <Typography variant='body2' color='error'>
-                      Erro ao carregar documentos
-                    </Typography>
-                  </Box>
-                )}
-
-                {!materialsLoading &&
-                  !materialsError &&
-                  materials.length === 0 && (
-                    <Box
-                      sx={{
-                        p: 3,
-                        borderRadius: 2,
-                        bgcolor: 'rgba(16,185,129,0.08)',
-                        textAlign: 'center',
-                      }}
-                    >
-                      <DescriptionRoundedIcon
-                        sx={{ fontSize: 48, color: '#047857', mb: 1 }}
-                      />
-                      <Typography variant='body2' color='text.secondary'>
-                        Nenhum documento disponível ainda
-                      </Typography>
-                    </Box>
-                  )}
-
                 {!materialsLoading && materials.length > 0 && (
                   <Stack spacing={1.5}>
                     {materials.map(material => (
@@ -542,25 +423,6 @@ function ModuleAccordion({
                 </Typography>
               </Box>
             )}
-
-            {/* Outros tipos de conteúdo */}
-            {!module.tipo_conteudo ||
-              (module.tipo_conteudo !== 'video' &&
-                module.tipo_conteudo !== 'pdf' &&
-                module.tipo_conteudo !== 'quiz' && (
-                  <Box
-                    sx={{
-                      p: 3,
-                      borderRadius: 2,
-                      bgcolor: 'rgba(156,39,176,0.08)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <Typography variant='body2' color='text.secondary'>
-                      Conteúdo do módulo
-                    </Typography>
-                  </Box>
-                ))}
 
             {/* Botão de Concluir Módulo */}
             {isInProgress && !isCompleted && (
