@@ -3,7 +3,6 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { useMeuPerfil } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
 import CodeIcon from '@mui/icons-material/Code'
 import BrushIcon from '@mui/icons-material/Brush'
@@ -42,6 +41,7 @@ import {
   Storefront,
   TrendingUp,
 } from '@mui/icons-material'
+import { useDashboardCompleto } from '@/api/users'
 
 export interface TileCategory {
   label: string
@@ -181,7 +181,7 @@ function CourseItem({
 }
 
 export default function Courses() {
-  const { data: user } = useMeuPerfil()
+  const { perfil } = useDashboardCompleto()
   const { navigationItems } = useNavigation()
   const navigate = useNavigate()
 
@@ -234,7 +234,7 @@ export default function Courses() {
   const { mutate: createEnrollment, isPending: isEnrolling } =
     useCreateEnrollment()
 
-  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
+  const { data: userEnrollmentsResponse } = useUserEnrollments(perfil?.id || '')
   const userEnrollments = userEnrollmentsResponse?.items || []
 
   // Função para converter hex para rgb (necessária para processedCategories)
@@ -425,14 +425,14 @@ export default function Courses() {
   }
 
   const handleEnrollCourse = (courseCode: string) => {
-    if (!user?.id) {
+    if (!perfil?.id) {
       console.error('Usuário não encontrado')
       return
     }
 
     createEnrollment(
       {
-        funcionario_id: user.id,
+        funcionario_id: perfil.id,
         curso_id: courseCode,
       },
       {

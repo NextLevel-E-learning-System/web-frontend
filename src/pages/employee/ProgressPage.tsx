@@ -21,7 +21,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { type DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboardCompleto, useMeuPerfil } from '@/api/users'
+import { useDashboardCompleto } from '@/api/users'
 import { useUserEnrollments, getEnrollmentStats } from '@/api/progress'
 import { useCategoryColors } from '@/hooks/useCategoryColors'
 import { useCourseCatalog } from '@/api/courses'
@@ -91,7 +91,7 @@ function CourseProgressItem({
 export default function ProgressPage() {
   const { dashboard, isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
-  const { data: user } = useMeuPerfil()
+  const { perfil } = useDashboardCompleto()
   const navigate = useNavigate()
 
   // Buscar inscrições do usuário
@@ -99,7 +99,7 @@ export default function ProgressPage() {
     data: userEnrollmentsResponse,
     isLoading: enrollmentsLoading,
     error: enrollmentsError,
-  } = useUserEnrollments(user?.id || '')
+  } = useUserEnrollments(perfil?.id || '')
 
   // Buscar catálogo de cursos para obter dados completos
   const { data: courses } = useCourseCatalog({})

@@ -23,7 +23,7 @@ import {
   useCourseCatalog,
 } from '../../api/courses'
 import { useUserEnrollments } from '../../api/progress'
-import { useMeuPerfil } from '../../api/users'
+import { useDashboardCompleto } from '../../api/users'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 
 const TAB_INDEX = {
@@ -38,7 +38,7 @@ export default function CourseContent() {
   const { codigo } = useParams<{ codigo: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { data: user } = useMeuPerfil()
+  const { perfil } = useDashboardCompleto()
   const { navigationItems } = useNavigation()
 
   // Dados passados via state (quando vem da ProgressPage)
@@ -55,9 +55,12 @@ export default function CourseContent() {
   )
 
   // SEMPRE buscar dados atualizados das inscrições (não usar passedEnrollment)
-  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '', {
-    refetchOnMount: 'always', // Força refetch ao montar
-  })
+  const { data: userEnrollmentsResponse } = useUserEnrollments(
+    perfil?.id || '',
+    {
+      refetchOnMount: 'always', // Força refetch ao montar
+    }
+  )
 
   // Buscar todos os cursos como backup para garantir dados completos
   const { data: allCourses } = useCourseCatalog({})

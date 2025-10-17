@@ -27,144 +27,153 @@ import { queryClient } from './config/queryClient'
 import theme from './theme'
 import ProgressPage from './pages/employee/ProgressPage'
 import RankingPage from './pages/employee/RankingPage'
+import { AuthProvider } from './contexts/AuthContext'
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} />
-          <Route path='/recover' element={<Recover />} />
-          <Route
-            path='/dashboard/funcionario'
-            element={
-              <ProtectedRoute allowedRoles={['ALUNO']}>
-                <EmployeeDashboard />
-              </ProtectedRoute>
-            }
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path='/' element={<Home />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/register' element={<Register />} />
+            <Route path='/recover' element={<Recover />} />
+            <Route
+              path='/dashboard/funcionario'
+              element={
+                <ProtectedRoute allowedRoles={['ALUNO']}>
+                  <EmployeeDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/dashboard/admin'
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/admin/departments'
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AdminDepartments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/admin/categorias'
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AdminCategories />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/admin/users'
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+                  <AdminUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/admin/instructors'
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AdminInstructors />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/gerenciar/cursos'
+              element={
+                <ProtectedRoute
+                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
+                >
+                  <AdminCourses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/gerenciar/cursos/new'
+              element={
+                <ProtectedRoute
+                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
+                >
+                  <CourseEditorPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/gerenciar/cursos/:codigo/edit'
+              element={
+                <ProtectedRoute
+                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
+                >
+                  <CourseEditorPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/dashboard/instrutor'
+              element={
+                <ProtectedRoute allowedRoles={['INSTRUTOR']}>
+                  <InstrutorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/cursos'
+              element={
+                <ProtectedRoute>
+                  <CoursesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/cursos/:codigo'
+              element={
+                <ProtectedRoute allowedRoles={['ALUNO']}>
+                  <CourseContent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/meu-progresso'
+              element={
+                <ProtectedRoute allowedRoles={['ALUNO']}>
+                  <ProgressPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/ranking'
+              element={
+                <ProtectedRoute>
+                  <RankingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path='*' element={<NotFound />} />
+          </Routes>
+          <ToastContainer
+            position='top-right'
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme='light'
           />
-          <Route
-            path='/dashboard/admin'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/admin/departments'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
-                <AdminDepartments />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/admin/categorias'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
-                <AdminCategories />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/admin/users'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
-                <AdminUsers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/admin/instructors'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
-                <AdminInstructors />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/gerenciar/cursos'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
-                <AdminCourses />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/gerenciar/cursos/new'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
-                <CourseEditorPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/gerenciar/cursos/:codigo/edit'
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}>
-                <CourseEditorPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/dashboard/instrutor'
-            element={
-              <ProtectedRoute allowedRoles={['INSTRUTOR']}>
-                <InstrutorDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/cursos'
-            element={
-              <ProtectedRoute>
-                <CoursesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/cursos/:codigo'
-            element={
-              <ProtectedRoute allowedRoles={['ALUNO']}>
-                <CourseContent />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/meu-progresso'
-            element={
-              <ProtectedRoute allowedRoles={['ALUNO']}>
-                <ProgressPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/ranking'
-            element={
-              <ProtectedRoute>
-                <RankingPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path='*' element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-      <ToastContainer
-        position='top-right'
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme='light'
-      />
+        </BrowserRouter>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 )

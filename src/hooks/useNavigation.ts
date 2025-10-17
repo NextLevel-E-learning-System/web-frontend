@@ -1,16 +1,15 @@
-import { useMeuPerfil } from '@/api/users'
+import { useDashboardCompleto } from '@/api/users'
 import type { NavItem } from '@/components/layout/DashboardLayout'
 
 export function useNavigation() {
-  const { data: user } = useMeuPerfil()
+  const { perfil } = useDashboardCompleto()
 
   // Cada usuário tem apenas 1 role - simples assim
-  const userRole = user?.tipo_usuario
+  const userRole = perfil?.roles?.[0]
   const isAluno = userRole === 'ALUNO'
   const isInstrutor = userRole === 'INSTRUTOR'
   const isAdmin = userRole === 'ADMIN'
   const isGerente = userRole === 'GERENTE'
-
   const getNavigationItems = (): NavItem[] => {
     // ALUNO - Acesso básico aos cursos e gamificação
     if (isAluno) {
@@ -149,7 +148,7 @@ export function useNavigation() {
 
   return {
     navigationItems: getNavigationItems(),
-    user,
+    perfil,
     isAluno,
     isInstrutor,
     isAdmin,

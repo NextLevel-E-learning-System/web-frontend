@@ -23,11 +23,7 @@ export default function EmployeeDashboard() {
   const { dashboard, isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
 
-  // Type guard para garantir que é um dashboard de aluno
-  const alunoData =
-    dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
-
-  console.log('Aluno data:', alunoData)
+  const alunoData = dashboard as DashboardAluno
 
   if (isLoading) {
     return (
@@ -70,7 +66,6 @@ export default function EmployeeDashboard() {
     <DashboardLayout items={navigationItems}>
       <EmployeeHeader
         dashboardData={{
-          tipo_dashboard: alunoData?.tipo_dashboard || 'aluno',
           xp_atual: progressao?.xp_atual || 0,
           nivel_atual:
             typeof progressao?.nivel_atual === 'number'

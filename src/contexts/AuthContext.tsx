@@ -3,7 +3,7 @@ import React, {
   useContext,
   useEffect,
   useState,
-  ReactNode,
+  type ReactNode,
 } from 'react'
 import { getAccessToken, clearAccessToken } from '@/api/http'
 import { jwtDecode } from 'jwt-decode'

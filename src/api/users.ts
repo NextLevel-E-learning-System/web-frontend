@@ -433,31 +433,6 @@ export function useDashboardCompleto() {
   }
 }
 
-// Perfil do usuário autenticado (usa dados do dashboard)
-export function useMeuPerfil() {
-  const dashboard = useDashboard()
-
-  return {
-    data: dashboard.data
-      ? ({
-          id: dashboard.data.usuario.id,
-          nome: dashboard.data.usuario.nome,
-          email: dashboard.data.usuario.email,
-          departamento_id: dashboard.data.usuario.departamento,
-          cargo_nome: dashboard.data.usuario.cargo,
-          xp_total: dashboard.data.usuario.xp_total,
-          nivel: dashboard.data.usuario.nivel,
-          ativo: true, // Se chegou até aqui, está ativo
-          tipo_usuario: (dashboard.data.usuario.roles[0] ||
-            'ALUNO') as UserRole,
-        } as PerfilUsuario)
-      : undefined,
-    isLoading: dashboard.isLoading,
-    error: dashboard.error,
-    refetch: dashboard.refetch,
-  }
-}
-
 // Hook para excluir funcionário
 export function useExcluirFuncionario() {
   const queryClient = useQueryClient()

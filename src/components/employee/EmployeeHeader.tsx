@@ -20,12 +20,11 @@ import {
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
-import { useMeuPerfil } from '@/api/users'
+import { useDashboardCompleto } from '@/api/users'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown'
 
 interface EmployeeHeaderProps {
   dashboardData: {
-    tipo_dashboard?: string
     xp_atual: number
     nivel_atual: number
     progresso_nivel: number
@@ -44,7 +43,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
   const progressoNivel = dashboardData?.progresso_nivel || 0
   const badges = dashboardData?.badges_conquistados || []
   const cursosConcluido = dashboardData?.cursos_concluidos || 0
-  const { data: perfil } = useMeuPerfil()
+  const { perfil } = useDashboardCompleto()
 
   // Calcular quantos XP faltam para o próximo nível
   const xpFaltante = xpProximoNivel - xpAtual

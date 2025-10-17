@@ -1,7 +1,7 @@
 import React from 'react'
 import { Navigate } from 'react-router-dom'
 import { Box, CircularProgress } from '@mui/material'
-import { useDashboardCompleto } from '@/api/users'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -15,7 +15,7 @@ export function ProtectedRoute({
   allowedRoles = [],
   fallback,
 }: ProtectedRouteProps) {
-  const { dashboard, isLoading, perfil } = useDashboardCompleto()
+  const { isAuthenticated, isLoading, user } = useAuth()
 
   // Mostrar loading enquanto carrega dados
   if (isLoading) {
@@ -35,8 +35,11 @@ export function ProtectedRoute({
     )
   }
 
-  // Se não conseguiu carregar dados, redirecionar para login
-  if (!dashboard || !perfil) {
+  // Se não está autenticado, redirecionar para login
+  if (!isAuthenticated || !user) {
+    console.log(
+      '[ProtectedRoute] Usuário não autenticado, redirecionando para login'
+    )
     return <Navigate to='/login' replace />
   }
 
@@ -45,13 +48,18 @@ export function ProtectedRoute({
     return <>{children}</>
   }
 
-  // Pegar role diretamente dos dados do usuário (vem do JWT)
-  const userRole = perfil.roles?.[0] || 'ALUNO'
+  // Pegar role do usuário autenticado
+  const userRole = user.role
 
   // Verificar se o usuário tem uma das roles permitidas
   const hasPermission = allowedRoles.includes(userRole)
 
   if (!hasPermission) {
+    console.log(
+      `[ProtectedRoute] Usuário ${userRole} não tem permissão para acessar. Roles permitidas:`,
+      allowedRoles
+    )
+
     // Redirecionar para dashboard apropriado baseado na role do usuário
     switch (userRole) {
       case 'ALUNO':
@@ -67,5 +75,6 @@ export function ProtectedRoute({
   }
 
   // Role permitido, mostrar conteúdo
+  console.log(`[ProtectedRoute] Acesso permitido para ${userRole}`)
   return <>{children}</>
 }
