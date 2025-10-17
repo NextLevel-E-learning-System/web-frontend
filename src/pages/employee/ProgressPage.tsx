@@ -19,7 +19,7 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { type DashboardAluno } from '@/api/users'
+import { useDashboard } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboardCompleto } from '@/api/users'
 import { useUserEnrollments, getEnrollmentStats } from '@/api/progress'
@@ -89,9 +89,10 @@ function CourseProgressItem({
 }
 
 export default function ProgressPage() {
-  const { dashboard, isLoading, error } = useDashboardCompleto()
+  const { isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
-  const { perfil } = useDashboardCompleto()
+  const { data: dashboardResponse } = useDashboard()
+  const perfil = dashboardResponse?.usuario
   const navigate = useNavigate()
 
   // Buscar inscrições do usuário
@@ -103,9 +104,6 @@ export default function ProgressPage() {
 
   // Buscar catálogo de cursos para obter dados completos
   const { data: courses } = useCourseCatalog({})
-
-  const alunoData =
-    dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
 
   // Processar dados das inscrições
   const enrollments = userEnrollmentsResponse?.items || []
@@ -156,7 +154,7 @@ export default function ProgressPage() {
     )
   }
 
-  if (error || !alunoData) {
+  if (error || !perfil) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error'>Erro ao carregar dados. Tente novamente.</Alert>

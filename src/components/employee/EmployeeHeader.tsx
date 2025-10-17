@@ -1,23 +1,5 @@
-import React, { useMemo } from 'react'
-import {
-  Avatar,
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  LinearProgress,
-  Typography,
-  Badge,
-  IconButton,
-} from '@mui/material'
-import {
-  WorkspacePremium as WorkspacePremiumIcon,
-  EmojiEvents as TrophyIcon,
-  LocalFireDepartment as FlameIcon,
-  NotificationsOutlined as BellIcon,
-} from '@mui/icons-material'
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone'
+import { useMemo } from 'react'
+import { Box, Card, Chip, LinearProgress, Typography } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 import { useDashboardCompleto } from '@/api/users'

@@ -41,7 +41,7 @@ import {
   Storefront,
   TrendingUp,
 } from '@mui/icons-material'
-import { useDashboardCompleto } from '@/api/users'
+import { useDashboard } from '@/api/users'
 
 export interface TileCategory {
   label: string
@@ -181,10 +181,10 @@ function CourseItem({
 }
 
 export default function Courses() {
-  const { perfil } = useDashboardCompleto()
   const { navigationItems } = useNavigation()
   const navigate = useNavigate()
-
+  const { data: dashboardResponse } = useDashboard()
+  const perfil = dashboardResponse?.usuario
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
