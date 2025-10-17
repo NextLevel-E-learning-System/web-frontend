@@ -1,29 +1,18 @@
-import { useState } from 'react'
 import { Box, Typography, Grid, Alert, CircularProgress } from '@mui/material'
-import {
-  MenuBook,
-  WorkspacePremium,
-  StarRate,
-  MenuBookSharp,
-  TimelineOutlined,
-} from '@mui/icons-material'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
+import { MenuBookSharp, TimelineOutlined } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
-import { type DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboardCompleto } from '@/api/users'
-import StatsCard from '@/components/common/StatCard'
-import CourseProgressCard from '@/components/employee/CourseProgressCard'
+import { useDashboard } from '@/api/users'
 import QuickActionCard from '@/components/common/QuickActionCard'
 import { VideogameAsset } from '@mui/icons-material'
 
 export default function EmployeeDashboard() {
-  const [tab, setTab] = useState(0)
-  const { dashboard, isLoading, error } = useDashboardCompleto()
+  const { data: dashboardResponse, isLoading, error } = useDashboard()
   const { navigationItems } = useDashboardLayout()
 
-  const alunoData = dashboard as DashboardAluno
+  // Para ALUNO, apenas temos dados do usuário
+  const usuario = dashboardResponse?.usuario
 
   if (isLoading) {
     return (
@@ -40,7 +29,7 @@ export default function EmployeeDashboard() {
     )
   }
 
-  if (error || !alunoData) {
+  if (error || !usuario) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error'>
@@ -50,31 +39,16 @@ export default function EmployeeDashboard() {
     )
   }
 
-  const {
-    progressao,
-    cursos,
-    ranking,
-    atividades_recentes = [],
-  } = alunoData || {
-    progressao: {},
-    cursos: { em_andamento: [], concluidos: [], recomendados: [] },
-    ranking: {},
-    atividades_recentes: [],
-  }
-
   return (
     <DashboardLayout items={navigationItems}>
       <EmployeeHeader
         dashboardData={{
-          xp_atual: progressao?.xp_atual || 0,
-          nivel_atual:
-            typeof progressao?.nivel_atual === 'number'
-              ? progressao.nivel_atual
-              : 1,
-          progresso_nivel: progressao?.progresso_nivel || 0,
-          ranking_departamento: ranking?.posicao_departamento || 0,
-          xp_proximo_nivel: progressao?.xp_proximo_nivel || 100,
-          badges_conquistados: progressao?.badges_conquistados || [],
+          xp_atual: usuario.xp_total || 0,
+          nivel_atual: 1, // Pode ser calculado baseado no XP
+          progresso_nivel: 0,
+          ranking_departamento: 0,
+          xp_proximo_nivel: 100,
+          badges_conquistados: [],
         }}
       />
 
@@ -104,7 +78,7 @@ export default function EmployeeDashboard() {
           <QuickActionCard
             title='Gamificação'
             description='Rankings totais de participação e pontuação'
-            to='/gamificacao'
+            to='/ranking'
             button='Ver ranking'
             icon={<VideogameAsset color='primary' />}
           />
