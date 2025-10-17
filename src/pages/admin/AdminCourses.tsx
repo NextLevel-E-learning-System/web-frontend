@@ -47,7 +47,7 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
-  const { navigationItems, isInstrutor, user } = useNavigation()
+  const { navigationItems, isInstrutor, perfil } = useNavigation()
 
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
@@ -80,12 +80,12 @@ export default function AdminCourses() {
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
 
     // Se o usuário for INSTRUTOR, filtrar apenas seus cursos
-    if (isInstrutor && user?.id) {
-      filters.instrutor = user.id
+    if (isInstrutor && perfil?.id) {
+      filters.instrutor = perfil.id
     }
 
     return filters
-  }, [filtros, isInstrutor, user?.id])
+  }, [filtros, isInstrutor, perfil?.id])
 
   const {
     data: cursosResponse,

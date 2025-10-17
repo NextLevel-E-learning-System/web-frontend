@@ -159,15 +159,21 @@ export interface DashboardInstrutor {
 
 export interface DashboardGerente {
   tipo_dashboard: 'gerente'
-  departamento: {
-    nome: string
+  metricas_gerais: {
     total_funcionarios: number
     funcionarios_ativos: number
-    taxa_conclusao_cursos: number
-    xp_medio_funcionarios: number
+    alunos_ativos?: number
+    total_cursos: number
+    taxa_conclusao_media: number
+    inscricoes_30d?: number
   }
-  top_performers: any[]
-  cursos_departamento: any[]
+  engajamento_departamentos: {
+    codigo: string
+    nome: string
+    total_funcionarios: number
+    xp_medio: number
+    funcionarios_ativos: number
+  }[]
 }
 
 export interface DashboardAdmin {
