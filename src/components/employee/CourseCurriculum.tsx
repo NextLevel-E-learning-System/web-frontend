@@ -9,6 +9,7 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
+import Alert from '@mui/material/Alert'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
@@ -16,7 +17,11 @@ import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
 import { PlayCircleFilled, PictureAsPdfRounded } from '@mui/icons-material'
 import type { Module } from '../../api/courses'
 import { useModuleMaterials } from '../../api/courses'
-import { useStartModule } from '../../api/progress'
+import {
+  useStartModule,
+  useCompleteModule,
+  useEnrollmentModuleProgress,
+} from '../../api/progress'
 
 // Tipos baseados no backend (course-service)
 type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
@@ -24,11 +29,6 @@ type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
 interface CourseCurriculumProps {
   modules: Module[]
   enrollmentId: string
-  moduleProgress?: Array<{
-    modulo_id: string
-    data_inicio?: string
-    data_conclusao?: string
-  }>
 }
 
 const statusIconMap: Record<ModuleItemStatus, typeof CheckCircleRoundedIcon> = {
@@ -62,7 +62,9 @@ function ModuleAccordion({
   }>
 }) {
   const startModuleMutation = useStartModule()
+  const completeModuleMutation = useCompleteModule()
   const [isStarting, setIsStarting] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   // Buscar materiais APENAS se tipo_conteudo for video ou document E se o módulo estiver expandido
   const shouldFetchMaterials =
@@ -92,12 +94,14 @@ function ModuleAccordion({
 
   const moduleStatus = getModuleStatus()
   const StatusIcon = statusIconMap[moduleStatus]
+  const isInProgress = moduleStatus === 'in_progress'
+  const isCompleted = moduleStatus === 'completed'
 
   // Handler para iniciar módulo
   const handleStartModule = async (e: React.MouseEvent) => {
     e.stopPropagation() // Previne expansão do accordion
 
-    if (moduleStatus !== 'locked') {
+    if (isInProgress || isCompleted) {
       // Se já está iniciado ou concluído, apenas expande o accordion
       onToggle()
       return
@@ -110,7 +114,9 @@ function ModuleAccordion({
         moduleId: module.id,
       })
       // Após iniciar com sucesso, expande o accordion
-      onToggle()
+      if (!expanded) {
+        onToggle()
+      }
     } catch (error) {
       console.error('Erro ao iniciar módulo:', error)
     } finally {
@@ -118,10 +124,27 @@ function ModuleAccordion({
     }
   }
 
+  // Handler para concluir módulo
+  const handleCompleteModule = async () => {
+    if (isCompleted) return
+
+    setIsCompleting(true)
+    try {
+      await completeModuleMutation.mutateAsync({
+        enrollmentId,
+        moduleId: module.id,
+      })
+    } catch (error) {
+      console.error('Erro ao concluir módulo:', error)
+    } finally {
+      setIsCompleting(false)
+    }
+  }
+
   const getActionLabel = () => {
     if (isStarting) return 'Iniciando...'
-    if (moduleStatus === 'completed') return 'Revisar'
-    if (moduleStatus === 'in_progress') return 'Continuar'
+    if (isCompleted) return 'Concluído'
+    if (isInProgress) return 'Continuar'
     return 'Iniciar'
   }
 
@@ -223,16 +246,16 @@ function ModuleAccordion({
           {/* Action Button */}
           <Button
             size='small'
-            variant={
-              moduleStatus === 'completed' || moduleStatus === 'in_progress'
-                ? 'outlined'
-                : 'contained'
-            }
-            color='primary'
-            disabled={isStarting}
+            variant={isCompleted || isInProgress ? 'outlined' : 'contained'}
+            color={isCompleted ? 'success' : 'primary'}
+            disabled={isStarting || isCompleted}
             onClick={handleStartModule}
             startIcon={
-              isStarting ? <CircularProgress size={16} color='inherit' /> : null
+              isStarting ? (
+                <CircularProgress size={16} color='inherit' />
+              ) : isCompleted ? (
+                <CheckCircleRoundedIcon />
+              ) : null
             }
             sx={{
               minWidth: 120,
@@ -247,265 +270,323 @@ function ModuleAccordion({
       <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3, pt: 0 }}>
         <Divider sx={{ mb: 3 }} />
 
-        {/* Conteúdo do módulo */}
-        <Stack spacing={2}>
-          {module.conteudo && (
-            <Typography variant='body1' color='text.secondary'>
-              {module.conteudo}
-            </Typography>
-          )}
+        {/* Aviso de módulo bloqueado */}
+        {!isInProgress && !isCompleted && (
+          <Box
+            sx={{
+              p: 3,
+              borderRadius: 2,
+              bgcolor: 'rgba(255, 152, 0, 0.08)',
+              border: '1px solid rgba(255, 152, 0, 0.2)',
+              mb: 3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <LockRoundedIcon sx={{ color: 'warning.main', fontSize: 32 }} />
+            <Stack>
+              <Typography variant='subtitle2' fontWeight={600}>
+                Módulo Bloqueado
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                Clique em "Iniciar" para desbloquear e acessar o conteúdo deste
+                módulo.
+              </Typography>
+            </Stack>
+          </Box>
+        )}
 
-          {/* Materiais de Vídeo */}
-          {module.tipo_conteudo === 'video' && (
-            <Box>
-              {materialsLoading && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    p: 4,
-                  }}
-                >
-                  <CircularProgress size={32} />
-                  <Typography
-                    variant='body2'
-                    color='text.secondary'
-                    sx={{ ml: 2 }}
-                  >
-                    Carregando materiais...
-                  </Typography>
-                </Box>
-              )}
+        {/* Conteúdo do módulo - só exibir se iniciado ou concluído */}
+        {(isInProgress || isCompleted) && (
+          <Stack spacing={2}>
+            {module.conteudo && (
+              <Typography variant='body1' color='text.secondary'>
+                {module.conteudo}
+              </Typography>
+            )}
 
-              {!materialsLoading && materialsError && (
-                <Box
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(239, 68, 68, 0.08)',
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                  }}
-                >
-                  <Typography variant='body2' color='error'>
-                    Erro ao carregar materiais de vídeo
-                  </Typography>
-                </Box>
-              )}
-
-              {!materialsLoading &&
-                !materialsError &&
-                materials.length === 0 && (
+            {/* Materiais de Vídeo */}
+            {module.tipo_conteudo === 'video' && (
+              <Box>
+                {materialsLoading && (
                   <Box
                     sx={{
-                      p: 3,
-                      borderRadius: 2,
-                      bgcolor: 'rgba(59,130,246,0.08)',
-                      textAlign: 'center',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      p: 4,
                     }}
                   >
-                    <PlayCircleFilled
-                      sx={{ fontSize: 48, color: 'primary.main', mb: 1 }}
-                    />
-                    <Typography variant='body2' color='text.secondary'>
-                      Nenhum vídeo disponível ainda
+                    <CircularProgress size={32} />
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ ml: 2 }}
+                    >
+                      Carregando materiais...
                     </Typography>
                   </Box>
                 )}
 
-              {!materialsLoading && materials.length > 0 && (
-                <Stack spacing={1.5}>
-                  {materials.map(material => (
+                {!materialsLoading && materialsError && (
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(239, 68, 68, 0.08)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                    }}
+                  >
+                    <Typography variant='body2' color='error'>
+                      Erro ao carregar materiais de vídeo
+                    </Typography>
+                  </Box>
+                )}
+
+                {!materialsLoading &&
+                  !materialsError &&
+                  materials.length === 0 && (
                     <Box
-                      key={material.id}
                       sx={{
-                        p: 2,
+                        p: 3,
                         borderRadius: 2,
                         bgcolor: 'rgba(59,130,246,0.08)',
-                        border: '1px solid rgba(59,130,246,0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 2,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        '&:hover': {
-                          bgcolor: 'rgba(59,130,246,0.12)',
-                          transform: 'translateY(-2px)',
-                        },
+                        textAlign: 'center',
                       }}
                     >
                       <PlayCircleFilled
-                        sx={{ color: 'primary.main', fontSize: 32 }}
+                        sx={{ fontSize: 48, color: 'primary.main', mb: 1 }}
                       />
-                      <Stack flex={1}>
-                        <Typography variant='body1' fontWeight={600}>
-                          {material.nome_arquivo}
-                        </Typography>
-                        {material.tamanho && (
-                          <Typography variant='caption' color='text.secondary'>
-                            {(Number(material.tamanho) / 1024 / 1024).toFixed(
-                              2
-                            )}{' '}
-                            MB
-                          </Typography>
-                        )}
-                      </Stack>
-                      <Button size='small' variant='outlined'>
-                        Assistir
-                      </Button>
+                      <Typography variant='body2' color='text.secondary'>
+                        Nenhum vídeo disponível ainda
+                      </Typography>
                     </Box>
-                  ))}
-                </Stack>
-              )}
-            </Box>
-          )}
+                  )}
 
-          {/* Materiais de Documento */}
-          {module.tipo_conteudo === 'pdf' && (
-            <Box>
-              {materialsLoading && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    p: 4,
-                  }}
-                >
-                  <CircularProgress size={32} />
-                  <Typography
-                    variant='body2'
-                    color='text.secondary'
-                    sx={{ ml: 2 }}
-                  >
-                    Carregando documentos...
-                  </Typography>
-                </Box>
-              )}
+                {!materialsLoading && materials.length > 0 && (
+                  <Stack spacing={1.5}>
+                    {materials.map(material => (
+                      <Box
+                        key={material.id}
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          bgcolor: 'rgba(59,130,246,0.08)',
+                          border: '1px solid rgba(59,130,246,0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            bgcolor: 'rgba(59,130,246,0.12)',
+                            transform: 'translateY(-2px)',
+                          },
+                        }}
+                      >
+                        <PlayCircleFilled
+                          sx={{ color: 'primary.main', fontSize: 32 }}
+                        />
+                        <Stack flex={1}>
+                          <Typography variant='body1' fontWeight={600}>
+                            {material.nome_arquivo}
+                          </Typography>
+                          {material.tamanho && (
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
+                              {(Number(material.tamanho) / 1024 / 1024).toFixed(
+                                2
+                              )}{' '}
+                              MB
+                            </Typography>
+                          )}
+                        </Stack>
+                        <Button size='small' variant='outlined'>
+                          Assistir
+                        </Button>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </Box>
+            )}
 
-              {!materialsLoading && materialsError && (
-                <Box
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(239, 68, 68, 0.08)',
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                  }}
-                >
-                  <Typography variant='body2' color='error'>
-                    Erro ao carregar documentos
-                  </Typography>
-                </Box>
-              )}
-
-              {!materialsLoading &&
-                !materialsError &&
-                materials.length === 0 && (
+            {/* Materiais de Documento */}
+            {module.tipo_conteudo === 'pdf' && (
+              <Box>
+                {materialsLoading && (
                   <Box
                     sx={{
-                      p: 3,
-                      borderRadius: 2,
-                      bgcolor: 'rgba(16,185,129,0.08)',
-                      textAlign: 'center',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      p: 4,
                     }}
                   >
-                    <DescriptionRoundedIcon
-                      sx={{ fontSize: 48, color: '#047857', mb: 1 }}
-                    />
-                    <Typography variant='body2' color='text.secondary'>
-                      Nenhum documento disponível ainda
+                    <CircularProgress size={32} />
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      sx={{ ml: 2 }}
+                    >
+                      Carregando documentos...
                     </Typography>
                   </Box>
                 )}
 
-              {!materialsLoading && materials.length > 0 && (
-                <Stack spacing={1.5}>
-                  {materials.map(material => (
+                {!materialsLoading && materialsError && (
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(239, 68, 68, 0.08)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                    }}
+                  >
+                    <Typography variant='body2' color='error'>
+                      Erro ao carregar documentos
+                    </Typography>
+                  </Box>
+                )}
+
+                {!materialsLoading &&
+                  !materialsError &&
+                  materials.length === 0 && (
                     <Box
-                      key={material.id}
                       sx={{
-                        p: 2,
+                        p: 3,
                         borderRadius: 2,
                         bgcolor: 'rgba(16,185,129,0.08)',
-                        border: '1px solid rgba(16,185,129,0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 2,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        '&:hover': {
-                          bgcolor: 'rgba(16,185,129,0.12)',
-                          transform: 'translateY(-2px)',
-                        },
+                        textAlign: 'center',
                       }}
                     >
-                      {material.tipo_arquivo?.includes('pdf') ? (
-                        <PictureAsPdfRounded
-                          sx={{ color: '#047857', fontSize: 32 }}
-                        />
-                      ) : (
-                        <DescriptionRoundedIcon
-                          sx={{ color: '#047857', fontSize: 32 }}
-                        />
-                      )}
-                      <Stack flex={1}>
-                        <Typography variant='body1' fontWeight={600}>
-                          {material.nome_arquivo}
-                        </Typography>
-                        {material.tamanho && (
-                          <Typography variant='caption' color='text.secondary'>
-                            {(Number(material.tamanho) / 1024 / 1024).toFixed(
-                              2
-                            )}{' '}
-                            MB
-                          </Typography>
-                        )}
-                      </Stack>
-                      <Button size='small' variant='outlined' color='success'>
-                        Abrir
-                      </Button>
+                      <DescriptionRoundedIcon
+                        sx={{ fontSize: 48, color: '#047857', mb: 1 }}
+                      />
+                      <Typography variant='body2' color='text.secondary'>
+                        Nenhum documento disponível ainda
+                      </Typography>
                     </Box>
-                  ))}
-                </Stack>
-              )}
-            </Box>
-          )}
+                  )}
 
-          {/* Quiz */}
-          {module.tipo_conteudo === 'quiz' && (
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: 2,
-                bgcolor: 'rgba(234,179,8,0.08)',
-                textAlign: 'center',
-              }}
-            >
-              <Typography variant='body2' color='text.secondary'>
-                Quiz será carregado aqui
-              </Typography>
-            </Box>
-          )}
+                {!materialsLoading && materials.length > 0 && (
+                  <Stack spacing={1.5}>
+                    {materials.map(material => (
+                      <Box
+                        key={material.id}
+                        sx={{
+                          p: 2,
+                          borderRadius: 2,
+                          bgcolor: 'rgba(16,185,129,0.08)',
+                          border: '1px solid rgba(16,185,129,0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            bgcolor: 'rgba(16,185,129,0.12)',
+                            transform: 'translateY(-2px)',
+                          },
+                        }}
+                      >
+                        {material.tipo_arquivo?.includes('pdf') ? (
+                          <PictureAsPdfRounded
+                            sx={{ color: '#047857', fontSize: 32 }}
+                          />
+                        ) : (
+                          <DescriptionRoundedIcon
+                            sx={{ color: '#047857', fontSize: 32 }}
+                          />
+                        )}
+                        <Stack flex={1}>
+                          <Typography variant='body1' fontWeight={600}>
+                            {material.nome_arquivo}
+                          </Typography>
+                          {material.tamanho && (
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
+                              {(Number(material.tamanho) / 1024 / 1024).toFixed(
+                                2
+                              )}{' '}
+                              MB
+                            </Typography>
+                          )}
+                        </Stack>
+                        <Button size='small' variant='outlined' color='success'>
+                          Abrir
+                        </Button>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </Box>
+            )}
 
-          {/* Outros tipos de conteúdo */}
-          {!module.tipo_conteudo ||
-            (module.tipo_conteudo !== 'video' &&
-              module.tipo_conteudo !== 'pdf' &&
-              module.tipo_conteudo !== 'quiz' && (
-                <Box
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(156,39,176,0.08)',
-                    textAlign: 'center',
-                  }}
+            {/* Quiz */}
+            {module.tipo_conteudo === 'quiz' && (
+              <Box
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(234,179,8,0.08)',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant='body2' color='text.secondary'>
+                  Quiz será carregado aqui
+                </Typography>
+              </Box>
+            )}
+
+            {/* Outros tipos de conteúdo */}
+            {!module.tipo_conteudo ||
+              (module.tipo_conteudo !== 'video' &&
+                module.tipo_conteudo !== 'pdf' &&
+                module.tipo_conteudo !== 'quiz' && (
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(156,39,176,0.08)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <Typography variant='body2' color='text.secondary'>
+                      Conteúdo do módulo
+                    </Typography>
+                  </Box>
+                ))}
+
+            {/* Botão de Concluir Módulo */}
+            {isInProgress && !isCompleted && (
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                <Button
+                  variant='contained'
+                  color='success'
+                  size='large'
+                  disabled={isCompleting}
+                  onClick={handleCompleteModule}
+                  startIcon={
+                    isCompleting ? (
+                      <CircularProgress size={20} color='inherit' />
+                    ) : (
+                      <CheckCircleRoundedIcon />
+                    )
+                  }
+                  sx={{ minWidth: 200 }}
                 >
-                  <Typography variant='body2' color='text.secondary'>
-                    Conteúdo do módulo
-                  </Typography>
-                </Box>
-              ))}
-        </Stack>
+                  {isCompleting ? 'Concluindo...' : 'Concluir Módulo'}
+                </Button>
+              </Box>
+            )}
+          </Stack>
+        )}
       </AccordionDetails>
     </Accordion>
   )
@@ -514,9 +595,20 @@ function ModuleAccordion({
 export default function CourseCurriculum({
   modules,
   enrollmentId,
-  moduleProgress,
 }: CourseCurriculumProps) {
   const [expandedModule, setExpandedModule] = useState<string | false>(false)
+
+  // Buscar progresso dos módulos do banco
+  const { data: moduleProgress = [], isLoading: progressLoading } =
+    useEnrollmentModuleProgress(enrollmentId)
+
+  if (progressLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   return (
     <Stack spacing={2.5}>

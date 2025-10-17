@@ -140,7 +140,12 @@ export function useStartModule() {
         `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/iniciar`,
         {}
       ),
-    onSuccess: (_, _variables) => {
+    onSuccess: (_, variables) => {
+      // Invalidar módulos da inscrição
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'enrollment', variables.enrollmentId, 'modules'],
+      })
+
       queryClient.invalidateQueries({
         queryKey: ['progress', 'user'],
       })
@@ -176,10 +181,17 @@ export function useCompleteModule() {
         `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/concluir`,
         {}
       ),
-    onSuccess: (data, _variables) => {
+    onSuccess: (data, variables) => {
+      // Invalidar módulos da inscrição
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'enrollment', variables.enrollmentId, 'modules'],
+      })
+
+      // Invalidar inscrições do usuário (atualiza progresso no header)
       queryClient.invalidateQueries({
         queryKey: ['progress', 'user', data.resultado.funcionario_id],
       })
+
       queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
 
       // If course was completed, invalidate gamification data
