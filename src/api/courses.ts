@@ -87,7 +87,7 @@ export interface Module {
   conteudo?: string | null
   ordem: number
   obrigatorio: boolean
-  xp?: number
+  xp: number
   xp_modulo: number // campo correto do backend
   tipo_conteudo?: string | null
   curso_id?: string

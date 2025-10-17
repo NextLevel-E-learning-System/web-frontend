@@ -154,7 +154,6 @@ export default function CourseDialog({
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ px: 3 }}>
           <Tab label='Visão Geral' />
           <Tab label='Módulos' />
-          <Tab label='Avaliações' />
         </Tabs>
         <Divider />
         {tab === 0 && (
@@ -363,9 +362,9 @@ export default function CourseDialog({
                                 color='warning'
                               />
                             )}
-                            {module.xp_modulo > 0 && (
+                            {module.xp && (
                               <Chip
-                                label={`${module.xp_modulo} XP`}
+                                label={`${module.xp} XP`}
                                 size='small'
                                 color='primary'
                               />
@@ -379,136 +378,6 @@ export default function CourseDialog({
             ) : (
               <Typography color='text.secondary'>
                 Este curso ainda não possui módulos cadastrados.
-              </Typography>
-            )}
-          </Box>
-        )}
-        {tab === 2 && (
-          <Box sx={{ p: 3 }}>
-            <Typography variant='h6' fontWeight={800} gutterBottom>
-              Métricas do Curso
-            </Typography>
-            {(course.totalEnrollments !== undefined &&
-              course.totalEnrollments > 0) ||
-            (course.completionRate !== undefined &&
-              course.completionRate > 0) ? (
-              <Box>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 3,
-                    mb: 3,
-                  }}
-                >
-                  {/* Taxa de Conclusão */}
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      p: 3,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography
-                      variant='h3'
-                      fontWeight={900}
-                      color='success.main'
-                    >
-                      {(course.completionRate || 0).toFixed(1)}%
-                    </Typography>
-                    <Typography variant='h6' fontWeight={600} sx={{ mt: 1 }}>
-                      Taxa de Conclusão
-                    </Typography>
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ mt: 1 }}
-                    >
-                      Percentual de alunos que completaram o curso
-                    </Typography>
-                  </Box>
-
-                  {/* Total de Inscrições */}
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      p: 3,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography
-                      variant='h3'
-                      fontWeight={900}
-                      color='primary.main'
-                    >
-                      {course.totalEnrollments || 0}
-                    </Typography>
-                    <Typography variant='h6' fontWeight={600} sx={{ mt: 1 }}>
-                      Total de Inscrições
-                    </Typography>
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ mt: 1 }}
-                    >
-                      Número de funcionários inscritos
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {/* Indicadores de Qualidade */}
-                <Box
-                  sx={{
-                    p: 3,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                    bgcolor: 'grey.50',
-                  }}
-                >
-                  <Typography variant='subtitle1' fontWeight={600} gutterBottom>
-                    Indicadores de Qualidade
-                  </Typography>
-                  <Box
-                    sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}
-                  >
-                    {course.completionRate !== undefined && (
-                      <Chip
-                        label={
-                          course.completionRate >= 80
-                            ? 'Alta Taxa de Conclusão'
-                            : course.completionRate >= 60
-                              ? 'Boa Taxa de Conclusão'
-                              : 'Taxa de Conclusão em Melhoria'
-                        }
-                        color={
-                          course.completionRate >= 80
-                            ? 'success'
-                            : course.completionRate >= 60
-                              ? 'warning'
-                              : 'default'
-                        }
-                        variant='filled'
-                      />
-                    )}
-                    {course.totalEnrollments !== undefined &&
-                      course.totalEnrollments > 50 && (
-                        <Chip
-                          label='Curso Popular'
-                          color='primary'
-                          variant='filled'
-                        />
-                      )}
-                  </Box>
-                </Box>
-              </Box>
-            ) : (
-              <Typography color='text.secondary'>
-                Este curso ainda não possui métricas suficientes para exibição.
               </Typography>
             )}
           </Box>
