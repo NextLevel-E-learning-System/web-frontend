@@ -43,7 +43,6 @@ export default function CourseContent() {
 
   // Dados passados via state (quando vem da ProgressPage)
   const passedCourseData = location.state?.courseData
-  const passedEnrollment = location.state?.enrollment
 
   // Buscar dados do curso
   const {
@@ -54,17 +53,20 @@ export default function CourseContent() {
   const { data: modules, isLoading: modulesLoading } = useCourseModules(
     codigo || ''
   )
-  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
+
+  // SEMPRE buscar dados atualizados das inscrições (não usar passedEnrollment)
+  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '', {
+    refetchOnMount: 'always', // Força refetch ao montar
+  })
 
   // Buscar todos os cursos como backup para garantir dados completos
   const { data: allCourses } = useCourseCatalog({})
 
   const [activeTab, setActiveTab] = useState<TabIndex>(TAB_INDEX.curriculum)
 
-  // Verificar se o usuário está inscrito no curso
+  // Verificar se o usuário está inscrito no curso - SEMPRE usar dados do cache
   const userEnrollments = userEnrollmentsResponse?.items || []
-  const enrollment =
-    passedEnrollment || userEnrollments.find(e => e.curso_id === codigo)
+  const enrollment = userEnrollments.find(e => e.curso_id === codigo)
   const isEnrolled = !!enrollment
 
   // Usar dados passados via state quando disponíveis, senão buscar no backend

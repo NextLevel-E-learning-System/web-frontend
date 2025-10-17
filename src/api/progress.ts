@@ -82,7 +82,12 @@ export function useCreateEnrollment() {
 }
 
 // Hooks para Progresso do Usuário
-export function useUserEnrollments(userId: string) {
+export function useUserEnrollments(
+  userId: string,
+  options?: {
+    refetchOnMount?: boolean | 'always'
+  }
+) {
   return useQuery<UserEnrollmentsResponse>({
     queryKey: ['progress', 'user', userId],
     queryFn: () =>
@@ -90,6 +95,7 @@ export function useUserEnrollments(userId: string) {
         `${API_ENDPOINTS.PROGRESS}/inscricoes/usuario/${userId}`
       ),
     enabled: !!userId,
+    refetchOnMount: options?.refetchOnMount,
   })
 }
 

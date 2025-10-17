@@ -22,11 +22,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import { type DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboardCompleto, useMeuPerfil } from '@/api/users'
-import {
-  useUserEnrollments,
-  filterEnrollmentsByStatus,
-  getEnrollmentStats,
-} from '@/api/progress'
+import { useUserEnrollments, getEnrollmentStats } from '@/api/progress'
 import { useCategoryColors } from '@/hooks/useCategoryColors'
 import { useCourseCatalog } from '@/api/courses'
 import TimeRangeToggle, {
@@ -112,10 +108,6 @@ export default function ProgressPage() {
   // Processar dados das inscrições
   const enrollments = userEnrollmentsResponse?.items || []
   const enrollmentStats = getEnrollmentStats(enrollments)
-  const cursosEmAndamento = filterEnrollmentsByStatus(
-    enrollments,
-    'EM_ANDAMENTO'
-  )
 
   // Função para calcular tempo restante estimado (assumindo 2h por curso como exemplo)
   const calculateTimeLeft = (progressPercent: number, estimatedHours = 2) => {
@@ -131,7 +123,7 @@ export default function ProgressPage() {
 
   const handleGoToCourse = (courseCode: string) => {
     const courseData = getCourseFromEnrollment({ curso_id: courseCode })
-    const enrollment = cursosEmAndamento.find(e => e.curso_id === courseCode)
+    const enrollment = enrollments.find(e => e.curso_id === courseCode)
 
     navigate(`/cursos/${courseCode}`, {
       state: {
@@ -274,14 +266,14 @@ export default function ProgressPage() {
                   Erro ao carregar cursos: {enrollmentsError.message}
                 </Typography>
               </Grid>
-            ) : cursosEmAndamento.length === 0 ? (
+            ) : enrollments.length === 0 ? (
               <Grid size={{ xs: 12 }}>
                 <Typography color='text.secondary'>
                   Nenhum curso em andamento
                 </Typography>
               </Grid>
             ) : (
-              cursosEmAndamento.map(enrollment => {
+              enrollments.map(enrollment => {
                 const course = getCourseFromEnrollment(enrollment)
                 if (!course) return null
 
