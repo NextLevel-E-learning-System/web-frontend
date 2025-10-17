@@ -15,6 +15,7 @@ interface Props {
   gradientFrom: string
   gradientTo: string
   courseCode: string
+  status?: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
   onContinueLearning: (courseCode: string) => void
 }
 
@@ -27,8 +28,28 @@ export default function CourseProgressCard({
   gradientFrom,
   gradientTo,
   courseCode,
+  status = 'EM_ANDAMENTO',
   onContinueLearning,
 }: Props) {
+  const isCompleted = status === 'CONCLUIDO' || progress === 100
+
+  const getStatusConfig = () => {
+    if (isCompleted) {
+      return {
+        label: 'Concluído',
+        bgcolor: '#10b981',
+        color: '#fff',
+      }
+    }
+    return {
+      label: 'Em Andamento',
+      bgcolor: '#eab308',
+      color: '#111827',
+    }
+  }
+
+  const statusConfig = getStatusConfig()
+
   return (
     <Card
       sx={{
@@ -51,14 +72,14 @@ export default function CourseProgressCard({
         }}
       >
         <Chip
-          label='Em Andamento'
+          label={statusConfig.label}
           size='small'
           sx={{
             position: 'absolute',
             top: 10,
             right: 10,
-            bgcolor: '#eab308',
-            color: '#111827',
+            bgcolor: statusConfig.bgcolor,
+            color: statusConfig.color,
             fontWeight: 600,
           }}
         />
@@ -125,7 +146,10 @@ export default function CourseProgressCard({
         <LinearProgress
           variant='determinate'
           value={progress}
-          sx={{ height: 8, borderRadius: 6 }}
+          sx={{
+            height: 8,
+            borderRadius: 6,
+          }}
         />
         <Box
           sx={{
@@ -135,15 +159,19 @@ export default function CourseProgressCard({
             mt: 2,
           }}
         >
-          <Typography variant='caption' color='text.secondary'>
-            {timeLeft} restantes
-          </Typography>
+          {!isCompleted && (
+            <Typography variant='caption' color='text.secondary'>
+              {timeLeft} restantes
+            </Typography>
+          )}
+          {isCompleted && <div />}
           <Button
-            variant='contained'
+            variant={isCompleted ? 'outlined' : 'contained'}
+            color={isCompleted ? 'success' : 'primary'}
             size='small'
             onClick={() => onContinueLearning(courseCode)}
           >
-            Continuar
+            {isCompleted ? 'Ver Curso' : 'Continuar'}
           </Button>
         </Box>
       </CardContent>

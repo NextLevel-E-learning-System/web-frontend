@@ -41,6 +41,7 @@ interface CourseProgressItemProps {
     id: string
     progresso_percentual: number
     curso_id: string
+    status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
   }
   course: {
     codigo: string
@@ -80,6 +81,7 @@ function CourseProgressItem({
         gradientFrom={gradientFrom}
         gradientTo={gradientTo}
         courseCode={course.codigo}
+        status={enrollment.status}
         onContinueLearning={handleGoToCourse}
       />
     </Grid>

@@ -120,6 +120,7 @@ interface CourseItemProps {
   isEnrolled: boolean
   userProgress?: {
     progresso_percentual: number
+    status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
   }
   calculateTimeLeft: (
     courseDurationHours: number,
@@ -156,6 +157,7 @@ function CourseItem({
           gradientFrom={gradientFrom}
           gradientTo={gradientTo}
           courseCode={course.codigo}
+          status={userProgress.status}
           onContinueLearning={handleGoToCourse}
         />
       ) : (
@@ -566,6 +568,7 @@ export default function Courses() {
                       ? {
                           progresso_percentual:
                             userProgress.progresso_percentual,
+                          status: userProgress.status,
                         }
                       : undefined
                   }
