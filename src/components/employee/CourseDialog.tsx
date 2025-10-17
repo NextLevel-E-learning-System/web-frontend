@@ -7,12 +7,9 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import ListItemIcon from '@mui/material/ListItemIcon'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
+import Stack from '@mui/material/Stack'
 import {
   Person,
   PeopleAlt,
@@ -24,6 +21,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import React from 'react'
 import { useCourseModules, type Module } from '@/api/courses'
+import { Card, Paper } from '@mui/material'
 
 export interface CourseData {
   title: string
@@ -60,6 +58,87 @@ interface Props {
   isEnrolling?: boolean
 }
 
+// Componente para visualizar um módulo (somente leitura)
+function ModulePreview({ module }: { module: Module }) {
+  return (
+    <Card
+      sx={{
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: 'none',
+        overflow: 'hidden',
+        '&:before': { display: 'none' },
+      }}
+    >
+      <Paper
+        sx={{
+          px: { xs: 2, md: 3 },
+          py: 2,
+          transition: 'background-color 0.2s ease',
+          '& .MuiAccordionSummary-content': {
+            my: 1.5,
+          },
+        }}
+      >
+        <Stack direction='row' spacing={2} alignItems='center' flex={1}>
+          <Box
+            sx={{
+              minWidth: 32,
+              height: 32,
+              borderRadius: '50%',
+              bgcolor: 'primary.main',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {module.ordem}
+          </Box>
+          <Stack spacing={0.5} flex={1} minWidth={0}>
+            <Typography variant='subtitle1' fontWeight={700}>
+              {module.titulo}
+            </Typography>
+            {module.conteudo && (
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {module.conteudo}
+              </Typography>
+            )}
+            <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+              <Chip
+                label={module.obrigatorio ? 'Obrigatório' : 'Opcional'}
+                size='small'
+                color={module.obrigatorio ? 'primary' : 'default'}
+                variant='outlined'
+              />
+              {module.xp && (
+                <Chip
+                  label={`${module.xp} XP`}
+                  size='small'
+                  color='secondary'
+                  variant='outlined'
+                />
+              )}
+            </Box>
+          </Stack>
+        </Stack>
+      </Paper>
+    </Card>
+  )
+}
+
 export default function CourseDialog({
   open,
   onClose,
@@ -70,7 +149,6 @@ export default function CourseDialog({
 }: Props) {
   const [tab, setTab] = React.useState(0)
 
-  // Buscar módulos do curso se não estiverem disponíveis e courseCode estiver presente
   const shouldFetchModules = !course?.modules && !!course?.courseCode
   const {
     data: fetchedModules,
@@ -153,7 +231,7 @@ export default function CourseDialog({
       <DialogContent sx={{ p: 0 }}>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ px: 3 }}>
           <Tab label='Visão Geral' />
-          <Tab label='Módulos' />
+          <Tab label='Conteúdo' />
         </Tabs>
         <Divider />
         {tab === 0 && (
@@ -308,9 +386,6 @@ export default function CourseDialog({
         )}
         {tab === 1 && (
           <Box sx={{ p: 3 }}>
-            <Typography variant='h6' fontWeight={800} gutterBottom>
-              Módulos do Curso
-            </Typography>
             {modulesLoading && shouldFetchModules ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                 <CircularProgress />
@@ -320,61 +395,13 @@ export default function CourseDialog({
                 Erro ao carregar os módulos: {modulesError.message}
               </Alert>
             ) : modules && modules.length > 0 ? (
-              <List>
+              <Stack spacing={2.5}>
                 {modules
                   .sort((a, b) => a.ordem - b.ordem)
                   .map(module => (
-                    <ListItem key={module.id} sx={{ pl: 0 }}>
-                      <ListItemIcon>
-                        <Box
-                          sx={{
-                            minWidth: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            bgcolor: 'primary.main',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 14,
-                            fontWeight: 700,
-                          }}
-                        >
-                          {module.ordem}
-                        </Box>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                            }}
-                          >
-                            <Typography variant='subtitle1' fontWeight={600}>
-                              {module.titulo}
-                            </Typography>
-                            {module.obrigatorio && (
-                              <Chip
-                                label='Obrigatório'
-                                size='small'
-                                color='warning'
-                              />
-                            )}
-                            {module.xp && (
-                              <Chip
-                                label={`${module.xp} XP`}
-                                size='small'
-                                color='primary'
-                              />
-                            )}
-                          </Box>
-                        }
-                      />
-                    </ListItem>
+                    <ModulePreview key={module.id} module={module} />
                   ))}
-              </List>
+              </Stack>
             ) : (
               <Typography color='text.secondary'>
                 Este curso ainda não possui módulos cadastrados.

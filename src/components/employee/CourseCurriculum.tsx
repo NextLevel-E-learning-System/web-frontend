@@ -154,7 +154,7 @@ function ModuleAccordion({
       disableGutters
       square
       sx={{
-        borderRadius: 3,
+        borderRadius: 2,
         border: '1px solid',
         borderColor: expanded ? 'primary.main' : 'divider',
         boxShadow: 'none',
