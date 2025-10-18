@@ -208,34 +208,6 @@ export function useCompleteModule() {
   })
 }
 
-// Hook para concluir módulo (endpoint legado para compatibilidade)
-export function useCompleteModuleLegacy(
-  enrollmentId: string,
-  moduleId: string
-) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['progress', 'complete-module-legacy', enrollmentId, moduleId],
-    mutationFn: () =>
-      authPost<CompleteModuleResponse>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/concluir`,
-        {}
-      ),
-    onSuccess: data => {
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'user', data.userId],
-      })
-      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
-
-      // If course was completed, invalidate gamification data
-      if (data.completedCourse) {
-        queryClient.invalidateQueries({ queryKey: ['gamification'] })
-      }
-    },
-  })
-}
-
 // Hook para listar todas as inscrições (admin/instrutor)
 export interface EnrollmentsFilters {
   status?: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'

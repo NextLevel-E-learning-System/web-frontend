@@ -112,30 +112,6 @@ export interface InstructorUpdate {
   especialidades?: string[]
 }
 
-// Dashboard Types
-export interface DashboardAluno {
-  tipo_dashboard: 'aluno'
-  progressao: {
-    xp_atual: number
-    nivel_atual: number
-    xp_proximo_nivel: number
-    progresso_nivel: number
-    badges_conquistados: any[]
-  }
-  cursos: {
-    em_andamento: any[]
-    concluidos: any[]
-    recomendados: any[]
-    populares: any[]
-  }
-  ranking: {
-    posicao_departamento?: number
-    total_departamento?: number
-    posicao_geral?: number
-  }
-  atividades_recentes: any[]
-}
-
 export interface DashboardInstrutor {
   tipo_dashboard: 'instrutor'
   metricas: {
@@ -198,7 +174,6 @@ export interface DashboardAdmin {
 }
 
 export type DashboardData =
-  | DashboardAluno
   | DashboardInstrutor
   | DashboardGerente
   | DashboardAdmin
