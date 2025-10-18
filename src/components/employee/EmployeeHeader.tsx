@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Box, Card, Chip, LinearProgress, Typography } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment'
 import { useDashboardCompleto } from '@/api/users'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown'
 
@@ -24,7 +23,6 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
   const xpProximoNivel = dashboardData?.xp_proximo_nivel || 1000
   const progressoNivel = dashboardData?.progresso_nivel || 0
   const badges = dashboardData?.badges_conquistados || []
-  const cursosConcluido = dashboardData?.cursos_concluidos || 0
   const { perfil } = useDashboardCompleto()
 
   // Calcular quantos XP faltam para o próximo nível
@@ -72,10 +70,6 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <LocalFireDepartmentIcon sx={{ color: '#F97316' }} />
-            <Typography fontWeight={600}>{cursosConcluido}</Typography>
-          </Box>
           <NotificationDropdown />
         </Box>
       </Box>
@@ -114,31 +108,6 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
           <EmojiEventsIcon sx={{ color: '#F59E0B' }} />
           <Chip variant='outlined' label={`${badges.length} Badges`} />
         </Box>
-      </Box>
-
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}
-      >
-        {badges.slice(0, 3).map((badge: any, i: number) => (
-          <Chip
-            key={i}
-            variant='outlined'
-            size='small'
-            label={`🏆 ${badge.nome || badge}`}
-          />
-        ))}
-        {badges.length > 3 && (
-          <Chip
-            variant='outlined'
-            size='small'
-            label={`+${badges.length - 3} mais`}
-          />
-        )}
-        {badges.length === 0 && (
-          <Typography variant='caption' color='text.secondary'>
-            Nenhum badge conquistado ainda
-          </Typography>
-        )}
       </Box>
     </Card>
   )
