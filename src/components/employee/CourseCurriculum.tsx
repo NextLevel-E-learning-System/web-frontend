@@ -9,10 +9,16 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import IconButton from '@mui/material/IconButton'
+
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
+import CloseIcon from '@mui/icons-material/Close'
 import { PlayCircleFilled, PictureAsPdfRounded } from '@mui/icons-material'
 import type { Module } from '../../api/courses'
 import { useModuleMaterials } from '../../api/courses'
@@ -64,6 +70,10 @@ function ModuleAccordion({
   const completeModuleMutation = useCompleteModule()
   const [isStarting, setIsStarting] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false)
+  const [selectedPdfUrl, setSelectedPdfUrl] = useState<string>('')
+  const [selectedPdfName, setSelectedPdfName] = useState<string>('')
+  const [materialsViewed, setMaterialsViewed] = useState<Set<string>>(new Set())
 
   // Buscar materiais APENAS se tipo_conteudo for video ou document E se o módulo estiver expandido
   const shouldFetchMaterials =
@@ -93,12 +103,10 @@ function ModuleAccordion({
   const isInProgress = moduleStatus === 'in_progress'
   const isCompleted = moduleStatus === 'completed'
 
-  // Handler para iniciar módulo
   const handleStartModule = async (e: React.MouseEvent) => {
     e.stopPropagation() // Previne expansão do accordion
 
     if (isInProgress || isCompleted) {
-      // Se já está iniciado ou concluído, apenas expande o accordion
       onToggle()
       return
     }
@@ -109,7 +117,6 @@ function ModuleAccordion({
         enrollmentId,
         moduleId: module.id,
       })
-      // Após iniciar com sucesso, expande o accordion
       if (!expanded) {
         onToggle()
       }
@@ -136,6 +143,25 @@ function ModuleAccordion({
       setIsCompleting(false)
     }
   }
+
+  const handleOpenPdf = (url: string, name: string, materialId: string) => {
+    setSelectedPdfUrl(url)
+    setSelectedPdfName(name)
+    setPdfDialogOpen(true)
+    setMaterialsViewed(prev => new Set(prev).add(materialId))
+  }
+
+  const handleClosePdf = () => {
+    setPdfDialogOpen(false)
+    setSelectedPdfUrl('')
+    setSelectedPdfName('')
+  }
+
+  const allMaterialsViewed =
+    materials.length > 0 && materials.every(m => materialsViewed.has(m.id))
+
+  const canCompleteModule =
+    module.tipo_conteudo === 'pdf' ? allMaterialsViewed : true
 
   const getActionLabel = () => {
     if (isStarting) return 'Iniciando...'
@@ -398,7 +424,20 @@ function ModuleAccordion({
                             </Typography>
                           )}
                         </Stack>
-                        <Button size='small' variant='outlined' color='success'>
+                        <Button
+                          size='small'
+                          variant='outlined'
+                          color='success'
+                          onClick={() => {
+                            if (material.url_download) {
+                              handleOpenPdf(
+                                material.url_download,
+                                material.nome_arquivo,
+                                material.id
+                              )
+                            }
+                          }}
+                        >
                           Abrir
                         </Button>
                       </Box>
@@ -431,7 +470,7 @@ function ModuleAccordion({
                   variant='contained'
                   color='success'
                   size='large'
-                  disabled={isCompleting}
+                  disabled={isCompleting || !canCompleteModule}
                   onClick={handleCompleteModule}
                   startIcon={
                     isCompleting ? (
@@ -449,6 +488,55 @@ function ModuleAccordion({
           </Stack>
         )}
       </AccordionDetails>
+
+      {/* Modal para visualizar PDF */}
+      <Dialog
+        open={pdfDialogOpen}
+        onClose={handleClosePdf}
+        maxWidth='lg'
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: '90vh',
+            maxHeight: '90vh',
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Typography variant='h6' fontWeight={600}>
+            {selectedPdfName}
+          </Typography>
+          <IconButton
+            edge='end'
+            color='inherit'
+            onClick={handleClosePdf}
+            aria-label='fechar'
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
+          {selectedPdfUrl && (
+            <Box sx={{ flex: 1, width: '100%', height: '100%' }}>
+              <iframe
+                src={`${selectedPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                width='100%'
+                height='100%'
+                style={{ border: 'none' }}
+                title={selectedPdfName}
+              />
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Accordion>
   )
 }
