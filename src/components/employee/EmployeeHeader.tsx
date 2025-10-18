@@ -8,7 +8,8 @@ import NotificationDropdown from '@/components/notifications/NotificationDropdow
 interface EmployeeHeaderProps {
   dashboardData: {
     xp_atual: number
-    nivel_atual: number
+    nivel_atual: string
+    proximo_nivel?: string
     progresso_nivel: number
     ranking_departamento?: number
     xp_proximo_nivel?: number
@@ -18,10 +19,9 @@ interface EmployeeHeaderProps {
 }
 
 export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
-  const nivelAtual = dashboardData?.nivel_atual || 1
+  const nivelAtual = dashboardData?.nivel_atual || 'Iniciante'
   const xpAtual = dashboardData?.xp_atual || 0
-  const xpProximoNivel =
-    dashboardData?.xp_proximo_nivel || (nivelAtual + 1) * 1000
+  const xpProximoNivel = dashboardData?.xp_proximo_nivel || 1000
   const progressoNivel = dashboardData?.progresso_nivel || 0
   const badges = dashboardData?.badges_conquistados || []
   const cursosConcluido = dashboardData?.cursos_concluidos || 0
@@ -91,7 +91,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
             }}
           >
             <Typography variant='body2' fontWeight={600}>
-              Progresso para o Nível {nivelAtual + 1}
+              Progresso
             </Typography>
             <Typography variant='body2' color='text.secondary'>
               {xpAtual} XP
@@ -107,7 +107,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
             color='text.secondary'
             sx={{ mt: 0.5, display: 'block' }}
           >
-            Faltam {xpFaltante} XP para o próximo nível
+            Faltam {xpFaltante}xp para o próximo nível
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

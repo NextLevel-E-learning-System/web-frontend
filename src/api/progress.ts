@@ -156,6 +156,9 @@ export function useStartModule() {
         queryKey: ['progress', 'user'],
       })
       queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
+
+      // Invalidar dashboard do usuário para garantir dados sempre atualizados
+      queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
     },
   })
 }
@@ -199,6 +202,9 @@ export function useCompleteModule() {
       })
 
       queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
+
+      // Invalidar dashboard do usuário para atualizar XP e nível
+      queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
 
       // If course was completed, invalidate gamification data
       if (data.resultado.curso_concluido) {
