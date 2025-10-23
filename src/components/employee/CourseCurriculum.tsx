@@ -17,7 +17,6 @@ import IconButton from '@mui/material/IconButton'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
-import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
 import CloseIcon from '@mui/icons-material/Close'
 import {
   PlayCircleFilled,
@@ -39,19 +38,6 @@ type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
 interface CourseCurriculumProps {
   modules: Module[]
   enrollmentId: string
-}
-
-const statusIconMap: Record<ModuleItemStatus, typeof CheckCircleRoundedIcon> = {
-  completed: CheckCircleRoundedIcon,
-  in_progress: PlayCircleFilled,
-  locked: LockRoundedIcon,
-}
-
-const iconFor = (tipo: string) => {
-  if (tipo.includes('pdf')) return <PictureAsPdfRounded color='error' />
-  if (tipo.includes('video'))
-    return <PlayCircleFilled sx={{ color: 'primary' }} />
-  return <DescriptionRoundedIcon sx={{ color: '#047857' }} />
 }
 
 // Componente para um módulo individual
@@ -109,7 +95,6 @@ function ModuleAccordion({
   }
 
   const moduleStatus = getModuleStatus()
-  const StatusIcon = statusIconMap[moduleStatus]
   const isInProgress = moduleStatus === 'in_progress'
   const isCompleted = moduleStatus === 'completed'
 
@@ -181,6 +166,13 @@ function ModuleAccordion({
     if (isCompleted) return 'Concluído'
     if (isInProgress) return 'Continuar'
     return 'Iniciar'
+  }
+
+  const iconFor = (tipo: string) => {
+    if (tipo.includes('pdf'))
+      return <PictureAsPdfRounded color='error' sx={{ fontSize: 32 }} />
+    if (tipo.includes('video'))
+      return <PlayCircleFilled sx={{ color: 'primary.main', fontSize: 32 }} />
   }
 
   return (
@@ -336,8 +328,9 @@ function ModuleAccordion({
         {/* Conteúdo do módulo - só exibir se iniciado ou concluído */}
         {(isInProgress || isCompleted) && (
           <Stack spacing={2}>
-            {/* Materiais de Vídeo */}
-            {module.tipo_conteudo === 'video' && (
+            {/* Materiais (Vídeo ou PDF) */}
+            {(module.tipo_conteudo === 'video' ||
+              module.tipo_conteudo === 'pdf') && (
               <Box>
                 {!materialsLoading && materials.length > 0 && (
                   <Stack spacing={1.5}>
@@ -360,24 +353,17 @@ function ModuleAccordion({
                           },
                         }}
                       >
-                        <PlayCircleFilled
-                          sx={{ color: 'primary.main', fontSize: 32 }}
-                        />
+                        {iconFor(material.tipo_arquivo)}
                         <Stack flex={1}>
                           <Typography variant='body1' fontWeight={600}>
                             {material.nome_arquivo}
                           </Typography>
-                          {material.tamanho && (
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              {(Number(material.tamanho) / 1024 / 1024).toFixed(
-                                2
-                              )}
-                              MB
-                            </Typography>
-                          )}
+                          <Typography variant='caption' color='text.secondary'>
+                            {(Number(material.tamanho) / 1024 / 1024).toFixed(
+                              2
+                            )}{' '}
+                            MB
+                          </Typography>
                         </Stack>
                         <Tooltip title='Visualizar'>
                           <IconButton
@@ -385,11 +371,16 @@ function ModuleAccordion({
                             color='primary'
                             onClick={() => {
                               if (material.url_download) {
+                                const tipo = material.tipo_arquivo.includes(
+                                  'pdf'
+                                )
+                                  ? 'pdf'
+                                  : 'video'
                                 handleOpenMedia(
                                   material.url_download,
                                   material.nome_arquivo,
                                   material.id,
-                                  'video'
+                                  tipo
                                 )
                               }
                             }}
@@ -397,79 +388,6 @@ function ModuleAccordion({
                             <OpenInNew fontSize='inherit' />
                           </IconButton>
                         </Tooltip>
-                      </Box>
-                    ))}
-                  </Stack>
-                )}
-              </Box>
-            )}
-
-            {/* Materiais de Documento */}
-            {module.tipo_conteudo === 'pdf' && (
-              <Box>
-                {!materialsLoading && materials.length > 0 && (
-                  <Stack spacing={1.5}>
-                    {materials.map(material => (
-                      <Box
-                        key={material.id}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          bgcolor: 'rgba(16,185,129,0.08)',
-                          border: '1px solid rgba(16,185,129,0.2)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            bgcolor: 'rgba(16,185,129,0.12)',
-                            transform: 'translateY(-2px)',
-                          },
-                        }}
-                      >
-                        {material.tipo_arquivo?.includes('pdf') ? (
-                          <PictureAsPdfRounded
-                            sx={{ color: 'error', fontSize: 32 }}
-                          />
-                        ) : (
-                          <DescriptionRoundedIcon
-                            sx={{ color: '#047857', fontSize: 32 }}
-                          />
-                        )}
-                        <Stack flex={1}>
-                          <Typography variant='body1' fontWeight={600}>
-                            {material.nome_arquivo}
-                          </Typography>
-                          {material.tamanho && (
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              {(Number(material.tamanho) / 1024 / 1024).toFixed(
-                                2
-                              )}
-                              MB
-                            </Typography>
-                          )}
-                        </Stack>
-                        <Button
-                          size='small'
-                          variant='outlined'
-                          color='success'
-                          onClick={() => {
-                            if (material.url_download) {
-                              handleOpenMedia(
-                                material.url_download,
-                                material.nome_arquivo,
-                                material.id,
-                                'pdf'
-                              )
-                            }
-                          }}
-                        >
-                          Abrir
-                        </Button>
                       </Box>
                     ))}
                   </Stack>
@@ -502,9 +420,7 @@ function ModuleAccordion({
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: 2,
-                    bgcolor: 'rgba(59,130,246,0.08)',
-                    border: '1px solid rgba(59,130,246,0.2)',
+
                     mt: 2,
                   }}
                 >
