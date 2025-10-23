@@ -169,19 +169,6 @@ export default function CourseDialog({
         <Typography variant='h4' fontWeight={900} sx={{ mt: 1 }}>
           {course.title}
         </Typography>
-        {course.badgeLabel ? (
-          <Chip
-            label={course.badgeLabel}
-            sx={{
-              bgcolor: 'rgba(17,24,39,0.8)',
-              color: '#fff',
-              fontWeight: 700,
-              position: 'absolute',
-              top: 12,
-              right: 12,
-            }}
-          />
-        ) : null}
         <Box
           sx={{
             display: 'flex',

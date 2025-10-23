@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { ArrowBackIosNewRounded } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { Chip } from '@mui/material'
 
 interface CourseContentHeaderProps {
   title: string
@@ -13,6 +14,8 @@ interface CourseContentHeaderProps {
   gradientTo: string
   categoryName?: string
   showProgress?: boolean
+  level?: string
+  prerequisites?: string[]
 }
 
 export default function CourseContentHeader({
@@ -22,6 +25,8 @@ export default function CourseContentHeader({
   gradientTo,
   categoryName,
   showProgress = true,
+  level,
+  prerequisites,
 }: CourseContentHeaderProps) {
   const navigate = useNavigate()
 
@@ -40,12 +45,12 @@ export default function CourseContentHeader({
           sx={{
             flex: 1,
             borderRadius: 1,
-            px: { xs: 3, md: 5 },
-            py: { xs: 3, md: 4 },
+            px: 3,
+            py: 2,
             background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
-            color: 'common.white',
+            color: '#fff',
             position: 'relative',
-            boxShadow: '0 12px 30px rgba(79, 70, 229, 0.25)',
+            height: 150,
           }}
         >
           <Button
@@ -67,24 +72,35 @@ export default function CourseContentHeader({
           </Button>
 
           {/* Conteúdo principal */}
-          <Box sx={{ pr: { xs: 10, md: 12 } }}>
-            <Typography
-              variant='h4'
-              fontWeight={800}
-              lineHeight={1.2}
-              sx={{ mb: 1.5 }}
-            >
-              {title}
-            </Typography>
-            <Typography
-              variant='body2'
-              sx={{
-                alignSelf: 'flex-start',
-                fontWeight: 600,
-              }}
-            >
-              {categoryName}
-            </Typography>
+          <Chip
+            label={categoryName}
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.25)',
+              color: '#fff',
+              fontWeight: 700,
+            }}
+          />
+          <Typography variant='h4' fontWeight={900} sx={{ mt: 1 }}>
+            {title}
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              alignItems: 'center',
+              mt: 1,
+              flexWrap: 'wrap',
+            }}
+          >
+            <Typography variant='body2'>Nível: {level}</Typography>
+            {prerequisites && prerequisites.length > 0 && (
+              <>
+                <Typography variant='body2'>•</Typography>
+                <Typography variant='body2'>
+                  Pré-requisitos: {prerequisites.join(', ')}
+                </Typography>
+              </>
+            )}
           </Box>
         </Box>
       </Stack>

@@ -120,6 +120,8 @@ export default function CourseContent() {
         gradientFrom={gradientFrom}
         gradientTo={gradientTo}
         categoryName={categoryName}
+        level={completesCourse.nivel_dificuldade}
+        prerequisites={completesCourse.pre_requisitos}
       />
 
       <Paper variant='outlined' sx={{ mt: 4 }}>

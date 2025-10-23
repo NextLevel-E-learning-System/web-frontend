@@ -455,6 +455,14 @@ export default function CourseEditorPage() {
         gradientTo={isEdit ? gradientTo : '#8b5cf6'}
         categoryName={isEdit ? categoryName : undefined}
         showProgress={false}
+        level={
+          isEdit
+            ? course?.nivel_dificuldade || form.nivel_dificuldade
+            : undefined
+        }
+        prerequisites={
+          isEdit ? course?.pre_requisitos || form.pre_requisitos : undefined
+        }
       />
       <Paper variant='outlined' sx={{ mt: 4 }}>
         <Tabs
