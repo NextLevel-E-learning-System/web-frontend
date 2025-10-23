@@ -6,7 +6,6 @@ import {
   Tabs,
   Tab,
   Stack,
-  Typography,
   Paper,
   CircularProgress,
   TextField,
@@ -16,8 +15,8 @@ import {
   MenuItem,
   Checkbox,
   ListItemText,
+  Divider,
 } from '@mui/material'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import {
   useCourse,
   useCreateCourse,
@@ -33,6 +32,8 @@ import { useFuncionarios } from '@/api/users'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useNavigation from '@/hooks/useNavigation'
 import CourseModulesSection from '@/components/modules/CourseModulesSection'
+import CourseContentHeader from '@/components/employee/CourseContentHeader'
+import { useCategoryColors } from '@/hooks/useCategoryColors'
 
 interface TabDefinition {
   id: string
@@ -90,7 +91,7 @@ export default function CourseEditorPage() {
     xp_oferecido: 0,
     nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
-    ativo: true,
+    ativo: false,
   })
 
   const [departamentoSelecionado, setDepartamentoSelecionado] = useState('')
@@ -134,6 +135,10 @@ export default function CourseEditorPage() {
       }
     }
   }, [categorias, form.categoria_id, departamentoSelecionado])
+
+  const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
+    course?.categoria_id
+  )
 
   // Se navegação trouxe state para abrir aba específica (ex: após criar ir para advanced)
   useEffect(() => {
@@ -444,47 +449,27 @@ export default function CourseEditorPage() {
 
   return (
     <DashboardLayout items={navigationItems}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Stack
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-          >
-            <Typography variant='h6'>
-              {isEdit ? `${course?.titulo || form.titulo}` : 'Novo Curso'}
-            </Typography>
-            <Button
-              startIcon={<ArrowBackIcon />}
-              variant='text'
-              size='small'
-              onClick={() =>
-                navigate('/gerenciar/cursos', { state: { fromEditor: true } })
-              }
-            >
-              Voltar para Cursos
-            </Button>
-          </Stack>
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTab(v)}
-            variant='scrollable'
-            allowScrollButtonsMobile
-          >
-            <Tab value={INFO_TAB.id} label={INFO_TAB.label} />
-            {isEdit && <Tab value={MODULES_TAB.id} label={MODULES_TAB.label} />}
-          </Tabs>
-        </Paper>
-        <Paper sx={{ p: 2, minHeight: 400 }}>
-          {loadingCourse && isEdit ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            renderCurrent()
-          )}
-        </Paper>
-      </Box>
+      <CourseContentHeader
+        title={isEdit ? `${course?.titulo || form.titulo}` : 'Novo Curso'}
+        gradientFrom={isEdit ? gradientFrom : '#6366f1'}
+        gradientTo={isEdit ? gradientTo : '#8b5cf6'}
+        categoryName={isEdit ? categoryName : undefined}
+        showProgress={false}
+      />
+      <Paper variant='outlined' sx={{ mt: 4 }}>
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          variant='scrollable'
+          scrollButtons='auto'
+          sx={{ px: { xs: 1.5, md: 3 }, pt: 1.5 }}
+        >
+          <Tab label='Visão Geral' value={INFO_TAB.id} />
+          {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
+        </Tabs>
+        <Divider />
+        <Box sx={{ p: { xs: 2, md: 3 } }}>{isEdit && renderCurrent()}</Box>
+      </Paper>
     </DashboardLayout>
   )
 }

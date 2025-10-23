@@ -3,32 +3,32 @@ import Button from '@mui/material/Button'
 import LinearProgress from '@mui/material/LinearProgress'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import {
-  AccessTimeRounded,
-  MenuBookRounded,
-  ArrowBackIosNewRounded,
-} from '@mui/icons-material'
-import { Link as RouterLink } from 'react-router-dom'
+import { ArrowBackIosNewRounded } from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
 
 interface CourseContentHeaderProps {
   title: string
-  lessons: number
-  totalHours: number
-  progressPercent: number
+  progressPercent?: number
   gradientFrom: string
   gradientTo: string
   categoryName?: string
+  showProgress?: boolean
 }
 
 export default function CourseContentHeader({
   title,
-  lessons,
-  totalHours,
   progressPercent,
   gradientFrom,
   gradientTo,
   categoryName,
+  showProgress = true,
 }: CourseContentHeaderProps) {
+  const navigate = useNavigate()
+
+  const handleGoBack = () => {
+    navigate(-1)
+  }
+
   return (
     <Stack spacing={{ xs: 3, md: 4 }}>
       <Stack
@@ -49,8 +49,7 @@ export default function CourseContentHeader({
           }}
         >
           <Button
-            component={RouterLink}
-            to='/meu-progresso'
+            onClick={handleGoBack}
             startIcon={<ArrowBackIosNewRounded fontSize='small' />}
             sx={{
               position: 'absolute',
@@ -89,57 +88,37 @@ export default function CourseContentHeader({
           </Box>
         </Box>
       </Stack>
-
-      <Stack spacing={{ xs: 2, md: 2.5 }} sx={{ px: { xs: 2, md: 3 } }}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={{ xs: 1.5, sm: 3 }}
-          sx={{ flexWrap: 'wrap', rowGap: 1.5, columnGap: 3 }}
-          alignItems={{ sm: 'center' }}
-        >
-          <Stack direction='row' spacing={1} alignItems='center'>
-            <MenuBookRounded color='primary' fontSize='small' />
-            <Typography variant='body2' fontWeight={600}>
-              {lessons} módulos
-            </Typography>
-          </Stack>
-
-          <Stack direction='row' spacing={1} alignItems='center'>
-            <AccessTimeRounded color='primary' fontSize='small' />
-            <Typography variant='body2' fontWeight={600}>
-              {totalHours} horas
-            </Typography>
-          </Stack>
-        </Stack>
-
-        <Box>
-          <Stack
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            sx={{ mb: 1 }}
-          >
-            <Typography variant='body2' color='text.secondary'>
-              Progresso
-            </Typography>
-            <Typography variant='subtitle2' fontWeight={700}>
-              {progressPercent}% Completo
-            </Typography>
-          </Stack>
-          <LinearProgress
-            variant='determinate'
-            value={progressPercent}
-            sx={{
-              height: 6,
-              borderRadius: 999,
-              backgroundColor: 'grey.200',
-              '& .MuiLinearProgress-bar': {
+      {showProgress && progressPercent !== undefined && (
+        <Stack sx={{ px: { xs: 2, md: 3 } }}>
+          <Box>
+            <Stack
+              direction='row'
+              justifyContent='space-between'
+              alignItems='center'
+              sx={{ mb: 1 }}
+            >
+              <Typography variant='body2' color='text.secondary'>
+                Progresso
+              </Typography>
+              <Typography variant='subtitle2' fontWeight={700}>
+                {progressPercent}% Completo
+              </Typography>
+            </Stack>
+            <LinearProgress
+              variant='determinate'
+              value={progressPercent}
+              sx={{
+                height: 6,
                 borderRadius: 999,
-              },
-            }}
-          />
-        </Box>
-      </Stack>
+                backgroundColor: 'grey.200',
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 999,
+                },
+              }}
+            />
+          </Box>
+        </Stack>
+      )}
     </Stack>
   )
 }

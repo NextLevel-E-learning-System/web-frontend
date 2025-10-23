@@ -13,8 +13,9 @@ import {
   Tab,
   IconButton,
   Tooltip,
+  Divider,
 } from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMore'
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
@@ -70,10 +71,9 @@ export default function CourseModulesSection({
       <Stack
         direction='row'
         alignItems='center'
-        justifyContent='space-between'
-        sx={{ mb: 1 }}
+        justifyContent='end'
+        sx={{ mb: 2 }}
       >
-        <Typography variant='h6'>Módulos</Typography>
         <Button
           variant='contained'
           size='small'
@@ -92,7 +92,7 @@ export default function CourseModulesSection({
           Nenhum módulo cadastrado.
         </Typography>
       ) : (
-        <Box sx={{ display: 'grid', gap: 1.5 }}>
+        <Stack spacing={2}>
           {orderedModules.map(m => {
             const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = [
               'info',
@@ -115,29 +115,91 @@ export default function CourseModulesSection({
                 expanded={expanded === m.id}
                 onChange={(_, isExp) => setExpanded(isExp ? m.id : false)}
                 disableGutters
+                square
+                sx={{
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: expanded ? 'primary.main' : 'divider',
+                  boxShadow: 'none',
+                  overflow: 'hidden',
+                  '&:before': {
+                    display: 'none',
+                  },
+                }}
               >
                 <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
+                  expandIcon={<ExpandMoreRoundedIcon />}
                   sx={{
+                    px: { xs: 2, md: 3 },
+                    bgcolor: expanded
+                      ? 'rgba(59,130,246,0.07)'
+                      : 'background.paper',
+                    transition: 'background-color 0.2s ease',
                     '& .MuiAccordionSummary-content': {
-                      alignItems: 'center',
-                      gap: 1,
+                      my: 1.5,
                     },
-                    '& .MuiAccordionSummary-expandIconWrapper': { order: 3 },
                   }}
                 >
-                  <Chip size='small' label={`Módulo: ${m.ordem}`} />
-                  {m.xp ? (
-                    <Chip
-                      size='small'
-                      variant='outlined'
-                      label={`${m.xp} XP`}
-                    />
-                  ) : null}
-                  <Typography variant='body2' fontWeight={600}>
-                    {m.titulo}
-                  </Typography>
-                  <Box sx={{ marginLeft: 'auto', order: 2 }}>
+                  <Stack
+                    direction='row'
+                    spacing={2}
+                    alignItems='center'
+                    flex={1}
+                  >
+                    {/* Status Icon */}
+                    <Box
+                      sx={{
+                        minWidth: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        bgcolor: 'primary.main',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 14,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {m.ordem}
+                    </Box>
+
+                    {/* Module Info */}
+                    <Stack spacing={0.5} flex={1} minWidth={0}>
+                      <Typography variant='subtitle1' fontWeight={700}>
+                        {m.titulo}
+                      </Typography>
+                      {m.conteudo && (
+                        <Typography
+                          variant='body2'
+                          color='text.secondary'
+                          sx={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {m.conteudo}
+                        </Typography>
+                      )}
+                      <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                        <Chip
+                          label={m.obrigatorio ? 'Obrigatório' : 'Opcional'}
+                          size='small'
+                          color={m.obrigatorio ? 'primary' : 'default'}
+                          variant='outlined'
+                        />
+                        <Chip
+                          label={`${m.xp} XP`}
+                          size='small'
+                          color='secondary'
+                          variant='outlined'
+                        />
+                      </Box>
+                    </Stack>
+
+                    {/* Action Button */}
                     <Tooltip title='Excluir módulo'>
                       <IconButton
                         size='small'
@@ -151,9 +213,10 @@ export default function CourseModulesSection({
                         <DeleteIcon fontSize='small' />
                       </IconButton>
                     </Tooltip>
-                  </Box>
+                  </Stack>
                 </AccordionSummary>
-                <AccordionDetails>
+                <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3, pt: 0 }}>
+                  <Divider sx={{ mb: 3 }} />
                   <Box
                     sx={{
                       mb: 2,
@@ -199,7 +262,7 @@ export default function CourseModulesSection({
               </Accordion>
             )
           })}
-        </Box>
+        </Stack>
       )}
       <ConfirmationDialog
         open={confirm.open}

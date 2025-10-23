@@ -4,7 +4,6 @@ import {
   Stack,
   Typography,
   Button,
-  Paper,
   IconButton,
   Tooltip,
   CircularProgress,
@@ -15,9 +14,12 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CloseIcon from '@mui/icons-material/Close'
-import { OpenInNew } from '@mui/icons-material'
-import { PictureAsPdf, VideoFile } from '@mui/icons-material'
-import DescriptionIcon from '@mui/icons-material/Description'
+import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
+import {
+  OpenInNew,
+  PictureAsPdfRounded,
+  PlayCircleFilled,
+} from '@mui/icons-material'
 import {
   useModuleMaterials,
   useUploadMaterial,
@@ -99,16 +101,15 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
 
   const iconFor = (tipo: string) => {
     if (tipo.includes('pdf'))
-      return <PictureAsPdf fontSize='small' color='error' />
+      return <PictureAsPdfRounded color='error' sx={{ fontSize: 32 }} />
     if (tipo.includes('video'))
-      return <VideoFile fontSize='small' color='primary' />
-    return <DescriptionIcon fontSize='small' />
+      return <PlayCircleFilled sx={{ color: 'primary.main', fontSize: 32 }} />
+    return <DescriptionRoundedIcon sx={{ color: '#047857', fontSize: 32 }} />
   }
 
   return (
-    <Paper variant='outlined' sx={{ p: 2, display: 'grid', gap: 2 }}>
-      <Stack direction='row' justifyContent='space-between' alignItems='center'>
-        <Typography variant='h6'>Materiais</Typography>
+    <Box>
+      <Stack direction='row' justifyContent='end' alignItems='center'>
         <Button
           component='label'
           startIcon={<CloudUploadIcon />}
@@ -127,22 +128,35 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
           Nenhum material.
         </Typography>
       ) : (
-        <Stack gap={1}>
+        <Stack gap={1.5}>
           {materials.map(m => (
-            <Paper
+            <Box
               key={m.id}
-              variant='outlined'
-              sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                bgcolor: 'rgba(59,130,246,0.08)',
+                border: '1px solid rgba(59,130,246,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  bgcolor: 'rgba(59,130,246,0.12)',
+                  transform: 'translateY(-2px)',
+                },
+              }}
             >
               {iconFor(m.tipo_arquivo)}
-              <Box sx={{ flex: 1 }}>
-                <Typography variant='body2' fontWeight={600}>
+              <Stack sx={{ flex: 1 }}>
+                <Typography variant='body1' fontWeight={600}>
                   {m.nome_arquivo}
                 </Typography>
                 <Typography variant='caption' color='text.secondary'>
                   {(Number(m.tamanho) / 1024 / 1024).toFixed(2)} MB
                 </Typography>
-              </Box>
+              </Stack>
               <Tooltip title='Visualizar'>
                 <IconButton
                   size='small'
@@ -170,7 +184,7 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
                   <DeleteIcon fontSize='inherit' />
                 </IconButton>
               </Tooltip>
-            </Paper>
+            </Box>
           ))}
         </Stack>
       )}
@@ -251,6 +265,6 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
           )}
         </DialogContent>
       </Dialog>
-    </Paper>
+    </Box>
   )
 }

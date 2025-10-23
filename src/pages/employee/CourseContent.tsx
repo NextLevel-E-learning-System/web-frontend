@@ -115,9 +115,7 @@ export default function CourseContent() {
   return (
     <DashboardLayout items={navigationItems}>
       <CourseContentHeader
-        title={completesCourse.titulo || 'Curso sem título'}
-        lessons={modules?.length || 0}
-        totalHours={completesCourse.duracao_estimada || 0}
+        title={completesCourse.titulo}
         progressPercent={enrollment?.progresso_percentual || 0}
         gradientFrom={gradientFrom}
         gradientTo={gradientTo}

@@ -19,7 +19,11 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
 import CloseIcon from '@mui/icons-material/Close'
-import { PlayCircleFilled, PictureAsPdfRounded } from '@mui/icons-material'
+import {
+  PlayCircleFilled,
+  PictureAsPdfRounded,
+  OpenInNew,
+} from '@mui/icons-material'
 import type { Module } from '../../api/courses'
 import { useModuleMaterials } from '../../api/courses'
 import {
@@ -27,6 +31,7 @@ import {
   useCompleteModule,
   useEnrollmentModuleProgress,
 } from '../../api/progress'
+import { Tooltip } from '@mui/material'
 
 // Tipos baseados no backend (course-service)
 type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
@@ -42,10 +47,11 @@ const statusIconMap: Record<ModuleItemStatus, typeof CheckCircleRoundedIcon> = {
   locked: LockRoundedIcon,
 }
 
-const statusColorMap: Record<ModuleItemStatus, string> = {
-  completed: 'success.main',
-  in_progress: 'primary.main',
-  locked: 'text.disabled',
+const iconFor = (tipo: string) => {
+  if (tipo.includes('pdf')) return <PictureAsPdfRounded color='error' />
+  if (tipo.includes('video'))
+    return <PlayCircleFilled sx={{ color: 'primary' }} />
+  return <DescriptionRoundedIcon sx={{ color: '#047857' }} />
 }
 
 // Componente para um módulo individual
@@ -184,7 +190,7 @@ function ModuleAccordion({
       disableGutters
       square
       sx={{
-        borderRadius: 2,
+        borderRadius: 1,
         border: '1px solid',
         borderColor: expanded ? 'primary.main' : 'divider',
         boxShadow: 'none',
@@ -198,7 +204,6 @@ function ModuleAccordion({
         expandIcon={<ExpandMoreRoundedIcon />}
         sx={{
           px: { xs: 2, md: 3 },
-          py: 2,
           bgcolor: expanded ? 'rgba(59,130,246,0.07)' : 'background.paper',
           transition: 'background-color 0.2s ease',
           '& .MuiAccordionSummary-content': {
@@ -218,22 +223,24 @@ function ModuleAccordion({
             {/* Status Icon */}
             <Box
               sx={{
-                width: 40,
-                height: 40,
+                width: 32,
+                height: 32,
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 bgcolor:
                   moduleStatus === 'completed'
-                    ? 'rgba(34,197,94,0.16)'
+                    ? 'success.main'
                     : moduleStatus === 'in_progress'
-                      ? 'rgba(59,130,246,0.16)'
+                      ? 'primary.main'
                       : 'rgba(15,23,42,0.08)',
-                color: statusColorMap[moduleStatus],
+                color: 'white',
+                fontSize: 14,
+                fontWeight: 700,
               }}
             >
-              <StatusIcon fontSize='small' />
+              {module.ordem}
             </Box>
 
             {/* Module Info */}
@@ -367,27 +374,29 @@ function ModuleAccordion({
                             >
                               {(Number(material.tamanho) / 1024 / 1024).toFixed(
                                 2
-                              )}{' '}
+                              )}
                               MB
                             </Typography>
                           )}
                         </Stack>
-                        <Button
-                          size='small'
-                          variant='outlined'
-                          onClick={() => {
-                            if (material.url_download) {
-                              handleOpenMedia(
-                                material.url_download,
-                                material.nome_arquivo,
-                                material.id,
-                                'video'
-                              )
-                            }
-                          }}
-                        >
-                          Assistir
-                        </Button>
+                        <Tooltip title='Visualizar'>
+                          <IconButton
+                            size='small'
+                            color='primary'
+                            onClick={() => {
+                              if (material.url_download) {
+                                handleOpenMedia(
+                                  material.url_download,
+                                  material.nome_arquivo,
+                                  material.id,
+                                  'video'
+                                )
+                              }
+                            }}
+                          >
+                            <OpenInNew fontSize='inherit' />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                     ))}
                   </Stack>
@@ -421,7 +430,7 @@ function ModuleAccordion({
                       >
                         {material.tipo_arquivo?.includes('pdf') ? (
                           <PictureAsPdfRounded
-                            sx={{ color: '#047857', fontSize: 32 }}
+                            sx={{ color: 'error', fontSize: 32 }}
                           />
                         ) : (
                           <DescriptionRoundedIcon
@@ -620,7 +629,7 @@ export default function CourseCurriculum({
   }
 
   return (
-    <Stack spacing={2.5}>
+    <Stack spacing={2}>
       {modules.map(module => (
         <ModuleAccordion
           key={module.id}
