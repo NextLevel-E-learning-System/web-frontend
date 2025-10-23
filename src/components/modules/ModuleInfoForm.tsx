@@ -28,7 +28,7 @@ export default function ModuleInfoForm({
 }: Props) {
   const [titulo, setTitulo] = useState(modulo.titulo)
   const [ordem, setOrdem] = useState<number>(modulo.ordem)
-  const [xp, setXp] = useState<number>(modulo.xp_modulo)
+  const [xp, setXp] = useState<number>(modulo.xp)
   const [obrigatorio, setObrigatorio] = useState<boolean>(modulo.obrigatorio)
   const [conteudo, setConteudo] = useState<string>(modulo.conteudo || '')
   const [tipoConteudo, setTipoConteudo] = useState<string>(

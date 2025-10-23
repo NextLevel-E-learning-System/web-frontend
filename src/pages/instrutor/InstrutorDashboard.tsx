@@ -165,7 +165,7 @@ export default function InstrutorDashboard() {
                           </TableCell>
                           <TableCell align='right'>
                             <Chip
-                              label={`${((curso.taxa_conclusao || 0) * 100).toFixed(1)}%`}
+                              label={`${curso.taxa_conclusao || 0}%`}
                               size='small'
                               color={
                                 (curso.taxa_conclusao || 0) > 0.7

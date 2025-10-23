@@ -28,6 +28,10 @@ export default function AchievementCard({
         borderRadius: 3,
         color: '#0f172a',
         background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
+        height: '100%',
+        minHeight: 140,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Box
@@ -41,7 +45,7 @@ export default function AchievementCard({
         {icon}
         {earned ? (
           <Chip
-            label='Earned'
+            label='Conquistado'
             size='small'
             sx={{
               bgcolor: 'rgba(255,255,255,0.9)',
@@ -51,12 +55,14 @@ export default function AchievementCard({
           />
         ) : null}
       </Box>
-      <Typography fontWeight={800}>{title}</Typography>
-      {subtitle ? (
-        <Typography variant='body2' sx={{ opacity: 0.85 }}>
-          {subtitle}
-        </Typography>
-      ) : null}
+      <Box sx={{ mt: 'auto' }}>
+        <Typography fontWeight={800}>{title}</Typography>
+        {subtitle ? (
+          <Typography variant='body2' sx={{ opacity: 0.85 }}>
+            {subtitle}
+          </Typography>
+        ) : null}
+      </Box>
     </Paper>
   )
 }

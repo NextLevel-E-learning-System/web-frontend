@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { PictureAsPdf } from '@mui/icons-material'
+import { PictureAsPdf, VideoFile } from '@mui/icons-material'
 import DescriptionIcon from '@mui/icons-material/Description'
 import {
   useModuleMaterials,
@@ -75,7 +75,7 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
   const iconFor = (tipo: string) => {
     if (tipo.includes('pdf'))
       return <PictureAsPdf fontSize='small' color='error' />
-    return <DescriptionIcon fontSize='small' />
+    return <VideoFile fontSize='small' />
   }
 
   return (

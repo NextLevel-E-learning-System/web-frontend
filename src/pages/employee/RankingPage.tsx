@@ -5,9 +5,6 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboardCompleto } from '@/api/users'
 import StatsCard from '@/components/common/StatCard'
-import TimeRangeToggle, {
-  type TimeRange,
-} from '@/components/common/TimeRangeToggle'
 import LeaderboardTop from '@/components/common/LeaderboardTop'
 import RankingTable, { type RankItem } from '@/components/common/RankingTable'
 import { useState } from 'react'
@@ -221,12 +218,6 @@ export default function RankingPage() {
               atual (mensal).
             </Typography>
           </Box>
-          <TimeRangeToggle
-            value={'all'}
-            onChange={function (value: TimeRange): void {
-              throw new Error('Function not implemented.')
-            }}
-          />
         </Box>
 
         <Grid container spacing={2}>
