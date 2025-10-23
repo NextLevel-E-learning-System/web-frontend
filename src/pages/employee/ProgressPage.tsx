@@ -5,7 +5,6 @@ import {
   CircularProgress,
   Typography,
   Divider,
-  Button,
 } from '@mui/material'
 import {
   MenuBook,
@@ -25,13 +24,9 @@ import { useDashboardCompleto } from '@/api/users'
 import { useUserEnrollments, getEnrollmentStats } from '@/api/progress'
 import { useCategoryColors } from '@/hooks/useCategoryColors'
 import { useCourseCatalog } from '@/api/courses'
-import TimeRangeToggle, {
-  type TimeRange,
-} from '@/components/common/TimeRangeToggle'
 import { useNavigate } from 'react-router-dom'
 import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import AchievementCard from '@/components/employee/AchievementCard'
-import GoalCard from '@/components/employee/GoalCard'
 import MetricCard from '@/components/common/StatCard'
 
 /* Lines 30-39 omitted */
@@ -176,73 +171,67 @@ export default function ProgressPage() {
         >
           <Box>
             <Typography variant='h5' fontWeight={800}>
-              Your Learning Progress
+              Seu Progresso de Aprendizagem
             </Typography>
             <Typography color='text.secondary'>
-              Track your learning journey, monitor achievements, and set goals
-              to keep yourself motivated.
+              Acompanhe sua jornada de estudos, conquistas e metas para se
+              manter motivado.
             </Typography>
           </Box>
-          <TimeRangeToggle
-            value={'all'}
-            onChange={function (_value: TimeRange): void {
-              throw new Error('Function not implemented.')
-            }}
-          />
         </Box>
 
         <Box sx={{ mt: 4 }}>
           <Typography variant='subtitle1' fontWeight={800} sx={{ mb: 2 }}>
-            Activity Overview
+            Visão Geral
           </Typography>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 icon={<AccessTimeIcon sx={{ fontSize: 26 }} />}
-                label='Total Enrollments'
+                label='Total de Inscrições'
                 value={
                   enrollmentsLoading ? '...' : `${enrollmentStats.total} cursos`
                 }
-                trendLabel='All course enrollments'
+                trendLabel='Todos os cursos inscritos'
                 iconColor='#2563eb'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 icon={<CheckCircleIcon sx={{ fontSize: 26 }} />}
-                label='Courses Completed'
+                label='Cursos Concluídos'
                 value={
                   enrollmentsLoading
                     ? '...'
                     : enrollmentStats.concluidos.toString()
                 }
-                trendLabel='Successfully completed courses'
+                trendLabel='Cursos finalizados com sucesso'
                 iconColor='#10b981'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 icon={<MenuBook sx={{ fontSize: 26 }} />}
-                label='Courses in Progress'
+                label='Cursos em Andamento'
                 value={
                   enrollmentsLoading
                     ? '...'
                     : enrollmentStats.emAndamento.toString()
                 }
-                trendLabel='Currently enrolled courses'
+                trendLabel='Cursos que você está estudando'
                 iconColor='#8b5cf6'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 icon={<StarRate sx={{ fontSize: 26 }} />}
-                label='Cancelled Courses'
+                label='XP Total'
                 value={
                   enrollmentsLoading
                     ? '...'
-                    : enrollmentStats.cancelados.toString()
+                    : perfil?.xp_total?.toString() || '0'
                 }
-                trendLabel='All time course enrollments'
+                trendLabel='Experiência acumulada'
                 iconColor='#f59e0b'
               />
             </Grid>
@@ -253,7 +242,7 @@ export default function ProgressPage() {
 
         <Box>
           <Typography variant='subtitle1' fontWeight={800} sx={{ mb: 2 }}>
-            Course Progress
+            Progresso nos Cursos
           </Typography>
           <Grid container spacing={2}>
             {enrollmentsLoading ? (
@@ -303,17 +292,14 @@ export default function ProgressPage() {
             }}
           >
             <Typography variant='subtitle1' fontWeight={800}>
-              Your Achievements
+              Suas Conquistas
             </Typography>
-            <Button variant='text' size='small'>
-              View All
-            </Button>
           </Box>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
               <AchievementCard
-                title='Early Bird'
-                subtitle='Complete 5 lessons before 8am'
+                title='Madrugador'
+                subtitle='Complete 5 aulas antes das 8h'
                 gradientFrom='#fde68a'
                 gradientTo='#fca5a5'
                 icon={<EmojiEvents />}
@@ -321,8 +307,8 @@ export default function ProgressPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
               <AchievementCard
-                title='Night Owl'
-                subtitle='Study for 2 hours after 10pm'
+                title='Coruja Noturna'
+                subtitle='Estude por 2 horas após as 22h'
                 gradientFrom='#a78bfa'
                 gradientTo='#60a5fa'
                 icon={<Nightlight />}
@@ -330,8 +316,8 @@ export default function ProgressPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
               <AchievementCard
-                title='Consistent'
-                subtitle='Study for 7 days in a row'
+                title='Consistente'
+                subtitle='Estude por 7 dias seguidos'
                 gradientFrom='#6ee7b7'
                 gradientTo='#93c5fd'
                 icon={<Bolt />}
@@ -339,8 +325,8 @@ export default function ProgressPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
               <AchievementCard
-                title='Perfectionist'
-                subtitle='Score 100% on 3 quizzes'
+                title='Perfeccionista'
+                subtitle='Tire 100% em 3 quizzes'
                 gradientFrom='#fecaca'
                 gradientTo='#fef3c7'
                 icon={<Speed />}
@@ -348,8 +334,8 @@ export default function ProgressPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
               <AchievementCard
-                title='Speed Demon'
-                subtitle='Complete a course in record time'
+                title='Recordista'
+                subtitle='Conclua um curso em tempo recorde'
                 gradientFrom='#fda4af'
                 gradientTo='#fde68a'
                 icon={<Bolt />}
@@ -357,57 +343,11 @@ export default function ProgressPage() {
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2 }}>
               <AchievementCard
-                title='Explorer'
-                subtitle='Try courses from 5 categories'
+                title='Explorador'
+                subtitle='Experimente cursos de 5 categorias'
                 gradientFrom='#bae6fd'
                 gradientTo='#a7f3d0'
                 icon={<Explore />}
-              />
-            </Grid>
-          </Grid>
-        </Box>
-
-        <Divider sx={{ my: 4 }} />
-
-        <Box>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              mb: 2,
-            }}
-          >
-            <Typography variant='subtitle1' fontWeight={800}>
-              Your Learning Goals
-            </Typography>
-            <Button variant='contained' size='small'>
-              Set New Goal
-            </Button>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <GoalCard
-                title='Complete React Course'
-                subtitle='Finish all lessons by August 25'
-                progress={75}
-                daysLeft={10}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <GoalCard
-                title='Study 2 hours daily'
-                subtitle='Maintain consistent study schedule'
-                progress={40}
-                daysLeft={18}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <GoalCard
-                title='Complete 5 Courses'
-                subtitle='By the end of this quarter'
-                progress={40}
-                daysLeft={45}
               />
             </Grid>
           </Grid>
