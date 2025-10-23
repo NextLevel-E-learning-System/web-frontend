@@ -8,9 +8,14 @@ import {
   IconButton,
   Tooltip,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DeleteIcon from '@mui/icons-material/Delete'
+import CloseIcon from '@mui/icons-material/Close'
+import { OpenInNew } from '@mui/icons-material'
 import { PictureAsPdf, VideoFile } from '@mui/icons-material'
 import DescriptionIcon from '@mui/icons-material/Description'
 import {
@@ -39,6 +44,13 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
     open: boolean
     materialId?: string
     materialName?: string
+  }>({ open: false })
+  const [mediaDialog, setMediaDialog] = useState<{
+    open: boolean
+    url?: string
+    name?: string
+    materialId?: string
+    type?: string
   }>({ open: false })
 
   const handleSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,10 +84,25 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
     }
   }
 
+  const handleOpenMedia = (
+    url: string,
+    name: string,
+    materialId: string,
+    type: string
+  ) => {
+    setMediaDialog({ url, name, materialId, type, open: true })
+  }
+
+  const handleCloseMedia = () => {
+    setMediaDialog({ open: false })
+  }
+
   const iconFor = (tipo: string) => {
     if (tipo.includes('pdf'))
       return <PictureAsPdf fontSize='small' color='error' />
-    return <VideoFile fontSize='small' />
+    if (tipo.includes('video'))
+      return <VideoFile fontSize='small' color='primary' />
+    return <DescriptionIcon fontSize='small' />
   }
 
   return (
@@ -113,9 +140,27 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
                   {m.nome_arquivo}
                 </Typography>
                 <Typography variant='caption' color='text.secondary'>
-                  {(Number(m.tamanho) / 1024).toFixed(1)} KB
+                  {(Number(m.tamanho) / 1024 / 1024).toFixed(2)} MB
                 </Typography>
               </Box>
+              <Tooltip title='Visualizar'>
+                <IconButton
+                  size='small'
+                  onClick={() => {
+                    if (m.url_download) {
+                      handleOpenMedia(
+                        m.url_download,
+                        m.nome_arquivo,
+                        m.id,
+                        m.tipo_arquivo
+                      )
+                    }
+                  }}
+                  color='primary'
+                >
+                  <OpenInNew fontSize='inherit' />
+                </IconButton>
+              </Tooltip>
               <Tooltip title='Remover material'>
                 <IconButton
                   size='small'
@@ -140,6 +185,72 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
         severity='error'
         isLoading={deleteMaterial.isPending}
       />
+
+      {/* Modal para visualizar PDF ou Vídeo */}
+      <Dialog
+        open={mediaDialog.open}
+        onClose={handleCloseMedia}
+        maxWidth='lg'
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: '90vh',
+            maxHeight: '90vh',
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Typography variant='h6' fontWeight={600}>
+            {mediaDialog.name}
+          </Typography>
+          <IconButton
+            edge='end'
+            color='inherit'
+            onClick={handleCloseMedia}
+            aria-label='fechar'
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
+          {mediaDialog.url && (
+            <Box
+              sx={{ flex: 1, width: '100%', height: '100%', bgcolor: '#000' }}
+            >
+              {mediaDialog.type === 'pdf' ? (
+                <iframe
+                  src={`${mediaDialog.url}#toolbar=1&navpanes=1&scrollbar=1`}
+                  width='100%'
+                  height='100%'
+                  style={{ border: 'none' }}
+                  title={mediaDialog.name}
+                />
+              ) : (
+                <video
+                  controls
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  }}
+                  src={mediaDialog.url}
+                >
+                  <source src={mediaDialog.url} type='video/mp4' />
+                  Seu navegador não suporta a reprodução de vídeos.
+                </video>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Paper>
   )
 }

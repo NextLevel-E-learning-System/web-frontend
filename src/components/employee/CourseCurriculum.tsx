@@ -70,9 +70,13 @@ function ModuleAccordion({
   const completeModuleMutation = useCompleteModule()
   const [isStarting, setIsStarting] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
-  const [pdfDialogOpen, setPdfDialogOpen] = useState(false)
-  const [selectedPdfUrl, setSelectedPdfUrl] = useState<string>('')
-  const [selectedPdfName, setSelectedPdfName] = useState<string>('')
+  const [mediaDialog, setMediaDialog] = useState<{
+    open: boolean
+    url?: string
+    name?: string
+    materialId?: string
+    type?: string
+  }>({ open: false })
   const [materialsViewed, setMaterialsViewed] = useState<Set<string>>(new Set())
 
   // Buscar materiais APENAS se tipo_conteudo for video ou document E se o módulo estiver expandido
@@ -144,24 +148,27 @@ function ModuleAccordion({
     }
   }
 
-  const handleOpenPdf = (url: string, name: string, materialId: string) => {
-    setSelectedPdfUrl(url)
-    setSelectedPdfName(name)
-    setPdfDialogOpen(true)
+  const handleOpenMedia = (
+    url: string,
+    name: string,
+    materialId: string,
+    type: string
+  ) => {
+    setMediaDialog({ url, name, materialId, type, open: true })
     setMaterialsViewed(prev => new Set(prev).add(materialId))
   }
 
-  const handleClosePdf = () => {
-    setPdfDialogOpen(false)
-    setSelectedPdfUrl('')
-    setSelectedPdfName('')
+  const handleCloseMedia = () => {
+    setMediaDialog({ open: false })
   }
 
   const allMaterialsViewed =
     materials.length > 0 && materials.every(m => materialsViewed.has(m.id))
 
   const canCompleteModule =
-    module.tipo_conteudo === 'pdf' ? allMaterialsViewed : true
+    module.tipo_conteudo === 'pdf' || module.tipo_conteudo === 'video'
+      ? allMaterialsViewed
+      : true
 
   const getActionLabel = () => {
     if (isStarting) return 'Iniciando...'
@@ -365,7 +372,20 @@ function ModuleAccordion({
                             </Typography>
                           )}
                         </Stack>
-                        <Button size='small' variant='outlined'>
+                        <Button
+                          size='small'
+                          variant='outlined'
+                          onClick={() => {
+                            if (material.url_download) {
+                              handleOpenMedia(
+                                material.url_download,
+                                material.nome_arquivo,
+                                material.id,
+                                'video'
+                              )
+                            }
+                          }}
+                        >
                           Assistir
                         </Button>
                       </Box>
@@ -419,7 +439,7 @@ function ModuleAccordion({
                             >
                               {(Number(material.tamanho) / 1024 / 1024).toFixed(
                                 2
-                              )}{' '}
+                              )}
                               MB
                             </Typography>
                           )}
@@ -430,10 +450,11 @@ function ModuleAccordion({
                           color='success'
                           onClick={() => {
                             if (material.url_download) {
-                              handleOpenPdf(
+                              handleOpenMedia(
                                 material.url_download,
                                 material.nome_arquivo,
-                                material.id
+                                material.id,
+                                'pdf'
                               )
                             }
                           }}
@@ -463,6 +484,28 @@ function ModuleAccordion({
               </Box>
             )}
 
+            {/* Alerta se ainda há materiais não visualizados */}
+            {isInProgress &&
+              !isCompleted &&
+              (module.tipo_conteudo === 'pdf' ||
+                module.tipo_conteudo === 'video') &&
+              !allMaterialsViewed && (
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: 'rgba(59,130,246,0.08)',
+                    border: '1px solid rgba(59,130,246,0.2)',
+                    mt: 2,
+                  }}
+                >
+                  <Typography variant='body2' color='primary' fontWeight={600}>
+                    ℹ️ Você precisa visualizar todos os materiais antes de
+                    concluir este módulo.
+                  </Typography>
+                </Box>
+              )}
+
             {/* Botão de Concluir Módulo */}
             {isInProgress && !isCompleted && (
               <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
@@ -489,10 +532,10 @@ function ModuleAccordion({
         )}
       </AccordionDetails>
 
-      {/* Modal para visualizar PDF */}
+      {/* Modal para visualizar PDF ou Vídeo */}
       <Dialog
-        open={pdfDialogOpen}
-        onClose={handleClosePdf}
+        open={mediaDialog.open}
+        onClose={handleCloseMedia}
         maxWidth='lg'
         fullWidth
         PaperProps={{
@@ -512,27 +555,44 @@ function ModuleAccordion({
           }}
         >
           <Typography variant='h6' fontWeight={600}>
-            {selectedPdfName}
+            {mediaDialog.name}
           </Typography>
           <IconButton
             edge='end'
             color='inherit'
-            onClick={handleClosePdf}
+            onClick={handleCloseMedia}
             aria-label='fechar'
           >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
-          {selectedPdfUrl && (
-            <Box sx={{ flex: 1, width: '100%', height: '100%' }}>
-              <iframe
-                src={`${selectedPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
-                width='100%'
-                height='100%'
-                style={{ border: 'none' }}
-                title={selectedPdfName}
-              />
+          {mediaDialog.url && (
+            <Box
+              sx={{ flex: 1, width: '100%', height: '100%', bgcolor: '#000' }}
+            >
+              {mediaDialog.type === 'pdf' ? (
+                <iframe
+                  src={`${mediaDialog.url}#toolbar=1&navpanes=1&scrollbar=1`}
+                  width='100%'
+                  height='100%'
+                  style={{ border: 'none' }}
+                  title={mediaDialog.name}
+                />
+              ) : (
+                <video
+                  controls
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  }}
+                  src={mediaDialog.url}
+                >
+                  <source src={mediaDialog.url} type='video/mp4' />
+                  Seu navegador não suporta a reprodução de vídeos.
+                </video>
+              )}
             </Box>
           )}
         </DialogContent>

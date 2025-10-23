@@ -102,20 +102,6 @@ function ModulePreview({ module }: { module: Module }) {
             <Typography variant='subtitle1' fontWeight={700}>
               {module.titulo}
             </Typography>
-            {module.conteudo && (
-              <Typography
-                variant='body2'
-                color='text.secondary'
-                sx={{
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
-                {module.conteudo}
-              </Typography>
-            )}
             <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
               <Chip
                 label={module.obrigatorio ? 'Obrigatório' : 'Opcional'}
@@ -205,27 +191,10 @@ export default function CourseDialog({
             flexWrap: 'wrap',
           }}
         >
-          {course.completionRate !== undefined && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <CheckCircleIcon sx={{ fontSize: 18 }} />
-              <Typography variant='body2'>
-                {course.completionRate.toFixed(1)}% conclusão
-              </Typography>
-            </Box>
-          )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <PeopleAlt sx={{ fontSize: 18 }} />
-            <Typography variant='body2'>
-              {course.totalEnrollments || 0} inscritos
-            </Typography>
-          </Box>
-          <Typography variant='body2'>{course.level}</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTime sx={{ fontSize: 18 }} />
-            <Typography variant='body2'>
-              {course.hours.replace(' total', '')}
-            </Typography>
-          </Box>
+          <Typography variant='body2'>
+            Nível: {''}
+            {course.level}
+          </Typography>
         </Box>
       </Box>
       <DialogContent sx={{ p: 0 }}>
