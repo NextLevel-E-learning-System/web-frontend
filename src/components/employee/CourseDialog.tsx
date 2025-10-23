@@ -191,10 +191,15 @@ export default function CourseDialog({
             flexWrap: 'wrap',
           }}
         >
-          <Typography variant='body2'>
-            Nível: {''}
-            {course.level}
-          </Typography>
+          <Typography variant='body2'>Nível: {course.level}</Typography>
+          {course.prerequisites && course.prerequisites.length > 0 && (
+            <>
+              <Typography variant='body2'>•</Typography>
+              <Typography variant='body2'>
+                Pré-requisitos: {course.prerequisites.join(', ')}
+              </Typography>
+            </>
+          )}
         </Box>
       </Box>
       <DialogContent sx={{ p: 0 }}>
@@ -289,7 +294,7 @@ export default function CourseDialog({
                   },
                   {
                     icon: <WorkspacePremium fontSize='small' />,
-                    text: `${course.xpOffered || 0} XP ao completar`,
+                    text: `${course.xpOffered || 0} XP`,
                   },
                   {
                     icon: <BookmarkIcon fontSize='small' />,
@@ -314,9 +319,6 @@ export default function CourseDialog({
             <Box
               sx={{
                 mt: 3,
-                p: 2,
-                borderTop: 1,
-                borderColor: 'divider',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'end',
