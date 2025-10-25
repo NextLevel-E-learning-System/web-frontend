@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import {
   Box,
   Button,
@@ -25,7 +26,6 @@ import {
   useCategories,
   useCourses,
   type Course,
-  type Module,
   type Category,
 } from '@/api/courses'
 import { useFuncionarios } from '@/api/users'
@@ -43,33 +43,66 @@ interface TabDefinition {
 const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
 
+interface LocationState {
+  nextTab?: string
+  pathname?: string
+  state?: LocationState
+}
+
+interface FormState {
+  codigo: string
+  titulo: string
+  descricao: string
+  categoria_id: string
+  instrutor_id: string
+  duracao_estimada: number
+  xp_oferecido: number
+  nivel_dificuldade: string
+  pre_requisitos: string[]
+  ativo: boolean
+}
+
 export default function CourseEditorPage() {
   const { codigo } = useParams<{ codigo: string }>()
   const isEdit = !!codigo
   const navigate = useNavigate()
-  const location = useLocation() as any
+  const location = useLocation()
 
-  const courseQuery = isEdit && codigo ? useCourse(codigo) : null
-
-  const rawCourseData: any = courseQuery?.data
-  const course: Course | null | undefined = rawCourseData
-    ? rawCourseData?.codigo
-      ? (rawCourseData as Course)
-      : rawCourseData?.curso?.codigo
-        ? (rawCourseData.curso as Course)
-        : rawCourseData?.item?.codigo
-          ? (rawCourseData.item as Course)
-          : rawCourseData?.data?.codigo
-            ? (rawCourseData.data as Course)
-            : null
-    : null
-  const loadingCourse = courseQuery?.isLoading ?? false
+  // Sempre chama os hooks na mesma ordem
+  const courseQuery = useCourse(codigo || '')
   const createCourse = useCreateCourse()
-  const updateCourse = isEdit && codigo ? useUpdateCourse(codigo) : null
+  const updateCourse = useUpdateCourse(codigo || '')
+  const modulesQuery = useCourseModules(codigo || '')
 
-  // Só executa useCourseModules se temos um código válido
-  const modulesQuery = isEdit && codigo ? useCourseModules(codigo) : null
-  const modules: Module[] = modulesQuery?.data || []
+  // Extrai os dados apenas se estiver em modo de edição
+  const rawCourseData = isEdit ? courseQuery?.data : null
+  const course: Course | null | undefined = useMemo(() => {
+    if (!rawCourseData) return null
+
+    // Verifica se é um Course direto
+    if ('codigo' in rawCourseData && typeof rawCourseData.codigo === 'string') {
+      return rawCourseData as Course
+    }
+
+    // Verifica estruturas aninhadas
+    const dataWithCurso = rawCourseData as { curso?: Course }
+    if (dataWithCurso.curso?.codigo) return dataWithCurso.curso
+
+    const dataWithItem = rawCourseData as { item?: Course }
+    if (dataWithItem.item?.codigo) return dataWithItem.item
+
+    const dataWithData = rawCourseData as { data?: Course }
+    if (dataWithData.data?.codigo) return dataWithData.data
+
+    return null
+  }, [rawCourseData])
+
+  const loadingCourse = isEdit ? (courseQuery?.isLoading ?? false) : false
+
+  const modules = useMemo(
+    () => (isEdit ? modulesQuery?.data || [] : []),
+    [isEdit, modulesQuery?.data]
+  )
   const { navigationItems } = useNavigation()
   // Dados auxiliares para selects
   const { data: categorias = [] } = useCategories()
@@ -81,7 +114,7 @@ export default function CourseEditorPage() {
   const [tab, setTab] = useState<string>(INFO_TAB.id)
 
   // Form state centralizado (pode ser distribuído em subcomponentes via props ou context)
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<FormState>({
     codigo: '',
     titulo: '',
     descricao: '',
@@ -98,10 +131,9 @@ export default function CourseEditorPage() {
 
   useEffect(() => {
     if (isEdit && course) {
-      setForm((f: any) => {
+      setForm(prevForm => {
         // Evita setState se nada mudou (previne loop de profundidade)
-        const next = {
-          ...f,
+        const next: FormState = {
           codigo: course.codigo,
           titulo: course.titulo,
           descricao: course.descricao ?? '',
@@ -114,15 +146,15 @@ export default function CourseEditorPage() {
           ativo: course.ativo,
         }
         const changed = Object.keys(next).some(
-          k => (next as any)[k] !== (f as any)[k]
+          k => next[k as keyof FormState] !== prevForm[k as keyof FormState]
         )
-        return changed ? next : f
+        return changed ? next : prevForm
       })
       if (course.departamento_codigo) {
         setDepartamentoSelecionado(dep => dep || course.departamento_codigo!)
       }
     }
-  }, [isEdit, course?.codigo])
+  }, [isEdit, course])
 
   // Ajusta departamento selecionado ao carregar categorias e curso
   useEffect(() => {
@@ -142,26 +174,29 @@ export default function CourseEditorPage() {
 
   // Se navegação trouxe state para abrir aba específica (ex: após criar ir para advanced)
   useEffect(() => {
-    if (location.state?.nextTab && location.state.nextTab !== tab) {
-      setTab(location.state.nextTab)
+    const state = location.state as LocationState | undefined
+    if (state?.nextTab && state.nextTab !== tab) {
+      setTab(state.nextTab)
       // Limpa para não reaplicar ao voltar
       navigate(location.pathname, { replace: true })
     }
-  }, [location, navigate, tab, codigo])
+  }, [location, navigate, tab])
 
   // Atualiza xp com base nos módulos se for edição
   useEffect(() => {
     if (isEdit && codigo && modules && Array.isArray(modules)) {
-      const totalXp = modules.reduce((acc, m: any) => acc + (m.xp || 0), 0)
-      setForm((f: any) =>
-        f.xp_oferecido !== totalXp ? { ...f, xp_oferecido: totalXp } : f
+      const totalXp = modules.reduce((acc, m) => acc + (m.xp || 0), 0)
+      setForm(prevForm =>
+        prevForm.xp_oferecido !== totalXp
+          ? { ...prevForm, xp_oferecido: totalXp }
+          : prevForm
       )
     }
-  }, [modules.length, isEdit, codigo, modules])
+  }, [isEdit, codigo, modules])
 
   const handleSaveInfo = async (goToModules = false) => {
     try {
-      if (!form.titulo?.trim()) return
+      if (!form.titulo?.trim() || !form.codigo?.trim()) return
 
       if (isEdit && updateCourse) {
         const updateData = {
@@ -176,16 +211,45 @@ export default function CourseEditorPage() {
           ativo: form.ativo,
         }
         await updateCourse.mutateAsync(updateData)
+        toast.success('Curso atualizado com sucesso!')
         if (goToModules) {
           setTab(MODULES_TAB.id)
         } else {
-          setTimeout(() => navigate('/gerenciar/cursos'), 1500)
+          navigate('/gerenciar/cursos')
         }
       } else {
-        setTimeout(() => navigate('/gerenciar/cursos'), 1500)
+        // Criar novo curso
+        const createData = {
+          codigo: form.codigo,
+          titulo: form.titulo,
+          descricao: form.descricao,
+          categoria_id: form.categoria_id,
+          instrutor_id: form.instrutor_id,
+          duracao_estimada: form.duracao_estimada,
+          xp_oferecido: form.xp_oferecido,
+          nivel_dificuldade: form.nivel_dificuldade,
+          pre_requisitos: form.pre_requisitos,
+          ativo: form.ativo,
+        }
+        const result = await createCourse.mutateAsync(createData)
+        toast.success('Curso criado com sucesso!')
+
+        // Após criar, redireciona para edição do curso criado se quiser ir para módulos
+        if (goToModules && result?.codigo) {
+          navigate(`/gerenciar/cursos/${result.codigo}`, {
+            state: { nextTab: MODULES_TAB.id },
+          })
+        } else {
+          navigate('/gerenciar/cursos')
+        }
       }
-    } catch (e: any) {
-      /* empty */
+    } catch (error) {
+      toast.error(
+        isEdit
+          ? 'Erro ao atualizar curso. Tente novamente.'
+          : 'Erro ao criar curso. Verifique se o código já não existe.'
+      )
+      console.error('Erro ao salvar curso:', error)
     }
   }
 
@@ -413,12 +477,13 @@ export default function CourseEditorPage() {
               disabled={
                 createCourse.isPending ||
                 updateCourse?.isPending ||
-                !form.titulo
+                !form.titulo ||
+                (!isEdit && !form.codigo)
               }
             >
               Salvar
             </Button>
-            {isEdit && (
+            {isEdit ? (
               <Button
                 variant='contained'
                 onClick={() => handleSaveInfo(true)}
@@ -430,6 +495,19 @@ export default function CourseEditorPage() {
               >
                 Próximo
               </Button>
+            ) : (
+              <Button
+                variant='contained'
+                onClick={() => handleSaveInfo(true)}
+                disabled={
+                  createCourse.isPending ||
+                  updateCourse?.isPending ||
+                  !form.titulo ||
+                  !form.codigo
+                }
+              >
+                Criar e Adicionar Módulos
+              </Button>
             )}
           </Stack>
         </Stack>
@@ -440,7 +518,7 @@ export default function CourseEditorPage() {
         <CourseModulesSection
           cursoCodigo={codigo!}
           onTotalXpChange={total =>
-            setForm((f: any) => ({ ...f, xp_oferecido: total }))
+            setForm(prevForm => ({ ...prevForm, xp_oferecido: total }))
           }
         />
       )
