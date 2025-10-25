@@ -12,8 +12,6 @@ import {
   Box,
   Stack,
   Tooltip,
-  FormControlLabel,
-  Switch,
   Tabs,
   Tab,
   Typography,
@@ -43,11 +41,6 @@ const TIPO_VF = 'VERDADEIRO_FALSO'
 const TIPO_DISS = 'DISSERTATIVA'
 
 type Opcao = { id: string; texto: string; correta?: boolean }
-interface AfirmaVF {
-  id: string
-  texto: string
-  valor?: 'V' | 'F'
-}
 
 // Componente auxiliar para opção de múltipla escolha
 const PaperOption = ({
@@ -108,9 +101,8 @@ export default function QuestionFormDialog({
   const [peso, setPeso] = useState<number | ''>(1)
   const [opcoes, setOpcoes] = useState<Opcao[]>([])
   const [respostaCorreta, setRespostaCorreta] = useState('')
-  // Verdadeiro/Falso com múltiplas afirmações
-  const [afirmacoesVF, setAfirmacoesVF] = useState<AfirmaVF[]>([])
-  const [usarPesoPorAfirma, setUsarPesoPorAfirma] = useState(false)
+  // Verdadeiro/Falso simplificado - apenas V ou F
+  const [respostaVF, setRespostaVF] = useState<'V' | 'F' | ''>('')
 
   useEffect(() => {
     if (open) {
@@ -122,11 +114,20 @@ export default function QuestionFormDialog({
           correta: question.resposta_correta === t,
         }))
 
-        setTipo(question.tipo) // Corrigido para usar 'tipo' em vez de 'tipo_questao'
+        setTipo(question.tipo)
         setEnunciado(question.enunciado)
         setPeso(question.peso)
         setOpcoes(newOpcoes)
         setRespostaCorreta(question.resposta_correta || '')
+        // Para V/F, extrair a resposta (V ou F)
+        if (question.tipo === TIPO_VF && question.resposta_correta) {
+          setRespostaVF(
+            question.resposta_correta === 'Verdadeiro' ||
+              question.resposta_correta === 'V'
+              ? 'V'
+              : 'F'
+          )
+        }
       } else {
         // Reset para nova questão
         setTipo(TIPO_MULTIPLA)
@@ -134,11 +135,10 @@ export default function QuestionFormDialog({
         setPeso(1)
         setOpcoes([])
         setRespostaCorreta('')
-        setAfirmacoesVF([])
-        setUsarPesoPorAfirma(false)
+        setRespostaVF('')
       }
     }
-  }, [open, mode, question]) // Dependências mais específicas
+  }, [open, mode, question])
 
   // Helpers
   const addOpcao = () => {
@@ -161,48 +161,50 @@ export default function QuestionFormDialog({
     !enunciado.trim() ||
     isSubmitting ||
     (tipo === TIPO_MULTIPLA && (opcoes.length < 2 || !respostaCorreta)) ||
-    (tipo === TIPO_VF &&
-      (afirmacoesVF.length === 0 ||
-        afirmacoesVF.some(a => !a.texto.trim() || !a.valor)))
+    (tipo === TIPO_VF && !respostaVF)
 
   const handleSubmit = async () => {
     if (disableSave) return
     if (mode === 'create') {
       const payload: CreateQuestionInput = {
         avaliacao_id: avaliacaoCodigo,
-        tipo: tipo, // Corrigido para corresponder ao backend
+        tipo: tipo,
         enunciado: enunciado.trim(),
         peso: peso === '' ? 1 : Number(peso),
         opcoes_resposta:
           tipo === TIPO_MULTIPLA
             ? opcoes.map(o => o.texto.trim())
             : tipo === TIPO_VF
-              ? afirmacoesVF.map(a => `${a.texto.trim()}::${a.valor}`)
+              ? ['Verdadeiro', 'Falso']
               : undefined,
         resposta_correta:
           tipo === TIPO_MULTIPLA
             ? respostaCorreta
             : tipo === TIPO_VF
-              ? afirmacoesVF.map(a => a.valor).join(',')
+              ? respostaVF === 'V'
+                ? 'Verdadeiro'
+                : 'Falso'
               : undefined,
       }
       await onCreate(payload)
     } else if (question) {
       const payload: UpdateQuestionInput = {
-        tipo: tipo, // Corrigido para corresponder ao backend
+        tipo: tipo,
         enunciado: enunciado.trim(),
         peso: peso === '' ? 1 : Number(peso),
         opcoes_resposta:
           tipo === TIPO_MULTIPLA
             ? opcoes.map(o => o.texto.trim())
             : tipo === TIPO_VF
-              ? afirmacoesVF.map(a => `${a.texto.trim()}::${a.valor}`)
+              ? ['Verdadeiro', 'Falso']
               : undefined,
         resposta_correta:
           tipo === TIPO_MULTIPLA
             ? respostaCorreta
             : tipo === TIPO_VF
-              ? afirmacoesVF.map(a => a.valor).join(',')
+              ? respostaVF === 'V'
+                ? 'Verdadeiro'
+                : 'Falso'
               : undefined,
       }
       await onUpdate(question.id, payload)
@@ -229,7 +231,7 @@ export default function QuestionFormDialog({
                     setRespostaCorreta('')
                   }
                   if (newValue !== TIPO_VF) {
-                    setAfirmacoesVF([])
+                    setRespostaVF('')
                   }
                 }
               }}
@@ -319,103 +321,24 @@ export default function QuestionFormDialog({
           </Box>
         )}
         {tipo === TIPO_VF && (
-          <Box sx={{ mt: 1.5 }}>
-            <Stack
-              direction='row'
-              justifyContent='space-between'
-              alignItems='center'
-              sx={{ mb: 1 }}
+          <Box sx={{ mt: 2 }}>
+            <Typography variant='subtitle2' sx={{ mb: 1.5 }}>
+              Resposta Correta
+            </Typography>
+            <ToggleButtonGroup
+              fullWidth
+              exclusive
+              value={respostaVF}
+              onChange={(_, v) => v && setRespostaVF(v)}
+              color='primary'
             >
-              <Typography variant='h6'>Afirmações V / F</Typography>
-              <Button
-                variant='text'
-                startIcon={<AddIcon />}
-                onClick={() =>
-                  setAfirmacoesVF(a => [
-                    ...a,
-                    { id: crypto.randomUUID(), texto: '', valor: undefined },
-                  ])
-                }
-              >
-                Adicionar Afirmação
-              </Button>
-            </Stack>
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              {afirmacoesVF.map(a => (
-                <>
-                  <Grid size={{ xs: 21, md: 9 }}>
-                    <TextField
-                      size='small'
-                      fullWidth
-                      label='Afirmação'
-                      value={a.texto}
-                      onChange={e =>
-                        setAfirmacoesVF(prev =>
-                          prev.map(x =>
-                            x.id === a.id ? { ...x, texto: e.target.value } : x
-                          )
-                        )
-                      }
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 2 }}>
-                    <ToggleButtonGroup
-                      fullWidth
-                      exclusive
-                      value={a.valor || null}
-                      onChange={(_, v) =>
-                        v &&
-                        setAfirmacoesVF(prev =>
-                          prev.map(x =>
-                            x.id === a.id ? { ...x, valor: v } : x
-                          )
-                        )
-                      }
-                    >
-                      <ToggleButton value='V' color='success' size='small'>
-                        V
-                      </ToggleButton>
-                      <ToggleButton value='F' color='error' size='small'>
-                        F
-                      </ToggleButton>
-                    </ToggleButtonGroup>
-                  </Grid>
-                  <Grid size={{ xs: 1 }}>
-                    <Tooltip title='Remover afirmação'>
-                      <IconButton
-                        onClick={() =>
-                          setAfirmacoesVF(prev =>
-                            prev.filter(x => x.id !== a.id)
-                          )
-                        }
-                      >
-                        <DeleteIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                  </Grid>
-                </>
-              ))}
-            </Grid>
-            {afirmacoesVF.length === 0 && (
-              <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
-                Nenhuma afirmação adicionada.
-              </Box>
-            )}
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={usarPesoPorAfirma}
-                  onChange={e => setUsarPesoPorAfirma(e.target.checked)}
-                />
-              }
-              label='Usar peso único (desmarque para manter peso por questão)'
-            />
-            {!usarPesoPorAfirma && (
-              <Box sx={{ typography: 'caption', color: 'text.secondary' }}>
-                Peso total da questão aplicado igualmente a cada afirmação
-                (cálculo backend futuro).
-              </Box>
-            )}
+              <ToggleButton value='V' color='success'>
+                Verdadeiro
+              </ToggleButton>
+              <ToggleButton value='F' color='error'>
+                Falso
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Box>
         )}
       </DialogContent>

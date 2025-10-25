@@ -351,13 +351,6 @@ export default function ModuleAssessmentsPanel({
                               >
                                 <Box sx={{ flex: 1 }}>
                                   <Typography
-                                    variant='body2'
-                                    fontWeight={600}
-                                    sx={{ mb: 0.5 }}
-                                  >
-                                    {q.enunciado}
-                                  </Typography>
-                                  <Typography
                                     variant='caption'
                                     color='text.secondary'
                                     sx={{ display: 'block', mb: 1 }}
@@ -365,6 +358,13 @@ export default function ModuleAssessmentsPanel({
                                     Tipo: {formatQuestionType(q.tipo)}
                                     {' - '}
                                     Peso: {q.peso}
+                                  </Typography>
+                                  <Typography
+                                    variant='body2'
+                                    fontWeight={500}
+                                    sx={{ mb: 0.5 }}
+                                  >
+                                    {q.enunciado}
                                   </Typography>
 
                                   {/* Mostrar opções de resposta para múltipla escolha */}
@@ -433,87 +433,31 @@ export default function ModuleAssessmentsPanel({
                                       </Box>
                                     )}
 
-                                  {/* Mostrar opções para Verdadeiro/Falso */}
+                                  {/* Mostrar resposta para Verdadeiro/Falso */}
                                   {q.tipo === 'VERDADEIRO_FALSO' &&
-                                    q.opcoes_resposta && (
+                                    q.resposta_correta && (
                                       <Box sx={{ mt: 1 }}>
                                         <Typography
                                           variant='caption'
                                           color='text.secondary'
                                           sx={{ display: 'block', mb: 0.5 }}
                                         >
-                                          Afirmações:
+                                          Resposta correta:
                                         </Typography>
-                                        <Stack gap={0.5}>
-                                          {q.opcoes_resposta.map(
-                                            (opcao: string, idx: number) => {
-                                              // Parse do formato "texto::resposta"
-                                              const [texto, resposta] =
-                                                opcao.split('::')
-                                              const respostasCorretas =
-                                                q.resposta_correta?.split(
-                                                  ','
-                                                ) || []
-                                              const isCorrect =
-                                                respostasCorretas[idx] ===
-                                                resposta
-
-                                              return (
-                                                <Box
-                                                  key={idx}
-                                                  sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1,
-                                                  }}
-                                                >
-                                                  <Chip
-                                                    size='small'
-                                                    label={`${idx + 1}`}
-                                                    variant='outlined'
-                                                    sx={{
-                                                      minWidth: 32,
-                                                      fontSize: '0.7rem',
-                                                    }}
-                                                  />
-                                                  <Typography
-                                                    variant='caption'
-                                                    sx={{
-                                                      flex: 1,
-                                                      color: 'text.secondary',
-                                                    }}
-                                                  >
-                                                    {texto}
-                                                  </Typography>
-                                                  <Chip
-                                                    size='small'
-                                                    label={
-                                                      resposta === 'V'
-                                                        ? 'Verdadeiro'
-                                                        : 'Falso'
-                                                    }
-                                                    color={
-                                                      isCorrect
-                                                        ? 'success'
-                                                        : 'default'
-                                                    }
-                                                    variant={
-                                                      isCorrect
-                                                        ? 'filled'
-                                                        : 'outlined'
-                                                    }
-                                                    sx={{
-                                                      fontSize: '0.65rem',
-                                                      fontWeight: isCorrect
-                                                        ? 600
-                                                        : 400,
-                                                    }}
-                                                  />
-                                                </Box>
-                                              )
-                                            }
-                                          )}
-                                        </Stack>
+                                        <Chip
+                                          size='small'
+                                          label={q.resposta_correta}
+                                          color={
+                                            q.resposta_correta === 'Verdadeiro'
+                                              ? 'success'
+                                              : 'error'
+                                          }
+                                          variant='filled'
+                                          sx={{
+                                            fontWeight: 600,
+                                            fontSize: '0.75rem',
+                                          }}
+                                        />
                                       </Box>
                                     )}
 
