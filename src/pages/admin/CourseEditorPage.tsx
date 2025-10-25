@@ -62,6 +62,12 @@ interface FormState {
   ativo: boolean
 }
 
+interface CreateCourseResponse {
+  curso?: { codigo: string }
+  codigo?: string
+  mensagem?: string
+}
+
 export default function CourseEditorPage() {
   const { codigo } = useParams<{ codigo: string }>()
   const isEdit = !!codigo
@@ -234,9 +240,15 @@ export default function CourseEditorPage() {
         const result = await createCourse.mutateAsync(createData)
         toast.success('Curso criado com sucesso!')
 
+        // Extrai o código do curso da resposta
+        // A API retorna { curso: { codigo: "..." }, mensagem: "..." }
+        const responseData = result as CreateCourseResponse
+        const codigoCurso =
+          responseData?.curso?.codigo || responseData?.codigo || form.codigo
+
         // Após criar, redireciona para edição do curso criado se quiser ir para módulos
-        if (goToModules && result?.codigo) {
-          navigate(`/gerenciar/cursos/${result.codigo}`, {
+        if (goToModules) {
+          navigate(`/gerenciar/cursos/${codigoCurso}`, {
             state: { nextTab: MODULES_TAB.id },
           })
         } else {
