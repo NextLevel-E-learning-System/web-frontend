@@ -16,6 +16,7 @@ interface CourseContentHeaderProps {
   showProgress?: boolean
   level?: string
   prerequisites?: string[]
+  backPath?: string // Caminho específico para voltar (ex: /gerenciar/cursos)
 }
 
 export default function CourseContentHeader({
@@ -27,11 +28,16 @@ export default function CourseContentHeader({
   showProgress = true,
   level,
   prerequisites,
+  backPath,
 }: CourseContentHeaderProps) {
   const navigate = useNavigate()
 
   const handleGoBack = () => {
-    navigate(-1)
+    if (backPath) {
+      navigate(backPath)
+    } else {
+      navigate(-1)
+    }
   }
 
   return (

@@ -553,6 +553,7 @@ export default function CourseEditorPage() {
         prerequisites={
           isEdit ? course?.pre_requisitos || form.pre_requisitos : undefined
         }
+        backPath='/gerenciar/cursos'
       />
       <Paper variant='outlined' sx={{ mt: 4 }}>
         <Tabs
