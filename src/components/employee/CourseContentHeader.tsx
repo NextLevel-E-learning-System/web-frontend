@@ -72,14 +72,16 @@ export default function CourseContentHeader({
           </Button>
 
           {/* Conteúdo principal */}
-          <Chip
-            label={categoryName}
-            sx={{
-              bgcolor: 'rgba(255,255,255,0.25)',
-              color: '#fff',
-              fontWeight: 700,
-            }}
-          />
+          {categoryName && (
+            <Chip
+              label={categoryName}
+              sx={{
+                bgcolor: 'rgba(255,255,255,0.25)',
+                color: '#fff',
+                fontWeight: 700,
+              }}
+            />
+          )}
           <Typography variant='h4' fontWeight={900} sx={{ mt: 1 }}>
             {title}
           </Typography>
@@ -92,7 +94,7 @@ export default function CourseContentHeader({
               flexWrap: 'wrap',
             }}
           >
-            <Typography variant='body2'>Nível: {level}</Typography>
+            {level && <Typography variant='body2'>Nível: {level}</Typography>}
             {prerequisites && prerequisites.length > 0 && (
               <>
                 <Typography variant='body2'>•</Typography>

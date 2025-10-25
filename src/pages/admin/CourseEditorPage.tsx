@@ -32,8 +32,8 @@ import { useFuncionarios } from '@/api/users'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useNavigation from '@/hooks/useNavigation'
 import CourseModulesSection from '@/components/modules/CourseModulesSection'
-import CourseContentHeader from '@/components/employee/CourseContentHeader'
 import { useCategoryColors } from '@/hooks/useCategoryColors'
+import CourseContentHeader from '@/components/employee/CourseContentHeader'
 
 interface TabDefinition {
   id: string
@@ -328,7 +328,7 @@ export default function CourseEditorPage() {
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
               <TextField
-                label='Duração Estimada (h)'
+                label='Duração Estimada (horas)'
                 type='number'
                 value={form.duracao_estimada}
                 onChange={e =>
@@ -339,7 +339,7 @@ export default function CourseEditorPage() {
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
               <TextField
-                label='XP Total (módulos)'
+                label='XP Total'
                 type='number'
                 value={form.xp_oferecido}
                 fullWidth
@@ -470,13 +470,21 @@ export default function CourseEditorPage() {
           onChange={(_, v) => setTab(v)}
           variant='scrollable'
           scrollButtons='auto'
-          sx={{ px: { xs: 1.5, md: 3 }, pt: 1.5 }}
+          sx={{ px: { xs: 1.5, md: 3 } }}
         >
           <Tab label='Visão Geral' value={INFO_TAB.id} />
           {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
         </Tabs>
         <Divider />
-        <Box sx={{ p: { xs: 2, md: 3 } }}>{isEdit && renderCurrent()}</Box>
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
+          {loadingCourse && isEdit ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            renderCurrent()
+          )}
+        </Box>
       </Paper>
     </DashboardLayout>
   )
