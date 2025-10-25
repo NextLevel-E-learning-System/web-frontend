@@ -99,7 +99,7 @@ const App = () => (
               }
             />
             <Route
-              path='/gerenciar/cursos/new'
+              path='/gerenciar/cursos/novo-curso'
               element={
                 <ProtectedRoute
                   allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
@@ -109,7 +109,7 @@ const App = () => (
               }
             />
             <Route
-              path='/gerenciar/cursos/:codigo/edit'
+              path='/gerenciar/cursos/:codigo'
               element={
                 <ProtectedRoute
                   allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}

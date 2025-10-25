@@ -119,10 +119,10 @@ export default function AdminCourses() {
   const cursosInativos = cursos.filter(c => c.ativo === false).length
 
   // Handlers substituídos por navegação
-  const handleCreateCourse = () => navigate('/gerenciar/cursos/new')
+  const handleCreateCourse = () => navigate('/gerenciar/cursos/novo-curso')
 
   const handleEditCourse = (curso: Curso) => {
-    navigate(`/gerenciar/cursos/${curso.codigo}/edit`)
+    navigate(`/gerenciar/cursos/${curso.codigo}`)
   }
 
   const canEditCourse = (curso: Curso) => {
