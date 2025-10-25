@@ -128,13 +128,13 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
           Nenhum material.
         </Typography>
       ) : (
-        <Stack gap={1.5}>
+        <Stack gap={1}>
           {materials.map(m => (
             <Box
               key={m.id}
               sx={{
                 p: 2,
-                borderRadius: 2,
+                borderRadius: 1,
                 bgcolor: 'rgba(59,130,246,0.08)',
                 border: '1px solid rgba(59,130,246,0.2)',
                 display: 'flex',
