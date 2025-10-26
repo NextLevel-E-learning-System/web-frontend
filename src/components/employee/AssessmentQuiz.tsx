@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Typography,
@@ -25,6 +25,7 @@ import {
 import {
   useStartAssessment,
   useSubmitAssessment,
+  useActiveAttempt,
   type StartAssessmentResponse,
   type AssessmentForStudent,
 } from '@/api/assessments'
@@ -42,6 +43,9 @@ export default function AssessmentQuiz({
   const startAssessment = useStartAssessment()
   const submitAssessment = useSubmitAssessment()
 
+  // Buscar tentativa ativa ao montar o componente
+  const { data: activeAttempt } = useActiveAttempt(avaliacao.codigo, true)
+
   const [assessmentData, setAssessmentData] =
     useState<StartAssessmentResponse | null>(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -50,6 +54,76 @@ export default function AssessmentQuiz({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
   const [currentTab, setCurrentTab] = useState<'info' | 'questoes'>('info')
+
+  const handleSubmit = useCallback(async () => {
+    if (!assessmentData) return
+
+    // Verificar se todas as questões foram respondidas
+    const unanswered = assessmentData.questoes.filter(q => !respostas[q.id])
+    if (unanswered.length > 0) {
+      const confirm = window.confirm(
+        `Você tem ${unanswered.length} questão(ões) não respondida(s). Deseja enviar mesmo assim?`
+      )
+      if (!confirm) return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const result = await submitAssessment.mutateAsync({
+        tentativa_id: assessmentData.tentativa.id,
+        respostas: Object.entries(respostas).map(([questao_id, resposta]) => ({
+          questao_id,
+          resposta_funcionario: resposta,
+        })),
+      })
+
+      toast.success(result.mensagem)
+
+      if (onComplete) {
+        onComplete()
+      }
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      toast.error(err.message || 'Erro ao enviar avaliação')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [assessmentData, respostas, submitAssessment, onComplete])
+
+  // Recuperar tentativa ativa se existir
+  useEffect(() => {
+    if (activeAttempt && !assessmentData) {
+      console.log('🔄 Recuperando tentativa ativa:', activeAttempt)
+      setAssessmentData(activeAttempt)
+      setTentativaStarted(true)
+
+      // Calcular tempo restante se houver tempo limite
+      if (
+        activeAttempt.avaliacao.tempo_limite &&
+        activeAttempt.tentativa.data_inicio
+      ) {
+        const inicioMs = new Date(activeAttempt.tentativa.data_inicio).getTime()
+        const agoraMs = Date.now()
+        const decorrido = Math.floor((agoraMs - inicioMs) / 1000)
+        const limiteSegundos = activeAttempt.avaliacao.tempo_limite * 60
+        const restante = limiteSegundos - decorrido
+
+        if (restante > 0) {
+          setTimeRemaining(restante)
+          toast.info(
+            'Tentativa em andamento recuperada. Continue de onde parou!'
+          )
+        } else {
+          // Tempo esgotado, submeter automaticamente
+          toast.warning(
+            'Tempo esgotado! Submetendo respostas automaticamente...'
+          )
+          setTimeout(() => handleSubmit(), 1000)
+        }
+      }
+    }
+  }, [activeAttempt, assessmentData, handleSubmit])
 
   // Handler para iniciar a tentativa
   const handleStartTentativa = async () => {
@@ -116,42 +190,6 @@ export default function AssessmentQuiz({
 
   const handleAnswerChange = (questaoId: string, resposta: string) => {
     setRespostas(prev => ({ ...prev, [questaoId]: resposta }))
-  }
-
-  const handleSubmit = async () => {
-    if (!assessmentData) return
-
-    // Verificar se todas as questões foram respondidas
-    const unanswered = assessmentData.questoes.filter(q => !respostas[q.id])
-    if (unanswered.length > 0) {
-      const confirm = window.confirm(
-        `Você tem ${unanswered.length} questão(ões) não respondida(s). Deseja enviar mesmo assim?`
-      )
-      if (!confirm) return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      const result = await submitAssessment.mutateAsync({
-        tentativa_id: assessmentData.tentativa.id,
-        respostas: Object.entries(respostas).map(([questao_id, resposta]) => ({
-          questao_id,
-          resposta_funcionario: resposta,
-        })),
-      })
-
-      toast.success(result.mensagem)
-
-      if (onComplete) {
-        onComplete()
-      }
-    } catch (error: unknown) {
-      const err = error as { message?: string }
-      toast.error(err.message || 'Erro ao enviar avaliação')
-    } finally {
-      setIsSubmitting(false)
-    }
   }
 
   return (
@@ -234,7 +272,7 @@ export default function AssessmentQuiz({
         {currentTab === 'questoes' && tentativaStarted && assessmentData && (
           <QuizContent
             assessmentData={assessmentData}
-            avaliacao={avaliacao}
+            _avaliacao={avaliacao}
             currentQuestionIndex={currentQuestionIndex}
             setCurrentQuestionIndex={setCurrentQuestionIndex}
             respostas={respostas}
@@ -253,7 +291,7 @@ export default function AssessmentQuiz({
 // Componente separado para o conteúdo do quiz
 function QuizContent({
   assessmentData,
-  avaliacao,
+  _avaliacao,
   currentQuestionIndex,
   setCurrentQuestionIndex,
   respostas,
@@ -264,7 +302,7 @@ function QuizContent({
   handleSubmit,
 }: {
   assessmentData: StartAssessmentResponse
-  avaliacao: AssessmentForStudent
+  _avaliacao: AssessmentForStudent
   currentQuestionIndex: number
   setCurrentQuestionIndex: (fn: (prev: number) => number) => void
   respostas: Record<string, string>

@@ -453,6 +453,25 @@ export function useStartAssessment() {
   })
 }
 
+// Buscar tentativa ativa (em andamento)
+export function useActiveAttempt(
+  avaliacaoCodigo: string,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: ['assessments', avaliacaoCodigo, 'active-attempt'],
+    queryFn: async () => {
+      const response = await authGet<{
+        success: boolean
+        message: string
+        data: StartAssessmentResponse | null
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/active-attempt`)
+      return response.data // Retorna os dados ou null
+    },
+    enabled: enabled && !!avaliacaoCodigo,
+  })
+}
+
 // Submeter avaliação completa
 export interface SubmitAssessmentInput {
   tentativa_id: string
