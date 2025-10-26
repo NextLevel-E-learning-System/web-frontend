@@ -386,6 +386,21 @@ export function useModuleAssessment(moduloId: string, enabled = true) {
   })
 }
 
+// Buscar questões da avaliação (sem resposta correta) - para preview
+export function useAssessmentQuestionsForStudent(
+  avaliacaoCodigo: string,
+  enabled = true
+) {
+  return useQuery({
+    queryKey: ['assessments', avaliacaoCodigo, 'questions-preview'],
+    queryFn: () =>
+      authGet<QuestionForStudent[]>(
+        `${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/questions/for-student`
+      ),
+    enabled: enabled && !!avaliacaoCodigo,
+  })
+}
+
 // Iniciar avaliação com todos os dados (sem resposta correta)
 export interface QuestionForStudent {
   id: string

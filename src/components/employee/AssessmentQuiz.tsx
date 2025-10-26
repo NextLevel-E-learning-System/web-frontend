@@ -26,8 +26,10 @@ import {
 import {
   useStartAssessment,
   useSubmitAssessment,
+  useAssessmentQuestionsForStudent,
   type StartAssessmentResponse,
   type AssessmentForStudent,
+  type QuestionForStudent,
 } from '@/api/assessments'
 import { toast } from 'react-toastify'
 
@@ -51,6 +53,10 @@ export default function AssessmentQuiz({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
   const [currentTab, setCurrentTab] = useState<'info' | 'questoes'>('info')
+
+  // Buscar questões para preview (sem resposta correta)
+  const { data: questoesPreview = [], isLoading: loadingQuestoes } =
+    useAssessmentQuestionsForStudent(avaliacao.codigo, !tentativaStarted)
 
   // Handler para iniciar a tentativa
   const handleStartTentativa = async () => {
@@ -183,15 +189,13 @@ export default function AssessmentQuiz({
         {currentTab === 'info' && (
           <Box>
             <Stack gap={1}>
-              {avaliacao.tempo_limite && (
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <TimerRounded fontSize='small' color='action' />
-                  <Typography variant='body2'>
-                    <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
-                    minutos
-                  </Typography>
-                </Box>
-              )}
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <TimerRounded fontSize='small' color='action' />
+                <Typography variant='body2'>
+                  <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
+                  minutos
+                </Typography>
+              </Box>
               {avaliacao.tentativas_permitidas && (
                 <Typography variant='body2'>
                   <strong>Tentativas permitidas:</strong>{' '}
@@ -205,6 +209,66 @@ export default function AssessmentQuiz({
                 </Typography>
               )}
             </Stack>
+
+            {/* Preview das Questões */}
+            <Box sx={{ mt: 3 }}>
+              <Divider sx={{ mb: 2 }} />
+              <Typography
+                variant='subtitle2'
+                color='text.secondary'
+                gutterBottom
+              >
+                Questões desta Avaliação ({questoesPreview.length})
+              </Typography>
+              {loadingQuestoes ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : (
+                <Stack spacing={1.5} sx={{ mt: 2 }}>
+                  {questoesPreview.map((q, idx) => (
+                    <Paper
+                      key={q.id}
+                      variant='outlined'
+                      sx={{ p: 2, bgcolor: 'background.default' }}
+                    >
+                      <Stack spacing={1}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Chip
+                            label={`${idx + 1}`}
+                            size='small'
+                            color='primary'
+                            sx={{ minWidth: 32 }}
+                          />
+                          <Chip
+                            label={
+                              q.tipo === 'MULTIPLA_ESCOLHA'
+                                ? 'Múltipla Escolha'
+                                : q.tipo === 'VERDADEIRO_FALSO'
+                                  ? 'V/F'
+                                  : 'Dissertativa'
+                            }
+                            size='small'
+                            variant='outlined'
+                          />
+                          <Typography variant='caption' color='text.secondary'>
+                            Peso: {q.peso}
+                          </Typography>
+                        </Box>
+                        <Typography variant='body2'>{q.enunciado}</Typography>
+                      </Stack>
+                    </Paper>
+                  ))}
+                </Stack>
+              )}
+            </Box>
 
             {!tentativaStarted && (
               <>
