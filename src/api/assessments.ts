@@ -207,7 +207,7 @@ export function useDeleteAssessment() {
   })
 }
 
-export function useSubmitAssessment(codigo: string) {
+export function useSubmitAssessmentOld(codigo: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -359,6 +359,113 @@ export function useReviewAttempt(attemptId: string) {
         queryKey: ['assessments', 'dissertative', attemptId],
       })
       queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
+    },
+  })
+}
+
+// ===== NOVOS HOOKS PARA FLUXO DO ALUNO =====
+
+// Buscar avaliação de um módulo para o aluno
+export interface AssessmentForStudent {
+  codigo: string
+  titulo: string
+  tempo_limite?: number
+  tentativas_permitidas?: number
+  nota_minima?: number
+  modulo_id: string
+}
+
+export function useModuleAssessment(moduloId: string, enabled = true) {
+  return useQuery({
+    queryKey: ['assessments', 'module', moduloId],
+    queryFn: () =>
+      authGet<AssessmentForStudent>(
+        `${API_ENDPOINTS.ASSESSMENTS}/module/${moduloId}/for-student`
+      ),
+    enabled: enabled && !!moduloId,
+  })
+}
+
+// Iniciar avaliação com todos os dados (sem resposta correta)
+export interface QuestionForStudent {
+  id: string
+  enunciado: string
+  tipo: 'MULTIPLA_ESCOLHA' | 'VERDADEIRO_FALSO' | 'DISSERTATIVA'
+  opcoes_resposta: string[]
+  peso: number
+}
+
+export interface StartAssessmentResponse {
+  tentativa: {
+    id: string
+    avaliacao_id: string
+    funcionario_id: string
+    data_inicio: string
+    status: string
+    tempo_limite?: number
+    tentativas_permitidas?: number
+  }
+  avaliacao: {
+    codigo: string
+    titulo: string
+    tempo_limite?: number
+    tentativas_permitidas?: number
+    nota_minima?: number
+  }
+  questoes: QuestionForStudent[]
+  tentativas_anteriores: number
+}
+
+export function useStartAssessment() {
+  return useMutation({
+    mutationKey: ['assessments', 'start'],
+    mutationFn: async (avaliacaoCodigo: string) => {
+      const response = await authPost<{
+        success: boolean
+        message: string
+        data: StartAssessmentResponse
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/start-complete`, {})
+      return response.data // Retorna apenas os dados, não o wrapper
+    },
+  })
+}
+
+// Submeter avaliação completa
+export interface SubmitAssessmentInput {
+  tentativa_id: string
+  respostas: Array<{
+    questao_id: string
+    resposta_funcionario: string
+  }>
+}
+
+export interface SubmitAssessmentResponse {
+  tentativa_id: string
+  status: 'FINALIZADA' | 'PENDENTE_REVISAO' | 'APROVADO' | 'REPROVADO'
+  nota_obtida?: number | null
+  nota_minima?: number | null
+  tem_dissertativas: boolean
+  questoes_dissertativas_pendentes?: number
+  respostas_salvas: number
+  mensagem: string
+}
+
+export function useSubmitAssessment() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['assessments', 'submit'],
+    mutationFn: async (input: SubmitAssessmentInput) => {
+      const response = await authPost<{
+        success: boolean
+        message: string
+        data: SubmitAssessmentResponse
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/submit-complete`, input)
+      return response.data // Retorna apenas os dados
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assessments'] })
+      queryClient.invalidateQueries({ queryKey: ['enrollments'] })
     },
   })
 }

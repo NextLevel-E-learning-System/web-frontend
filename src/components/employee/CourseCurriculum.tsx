@@ -25,6 +25,8 @@ import {
 } from '@mui/icons-material'
 import type { Module } from '../../api/courses'
 import { useModuleMaterials } from '../../api/courses'
+import AssessmentQuiz from './AssessmentQuiz'
+import { useModuleAssessment } from '@/api/assessments'
 import {
   useStartModule,
   useCompleteModule,
@@ -98,6 +100,12 @@ function ModuleAccordion({
   const isInProgress = moduleStatus === 'in_progress'
   const isCompleted = moduleStatus === 'completed'
 
+  // Buscar avaliação do módulo se for tipo quiz
+  const { data: moduleAssessment } = useModuleAssessment(
+    module.id,
+    module.tipo_conteudo === 'quiz' && (isInProgress || isCompleted)
+  )
+
   const handleStartModule = async (e: React.MouseEvent) => {
     e.stopPropagation() // Previne expansão do accordion
 
@@ -159,7 +167,9 @@ function ModuleAccordion({
   const canCompleteModule =
     module.tipo_conteudo === 'pdf' || module.tipo_conteudo === 'video'
       ? allMaterialsViewed
-      : true
+      : module.tipo_conteudo === 'quiz'
+        ? false // Quiz será concluído automaticamente após submeter
+        : true
 
   const getActionLabel = () => {
     if (isStarting) return 'Iniciando...'
@@ -397,17 +407,26 @@ function ModuleAccordion({
 
             {/* Quiz */}
             {module.tipo_conteudo === 'quiz' && (
-              <Box
-                sx={{
-                  p: 3,
-                  borderRadius: 2,
-                  bgcolor: 'rgba(234,179,8,0.08)',
-                  textAlign: 'center',
-                }}
-              >
-                <Typography variant='body2' color='text.secondary'>
-                  Quiz será carregado aqui
-                </Typography>
+              <Box>
+                {moduleAssessment ? (
+                  <AssessmentQuiz
+                    avaliacao={moduleAssessment}
+                    onComplete={handleCompleteModule}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      p: 3,
+                      borderRadius: 2,
+                      bgcolor: 'rgba(234,179,8,0.08)',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <Typography variant='body2' color='text.secondary'>
+                      Carregando avaliação...
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             )}
 
@@ -431,28 +450,30 @@ function ModuleAccordion({
                 </Box>
               )}
 
-            {/* Botão de Concluir Módulo */}
-            {isInProgress && !isCompleted && (
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-                <Button
-                  variant='contained'
-                  color='success'
-                  size='large'
-                  disabled={isCompleting || !canCompleteModule}
-                  onClick={handleCompleteModule}
-                  startIcon={
-                    isCompleting ? (
-                      <CircularProgress size={20} color='inherit' />
-                    ) : (
-                      <CheckCircleRoundedIcon />
-                    )
-                  }
-                  sx={{ minWidth: 200 }}
-                >
-                  {isCompleting ? 'Concluindo...' : 'Concluir Módulo'}
-                </Button>
-              </Box>
-            )}
+            {/* Botão de Concluir Módulo - não mostrar para quiz (conclusão automática) */}
+            {isInProgress &&
+              !isCompleted &&
+              module.tipo_conteudo !== 'quiz' && (
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                  <Button
+                    variant='contained'
+                    color='success'
+                    size='large'
+                    disabled={isCompleting || !canCompleteModule}
+                    onClick={handleCompleteModule}
+                    startIcon={
+                      isCompleting ? (
+                        <CircularProgress size={20} color='inherit' />
+                      ) : (
+                        <CheckCircleRoundedIcon />
+                      )
+                    }
+                    sx={{ minWidth: 200 }}
+                  >
+                    {isCompleting ? 'Concluindo...' : 'Concluir Módulo'}
+                  </Button>
+                </Box>
+              )}
           </Stack>
         )}
       </AccordionDetails>

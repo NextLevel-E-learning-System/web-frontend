@@ -98,9 +98,24 @@ api.interceptors.request.use(config => {
   const token = getAccessToken()
   if (token) {
     const headers = (config.headers ?? {}) as any
+
+    // Adicionar Authorization Bearer
     if (typeof headers.set === 'function')
       headers.set('Authorization', `Bearer ${token}`)
     else headers['Authorization'] = `Bearer ${token}`
+
+    // Decodificar token para extrair user_id e adicionar header x-user-id
+    try {
+      const decoded = JSON.parse(atob(token.split('.')[1])) as { sub: string }
+      if (decoded.sub) {
+        if (typeof headers.set === 'function')
+          headers.set('x-user-id', decoded.sub)
+        else headers['x-user-id'] = decoded.sub
+      }
+    } catch (e) {
+      console.warn('[HTTP] Falha ao decodificar token para extrair user_id:', e)
+    }
+
     config.headers = headers
   }
   return config
