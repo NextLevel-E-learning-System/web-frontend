@@ -378,10 +378,13 @@ export interface AssessmentForStudent {
 export function useModuleAssessment(moduloId: string, enabled = true) {
   return useQuery({
     queryKey: ['assessments', 'module', moduloId],
-    queryFn: () =>
-      authGet<AssessmentForStudent>(
-        `${API_ENDPOINTS.ASSESSMENTS}/module/${moduloId}/for-student`
-      ),
+    queryFn: async () => {
+      const response = await authGet<{
+        success: boolean
+        data: AssessmentForStudent
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/module/${moduloId}/for-student`)
+      return response.data
+    },
     enabled: enabled && !!moduloId,
   })
 }
@@ -393,10 +396,15 @@ export function useAssessmentQuestionsForStudent(
 ) {
   return useQuery({
     queryKey: ['assessments', avaliacaoCodigo, 'questions-preview'],
-    queryFn: () =>
-      authGet<QuestionForStudent[]>(
+    queryFn: async () => {
+      const response = await authGet<{
+        success: boolean
+        data: QuestionForStudent[]
+      }>(
         `${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/questions/for-student`
-      ),
+      )
+      return response.data
+    },
     enabled: enabled && !!avaliacaoCodigo,
   })
 }

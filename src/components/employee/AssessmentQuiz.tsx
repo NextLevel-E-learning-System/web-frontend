@@ -54,9 +54,9 @@ export default function AssessmentQuiz({
   const [tentativaStarted, setTentativaStarted] = useState(false)
   const [currentTab, setCurrentTab] = useState<'info' | 'questoes'>('info')
 
-  // Buscar questões para preview (sem resposta correta)
+  // Buscar questões para preview (sem resposta correta) - sempre busca para mostrar na aba info
   const { data: questoesPreview = [], isLoading: loadingQuestoes } =
-    useAssessmentQuestionsForStudent(avaliacao.codigo, !tentativaStarted)
+    useAssessmentQuestionsForStudent(avaliacao.codigo, true)
 
   // Handler para iniciar a tentativa
   const handleStartTentativa = async () => {
@@ -189,13 +189,15 @@ export default function AssessmentQuiz({
         {currentTab === 'info' && (
           <Box>
             <Stack gap={1}>
-              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                <TimerRounded fontSize='small' color='action' />
-                <Typography variant='body2'>
-                  <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
-                  minutos
-                </Typography>
-              </Box>
+              {avaliacao.tempo_limite && (
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <TimerRounded fontSize='small' color='action' />
+                  <Typography variant='body2'>
+                    <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
+                    minutos
+                  </Typography>
+                </Box>
+              )}
               {avaliacao.tentativas_permitidas && (
                 <Typography variant='body2'>
                   <strong>Tentativas permitidas:</strong>{' '}
