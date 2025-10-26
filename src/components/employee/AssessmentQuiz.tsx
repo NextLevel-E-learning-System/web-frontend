@@ -14,7 +14,6 @@ import {
   Chip,
   Alert,
   CircularProgress,
-  Divider,
   Tabs,
   Tab,
 } from '@mui/material'
@@ -26,10 +25,8 @@ import {
 import {
   useStartAssessment,
   useSubmitAssessment,
-  useAssessmentQuestionsForStudent,
   type StartAssessmentResponse,
   type AssessmentForStudent,
-  type QuestionForStudent,
 } from '@/api/assessments'
 import { toast } from 'react-toastify'
 
@@ -53,10 +50,6 @@ export default function AssessmentQuiz({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
   const [currentTab, setCurrentTab] = useState<'info' | 'questoes'>('info')
-
-  // Buscar questões para preview (sem resposta correta) - sempre busca para mostrar na aba info
-  const { data: questoesPreview = [], isLoading: loadingQuestoes } =
-    useAssessmentQuestionsForStudent(avaliacao.codigo, true)
 
   // Handler para iniciar a tentativa
   const handleStartTentativa = async () => {
@@ -190,13 +183,10 @@ export default function AssessmentQuiz({
           <Box>
             <Stack gap={1}>
               {avaliacao.tempo_limite && (
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <TimerRounded fontSize='small' color='action' />
-                  <Typography variant='body2'>
-                    <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
-                    minutos
-                  </Typography>
-                </Box>
+                <Typography variant='body2'>
+                  <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
+                  minutos
+                </Typography>
               )}
               {avaliacao.tentativas_permitidas && (
                 <Typography variant='body2'>
@@ -207,78 +197,13 @@ export default function AssessmentQuiz({
               {avaliacao.nota_minima != null && (
                 <Typography variant='body2'>
                   <strong>Nota mínima para aprovação:</strong>{' '}
-                  {avaliacao.nota_minima}%
+                  {avaliacao.nota_minima}
                 </Typography>
               )}
             </Stack>
 
-            {/* Preview das Questões */}
-            <Box sx={{ mt: 3 }}>
-              <Divider sx={{ mb: 2 }} />
-              <Typography
-                variant='subtitle2'
-                color='text.secondary'
-                gutterBottom
-              >
-                Questões desta Avaliação ({questoesPreview.length})
-              </Typography>
-              {loadingQuestoes ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                  <CircularProgress size={24} />
-                </Box>
-              ) : (
-                <Stack spacing={1.5} sx={{ mt: 2 }}>
-                  {questoesPreview.map((q, idx) => (
-                    <Paper
-                      key={q.id}
-                      variant='outlined'
-                      sx={{ p: 2, bgcolor: 'background.default' }}
-                    >
-                      <Stack spacing={1}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            mb: 0.5,
-                          }}
-                        >
-                          <Chip
-                            label={`${idx + 1}`}
-                            size='small'
-                            color='primary'
-                            sx={{ minWidth: 32 }}
-                          />
-                          <Chip
-                            label={
-                              q.tipo === 'MULTIPLA_ESCOLHA'
-                                ? 'Múltipla Escolha'
-                                : q.tipo === 'VERDADEIRO_FALSO'
-                                  ? 'V/F'
-                                  : 'Dissertativa'
-                            }
-                            size='small'
-                            variant='outlined'
-                          />
-                          <Typography variant='caption' color='text.secondary'>
-                            Peso: {q.peso}
-                          </Typography>
-                        </Box>
-                        <Typography variant='body2'>{q.enunciado}</Typography>
-                      </Stack>
-                    </Paper>
-                  ))}
-                </Stack>
-              )}
-            </Box>
-
             {!tentativaStarted && (
               <>
-                <Alert severity='info' sx={{ fontSize: '0.875rem' }}>
-                  Ao clicar em "Iniciar Avaliação", sua tentativa será
-                  registrada e o tempo começará a contar (se houver limite).
-                </Alert>
-
                 {/* Botão para iniciar */}
                 <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2 }}>
                   <Button
@@ -301,12 +226,6 @@ export default function AssessmentQuiz({
                   </Button>
                 </Box>
               </>
-            )}
-
-            {tentativaStarted && (
-              <Alert severity='success' sx={{ fontSize: '0.875rem' }}>
-                ✓ Tentativa iniciada! Acesse a aba "Questões" para responder.
-              </Alert>
             )}
           </Box>
         )}
@@ -382,13 +301,6 @@ function QuizContent({
               label={formatTime(timeRemaining)}
               color={timeRemaining < 60 ? 'error' : 'default'}
               variant='filled'
-            />
-          )}
-
-          {avaliacao.nota_minima && (
-            <Chip
-              label={`Nota mínima: ${avaliacao.nota_minima}%`}
-              size='small'
             />
           )}
         </Stack>
