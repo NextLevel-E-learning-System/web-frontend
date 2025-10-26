@@ -25,7 +25,6 @@ import {
 } from '@mui/icons-material'
 import type { Module } from '../../api/courses'
 import { useModuleMaterials } from '../../api/courses'
-import AssessmentQuiz from './AssessmentQuiz'
 import { useModuleAssessment } from '@/api/assessments'
 import {
   useStartModule,
@@ -33,6 +32,7 @@ import {
   useEnrollmentModuleProgress,
 } from '../../api/progress'
 import { Tooltip } from '@mui/material'
+import AssessmentQuiz from './AssessmentQuiz'
 
 // Tipos baseados no backend (course-service)
 type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'

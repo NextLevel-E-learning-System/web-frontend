@@ -15,6 +15,8 @@ import {
   Alert,
   CircularProgress,
   Divider,
+  Tabs,
+  Tab,
 } from '@mui/material'
 import {
   CheckCircleRounded,
@@ -48,6 +50,7 @@ export default function AssessmentQuiz({
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
+  const [currentTab, setCurrentTab] = useState<'info' | 'questoes'>('info')
 
   // Handler para iniciar a tentativa
   const handleStartTentativa = async () => {
@@ -56,6 +59,7 @@ export default function AssessmentQuiz({
       console.log('📝 Tentativa iniciada:', result)
       setAssessmentData(result)
       setTentativaStarted(true)
+      setCurrentTab('questoes') // Mudar para aba de questões
 
       // Configurar timer se houver tempo limite
       if (result.avaliacao.tempo_limite) {
@@ -151,105 +155,148 @@ export default function AssessmentQuiz({
     }
   }
 
-  // Se tentativa não foi iniciada, mostrar informações da avaliação
-  if (!tentativaStarted) {
-    return (
-      <Box sx={{ py: 2 }}>
-        <Paper variant='outlined' sx={{ p: 3 }}>
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant='h6' fontWeight={600} gutterBottom>
-                {avaliacao.titulo}
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-            </Box>
+  return (
+    <Box>
+      <Stack spacing={2}>
+        {/* Tabs */}
+        <Box
+          sx={{
+            mb: 2,
+            borderBottom: theme => `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Tabs
+            value={currentTab}
+            onChange={(_, val) => setCurrentTab(val)}
+            scrollButtons='auto'
+          >
+            <Tab value='info' label='Informações' />
+            <Tab
+              value='questoes'
+              label='Questões'
+              disabled={!tentativaStarted}
+            />
+          </Tabs>
+        </Box>
 
-            {/* Informações da avaliação */}
-            <Stack spacing={2}>
-              <Box>
-                <Typography variant='subtitle2' color='text.secondary'>
-                  Informações da Avaliação
+        {/* Aba de Informações */}
+        {currentTab === 'info' && (
+          <Box>
+            <Stack gap={1}>
+              {avaliacao.tempo_limite && (
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <TimerRounded fontSize='small' color='action' />
+                  <Typography variant='body2'>
+                    <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
+                    minutos
+                  </Typography>
+                </Box>
+              )}
+              {avaliacao.tentativas_permitidas && (
+                <Typography variant='body2'>
+                  <strong>Tentativas permitidas:</strong>{' '}
+                  {avaliacao.tentativas_permitidas}
                 </Typography>
-                <Stack spacing={1} sx={{ mt: 1 }}>
-                  {avaliacao.tempo_limite && (
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <TimerRounded fontSize='small' color='action' />
-                      <Typography variant='body2'>
-                        <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
-                        minutos
-                      </Typography>
-                    </Box>
-                  )}
-                  {avaliacao.tentativas_permitidas && (
-                    <Typography variant='body2'>
-                      <strong>Tentativas permitidas:</strong>{' '}
-                      {avaliacao.tentativas_permitidas}
-                    </Typography>
-                  )}
-                  {avaliacao.nota_minima != null && (
-                    <Typography variant='body2'>
-                      <strong>Nota mínima para aprovação:</strong>{' '}
-                      {avaliacao.nota_minima}%
-                    </Typography>
-                  )}
-                </Stack>
-              </Box>
-
-              <Alert severity='info' sx={{ fontSize: '0.875rem' }}>
-                Ao clicar em "Iniciar Avaliação", sua tentativa será registrada
-                e o tempo começará a contar (se houver limite).
-              </Alert>
+              )}
+              {avaliacao.nota_minima != null && (
+                <Typography variant='body2'>
+                  <strong>Nota mínima para aprovação:</strong>{' '}
+                  {avaliacao.nota_minima}%
+                </Typography>
+              )}
             </Stack>
 
-            {/* Botão para iniciar */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2 }}>
-              <Button
-                variant='contained'
-                size='large'
-                startIcon={
-                  startAssessment.isPending ? (
-                    <CircularProgress size={20} color='inherit' />
-                  ) : (
-                    <PlayArrowRounded />
-                  )
-                }
-                disabled={startAssessment.isPending}
-                onClick={handleStartTentativa}
-                sx={{ minWidth: 200 }}
-              >
-                {startAssessment.isPending
-                  ? 'Iniciando...'
-                  : 'Iniciar Avaliação'}
-              </Button>
-            </Box>
-          </Stack>
-        </Paper>
-      </Box>
-    )
-  }
+            {!tentativaStarted && (
+              <>
+                <Alert severity='info' sx={{ fontSize: '0.875rem' }}>
+                  Ao clicar em "Iniciar Avaliação", sua tentativa será
+                  registrada e o tempo começará a contar (se houver limite).
+                </Alert>
 
-  // Se não tem dados da tentativa ainda, mostrar loading
-  if (!assessmentData) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
-    )
-  }
+                {/* Botão para iniciar */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2 }}>
+                  <Button
+                    variant='contained'
+                    size='large'
+                    startIcon={
+                      startAssessment.isPending ? (
+                        <CircularProgress size={20} color='inherit' />
+                      ) : (
+                        <PlayArrowRounded />
+                      )
+                    }
+                    disabled={startAssessment.isPending}
+                    onClick={handleStartTentativa}
+                    sx={{ minWidth: 200 }}
+                  >
+                    {startAssessment.isPending
+                      ? 'Iniciando...'
+                      : 'Iniciar Avaliação'}
+                  </Button>
+                </Box>
+              </>
+            )}
 
-  // Quiz ativo - tentativa iniciada
+            {tentativaStarted && (
+              <Alert severity='success' sx={{ fontSize: '0.875rem' }}>
+                ✓ Tentativa iniciada! Acesse a aba "Questões" para responder.
+              </Alert>
+            )}
+          </Box>
+        )}
+
+        {/* Aba de Questões */}
+        {currentTab === 'questoes' && tentativaStarted && assessmentData && (
+          <QuizContent
+            assessmentData={assessmentData}
+            avaliacao={avaliacao}
+            currentQuestionIndex={currentQuestionIndex}
+            setCurrentQuestionIndex={setCurrentQuestionIndex}
+            respostas={respostas}
+            handleAnswerChange={handleAnswerChange}
+            timeRemaining={timeRemaining}
+            formatTime={formatTime}
+            isSubmitting={isSubmitting}
+            handleSubmit={handleSubmit}
+          />
+        )}
+      </Stack>
+    </Box>
+  )
+}
+
+// Componente separado para o conteúdo do quiz
+function QuizContent({
+  assessmentData,
+  avaliacao,
+  currentQuestionIndex,
+  setCurrentQuestionIndex,
+  respostas,
+  handleAnswerChange,
+  timeRemaining,
+  formatTime,
+  isSubmitting,
+  handleSubmit,
+}: {
+  assessmentData: StartAssessmentResponse
+  avaliacao: AssessmentForStudent
+  currentQuestionIndex: number
+  setCurrentQuestionIndex: (fn: (prev: number) => number) => void
+  respostas: Record<string, string>
+  handleAnswerChange: (questaoId: string, resposta: string) => void
+  timeRemaining: number | null
+  formatTime: (seconds: number) => string
+  isSubmitting: boolean
+  handleSubmit: () => void
+}) {
   const currentQuestion = assessmentData.questoes[currentQuestionIndex]
   const progress =
     ((currentQuestionIndex + 1) / assessmentData.questoes.length) * 100
 
   return (
-    <Box sx={{ py: 2 }}>
+    <Stack spacing={3}>
       {/* Header com informações */}
-      <Stack spacing={2} sx={{ mb: 3 }}>
-        <Typography variant='h6' fontWeight={600}>
-          {avaliacao.titulo}
-        </Typography>
-
+      <Stack spacing={2}>
         <Stack
           direction='row'
           spacing={2}
@@ -272,9 +319,9 @@ export default function AssessmentQuiz({
             />
           )}
 
-          {assessmentData.avaliacao.nota_minima && (
+          {avaliacao.nota_minima && (
             <Chip
-              label={`Nota mínima: ${assessmentData.avaliacao.nota_minima}%`}
+              label={`Nota mínima: ${avaliacao.nota_minima}%`}
               size='small'
             />
           )}
@@ -295,7 +342,7 @@ export default function AssessmentQuiz({
       </Stack>
 
       {/* Questão atual */}
-      <Paper variant='outlined' sx={{ p: 3, mb: 3 }}>
+      <Paper variant='outlined' sx={{ p: 3 }}>
         <Stack spacing={3}>
           <Box>
             <Chip
@@ -417,6 +464,6 @@ export default function AssessmentQuiz({
           </Button>
         )}
       </Stack>
-    </Box>
+    </Stack>
   )
 }
