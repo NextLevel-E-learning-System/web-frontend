@@ -162,26 +162,52 @@ export default function AssessmentQuiz({
       }
 
       // Mostrar informações sobre tentativas
+      const tentativaNumero = result.tentativas_anteriores + 1
+      const totalPermitido = 2 // Regra: 2 tentativas (inicial + recuperação)
+
       if (result.tentativas_anteriores > 0) {
+        toast.warning(
+          `⚠️ ATENÇÃO: Esta é sua ${tentativaNumero}ª tentativa (tentativa de recuperação). Você precisa obter nota mínima de 7.0 para aprovação.`,
+          { autoClose: 8000 }
+        )
+      } else {
         toast.info(
-          `Esta é sua tentativa nº ${result.tentativas_anteriores + 1}${
-            result.avaliacao.tentativas_permitidas
-              ? ` de ${result.avaliacao.tentativas_permitidas}`
-              : ''
-          }`
+          `📝 Avaliação iniciada! Você tem ${totalPermitido} tentativas no total. Nota mínima para aprovação: 7.0`,
+          { autoClose: 5000 }
         )
       }
     } catch (error: unknown) {
       console.error('❌ Erro ao iniciar tentativa:', error)
       const err = error as {
         message?: string
-        response?: { data?: { message?: string } }
+        response?: {
+          data?: {
+            message?: string
+            error?: string
+            details?: { message?: string; incomplete_modules?: string[] }
+          }
+        }
       }
+
+      // Tratamento específico para erros de validação
+      const errorDetails = err.response?.data?.details
       const errorMessage =
+        errorDetails?.message ||
         err.response?.data?.message ||
-        err.message ||
-        'Erro ao iniciar tentativa'
-      toast.error(errorMessage)
+        err.response?.data?.error ||
+        err.message
+
+      if (
+        errorDetails?.incomplete_modules &&
+        errorDetails.incomplete_modules.length > 0
+      ) {
+        toast.error(
+          `❌ ${errorMessage}\n\nMódulos pendentes:\n${errorDetails.incomplete_modules.join('\n')}`,
+          { autoClose: 10000 }
+        )
+      } else {
+        toast.error(errorMessage || 'Erro ao iniciar tentativa')
+      }
     }
   }
 
@@ -254,27 +280,36 @@ export default function AssessmentQuiz({
                       minutos
                     </Typography>
                   )}
-                  {avaliacao.tentativas_permitidas && (
-                    <Typography variant='body2'>
-                      <strong>Tentativas permitidas:</strong>{' '}
-                      {avaliacao.tentativas_permitidas}
-                    </Typography>
-                  )}
-                  {avaliacao.nota_minima != null && (
-                    <Typography variant='body2'>
-                      <strong>Nota mínima para aprovação:</strong>{' '}
-                      {avaliacao.nota_minima}%
-                    </Typography>
-                  )}
+                  <Typography variant='body2'>
+                    <strong>Tentativas permitidas:</strong> 2 (inicial +
+                    recuperação)
+                  </Typography>
+                  <Typography variant='body2'>
+                    <strong>Nota mínima para aprovação:</strong> 7.0 (70%)
+                  </Typography>
                 </Stack>
               </Box>
+
+              {/* Alerta de pré-requisitos */}
+              <Alert severity='warning'>
+                <Typography variant='body2' fontWeight={600}>
+                  📋 Pré-requisitos
+                </Typography>
+                <Typography variant='body2' sx={{ mt: 0.5 }}>
+                  • Todos os módulos obrigatórios devem estar concluídos
+                  <br />
+                  • Nota mínima: 7.0 (70%)
+                  <br />• Você tem direito a 1 tentativa de recuperação se não
+                  atingir a nota mínima
+                </Typography>
+              </Alert>
 
               {/* Alerta informativo */}
               {!tentativaStarted && (
                 <Alert severity='info'>
                   Após submeter suas respostas, você retornará a esta tela. O
                   módulo só pode ser finalizado quando você obter aprovação na
-                  avaliação.
+                  avaliação (nota ≥ 7.0).
                 </Alert>
               )}
 
