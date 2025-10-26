@@ -454,10 +454,7 @@ export function useStartAssessment() {
 }
 
 // Buscar tentativa ativa (em andamento)
-export function useActiveAttempt(
-  avaliacaoCodigo: string,
-  enabled = true
-) {
+export function useActiveAttempt(avaliacaoCodigo: string, enabled = true) {
   return useQuery({
     queryKey: ['assessments', avaliacaoCodigo, 'active-attempt'],
     queryFn: async () => {
@@ -509,5 +506,36 @@ export function useSubmitAssessment() {
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
       queryClient.invalidateQueries({ queryKey: ['enrollments'] })
     },
+  })
+}
+
+// Buscar histórico de tentativas do usuário
+export interface AttemptHistory {
+  id: string
+  avaliacao_id: string
+  funcionario_id: string
+  data_inicio: string
+  data_fim: string | null
+  status:
+    | 'EM_ANDAMENTO'
+    | 'FINALIZADA'
+    | 'PENDENTE_REVISAO'
+    | 'APROVADO'
+    | 'REPROVADO'
+  nota_obtida: number | null
+  criado_em: string
+}
+
+export function useUserAttempts(avaliacaoCodigo: string, enabled = true) {
+  return useQuery({
+    queryKey: ['assessments', avaliacaoCodigo, 'user-attempts'],
+    queryFn: async () => {
+      const response = await authGet<{
+        success: boolean
+        data: AttemptHistory[]
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/my-attempts`)
+      return response.data
+    },
+    enabled: enabled && !!avaliacaoCodigo,
   })
 }

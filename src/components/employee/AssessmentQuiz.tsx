@@ -38,7 +38,7 @@ interface AssessmentQuizProps {
 
 export default function AssessmentQuiz({
   avaliacao,
-  onComplete,
+  onComplete: _onComplete,
 }: AssessmentQuizProps) {
   const startAssessment = useStartAssessment()
   const submitAssessment = useSubmitAssessment()
@@ -78,18 +78,40 @@ export default function AssessmentQuiz({
         })),
       })
 
-      toast.success(result.mensagem)
-
-      if (onComplete) {
-        onComplete()
+      // Mostrar resultado
+      if (result.status === 'APROVADO') {
+        toast.success(
+          `✅ ${result.mensagem}\n\nNota: ${result.nota_obtida?.toFixed(1)}% (Mínima: ${result.nota_minima}%)`
+        )
+      } else if (result.status === 'REPROVADO') {
+        toast.error(
+          `❌ ${result.mensagem}\n\nNota: ${result.nota_obtida?.toFixed(1)}% (Mínima: ${result.nota_minima}%)`
+        )
+      } else if (result.status === 'PENDENTE_REVISAO') {
+        toast.info(
+          `⏳ ${result.mensagem}\n\nSua avaliação está aguardando correção das questões dissertativas.`
+        )
+      } else {
+        toast.success(result.mensagem)
       }
+
+      // Resetar estado do quiz para voltar à tela de informações
+      setTentativaStarted(false)
+      setAssessmentData(null)
+      setRespostas({})
+      setCurrentQuestionIndex(0)
+      setTimeRemaining(null)
+      setCurrentTab('info')
+
+      // NÃO chamar onComplete() - deixar o aluno decidir se quer finalizar o módulo
+      // O módulo só deve ser finalizado manualmente quando status = APROVADO
     } catch (error: unknown) {
       const err = error as { message?: string }
       toast.error(err.message || 'Erro ao enviar avaliação')
     } finally {
       setIsSubmitting(false)
     }
-  }, [assessmentData, respostas, submitAssessment, onComplete])
+  }, [assessmentData, respostas, submitAssessment])
 
   // Recuperar tentativa ativa se existir
   useEffect(() => {
@@ -219,31 +241,46 @@ export default function AssessmentQuiz({
         {/* Aba de Informações */}
         {currentTab === 'info' && (
           <Box>
-            <Stack gap={1}>
-              {avaliacao.tempo_limite && (
-                <Typography variant='body2'>
-                  <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
-                  minutos
+            <Stack gap={2}>
+              {/* Informações da avaliação */}
+              <Box>
+                <Typography variant='h6' gutterBottom>
+                  Informações da Avaliação
                 </Typography>
-              )}
-              {avaliacao.tentativas_permitidas && (
-                <Typography variant='body2'>
-                  <strong>Tentativas permitidas:</strong>{' '}
-                  {avaliacao.tentativas_permitidas}
-                </Typography>
-              )}
-              {avaliacao.nota_minima != null && (
-                <Typography variant='body2'>
-                  <strong>Nota mínima para aprovação:</strong>{' '}
-                  {avaliacao.nota_minima}
-                </Typography>
-              )}
-            </Stack>
+                <Stack gap={1}>
+                  {avaliacao.tempo_limite && (
+                    <Typography variant='body2'>
+                      <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
+                      minutos
+                    </Typography>
+                  )}
+                  {avaliacao.tentativas_permitidas && (
+                    <Typography variant='body2'>
+                      <strong>Tentativas permitidas:</strong>{' '}
+                      {avaliacao.tentativas_permitidas}
+                    </Typography>
+                  )}
+                  {avaliacao.nota_minima != null && (
+                    <Typography variant='body2'>
+                      <strong>Nota mínima para aprovação:</strong>{' '}
+                      {avaliacao.nota_minima}%
+                    </Typography>
+                  )}
+                </Stack>
+              </Box>
 
-            {!tentativaStarted && (
-              <>
-                {/* Botão para iniciar */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 2 }}>
+              {/* Alerta informativo */}
+              {!tentativaStarted && (
+                <Alert severity='info'>
+                  Após submeter suas respostas, você retornará a esta tela. O
+                  módulo só pode ser finalizado quando você obter aprovação na
+                  avaliação.
+                </Alert>
+              )}
+
+              {/* Botão para iniciar */}
+              {!tentativaStarted && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
                   <Button
                     variant='contained'
                     size='large'
@@ -263,8 +300,8 @@ export default function AssessmentQuiz({
                       : 'Iniciar Avaliação'}
                   </Button>
                 </Box>
-              </>
-            )}
+              )}
+            </Stack>
           </Box>
         )}
 
