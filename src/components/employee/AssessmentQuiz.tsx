@@ -12,7 +12,6 @@ import {
   Paper,
   LinearProgress,
   Chip,
-  Alert,
   CircularProgress,
   Tabs,
   Tab,
@@ -94,14 +93,6 @@ export default function AssessmentQuiz({
     return tentativasUsadas < (avaliacao.tentativas_permitidas || 2)
   }
 
-  // Obter a última tentativa finalizada
-  const lastFinishedAttempt = userAttempts
-    .filter(a => a.status !== 'EM_ANDAMENTO')
-    .sort(
-      (a, b) =>
-        new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()
-    )[0]
-
   // Mapear status para exibição
   const getStatusDisplay = (status: string) => {
     const statusMap: Record<string, { label: string; color: string }> = {
@@ -131,30 +122,13 @@ export default function AssessmentQuiz({
     setIsSubmitting(true)
 
     try {
-      const result = await submitAssessment.mutateAsync({
+      await submitAssessment.mutateAsync({
         tentativa_id: assessmentData.tentativa.id,
         respostas: Object.entries(respostas).map(([questao_id, resposta]) => ({
           questao_id,
           resposta_funcionario: resposta,
         })),
       })
-
-      // Mostrar resultado
-      if (result.status === 'APROVADO') {
-        toast.success(
-          `✅ ${result.mensagem}\n\nNota: ${result.nota_obtida?.toFixed(1)}% (Mínima: ${result.nota_minima}%)`
-        )
-      } else if (result.status === 'REPROVADO') {
-        toast.error(
-          `❌ ${result.mensagem}\n\nNota: ${result.nota_obtida?.toFixed(1)}% (Mínima: ${result.nota_minima}%)`
-        )
-      } else if (result.status === 'PENDENTE_REVISAO') {
-        toast.info(
-          `⏳ ${result.mensagem}\n\nSua avaliação está aguardando correção das questões dissertativas.`
-        )
-      } else {
-        toast.success(result.mensagem)
-      }
 
       // Resetar estado do quiz para voltar à tela de informações
       setTentativaStarted(false)
@@ -194,9 +168,6 @@ export default function AssessmentQuiz({
 
         if (restante > 0) {
           setTimeRemaining(restante)
-          toast.info(
-            'Tentativa em andamento recuperada. Continue de onde parou!'
-          )
         } else {
           // Tempo esgotado, submeter automaticamente
           toast.warning(
@@ -447,35 +418,6 @@ export default function AssessmentQuiz({
                       })}
                   </Stack>
                 </Box>
-              )}
-
-              {/* Status da última tentativa */}
-              {lastFinishedAttempt && (
-                <Alert
-                  severity={
-                    lastFinishedAttempt.status === 'APROVADO'
-                      ? 'success'
-                      : lastFinishedAttempt.status === 'PENDENTE_REVISAO'
-                        ? 'info'
-                        : 'warning'
-                  }
-                >
-                  <Typography variant='body2' fontWeight={600}>
-                    {lastFinishedAttempt.status === 'APROVADO' &&
-                      '✅ Você foi aprovado nesta avaliação!'}
-                    {lastFinishedAttempt.status === 'REPROVADO' &&
-                      '❌ Você não atingiu a nota mínima. Tente novamente!'}
-                    {lastFinishedAttempt.status === 'PENDENTE_REVISAO' &&
-                      '⏳ Sua avaliação está aguardando correção.'}
-                  </Typography>
-                  {lastFinishedAttempt.nota_obtida !== null && (
-                    <Typography variant='body2' sx={{ mt: 0.5 }}>
-                      Nota obtida: {lastFinishedAttempt.nota_obtida}
-                      {lastFinishedAttempt.status === 'REPROVADO' &&
-                        ` (Nota mínima: ${avaliacao.nota_minima})`}
-                    </Typography>
-                  )}
-                </Alert>
               )}
 
               {/* Botão para iniciar */}
