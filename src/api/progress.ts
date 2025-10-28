@@ -223,6 +223,41 @@ export interface EnrollmentsFilters {
   limit?: number
 }
 
+// Novo: Interface para inscrição com dados do aluno
+export interface CourseEnrollment {
+  id: string
+  funcionario: {
+    id: string
+    nome: string
+    email: string
+  }
+  progresso: number
+  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'ABANDONADO'
+  data_inscricao: string
+  data_conclusao?: string
+  modulos_completos: number
+  total_modulos: number
+  nota_media?: number | null
+}
+
+export interface CourseEnrollmentsResponse {
+  items: CourseEnrollment[]
+  total: number
+  mensagem: string
+}
+
+// Novo: Hook para buscar inscrições de um curso específico (para instrutor)
+export function useCourseEnrollments(cursoId: string, enabled = true) {
+  return useQuery<CourseEnrollmentsResponse>({
+    queryKey: ['progress', 'course', cursoId, 'enrollments'],
+    queryFn: () =>
+      authGet<CourseEnrollmentsResponse>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes?curso_id=${cursoId}`
+      ),
+    enabled: enabled && !!cursoId,
+  })
+}
+
 export function useAllEnrollments(filters: EnrollmentsFilters = {}) {
   const searchParams = new URLSearchParams()
 

@@ -44,8 +44,9 @@ interface TabDefinition {
 
 const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
-const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Turmas' }
+const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Alunos' }
 const REVIEWS_TAB: TabDefinition = { id: 'reviews', label: 'Correções' }
+const FORUM_TAB: TabDefinition = { id: 'forum', label: 'Fórum' }
 
 interface LocationState {
   nextTab?: string
@@ -563,6 +564,20 @@ export default function CourseEditorPage() {
       return <CourseStudentsPanel cursoCodigo={codigo!} />
     if (tab === REVIEWS_TAB.id)
       return <CourseReviewsPanel cursoCodigo={codigo!} />
+    if (tab === FORUM_TAB.id)
+      return (
+        <Paper sx={{ p: 3, textAlign: 'center', minHeight: 300 }}>
+          <Typography variant='h6' gutterBottom>
+            💬 Fórum de Discussão
+          </Typography>
+          <Typography color='text.secondary'>
+            Sistema de comunicação entre professor e alunos será implementado aqui
+          </Typography>
+          <Typography variant='caption' color='text.secondary'>
+            (Mensagens, threads, notificações)
+          </Typography>
+        </Paper>
+      )
     return null
   }
 
@@ -594,8 +609,9 @@ export default function CourseEditorPage() {
         >
           <Tab label='Visão Geral' value={INFO_TAB.id} />
           {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
-          {isEdit && <Tab label='Turmas' value={STUDENTS_TAB.id} />}
+          {isEdit && <Tab label='Alunos' value={STUDENTS_TAB.id} />}
           {isEdit && <Tab label='Correções' value={REVIEWS_TAB.id} />}
+          {isEdit && <Tab label='Fórum' value={FORUM_TAB.id} />}
         </Tabs>
         <Divider />
         <Box sx={{ p: { xs: 2, md: 3 } }}>
