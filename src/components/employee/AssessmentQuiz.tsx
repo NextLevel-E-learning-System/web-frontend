@@ -36,10 +36,7 @@ interface AssessmentQuizProps {
   onComplete?: () => void
 }
 
-export default function AssessmentQuiz({
-  avaliacao,
-  onComplete: _onComplete,
-}: AssessmentQuizProps) {
+export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
   const startAssessment = useStartAssessment()
   const submitAssessment = useSubmitAssessment()
 
@@ -138,8 +135,8 @@ export default function AssessmentQuiz({
       setTimeRemaining(null)
       setCurrentTab('info')
 
-      // NÃO chamar onComplete() - deixar o aluno decidir se quer finalizar o módulo
-      // O módulo só deve ser finalizado manualmente quando status = APROVADO
+      // ✅ Módulo é concluído automaticamente pelo backend quando aprovado
+      // Não é mais necessário chamar onComplete() aqui
     } catch (error: unknown) {
       const err = error as { message?: string }
       toast.error(err.message || 'Erro ao enviar avaliação')
