@@ -221,22 +221,6 @@ export default function AssessmentQuiz({
       if (result.avaliacao.tempo_limite) {
         setTimeRemaining(result.avaliacao.tempo_limite * 60) // converter para segundos
       }
-
-      // Mostrar informações sobre tentativas
-      const tentativaNumero = result.tentativas_anteriores + 1
-      const totalPermitido = 2 // Regra: 2 tentativas (inicial + recuperação)
-
-      if (result.tentativas_anteriores > 0) {
-        toast.warning(
-          `⚠️ ATENÇÃO: Esta é sua ${tentativaNumero}ª tentativa (tentativa de recuperação). Você precisa obter nota mínima de 7.0 para aprovação.`,
-          { autoClose: 8000 }
-        )
-      } else {
-        toast.info(
-          `📝 Avaliação iniciada! Você tem ${totalPermitido} tentativas no total. Nota mínima para aprovação: 7.0`,
-          { autoClose: 5000 }
-        )
-      }
     } catch (error: unknown) {
       console.error('❌ Erro ao iniciar tentativa:', error)
       const err = error as {
@@ -597,37 +581,17 @@ function QuizContent({
         <Box>
           <LinearProgress variant='determinate' value={progress} />
         </Box>
-
-        {assessmentData.tentativas_anteriores > 0 && (
-          <Alert severity='info' sx={{ fontSize: '0.875rem' }}>
-            Esta é sua tentativa nº {assessmentData.tentativas_anteriores + 1}
-            {assessmentData.avaliacao.tentativas_permitidas &&
-              ` de ${assessmentData.avaliacao.tentativas_permitidas}`}
-          </Alert>
-        )}
       </Stack>
 
       {/* Questão atual */}
       <Paper variant='outlined' sx={{ p: 3 }}>
         <Stack spacing={3}>
           <Box>
-            <Chip
-              label={
-                currentQuestion.tipo === 'MULTIPLA_ESCOLHA'
-                  ? 'Múltipla Escolha'
-                  : currentQuestion.tipo === 'VERDADEIRO_FALSO'
-                    ? 'Verdadeiro ou Falso'
-                    : 'Dissertativa'
-              }
-              size='small'
-              color='primary'
-              sx={{ mb: 2 }}
-            />
             <Typography variant='body1' fontWeight={500}>
               {currentQuestion.enunciado}
             </Typography>
             <Typography variant='caption' color='text.secondary' sx={{ mt: 1 }}>
-              Peso: {currentQuestion.peso} ponto(s)
+              Peso: {currentQuestion.peso}
             </Typography>
           </Box>
 
