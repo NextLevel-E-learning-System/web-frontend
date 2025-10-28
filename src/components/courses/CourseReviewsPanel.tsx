@@ -113,14 +113,11 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
         },
       })
 
+      // Usar a mensagem que vem da API
       if (result.passou) {
-        toast.success(
-          `Avaliação aprovada! Nota final: ${result.nota_final.toFixed(1)}`
-        )
+        toast.success(result.mensagem || 'Avaliação aprovada com sucesso!')
       } else {
-        toast.info(
-          `Avaliação reprovada. Nota: ${result.nota_final.toFixed(1)} (Mínima: ${result.nota_minima?.toFixed(1) || 'N/A'})`
-        )
+        toast.info(result.mensagem || 'Avaliação finalizada')
       }
 
       handleCloseReview()
@@ -285,7 +282,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
               </Alert>
 
               {/* Questões Dissertativas */}
-              {attemptDetails.questoes_dissertativas.map((questao, index) => {
+              {attemptDetails.questoes_dissertativas.map(questao => {
                 return (
                   <Paper
                     key={questao.resposta_id}
