@@ -36,6 +36,7 @@ import { useCategoryColors } from '@/hooks/useCategoryColors'
 import CourseContentHeader from '@/components/employee/CourseContentHeader'
 import CourseStudentsPanel from '@/components/courses/CourseStudentsPanel'
 import CourseReviewsPanel from '@/components/courses/CourseReviewsPanel'
+import CourseForumPanel from '@/components/admin/CourseForumPanel'
 
 interface TabDefinition {
   id: string
@@ -564,20 +565,7 @@ export default function CourseEditorPage() {
       return <CourseStudentsPanel cursoCodigo={codigo!} />
     if (tab === REVIEWS_TAB.id)
       return <CourseReviewsPanel cursoCodigo={codigo!} />
-    if (tab === FORUM_TAB.id)
-      return (
-        <Paper sx={{ p: 3, textAlign: 'center', minHeight: 300 }}>
-          <Typography variant='h6' gutterBottom>
-            💬 Fórum de Discussão
-          </Typography>
-          <Typography color='text.secondary'>
-            Sistema de comunicação entre professor e alunos será implementado aqui
-          </Typography>
-          <Typography variant='caption' color='text.secondary'>
-            (Mensagens, threads, notificações)
-          </Typography>
-        </Paper>
-      )
+    if (tab === FORUM_TAB.id) return <CourseForumPanel cursoCodigo={codigo!} />
     return null
   }
 
