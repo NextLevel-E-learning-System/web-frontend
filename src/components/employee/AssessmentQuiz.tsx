@@ -330,18 +330,15 @@ export default function AssessmentQuiz({
           <Box>
             <Stack gap={2}>
               {/* Alerta de pré-requisitos */}
-              <Alert severity='warning'>
-                <Typography variant='body2'>
-                  • Todos os módulos obrigatórios devem estar concluídos antes
-                  de iniciar esta avaliação.
-                  <br />• Tempo limite: {avaliacao.tempo_limite} minutos
-                  <br />• Nota mínima: {avaliacao.nota_minima}
-                  <br />• Tentativas permitidas:{' '}
-                  {avaliacao.tentativas_permitidas}
-                  <br />• Novas tentativas são permitidas se você não atingir a
-                  nota mínima para aprovação.
-                </Typography>
-              </Alert>
+              <Typography variant='body2'>
+                • Todos os módulos obrigatórios devem estar concluídos antes de
+                iniciar esta avaliação.
+                <br />• Tempo limite: {avaliacao.tempo_limite} minutos
+                <br />• Nota mínima: {avaliacao.nota_minima}
+                <br />• Tentativas permitidas: {avaliacao.tentativas_permitidas}
+                <br />• Novas tentativas são permitidas se você não atingir a
+                nota mínima para aprovação.
+              </Typography>
 
               {/* Histórico de Tentativas */}
               {userAttempts.length > 0 && (
@@ -415,7 +412,7 @@ export default function AssessmentQuiz({
                                           : 'error.main'
                                       }
                                     >
-                                      {attempt.nota_obtida.toFixed(1)}
+                                      {attempt.nota_obtida}
                                     </Typography>
                                   </Box>
                                 )}
@@ -489,7 +486,7 @@ export default function AssessmentQuiz({
                   </Typography>
                   {lastFinishedAttempt.nota_obtida !== null && (
                     <Typography variant='body2' sx={{ mt: 0.5 }}>
-                      Nota obtida: {lastFinishedAttempt.nota_obtida.toFixed(1)}
+                      Nota obtida: {lastFinishedAttempt.nota_obtida}
                       {lastFinishedAttempt.status === 'REPROVADO' &&
                         ` (Nota mínima: ${avaliacao.nota_minima})`}
                     </Typography>
