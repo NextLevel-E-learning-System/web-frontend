@@ -552,6 +552,7 @@ export default function CourseEditorPage() {
           onTotalXpChange={total =>
             setForm(prevForm => ({ ...prevForm, xp_oferecido: total }))
           }
+          isViewOnly={isViewOnly}
         />
       )
     return null

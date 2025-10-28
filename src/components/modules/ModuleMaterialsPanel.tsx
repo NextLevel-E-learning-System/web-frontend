@@ -30,9 +30,13 @@ import ConfirmationDialog from '../common/ConfirmationDialog'
 
 interface Props {
   moduloId: string
+  isViewOnly?: boolean
 }
 
-export default function ModuleMaterialsPanel({ moduloId }: Props) {
+export default function ModuleMaterialsPanel({
+  moduloId,
+  isViewOnly = false,
+}: Props) {
   const { data: materialsRaw, isLoading } = useModuleMaterials(moduloId)
   const materials = Array.isArray(materialsRaw)
     ? materialsRaw.sort((a, b) =>
@@ -109,16 +113,18 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
 
   return (
     <Box>
-      <Stack direction='row' justifyContent='end' alignItems='center'>
-        <Button
-          component='label'
-          startIcon={<CloudUploadIcon />}
-          disabled={uploading}
-        >
-          {uploading ? 'Enviando...' : 'Upload'}
-          <input hidden type='file' onChange={handleSelectFile} />
-        </Button>
-      </Stack>
+      {!isViewOnly && (
+        <Stack direction='row' justifyContent='end' alignItems='center'>
+          <Button
+            component='label'
+            startIcon={<CloudUploadIcon />}
+            disabled={uploading}
+          >
+            {uploading ? 'Enviando...' : 'Upload'}
+            <input hidden type='file' onChange={handleSelectFile} />
+          </Button>
+        </Stack>
+      )}
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
           <CircularProgress size={24} />
@@ -175,15 +181,17 @@ export default function ModuleMaterialsPanel({ moduloId }: Props) {
                   <OpenInNew fontSize='inherit' />
                 </IconButton>
               </Tooltip>
-              <Tooltip title='Remover material'>
-                <IconButton
-                  size='small'
-                  onClick={() => handleDeleteMaterial(m.id, m.nome_arquivo)}
-                  disabled={deleteMaterial.isPending}
-                >
-                  <DeleteIcon fontSize='inherit' />
-                </IconButton>
-              </Tooltip>
+              {!isViewOnly && (
+                <Tooltip title='Remover material'>
+                  <IconButton
+                    size='small'
+                    onClick={() => handleDeleteMaterial(m.id, m.nome_arquivo)}
+                    disabled={deleteMaterial.isPending}
+                  >
+                    <DeleteIcon fontSize='inherit' />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
           ))}
         </Stack>

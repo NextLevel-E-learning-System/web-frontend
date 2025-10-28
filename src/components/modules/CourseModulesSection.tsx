@@ -33,11 +33,13 @@ import ModuleCreateDialog from './ModuleCreateDialog'
 interface Props {
   cursoCodigo: string
   onTotalXpChange?: (total: number) => void
+  isViewOnly?: boolean
 }
 
 export default function CourseModulesSection({
   cursoCodigo,
   onTotalXpChange,
+  isViewOnly = false,
 }: Props) {
   const {
     data: modulos = [],
@@ -68,21 +70,23 @@ export default function CourseModulesSection({
 
   return (
     <Box>
-      <Stack
-        direction='row'
-        alignItems='center'
-        justifyContent='end'
-        sx={{ mb: 2 }}
-      >
-        <Button
-          variant='contained'
-          size='small'
-          startIcon={<AddIcon />}
-          onClick={() => setCreateOpen(true)}
+      {!isViewOnly && (
+        <Stack
+          direction='row'
+          alignItems='center'
+          justifyContent='end'
+          sx={{ mb: 2 }}
         >
-          Novo Módulo
-        </Button>
-      </Stack>
+          <Button
+            variant='contained'
+            size='small'
+            startIcon={<AddIcon />}
+            onClick={() => setCreateOpen(true)}
+          >
+            Novo Módulo
+          </Button>
+        </Stack>
+      )}
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
           <CircularProgress size={22} />
@@ -200,19 +204,21 @@ export default function CourseModulesSection({
                     </Stack>
 
                     {/* Action Button */}
-                    <Tooltip title='Excluir módulo'>
-                      <IconButton
-                        size='small'
-                        color='error'
-                        onClick={e => {
-                          e.stopPropagation()
-                          setConfirm({ open: true, moduloId: m.id })
-                        }}
-                        disabled={deleteModule.isPending}
-                      >
-                        <DeleteIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
+                    {!isViewOnly && (
+                      <Tooltip title='Excluir módulo'>
+                        <IconButton
+                          size='small'
+                          color='error'
+                          onClick={e => {
+                            e.stopPropagation()
+                            setConfirm({ open: true, moduloId: m.id })
+                          }}
+                          disabled={deleteModule.isPending}
+                        >
+                          <DeleteIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Stack>
                 </AccordionSummary>
                 <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3, pt: 0 }}>
@@ -245,17 +251,22 @@ export default function CourseModulesSection({
                       key={m.id}
                       cursoCodigo={cursoCodigo}
                       modulo={m}
+                      isViewOnly={isViewOnly}
                     />
                   )}
                   {currentTab === 'materiais' &&
                     allowedTabs.includes('materiais') && (
-                      <ModuleMaterialsPanel moduloId={m.id} />
+                      <ModuleMaterialsPanel
+                        moduloId={m.id}
+                        isViewOnly={isViewOnly}
+                      />
                     )}
                   {currentTab === 'avaliacoes' &&
                     allowedTabs.includes('avaliacoes') && (
                       <ModuleAssessmentsPanel
                         cursoCodigo={cursoCodigo}
                         moduloId={m.id}
+                        isViewOnly={isViewOnly}
                       />
                     )}
                 </AccordionDetails>

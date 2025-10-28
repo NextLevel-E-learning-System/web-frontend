@@ -19,12 +19,14 @@ interface Props {
   cursoCodigo: string
   modulo: Module
   onSaved?: () => void
+  isViewOnly?: boolean
 }
 
 export default function ModuleInfoForm({
   cursoCodigo,
   modulo,
   onSaved,
+  isViewOnly = false,
 }: Props) {
   const [titulo, setTitulo] = useState(modulo.titulo)
   const [ordem, setOrdem] = useState<number>(modulo.ordem)
@@ -64,6 +66,7 @@ export default function ModuleInfoForm({
             onChange={e => setTitulo(e.target.value)}
             fullWidth
             size='small'
+            disabled={isViewOnly}
           />
         </Grid>
         <Grid size={{ xs: 6, md: 3 }}>
@@ -74,6 +77,7 @@ export default function ModuleInfoForm({
             onChange={e => setOrdem(Number(e.target.value) || 1)}
             fullWidth
             size='small'
+            disabled={isViewOnly}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
@@ -84,10 +88,11 @@ export default function ModuleInfoForm({
             onChange={e => setXp(Number(e.target.value) || 0)}
             fullWidth
             size='small'
+            disabled={isViewOnly}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <FormControl fullWidth size='small'>
+          <FormControl fullWidth size='small' disabled={isViewOnly}>
             <InputLabel>Tipo de Conteúdo</InputLabel>
             <Select
               value={tipoConteudo}
@@ -107,6 +112,7 @@ export default function ModuleInfoForm({
               <Switch
                 checked={obrigatorio}
                 onChange={e => setObrigatorio(e.target.checked)}
+                disabled={isViewOnly}
               />
             }
             label={obrigatorio ? 'Obrigatório' : 'Opcional'}
@@ -122,19 +128,22 @@ export default function ModuleInfoForm({
             multiline
             minRows={3}
             placeholder='Descrição, instruções ou URL (para vídeo/link)'
+            disabled={isViewOnly}
           />
         </Grid>
       </Grid>
-      <Stack direction='row' justifyContent='flex-end'>
-        <Button
-          variant='contained'
-          size='small'
-          onClick={handleSave}
-          disabled={updateModule.isPending || !titulo.trim()}
-        >
-          Salvar
-        </Button>
-      </Stack>
+      {!isViewOnly && (
+        <Stack direction='row' justifyContent='flex-end'>
+          <Button
+            variant='contained'
+            size='small'
+            onClick={handleSave}
+            disabled={updateModule.isPending || !titulo.trim()}
+          >
+            Salvar
+          </Button>
+        </Stack>
+      )}
     </Box>
   )
 }

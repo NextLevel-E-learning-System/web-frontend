@@ -41,6 +41,7 @@ import {
 interface Props {
   cursoCodigo: string
   moduloId: string
+  isViewOnly?: boolean
 }
 
 // Função para formatar o tipo de questão
@@ -60,6 +61,7 @@ const formatQuestionType = (tipo: string) => {
 export default function ModuleAssessmentsPanel({
   cursoCodigo,
   moduloId,
+  isViewOnly = false,
 }: Props) {
   const { data: assessments = [], isLoading } = useAssessments({
     curso_id: cursoCodigo,
@@ -136,16 +138,18 @@ export default function ModuleAssessmentsPanel({
 
   return (
     <Box>
-      <Stack direction='row' justifyContent='end' alignItems='center'>
-        <Button
-          size='small'
-          startIcon={<AddIcon />}
-          onClick={() => setAssessmentDialog({ open: true, mode: 'create' })}
-          variant='text'
-        >
-          Nova Avaliação
-        </Button>
-      </Stack>
+      {!isViewOnly && (
+        <Stack direction='row' justifyContent='end' alignItems='center'>
+          <Button
+            size='small'
+            startIcon={<AddIcon />}
+            onClick={() => setAssessmentDialog({ open: true, mode: 'create' })}
+            variant='text'
+          >
+            Nova Avaliação
+          </Button>
+        </Stack>
+      )}
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
           <CircularProgress size={26} />
@@ -210,38 +214,40 @@ export default function ModuleAssessmentsPanel({
                     </Stack>
 
                     {/* Action Buttons */}
-                    <Stack direction='row' gap={0.5}>
-                      <Tooltip title='Editar Avaliação'>
-                        <IconButton
-                          size='small'
-                          onClick={e => {
-                            e.stopPropagation()
-                            setAssessmentDialog({
-                              open: true,
-                              mode: 'edit',
-                              codigo: a.codigo,
-                            })
-                          }}
-                        >
-                          <EditIcon fontSize='small' />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={a.ativo ? 'Inativar' : 'Ativar'}>
-                        <IconButton
-                          size='small'
-                          onClick={e => {
-                            e.stopPropagation()
-                            handleToggleAssessmentStatus(a)
-                          }}
-                        >
-                          {a.ativo ? (
-                            <DeleteIcon fontSize='small' />
-                          ) : (
-                            <CheckCircleIcon fontSize='small' />
-                          )}
-                        </IconButton>
-                      </Tooltip>
-                    </Stack>
+                    {!isViewOnly && (
+                      <Stack direction='row' gap={0.5}>
+                        <Tooltip title='Editar Avaliação'>
+                          <IconButton
+                            size='small'
+                            onClick={e => {
+                              e.stopPropagation()
+                              setAssessmentDialog({
+                                open: true,
+                                mode: 'edit',
+                                codigo: a.codigo,
+                              })
+                            }}
+                          >
+                            <EditIcon fontSize='small' />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title={a.ativo ? 'Inativar' : 'Ativar'}>
+                          <IconButton
+                            size='small'
+                            onClick={e => {
+                              e.stopPropagation()
+                              handleToggleAssessmentStatus(a)
+                            }}
+                          >
+                            {a.ativo ? (
+                              <DeleteIcon fontSize='small' />
+                            ) : (
+                              <CheckCircleIcon fontSize='small' />
+                            )}
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    )}
                   </Stack>
                 </AccordionSummary>
                 <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3, pt: 0 }}>
@@ -294,27 +300,29 @@ export default function ModuleAssessmentsPanel({
 
                   {currentTab === 'questoes' && (
                     <Box>
-                      <Stack
-                        direction='row'
-                        alignItems='center'
-                        justifyContent='end'
-                        sx={{ mb: 2 }}
-                      >
-                        <Button
-                          startIcon={<AddIcon />}
-                          onClick={() =>
-                            setQuestionDialog({
-                              open: true,
-                              mode: 'create',
-                              assessmentCodigo: a.codigo,
-                            })
-                          }
-                          variant='text'
-                          size='small'
+                      {!isViewOnly && (
+                        <Stack
+                          direction='row'
+                          alignItems='center'
+                          justifyContent='end'
+                          sx={{ mb: 2 }}
                         >
-                          Nova questão
-                        </Button>
-                      </Stack>
+                          <Button
+                            startIcon={<AddIcon />}
+                            onClick={() =>
+                              setQuestionDialog({
+                                open: true,
+                                mode: 'create',
+                                assessmentCodigo: a.codigo,
+                              })
+                            }
+                            variant='text'
+                            size='small'
+                          >
+                            Nova questão
+                          </Button>
+                        </Stack>
+                      )}
                       {questionsQuery.isLoading ? (
                         <Box
                           sx={{
@@ -473,37 +481,39 @@ export default function ModuleAssessmentsPanel({
                                   )}
                                 </Box>
 
-                                <Stack direction='row' gap={0.5}>
-                                  <Tooltip title='Editar'>
-                                    <IconButton
-                                      size='small'
-                                      onClick={() =>
-                                        setQuestionDialog({
-                                          open: true,
-                                          mode: 'edit',
-                                          assessmentCodigo: a.codigo,
-                                          questionId: q.id,
-                                        })
-                                      }
-                                    >
-                                      <EditIcon fontSize='inherit' />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title='Remover'>
-                                    <IconButton
-                                      size='small'
-                                      onClick={() =>
-                                        setConfirm({
-                                          open: true,
-                                          kind: 'question',
-                                          id: q.id,
-                                        })
-                                      }
-                                    >
-                                      <DeleteIcon fontSize='inherit' />
-                                    </IconButton>
-                                  </Tooltip>
-                                </Stack>
+                                {!isViewOnly && (
+                                  <Stack direction='row' gap={0.5}>
+                                    <Tooltip title='Editar'>
+                                      <IconButton
+                                        size='small'
+                                        onClick={() =>
+                                          setQuestionDialog({
+                                            open: true,
+                                            mode: 'edit',
+                                            assessmentCodigo: a.codigo,
+                                            questionId: q.id,
+                                          })
+                                        }
+                                      >
+                                        <EditIcon fontSize='inherit' />
+                                      </IconButton>
+                                    </Tooltip>
+                                    <Tooltip title='Remover'>
+                                      <IconButton
+                                        size='small'
+                                        onClick={() =>
+                                          setConfirm({
+                                            open: true,
+                                            kind: 'question',
+                                            id: q.id,
+                                          })
+                                        }
+                                      >
+                                        <DeleteIcon fontSize='inherit' />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </Stack>
+                                )}
                               </Box>
                             </Paper>
                           ))}
