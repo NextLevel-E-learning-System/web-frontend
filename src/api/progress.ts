@@ -241,7 +241,8 @@ export interface CourseEnrollment {
 }
 
 export interface CourseEnrollmentsResponse {
-  items: CourseEnrollment[]
+  success: boolean
+  data: CourseEnrollment[]
   total: number
   mensagem: string
 }

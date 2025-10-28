@@ -41,7 +41,7 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
 
   // Buscar inscrições do curso
   const { data: response, isLoading } = useCourseEnrollments(cursoCodigo)
-  const enrollments = response?.items || []
+  const enrollments = response?.data || []
 
   const filteredEnrollments = enrollments.filter(e =>
     e.funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase())
@@ -238,7 +238,7 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
                 <TableCell align='center'>Status</TableCell>
                 <TableCell align='center'>Progresso</TableCell>
                 <TableCell align='center'>Módulos</TableCell>
-                <TableCell align='center'>Nota Média</TableCell>
+                <TableCell align='center'>Nota Final</TableCell>
                 <TableCell align='center'>Data Inscrição</TableCell>
               </TableRow>
             </TableHead>
