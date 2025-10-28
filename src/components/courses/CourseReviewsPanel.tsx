@@ -304,7 +304,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                       fontWeight={600}
                       gutterBottom
                     >
-                      Questão {index + 1} (Peso: {questao.peso} pontos)
+                      Questão {index + 1} (Peso: {questao.peso})
                     </Typography>
                     <Typography
                       variant='body2'
@@ -333,25 +333,22 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                     {/* Nota da Questão */}
                     <Box sx={{ mt: 2 }}>
                       <TextField
-                        label={`Nota da Questão (0 a ${questao.peso})`}
+                        label='Nota da Questão (0 a 100)'
                         type='number'
                         value={currentScore}
                         onChange={e => {
                           const value = parseFloat(e.target.value) || 0
-                          const clamped = Math.max(
-                            0,
-                            Math.min(questao.peso, value)
-                          )
+                          const clamped = Math.max(0, Math.min(100, value))
                           handleScoreChange(questao.resposta_id, clamped)
                         }}
                         inputProps={{
                           min: 0,
-                          max: questao.peso,
+                          max: 100,
                           step: 0.5,
                         }}
                         size='small'
                         sx={{ width: 200 }}
-                        helperText={`Pontuação máxima: ${questao.peso}`}
+                        helperText={`Peso na avaliação: ${questao.peso}x`}
                       />
                     </Box>
                   </Paper>
