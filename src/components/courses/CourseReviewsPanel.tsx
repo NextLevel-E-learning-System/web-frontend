@@ -20,31 +20,28 @@ import {
   DialogActions,
   Divider,
   Alert,
-  Rating,
+  CircularProgress,
 } from '@mui/material'
 import {
   RateReview as ReviewIcon,
   CheckCircle as ApproveIcon,
-  Cancel as RejectIcon,
   Info as InfoIcon,
+  CheckCircle,
 } from '@mui/icons-material'
-
-interface PendingReview {
-  tentativa_id: string
-  avaliacao_codigo: string
-  avaliacao_titulo: string
-  funcionario: {
-    id: string
-    nome: string
-    email: string
-  }
-  data_submissao: string
-  questoes_dissertativas: number
-  status: 'PENDENTE_REVISAO'
-}
+import { toast } from 'react-toastify'
+import {
+  usePendingReviews,
+  useAttemptForReview,
+  useFinalizeReview,
+} from '@/api/assessments'
 
 interface Props {
   cursoCodigo: string
+}
+
+interface QuestionScore {
+  resposta_id: string
+  pontuacao: number
 }
 
 export default function CourseReviewsPanel({ cursoCodigo }: Props) {
@@ -52,58 +49,93 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
     open: boolean
     tentativaId?: string
   }>({ open: false })
-  const [feedback, setFeedback] = useState('')
-  const [selectedScore, setSelectedScore] = useState<number>(0)
+  const [feedbackGeral, setFeedbackGeral] = useState('')
+  const [questionScores, setQuestionScores] = useState<QuestionScore[]>([])
 
-  // Mock data - substituir por chamada real à API
-  const pendingReviews: PendingReview[] = [
-    {
-      tentativa_id: '1',
-      avaliacao_codigo: 'AV1',
-      avaliacao_titulo: 'Avaliação Final - Módulo 1',
-      funcionario: {
-        id: '1',
-        nome: 'João Silva',
-        email: 'joao.silva@empresa.com',
-      },
-      data_submissao: '2025-10-26T14:30:00',
-      questoes_dissertativas: 2,
-      status: 'PENDENTE_REVISAO',
-    },
-    {
-      tentativa_id: '2',
-      avaliacao_codigo: 'AV2',
-      avaliacao_titulo: 'Avaliação Final - Módulo 2',
-      funcionario: {
-        id: '2',
-        nome: 'Maria Santos',
-        email: 'maria.santos@empresa.com',
-      },
-      data_submissao: '2025-10-27T09:15:00',
-      questoes_dissertativas: 1,
-      status: 'PENDENTE_REVISAO',
-    },
-  ]
+  // Buscar reviews pendentes
+  const { data: pendingReviews = [], isLoading: loadingReviews } =
+    usePendingReviews(cursoCodigo)
+
+  // Buscar detalhes da tentativa para revisão
+  const { data: attemptDetails, isLoading: loadingAttempt } =
+    useAttemptForReview(
+      reviewDialog.tentativaId || '',
+      !!reviewDialog.tentativaId
+    )
+
+  // Mutation para finalizar revisão
+  const finalizeReview = useFinalizeReview()
 
   const handleOpenReview = (tentativaId: string) => {
     setReviewDialog({ open: true, tentativaId })
-    // Buscar detalhes da tentativa
+    setQuestionScores([])
+    setFeedbackGeral('')
   }
 
   const handleCloseReview = () => {
     setReviewDialog({ open: false })
-    setFeedback('')
-    setSelectedScore(0)
+    setFeedbackGeral('')
+    setQuestionScores([])
   }
 
-  const handleSubmitReview = () => {
-    // Implementar envio da correção
-    console.log('Submeter revisão:', {
-      tentativaId: reviewDialog.tentativaId,
-      feedback,
-      score: selectedScore,
+  const handleScoreChange = (respostaId: string, pontuacao: number) => {
+    setQuestionScores(prev => {
+      const existing = prev.find(s => s.resposta_id === respostaId)
+      if (existing) {
+        return prev.map(s =>
+          s.resposta_id === respostaId ? { ...s, pontuacao } : s
+        )
+      }
+      return [...prev, { resposta_id: respostaId, pontuacao }]
     })
-    handleCloseReview()
+  }
+
+  const handleSubmitReview = async () => {
+    if (!reviewDialog.tentativaId || !attemptDetails) return
+
+    // Verificar se todas as questões foram pontuadas
+    const questoesDissertativas = attemptDetails.questoes_dissertativas || []
+    const faltamNotas = questoesDissertativas.some(
+      q => !questionScores.find(s => s.resposta_id === q.resposta_id)
+    )
+
+    if (faltamNotas) {
+      toast.error('Por favor, avalie todas as questões dissertativas')
+      return
+    }
+
+    try {
+      const result = await finalizeReview.mutateAsync({
+        tentativaId: reviewDialog.tentativaId,
+        input: {
+          correcoes: questionScores,
+          feedback_geral: feedbackGeral || undefined,
+        },
+      })
+
+      if (result.passou) {
+        toast.success(
+          `Avaliação aprovada! Nota final: ${result.nota_final.toFixed(1)}`
+        )
+      } else {
+        toast.info(
+          `Avaliação reprovada. Nota: ${result.nota_final.toFixed(1)} (Mínima: ${result.nota_minima?.toFixed(1) || 'N/A'})`
+        )
+      }
+
+      handleCloseReview()
+    } catch (error) {
+      console.error('Erro ao finalizar revisão:', error)
+      toast.error('Erro ao finalizar revisão. Tente novamente.')
+    }
+  }
+
+  if (loadingReviews) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
   }
 
   return (
@@ -117,7 +149,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
       >
         <Box>
           <Typography variant='h6' gutterBottom>
-            📝 Fila de Correções Pendentes
+            📝 Correções Pendentes
           </Typography>
           <Typography variant='body2' color='text.secondary'>
             Avaliações aguardando correção de questões dissertativas
@@ -225,89 +257,139 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
         <DialogTitle>
           <Stack direction='row' alignItems='center' gap={1}>
             <ReviewIcon color='primary' />
-            Corrigir Avaliação Dissertativa
+            Corrigir Questão Dissertativa
           </Stack>
         </DialogTitle>
         <DialogContent>
-          <Stack gap={3} sx={{ mt: 1 }}>
-            {/* Info da Tentativa */}
-            <Alert severity='info' icon={<InfoIcon />}>
-              <Typography variant='body2' fontWeight={600} gutterBottom>
-                Informações da Tentativa
-              </Typography>
-              <Typography variant='caption'>
-                Aluno: João Silva • Avaliação: AV1 • Submetido em: 26/10/2025
-                14:30
-              </Typography>
+          {loadingAttempt ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : attemptDetails ? (
+            <Stack gap={3} sx={{ mt: 1 }}>
+              {/* Info da Tentativa */}
+              <Alert severity='info' icon={<InfoIcon />}>
+                <Typography variant='caption'>
+                  Aluno: {attemptDetails.funcionario.nome} • Submetido em:{' '}
+                  {new Date(attemptDetails.tentativa.data_fim).toLocaleString(
+                    'pt-BR',
+                    {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }
+                  )}
+                </Typography>
+              </Alert>
+
+              {/* Questões Dissertativas */}
+              {attemptDetails.questoes_dissertativas.map((questao, index) => {
+                const currentScore =
+                  questionScores.find(
+                    s => s.resposta_id === questao.resposta_id
+                  )?.pontuacao ||
+                  questao.pontuacao_atual ||
+                  0
+
+                return (
+                  <Paper
+                    key={questao.resposta_id}
+                    variant='outlined'
+                    sx={{ p: 2 }}
+                  >
+                    <Typography
+                      variant='subtitle2'
+                      fontWeight={600}
+                      gutterBottom
+                    >
+                      Questão {index + 1} (Peso: {questao.peso} pontos)
+                    </Typography>
+                    <Typography
+                      variant='body2'
+                      color='text.secondary'
+                      paragraph
+                    >
+                      {questao.enunciado}
+                    </Typography>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Typography
+                      variant='caption'
+                      color='text.secondary'
+                      gutterBottom
+                    >
+                      Resposta do Aluno:
+                    </Typography>
+                    <Paper sx={{ p: 1.5, bgcolor: 'grey.50', mt: 1 }}>
+                      <Typography
+                        variant='body2'
+                        sx={{ whiteSpace: 'pre-wrap' }}
+                      >
+                        {questao.resposta_funcionario}
+                      </Typography>
+                    </Paper>
+
+                    {/* Nota da Questão */}
+                    <Box sx={{ mt: 2 }}>
+                      <TextField
+                        label={`Nota da Questão (0 a ${questao.peso})`}
+                        type='number'
+                        value={currentScore}
+                        onChange={e => {
+                          const value = parseFloat(e.target.value) || 0
+                          const clamped = Math.max(
+                            0,
+                            Math.min(questao.peso, value)
+                          )
+                          handleScoreChange(questao.resposta_id, clamped)
+                        }}
+                        inputProps={{
+                          min: 0,
+                          max: questao.peso,
+                          step: 0.5,
+                        }}
+                        size='small'
+                        sx={{ width: 200 }}
+                        helperText={`Pontuação máxima: ${questao.peso}`}
+                      />
+                    </Box>
+                  </Paper>
+                )
+              })}
+
+              {/* Feedback Geral */}
+              <TextField
+                label='Feedback Personalizado (Opcional)'
+                multiline
+                rows={4}
+                fullWidth
+                value={feedbackGeral}
+                onChange={e => setFeedbackGeral(e.target.value)}
+                placeholder='Escreva um feedback geral para o aluno sobre o desempenho na avaliação...'
+              />
+            </Stack>
+          ) : (
+            <Alert severity='error'>
+              Erro ao carregar detalhes da tentativa
             </Alert>
-
-            {/* Questão Dissertativa Exemplo */}
-            <Paper variant='outlined' sx={{ p: 2 }}>
-              <Typography variant='subtitle2' fontWeight={600} gutterBottom>
-                Questão 1
-              </Typography>
-              <Typography variant='body2' color='text.secondary' paragraph>
-                Explique os principais conceitos de orientação a objetos em
-                programação.
-              </Typography>
-              <Divider sx={{ my: 1.5 }} />
-              <Typography variant='caption' color='text.secondary' gutterBottom>
-                Resposta do Aluno:
-              </Typography>
-              <Paper sx={{ p: 1.5, bgcolor: 'grey.50', mt: 1 }}>
-                <Typography variant='body2'>
-                  Os principais conceitos são: encapsulamento, herança,
-                  polimorfismo e abstração. O encapsulamento protege os dados, a
-                  herança permite reutilização de código...
-                </Typography>
-              </Paper>
-
-              {/* Nota da Questão */}
-              <Box sx={{ mt: 2 }}>
-                <Typography variant='caption' gutterBottom>
-                  Nota da Questão (Peso: 10 pontos)
-                </Typography>
-                <Rating
-                  value={selectedScore}
-                  onChange={(_, val) => setSelectedScore(val || 0)}
-                  max={10}
-                  size='large'
-                />
-              </Box>
-            </Paper>
-
-            {/* Feedback Geral */}
-            <TextField
-              label='Feedback Personalizado'
-              multiline
-              rows={4}
-              fullWidth
-              value={feedback}
-              onChange={e => setFeedback(e.target.value)}
-              placeholder='Escreva um feedback personalizado para o aluno sobre sua resposta...'
-            />
-          </Stack>
+          )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleCloseReview}>Cancelar</Button>
           <Button
-            variant='outlined'
-            color='error'
-            startIcon={<RejectIcon />}
-            onClick={() => {
-              console.log('Reprovar')
-              handleCloseReview()
-            }}
+            onClick={handleCloseReview}
+            disabled={finalizeReview.isPending}
           >
-            Reprovar
+            Cancelar
           </Button>
           <Button
             variant='contained'
             color='success'
             startIcon={<ApproveIcon />}
             onClick={handleSubmitReview}
+            disabled={finalizeReview.isPending || loadingAttempt}
           >
-            Aprovar e Finalizar
+            {finalizeReview.isPending ? 'Finalizando...' : 'Finalizar Correção'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -364,7 +364,8 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
                     </TableCell>
                     <TableCell align='center'>
                       <Typography variant='body2'>
-                        {enrollment.modulos_completos}/{enrollment.total_modulos}
+                        {enrollment.modulos_completos}/
+                        {enrollment.total_modulos}
                       </Typography>
                     </TableCell>
                     <TableCell align='center'>

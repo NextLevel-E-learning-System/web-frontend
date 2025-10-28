@@ -539,3 +539,135 @@ export function useUserAttempts(avaliacaoCodigo: string, enabled = true) {
     enabled: enabled && !!avaliacaoCodigo,
   })
 }
+
+// ===== HOOKS PARA CORREÇÃO DE AVALIAÇÕES (INSTRUTOR) =====
+
+// Interface para revisões pendentes
+export interface PendingReview {
+  tentativa_id: string
+  avaliacao_codigo: string
+  avaliacao_titulo: string
+  funcionario: {
+    id: string
+    nome: string
+    email: string
+  }
+  data_submissao: string
+  questoes_dissertativas: number
+  status: 'PENDENTE_REVISAO'
+}
+
+// Buscar fila de correções pendentes (por curso)
+export function usePendingReviews(cursoCodigo: string, enabled = true) {
+  return useQuery({
+    queryKey: ['assessments', 'reviews', 'pending', cursoCodigo],
+    queryFn: async () => {
+      const response = await authGet<{
+        success: boolean
+        data: PendingReview[]
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/reviews/pending?curso_id=${cursoCodigo}`)
+      return response.data
+    },
+    enabled: enabled && !!cursoCodigo,
+  })
+}
+
+// Interface para tentativa completa (para revisão)
+export interface AttemptForReview {
+  tentativa: {
+    id: string
+    avaliacao_id: string
+    funcionario_id: string
+    data_inicio: string
+    data_fim: string
+    status: string
+  }
+  avaliacao: {
+    codigo: string
+    titulo: string
+    nota_minima?: number
+  }
+  funcionario: {
+    id: string
+    nome: string
+    email: string
+  }
+  questoes_dissertativas: Array<{
+    questao_id: string
+    resposta_id: string
+    enunciado: string
+    peso: number
+    resposta_funcionario: string
+    pontuacao_atual?: number
+  }>
+  respostas_objetivas?: Array<{
+    questao_id: string
+    resposta_funcionario: string
+    resposta_correta: string
+    pontuacao: number
+  }>
+  nota_objetivas?: number
+}
+
+// Buscar tentativa completa para revisão
+export function useAttemptForReview(tentativaId: string, enabled = true) {
+  return useQuery({
+    queryKey: ['assessments', 'attempts', tentativaId, 'review'],
+    queryFn: async () => {
+      const response = await authGet<{
+        success: boolean
+        data: AttemptForReview
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/attempts/${tentativaId}/review-complete`)
+      return response.data
+    },
+    enabled: enabled && !!tentativaId,
+  })
+}
+
+// Interface para finalizar revisão
+export interface FinalizeReviewInput {
+  correcoes: Array<{
+    resposta_id: string
+    pontuacao: number
+  }>
+  feedback_geral?: string
+}
+
+export interface FinalizeReviewResponse {
+  tentativa_id: string
+  status: 'APROVADO' | 'REPROVADO'
+  nota_final: number
+  nota_minima?: number
+  passou: boolean
+  mensagem: string
+}
+
+// Finalizar revisão com correções
+export function useFinalizeReview() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['assessments', 'finalize-review'],
+    mutationFn: async ({
+      tentativaId,
+      input,
+    }: {
+      tentativaId: string
+      input: FinalizeReviewInput
+    }) => {
+      const response = await authPost<{
+        success: boolean
+        message: string
+        data: FinalizeReviewResponse
+      }>(
+        `${API_ENDPOINTS.ASSESSMENTS}/attempts/${tentativaId}/finalize-review`,
+        input
+      )
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assessments', 'reviews'] })
+      queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
+    },
+  })
+}
