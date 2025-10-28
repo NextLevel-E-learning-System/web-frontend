@@ -34,6 +34,8 @@ import useNavigation from '@/hooks/useNavigation'
 import CourseModulesSection from '@/components/modules/CourseModulesSection'
 import { useCategoryColors } from '@/hooks/useCategoryColors'
 import CourseContentHeader from '@/components/employee/CourseContentHeader'
+import CourseStudentsPanel from '@/components/courses/CourseStudentsPanel'
+import CourseReviewsPanel from '@/components/courses/CourseReviewsPanel'
 
 interface TabDefinition {
   id: string
@@ -42,6 +44,8 @@ interface TabDefinition {
 
 const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
+const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Turmas' }
+const REVIEWS_TAB: TabDefinition = { id: 'reviews', label: 'Correções' }
 
 interface LocationState {
   nextTab?: string
@@ -555,6 +559,10 @@ export default function CourseEditorPage() {
           isViewOnly={isViewOnly}
         />
       )
+    if (tab === STUDENTS_TAB.id)
+      return <CourseStudentsPanel cursoCodigo={codigo!} />
+    if (tab === REVIEWS_TAB.id)
+      return <CourseReviewsPanel cursoCodigo={codigo!} />
     return null
   }
 
@@ -586,6 +594,8 @@ export default function CourseEditorPage() {
         >
           <Tab label='Visão Geral' value={INFO_TAB.id} />
           {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
+          {isEdit && <Tab label='Turmas' value={STUDENTS_TAB.id} />}
+          {isEdit && <Tab label='Correções' value={REVIEWS_TAB.id} />}
         </Tabs>
         <Divider />
         <Box sx={{ p: { xs: 2, md: 3 } }}>
