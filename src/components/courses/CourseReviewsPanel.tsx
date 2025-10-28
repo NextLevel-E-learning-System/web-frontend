@@ -115,9 +115,9 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
 
       // Usar a mensagem que vem da API
       if (result.passou) {
-        toast.success(result.mensagem || 'Avaliação aprovada com sucesso!')
+        toast.success(result.mensagem)
       } else {
-        toast.info(result.mensagem || 'Avaliação finalizada')
+        toast.info(result.mensagem)
       }
 
       handleCloseReview()
