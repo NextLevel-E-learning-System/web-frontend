@@ -26,6 +26,7 @@ import {
   useStartAssessment,
   useSubmitAssessment,
   useActiveAttempt,
+  useUserAttempts,
   type StartAssessmentResponse,
   type AssessmentForStudent,
 } from '@/api/assessments'
@@ -45,6 +46,9 @@ export default function AssessmentQuiz({
 
   // Buscar tentativa ativa ao montar o componente
   const { data: activeAttempt } = useActiveAttempt(avaliacao.codigo, true)
+
+  // Buscar histórico de tentativas (será usado na próxima implementação)
+  useUserAttempts(avaliacao.codigo, true)
 
   const [assessmentData, setAssessmentData] =
     useState<StartAssessmentResponse | null>(null)
