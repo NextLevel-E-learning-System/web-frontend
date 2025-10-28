@@ -47,8 +47,8 @@ export default function AssessmentQuiz({
   // Buscar tentativa ativa ao montar o componente
   const { data: activeAttempt } = useActiveAttempt(avaliacao.codigo, true)
 
-  // Buscar histórico de tentativas (será usado na próxima implementação)
-  useUserAttempts(avaliacao.codigo, true)
+  // Buscar histórico de tentativas
+  const { data: userAttempts = [] } = useUserAttempts(avaliacao.codigo, true)
 
   const [assessmentData, setAssessmentData] =
     useState<StartAssessmentResponse | null>(null)
@@ -58,6 +58,63 @@ export default function AssessmentQuiz({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
   const [currentTab, setCurrentTab] = useState<'info' | 'questoes'>('info')
+
+  // Calcular tempo gasto em minutos
+  const calculateTimeSpent = (dataInicio: string, dataFim: string | null) => {
+    if (!dataFim) return 'Em andamento'
+    const inicio = new Date(dataInicio).getTime()
+    const fim = new Date(dataFim).getTime()
+    const minutos = Math.floor((fim - inicio) / 60000)
+    return `${minutos} min`
+  }
+
+  // Verificar se deve mostrar o botão de iniciar
+  const shouldShowStartButton = () => {
+    // Se não há tentativas, pode iniciar
+    if (userAttempts.length === 0) return true
+
+    // Verificar se já foi aprovado
+    const hasApproved = userAttempts.some(
+      attempt =>
+        attempt.status === 'APROVADO' ||
+        (attempt.nota_obtida !== null && attempt.nota_obtida >= 70)
+    )
+    if (hasApproved) return false
+
+    // Verificar se há tentativa pendente de revisão
+    const hasPendingReview = userAttempts.some(
+      attempt => attempt.status === 'PENDENTE_REVISAO'
+    )
+    if (hasPendingReview) return false
+
+    // Verificar se ainda tem tentativas disponíveis
+    const tentativasUsadas = userAttempts.filter(
+      a => a.status !== 'EM_ANDAMENTO'
+    ).length
+    return tentativasUsadas < (avaliacao.tentativas_permitidas || 2)
+  }
+
+  // Obter a última tentativa finalizada
+  const lastFinishedAttempt = userAttempts
+    .filter(a => a.status !== 'EM_ANDAMENTO')
+    .sort(
+      (a, b) =>
+        new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()
+    )[0]
+
+  // Mapear status para exibição
+  const getStatusDisplay = (status: string) => {
+    const statusMap: Record<string, { label: string; color: string }> = {
+      APROVADO: { label: '✅ Aprovado', color: 'success.main' },
+      REPROVADO: { label: '❌ Reprovado', color: 'error.main' },
+      PENDENTE_REVISAO: {
+        label: '⏳ Pendente de Revisão',
+        color: 'warning.main',
+      },
+      EM_ANDAMENTO: { label: '🔄 Em Andamento', color: 'info.main' },
+    }
+    return statusMap[status] || { label: status, color: 'text.secondary' }
+  }
 
   const handleSubmit = useCallback(async () => {
     if (!assessmentData) return
@@ -272,53 +329,176 @@ export default function AssessmentQuiz({
         {currentTab === 'info' && (
           <Box>
             <Stack gap={2}>
-              {/* Informações da avaliação */}
-              <Box>
-                <Typography variant='h6' gutterBottom>
-                  Informações da Avaliação
-                </Typography>
-                <Stack gap={1}>
-                  {avaliacao.tempo_limite && (
-                    <Typography variant='body2'>
-                      <strong>Tempo limite:</strong> {avaliacao.tempo_limite}{' '}
-                      minutos
-                    </Typography>
-                  )}
-                  <Typography variant='body2'>
-                    <strong>Tentativas permitidas:</strong> 2 (inicial +
-                    recuperação)
-                  </Typography>
-                  <Typography variant='body2'>
-                    <strong>Nota mínima para aprovação:</strong> 7.0 (70%)
-                  </Typography>
-                </Stack>
-              </Box>
-
               {/* Alerta de pré-requisitos */}
               <Alert severity='warning'>
-                <Typography variant='body2' fontWeight={600}>
-                  📋 Pré-requisitos
-                </Typography>
-                <Typography variant='body2' sx={{ mt: 0.5 }}>
-                  • Todos os módulos obrigatórios devem estar concluídos
-                  <br />
-                  • Nota mínima: 7.0 (70%)
-                  <br />• Você tem direito a 1 tentativa de recuperação se não
-                  atingir a nota mínima
+                <Typography variant='body2'>
+                  • Todos os módulos obrigatórios devem estar concluídos antes
+                  de iniciar esta avaliação.
+                  <br />• Tempo limite: {avaliacao.tempo_limite} minutos
+                  <br />• Nota mínima: {avaliacao.nota_minima}
+                  <br />• Tentativas permitidas:{' '}
+                  {avaliacao.tentativas_permitidas}
+                  <br />• Novas tentativas são permitidas se você não atingir a
+                  nota mínima para aprovação.
                 </Typography>
               </Alert>
 
-              {/* Alerta informativo */}
-              {!tentativaStarted && (
-                <Alert severity='info'>
-                  Após submeter suas respostas, você retornará a esta tela. O
-                  módulo só pode ser finalizado quando você obter aprovação na
-                  avaliação (nota ≥ 7.0).
+              {/* Histórico de Tentativas */}
+              {userAttempts.length > 0 && (
+                <Box>
+                  <Typography variant='h6' gutterBottom>
+                    Histórico de Tentativas
+                  </Typography>
+                  <Stack gap={1.5}>
+                    {userAttempts
+                      .filter(a => a.status !== 'EM_ANDAMENTO')
+                      .sort(
+                        (a, b) =>
+                          new Date(b.criado_em).getTime() -
+                          new Date(a.criado_em).getTime()
+                      )
+                      .map((attempt, index) => {
+                        const statusInfo = getStatusDisplay(attempt.status)
+                        return (
+                          <Paper
+                            key={attempt.id}
+                            elevation={2}
+                            sx={{
+                              p: 2,
+                              borderLeft: theme =>
+                                `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`,
+                            }}
+                          >
+                            <Stack gap={1}>
+                              <Box
+                                display='flex'
+                                justifyContent='space-between'
+                                alignItems='center'
+                              >
+                                <Typography
+                                  variant='subtitle2'
+                                  fontWeight={600}
+                                >
+                                  Tentativa {userAttempts.length - index}
+                                </Typography>
+                                <Chip
+                                  label={statusInfo.label}
+                                  size='small'
+                                  sx={{
+                                    bgcolor: statusInfo.color,
+                                    color: 'white',
+                                    fontWeight: 600,
+                                  }}
+                                />
+                              </Box>
+
+                              <Box
+                                display='flex'
+                                gap={3}
+                                flexWrap='wrap'
+                                sx={{ fontSize: '0.875rem' }}
+                              >
+                                {attempt.nota_obtida !== null && (
+                                  <Box>
+                                    <Typography
+                                      variant='caption'
+                                      color='text.secondary'
+                                    >
+                                      Nota Obtida
+                                    </Typography>
+                                    <Typography
+                                      variant='body2'
+                                      fontWeight={600}
+                                      color={
+                                        attempt.nota_obtida >= 70
+                                          ? 'success.main'
+                                          : 'error.main'
+                                      }
+                                    >
+                                      {attempt.nota_obtida.toFixed(1)}
+                                    </Typography>
+                                  </Box>
+                                )}
+
+                                {attempt.data_fim && (
+                                  <Box>
+                                    <Typography
+                                      variant='caption'
+                                      color='text.secondary'
+                                    >
+                                      Tempo Gasto
+                                    </Typography>
+                                    <Typography
+                                      variant='body2'
+                                      fontWeight={600}
+                                    >
+                                      {calculateTimeSpent(
+                                        attempt.data_inicio,
+                                        attempt.data_fim
+                                      )}
+                                    </Typography>
+                                  </Box>
+                                )}
+
+                                <Box>
+                                  <Typography
+                                    variant='caption'
+                                    color='text.secondary'
+                                  >
+                                    Iniciada em:
+                                  </Typography>
+                                  <Typography variant='body2' fontWeight={600}>
+                                    {new Date(
+                                      attempt.criado_em
+                                    ).toLocaleDateString('pt-BR', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Stack>
+                          </Paper>
+                        )
+                      })}
+                  </Stack>
+                </Box>
+              )}
+
+              {/* Status da última tentativa */}
+              {lastFinishedAttempt && (
+                <Alert
+                  severity={
+                    lastFinishedAttempt.status === 'APROVADO'
+                      ? 'success'
+                      : lastFinishedAttempt.status === 'PENDENTE_REVISAO'
+                        ? 'info'
+                        : 'warning'
+                  }
+                >
+                  <Typography variant='body2' fontWeight={600}>
+                    {lastFinishedAttempt.status === 'APROVADO' &&
+                      '✅ Você foi aprovado nesta avaliação!'}
+                    {lastFinishedAttempt.status === 'REPROVADO' &&
+                      '❌ Você não atingiu a nota mínima. Tente novamente!'}
+                    {lastFinishedAttempt.status === 'PENDENTE_REVISAO' &&
+                      '⏳ Sua avaliação está aguardando correção.'}
+                  </Typography>
+                  {lastFinishedAttempt.nota_obtida !== null && (
+                    <Typography variant='body2' sx={{ mt: 0.5 }}>
+                      Nota obtida: {lastFinishedAttempt.nota_obtida.toFixed(1)}
+                      {lastFinishedAttempt.status === 'REPROVADO' &&
+                        ` (Nota mínima: ${avaliacao.nota_minima})`}
+                    </Typography>
+                  )}
                 </Alert>
               )}
 
               {/* Botão para iniciar */}
-              {!tentativaStarted && (
+              {!tentativaStarted && shouldShowStartButton() && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
                   <Button
                     variant='contained'
@@ -348,7 +528,6 @@ export default function AssessmentQuiz({
         {currentTab === 'questoes' && tentativaStarted && assessmentData && (
           <QuizContent
             assessmentData={assessmentData}
-            _avaliacao={avaliacao}
             currentQuestionIndex={currentQuestionIndex}
             setCurrentQuestionIndex={setCurrentQuestionIndex}
             respostas={respostas}
@@ -367,7 +546,6 @@ export default function AssessmentQuiz({
 // Componente separado para o conteúdo do quiz
 function QuizContent({
   assessmentData,
-  _avaliacao,
   currentQuestionIndex,
   setCurrentQuestionIndex,
   respostas,
@@ -378,7 +556,6 @@ function QuizContent({
   handleSubmit,
 }: {
   assessmentData: StartAssessmentResponse
-  _avaliacao: AssessmentForStudent
   currentQuestionIndex: number
   setCurrentQuestionIndex: (fn: (prev: number) => number) => void
   respostas: Record<string, string>
