@@ -311,7 +311,7 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
                           : 'text.secondary'
                       }
                     >
-                      {enrollment.nota_media?.toFixed(1) || '-'}
+                      {enrollment.nota_media}
                     </Typography>
                   </TableCell>
                   <TableCell align='center'>
