@@ -21,6 +21,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material'
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -123,6 +124,10 @@ export default function AdminCourses() {
 
   const handleEditCourse = (curso: Curso) => {
     navigate(`/gerenciar/cursos/${curso.codigo}`)
+  }
+
+  const handleViewCourse = (curso: Curso) => {
+    navigate(`/gerenciar/cursos/${curso.codigo}`, { state: { viewOnly: true } })
   }
 
   const canEditCourse = (curso: Curso) => {
@@ -468,6 +473,17 @@ export default function AdminCourses() {
           onClose={handleCloseMenu}
         >
           {/* Ação de Avaliações removida: agora ficará dentro da gestão de módulos do curso */}
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu()
+              if (selectedCourseForMenu) {
+                handleViewCourse(selectedCourseForMenu)
+              }
+            }}
+          >
+            <VisibilityIcon sx={{ mr: 1 }} fontSize='small' />
+            Visualizar
+          </MenuItem>
           <MenuItem
             onClick={() => {
               handleCloseMenu()

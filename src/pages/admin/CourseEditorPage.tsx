@@ -74,6 +74,11 @@ export default function CourseEditorPage() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // Verificar se é modo de visualização apenas
+  const isViewOnly =
+    (location.state as LocationState & { viewOnly?: boolean })?.viewOnly ||
+    false
+
   // Sempre chama os hooks na mesma ordem
   const courseQuery = useCourse(codigo || '')
   const createCourse = useCreateCourse()
@@ -290,11 +295,11 @@ export default function CourseEditorPage() {
                 onChange={e => setForm({ ...form, codigo: e.target.value })}
                 fullWidth
                 required
-                disabled={isEdit}
+                disabled={isEdit || isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 3' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={form.ativo ? 'true' : 'false'}
@@ -315,6 +320,7 @@ export default function CourseEditorPage() {
                 onChange={e => setForm({ ...form, titulo: e.target.value })}
                 fullWidth
                 required
+                disabled={isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: 'span 12' }}>
@@ -325,10 +331,11 @@ export default function CourseEditorPage() {
                 fullWidth
                 multiline
                 minRows={2}
+                disabled={isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Departamento</InputLabel>
                 <Select
                   value={departamentoSelecionado}
@@ -353,7 +360,7 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Categoria</InputLabel>
                 <Select
                   value={form.categoria_id || ''}
@@ -380,7 +387,7 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Instrutor</InputLabel>
                 <Select
                   value={form.instrutor_id || ''}
@@ -411,6 +418,7 @@ export default function CourseEditorPage() {
                   setForm({ ...form, duracao_estimada: Number(e.target.value) })
                 }
                 fullWidth
+                disabled={isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
@@ -424,7 +432,7 @@ export default function CourseEditorPage() {
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Nível</InputLabel>
                 <Select
                   value={form.nivel_dificuldade}
@@ -440,7 +448,7 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
             <Box sx={{ gridColumn: 'span 12' }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Pré-requisitos</InputLabel>
                 <Select
                   multiple
@@ -476,52 +484,64 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
           </Box>
-          <Stack direction='row' gap={1} justifyContent='flex-end'>
-            <Button
-              variant='text'
-              onClick={() => navigate('/gerenciar/cursos')}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant='outlined'
-              onClick={() => handleSaveInfo(false)}
-              disabled={
-                createCourse.isPending ||
-                updateCourse?.isPending ||
-                !form.titulo ||
-                (!isEdit && !form.codigo)
-              }
-            >
-              Salvar
-            </Button>
-            {isEdit ? (
+          {!isViewOnly && (
+            <Stack direction='row' gap={1} justifyContent='flex-end'>
               <Button
-                variant='contained'
-                onClick={() => handleSaveInfo(true)}
-                disabled={
-                  createCourse.isPending ||
-                  updateCourse?.isPending ||
-                  !form.titulo
-                }
+                variant='text'
+                onClick={() => navigate('/gerenciar/cursos')}
               >
-                Próximo
+                Cancelar
               </Button>
-            ) : (
               <Button
-                variant='contained'
-                onClick={() => handleSaveInfo(true)}
+                variant='outlined'
+                onClick={() => handleSaveInfo(false)}
                 disabled={
                   createCourse.isPending ||
                   updateCourse?.isPending ||
                   !form.titulo ||
-                  !form.codigo
+                  (!isEdit && !form.codigo)
                 }
               >
-                Criar e Adicionar Módulos
+                Salvar
               </Button>
-            )}
-          </Stack>
+              {isEdit ? (
+                <Button
+                  variant='contained'
+                  onClick={() => handleSaveInfo(true)}
+                  disabled={
+                    createCourse.isPending ||
+                    updateCourse?.isPending ||
+                    !form.titulo
+                  }
+                >
+                  Próximo
+                </Button>
+              ) : (
+                <Button
+                  variant='contained'
+                  onClick={() => handleSaveInfo(true)}
+                  disabled={
+                    createCourse.isPending ||
+                    updateCourse?.isPending ||
+                    !form.titulo ||
+                    !form.codigo
+                  }
+                >
+                  Criar e Adicionar Módulos
+                </Button>
+              )}
+            </Stack>
+          )}
+          {isViewOnly && (
+            <Stack direction='row' gap={1} justifyContent='flex-end'>
+              <Button
+                variant='contained'
+                onClick={() => navigate('/gerenciar/cursos')}
+              >
+                Voltar
+              </Button>
+            </Stack>
+          )}
         </Stack>
       )
     }
