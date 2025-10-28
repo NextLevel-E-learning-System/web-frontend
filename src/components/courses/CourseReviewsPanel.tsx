@@ -286,26 +286,41 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
 
               {/* Questões Dissertativas */}
               {attemptDetails.questoes_dissertativas.map((questao, index) => {
-                const currentScore =
-                  questionScores.find(
-                    s => s.resposta_id === questao.resposta_id
-                  )?.pontuacao ||
-                  questao.pontuacao_atual ||
-                  0
-
                 return (
                   <Paper
                     key={questao.resposta_id}
                     variant='outlined'
                     sx={{ p: 2 }}
                   >
-                    <Typography
-                      variant='subtitle2'
-                      fontWeight={600}
-                      gutterBottom
+                    <Stack
+                      direction='row'
+                      justifyContent='space-between'
+                      alignItems='center'
+                      mb={1}
                     >
-                      Questão {index + 1} (Peso: {questao.peso})
-                    </Typography>
+                      <Typography variant='subtitle2' fontWeight={600}>
+                        Questão peso: {questao.peso}
+                      </Typography>
+                      <Stack direction='row' alignItems='center' gap={1}>
+                        <Typography variant='body2' fontWeight={500}>
+                          Nota:
+                        </Typography>
+                        <TextField
+                          type='number'
+                          placeholder='0-100'
+                          onChange={e => {
+                            const value = parseFloat(e.target.value) || 0
+                            const clamped = Math.max(0, Math.min(100, value))
+                            handleScoreChange(questao.resposta_id, clamped)
+                          }}
+                          inputProps={{
+                            min: 0,
+                            max: 100,
+                          }}
+                          variant='standard'
+                        />
+                      </Stack>
+                    </Stack>
                     <Typography
                       variant='body2'
                       color='text.secondary'
@@ -329,28 +344,6 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                         {questao.resposta_funcionario}
                       </Typography>
                     </Paper>
-
-                    {/* Nota da Questão */}
-                    <Box sx={{ mt: 2 }}>
-                      <TextField
-                        label='Nota da Questão (0 a 100)'
-                        type='number'
-                        value={currentScore}
-                        onChange={e => {
-                          const value = parseFloat(e.target.value) || 0
-                          const clamped = Math.max(0, Math.min(100, value))
-                          handleScoreChange(questao.resposta_id, clamped)
-                        }}
-                        inputProps={{
-                          min: 0,
-                          max: 100,
-                          step: 0.5,
-                        }}
-                        size='small'
-                        sx={{ width: 200 }}
-                        helperText={`Peso na avaliação: ${questao.peso}x`}
-                      />
-                    </Box>
                   </Paper>
                 )
               })}
