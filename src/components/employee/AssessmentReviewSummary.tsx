@@ -1,5 +1,6 @@
 import { Box, Chip, Divider, Paper, Stack, Typography } from '@mui/material'
 import type { AttemptForReview } from '@/api/assessments'
+import { Check } from '@mui/icons-material'
 
 interface AssessmentReviewSummaryProps {
   review: AttemptForReview
@@ -20,6 +21,34 @@ const formatQuestionType = (tipo?: string) => {
 }
 
 const normalize = (value?: string | null) => (value || '').trim().toLowerCase()
+
+const resolveOptions = (raw: unknown): string[] => {
+  if (!raw) return []
+  if (Array.isArray(raw)) {
+    return (raw as unknown[]).filter(
+      (item): item is string => typeof item === 'string'
+    )
+  }
+
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item): item is string => typeof item === 'string')
+      }
+    } catch {
+      const trimmed = raw.trim()
+      if (trimmed.includes(';')) {
+        return trimmed
+          .split(';')
+          .map(opt => opt.trim())
+          .filter(Boolean)
+      }
+    }
+  }
+
+  return []
+}
 
 export default function AssessmentReviewSummary({
   review,
@@ -66,7 +95,8 @@ export default function AssessmentReviewSummary({
 
           <Stack direction='row' alignItems='center' gap={1} flexWrap='wrap'>
             <Chip
-              label={status === 'APROVADO' ? '✅ Aprovado' : status}
+              icon={<Check />}
+              label={status === 'APROVADO' ? 'Aprovado' : status}
               color={status === 'APROVADO' ? 'success' : 'default'}
               variant='filled'
               sx={{ fontWeight: 600 }}
@@ -112,9 +142,10 @@ export default function AssessmentReviewSummary({
               const acertou =
                 normalize(respostaAluno) === normalize(respostaCorreta)
 
+              const opcoesBase = resolveOptions(questao.opcoes_resposta)
               const opcoes =
-                questao.opcoes_resposta && questao.opcoes_resposta.length > 0
-                  ? questao.opcoes_resposta
+                opcoesBase.length > 0
+                  ? opcoesBase
                   : questao.tipo === 'VERDADEIRO_FALSO'
                     ? ['Verdadeiro', 'Falso']
                     : []
