@@ -605,6 +605,7 @@ export interface AttemptForReview {
     resposta_funcionario: string
     resposta_correta: string
     pontuacao: number | null
+    opcoes_resposta?: string[]
   }>
   nota_objetivas?: number
 }
