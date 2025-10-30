@@ -41,7 +41,7 @@ interface Props {
 
 interface QuestionScore {
   resposta_id: string
-  pontuacao: number
+  pontuacao: number | null
   feedback?: string
 }
 
@@ -50,7 +50,6 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
     open: boolean
     tentativaId?: string
   }>({ open: false })
-  const [feedbackGeral, setFeedbackGeral] = useState('')
   const [questionScores, setQuestionScores] = useState<QuestionScore[]>([])
 
   // Buscar reviews pendentes
@@ -70,12 +69,10 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
   const handleOpenReview = (tentativaId: string) => {
     setReviewDialog({ open: true, tentativaId })
     setQuestionScores([])
-    setFeedbackGeral('')
   }
 
   const handleCloseReview = () => {
     setReviewDialog({ open: false })
-    setFeedbackGeral('')
     setQuestionScores([])
   }
 
@@ -117,7 +114,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
         pontuacao:
           typeof questao.pontuacao_atual === 'number'
             ? questao.pontuacao_atual
-            : 0,
+            : null,
         feedback: questao.feedback_atual || '',
       }))
     })
@@ -148,7 +145,6 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
         tentativaId: reviewDialog.tentativaId,
         input: {
           correcoes: correcoesPayload,
-          feedback_geral: feedbackGeral || undefined,
         },
       })
 
@@ -336,19 +332,19 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                       direction='row'
                       justifyContent='space-between'
                       alignItems='center'
-                      mb={1}
                     >
                       <Typography variant='subtitle2' fontWeight={600}>
                         Questão peso: {questao.peso}
                       </Typography>
-                      <Stack direction='row' alignItems='center' gap={1}>
+                      <Stack direction='row' alignItems='end' gap={1}>
                         <Typography variant='body2' fontWeight={500}>
                           Nota:
                         </Typography>
                         <TextField
                           type='number'
-                          placeholder='0-100'
-                          value={currentScore?.pontuacao ?? ''}
+                          size='small'
+                          label='0-100'
+                          value={currentScore?.pontuacao ?? null}
                           onChange={e => {
                             const value = parseFloat(e.target.value)
                             const clamped = Math.max(
@@ -389,7 +385,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                       </Typography>
                     </Paper>
                     <TextField
-                      label='Feedback individual (opcional)'
+                      label='Feedback'
                       multiline
                       rows={3}
                       fullWidth
@@ -400,23 +396,11 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                           e.target.value
                         )
                       }
-                      placeholder='Escreva um feedback específico para esta questão...'
                       sx={{ mt: 2 }}
                     />
                   </Paper>
                 )
               })}
-
-              {/* Feedback Geral */}
-              <TextField
-                label='Feedback Personalizado (Opcional)'
-                multiline
-                rows={4}
-                fullWidth
-                value={feedbackGeral}
-                onChange={e => setFeedbackGeral(e.target.value)}
-                placeholder='Escreva um feedback geral para o aluno sobre o desempenho na avaliação...'
-              />
             </Stack>
           ) : (
             <Alert severity='error'>

@@ -593,14 +593,14 @@ export interface AttemptForReview {
     enunciado: string
     peso: number
     resposta_funcionario: string
-    pontuacao_atual?: number
+    pontuacao_atual?: number | null
     feedback_atual?: string
   }>
   respostas_objetivas?: Array<{
     questao_id: string
     resposta_funcionario: string
     resposta_correta: string
-    pontuacao: number
+    pontuacao: number | null
   }>
   nota_objetivas?: number
 }
@@ -624,10 +624,9 @@ export function useAttemptForReview(tentativaId: string, enabled = true) {
 export interface FinalizeReviewInput {
   correcoes: Array<{
     resposta_id: string
-    pontuacao: number
+    pontuacao: number | null
     feedback?: string
   }>
-  feedback_geral?: string
 }
 
 export interface FinalizeReviewResponse {
