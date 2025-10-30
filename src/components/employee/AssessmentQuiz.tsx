@@ -79,7 +79,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
 
     // Verificar se há tentativa pendente de revisão
     const hasPendingReview = userAttempts.some(
-      attempt => attempt.status === 'PENDENTE_REVISAO'
+      attempt => attempt.status === 'AGUARDANDO_CORRECAO'
     )
     if (hasPendingReview) return false
 
@@ -95,7 +95,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
     const statusMap: Record<string, { label: string; color: string }> = {
       APROVADO: { label: '✅ Aprovado', color: 'success.main' },
       REPROVADO: { label: '❌ Reprovado', color: 'error.main' },
-      PENDENTE_REVISAO: {
+      AGUARDANDO_CORRECAO: {
         label: '⏳ Pendente de Revisão',
         color: 'warning.main',
       },

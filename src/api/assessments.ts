@@ -480,7 +480,7 @@ export interface SubmitAssessmentInput {
 
 export interface SubmitAssessmentResponse {
   tentativa_id: string
-  status: 'FINALIZADA' | 'PENDENTE_REVISAO' | 'APROVADO' | 'REPROVADO'
+  status: 'AGUARDANDO_CORRECAO' | 'APROVADO' | 'REPROVADO'
   nota_obtida?: number | null
   nota_minima?: number | null
   tem_dissertativas: boolean
@@ -516,12 +516,7 @@ export interface AttemptHistory {
   funcionario_id: string
   data_inicio: string
   data_fim: string | null
-  status:
-    | 'EM_ANDAMENTO'
-    | 'FINALIZADA'
-    | 'PENDENTE_REVISAO'
-    | 'APROVADO'
-    | 'REPROVADO'
+  status: 'EM_ANDAMENTO' | 'AGUARDANDO_CORRECAO' | 'APROVADO' | 'REPROVADO'
   nota_obtida: number | null
   criado_em: string
 }
@@ -554,7 +549,7 @@ export interface PendingReview {
   }
   data_submissao: string
   questoes_dissertativas: number
-  status: 'PENDENTE_REVISAO'
+  status: 'AGUARDANDO_CORRECAO'
 }
 
 // Buscar fila de correções pendentes (por curso)
