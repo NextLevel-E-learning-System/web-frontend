@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Box,
   Typography,
@@ -26,10 +26,12 @@ import {
   useSubmitAssessment,
   useActiveAttempt,
   useUserAttempts,
+  useAttemptForReview,
   type StartAssessmentResponse,
   type AssessmentForStudent,
 } from '@/api/assessments'
 import { toast } from 'react-toastify'
+import AssessmentReviewSummary from './AssessmentReviewSummary'
 
 interface AssessmentQuizProps {
   avaliacao: AssessmentForStudent
@@ -46,6 +48,25 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
   // Buscar histórico de tentativas
   const { data: userAttempts = [] } = useUserAttempts(avaliacao.codigo, true)
 
+  const latestApprovedAttempt = useMemo(() => {
+    return (
+      userAttempts
+        .filter(attempt => attempt.status === 'APROVADO')
+        .sort(
+          (a, b) =>
+            new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()
+        )[0] || null
+    )
+  }, [userAttempts])
+
+  const showReviewTab = Boolean(latestApprovedAttempt)
+  const reviewAttemptId = latestApprovedAttempt?.id ?? ''
+
+  const { data: reviewData, isLoading: reviewLoading } = useAttemptForReview(
+    reviewAttemptId,
+    !!reviewAttemptId
+  )
+
   const [assessmentData, setAssessmentData] =
     useState<StartAssessmentResponse | null>(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -53,7 +74,9 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
-  const [currentTab, setCurrentTab] = useState<'info' | 'questoes'>('info')
+  const [currentTab, setCurrentTab] = useState<'info' | 'questoes' | 'revisao'>(
+    'info'
+  )
 
   // Calcular tempo gasto em minutos
   const calculateTimeSpent = (dataInicio: string, dataFim: string | null) => {
@@ -66,6 +89,8 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
 
   // Verificar se deve mostrar o botão de iniciar
   const shouldShowStartButton = () => {
+    if (showReviewTab) return false
+
     // Se não há tentativas, pode iniciar
     if (userAttempts.length === 0) return true
 
@@ -267,195 +292,229 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
             scrollButtons='auto'
           >
             <Tab value='info' label='Informações' />
-            <Tab
-              value='questoes'
-              label='Questões'
-              disabled={!tentativaStarted}
-            />
+            {!showReviewTab && (
+              <Tab
+                value='questoes'
+                label='Questões'
+                disabled={!tentativaStarted}
+              />
+            )}
+            {showReviewTab && (
+              <Tab
+                value='revisao'
+                label='Revisão'
+                disabled={reviewLoading && !reviewData}
+              />
+            )}
           </Tabs>
         </Box>
 
         {/* Aba de Informações */}
         {currentTab === 'info' && (
           <Box>
-            <Stack gap={2}>
-              {/* Alerta de pré-requisitos */}
-              <Typography variant='body2'>
-                • Todos os módulos obrigatórios devem estar concluídos antes de
+            {/* Alerta de pré-requisitos */}
+            <Stack gap={1}>
+              <Typography variant='body2' color='text.secondary'>
+                Todos os módulos obrigatórios devem estar concluídos antes de
                 iniciar esta avaliação.
-                <br />• Tempo limite: {avaliacao.tempo_limite} minutos
-                <br />• Nota mínima: {avaliacao.nota_minima}
-                <br />• Tentativas permitidas: {avaliacao.tentativas_permitidas}
-                <br />• Novas tentativas são permitidas se você não atingir a
-                nota mínima para aprovação.
               </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                <strong>Tempo limite:</strong> {avaliacao.tempo_limite} min
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                <strong>Nota mínima:</strong> {avaliacao.nota_minima}
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                <strong>Tentativas permitidas:</strong>
+                {avaliacao.tentativas_permitidas}
+              </Typography>
+              <Typography variant='body2' color='text.secondary'>
+                Novas tentativas são permitidas se você não atingir a nota
+                mínima para aprovação.
+              </Typography>
+            </Stack>
 
-              {/* Histórico de Tentativas */}
-              {userAttempts.length > 0 && (
-                <Box>
-                  <Typography variant='h6' gutterBottom>
-                    Histórico de Tentativas
-                  </Typography>
-                  <Stack gap={1.5}>
-                    {userAttempts
-                      .filter(a => a.status !== 'EM_ANDAMENTO')
-                      .sort(
-                        (a, b) =>
-                          new Date(b.criado_em).getTime() -
-                          new Date(a.criado_em).getTime()
-                      )
-                      .map((attempt, index) => {
-                        const statusInfo = getStatusDisplay(attempt.status)
-                        return (
-                          <Paper
-                            key={attempt.id}
-                            elevation={2}
-                            sx={{
-                              p: 2,
-                              borderLeft: theme =>
-                                `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`,
-                            }}
-                          >
-                            <Stack gap={1}>
-                              <Box
-                                display='flex'
-                                justifyContent='space-between'
-                                alignItems='center'
-                              >
-                                <Typography
-                                  variant='subtitle2'
-                                  fontWeight={600}
-                                >
-                                  Tentativa {userAttempts.length - index}
-                                </Typography>
-                                <Chip
-                                  label={statusInfo.label}
-                                  size='small'
-                                  sx={{
-                                    bgcolor: statusInfo.color,
-                                    color: 'white',
-                                    fontWeight: 600,
-                                  }}
-                                />
-                              </Box>
+            {/* Histórico de Tentativas */}
+            {userAttempts.length > 0 && (
+              <Box sx={{ pt: 3 }}>
+                <Typography variant='h6' gutterBottom>
+                  Histórico de Tentativas
+                </Typography>
+                <Stack gap={1.5}>
+                  {userAttempts
+                    .filter(a => a.status !== 'EM_ANDAMENTO')
+                    .sort(
+                      (a, b) =>
+                        new Date(b.criado_em).getTime() -
+                        new Date(a.criado_em).getTime()
+                    )
+                    .map((attempt, index) => {
+                      const statusInfo = getStatusDisplay(attempt.status)
+                      return (
+                        <Paper
+                          key={attempt.id}
+                          elevation={2}
+                          sx={{
+                            p: 2,
+                            borderLeft: theme =>
+                              `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`,
+                          }}
+                        >
+                          <Stack gap={1}>
+                            <Box
+                              display='flex'
+                              justifyContent='space-between'
+                              alignItems='center'
+                            >
+                              <Typography variant='subtitle2' fontWeight={600}>
+                                Tentativa {userAttempts.length - index}
+                              </Typography>
+                              <Chip
+                                label={statusInfo.label}
+                                size='small'
+                                sx={{
+                                  bgcolor: statusInfo.color,
+                                  color: 'white',
+                                }}
+                              />
+                            </Box>
 
-                              <Box
-                                display='flex'
-                                gap={3}
-                                flexWrap='wrap'
-                                sx={{ fontSize: '0.875rem' }}
-                              >
-                                {attempt.nota_obtida !== null && (
-                                  <Box>
-                                    <Typography
-                                      variant='caption'
-                                      color='text.secondary'
-                                    >
-                                      Nota Obtida
-                                    </Typography>
-                                    <Typography
-                                      variant='body2'
-                                      fontWeight={600}
-                                      color={
-                                        attempt.nota_obtida >= 70
-                                          ? 'success.main'
-                                          : 'error.main'
-                                      }
-                                    >
-                                      {attempt.nota_obtida}
-                                    </Typography>
-                                  </Box>
-                                )}
-
-                                {attempt.data_fim && (
-                                  <Box>
-                                    <Typography
-                                      variant='caption'
-                                      color='text.secondary'
-                                    >
-                                      Tempo Gasto
-                                    </Typography>
-                                    <Typography
-                                      variant='body2'
-                                      fontWeight={600}
-                                    >
-                                      {calculateTimeSpent(
-                                        attempt.data_inicio,
-                                        attempt.data_fim
-                                      )}
-                                    </Typography>
-                                  </Box>
-                                )}
-
+                            <Box
+                              display='flex'
+                              gap={3}
+                              flexWrap='wrap'
+                              sx={{ fontSize: '0.875rem' }}
+                            >
+                              {attempt.nota_obtida !== null && (
                                 <Box>
                                   <Typography
                                     variant='caption'
                                     color='text.secondary'
                                   >
-                                    Iniciada em:
+                                    Nota Obtida
                                   </Typography>
-                                  <Typography variant='body2' fontWeight={600}>
-                                    {new Date(
-                                      attempt.criado_em
-                                    ).toLocaleDateString('pt-BR', {
-                                      day: '2-digit',
-                                      month: '2-digit',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    })}
+                                  <Typography
+                                    variant='body2'
+                                    fontWeight={600}
+                                    color={
+                                      attempt.nota_obtida >= 70
+                                        ? 'success.main'
+                                        : 'error.main'
+                                    }
+                                  >
+                                    {attempt.nota_obtida}
                                   </Typography>
                                 </Box>
-                              </Box>
-                            </Stack>
-                          </Paper>
-                        )
-                      })}
-                  </Stack>
-                </Box>
-              )}
+                              )}
 
-              {/* Botão para iniciar */}
-              {!tentativaStarted && shouldShowStartButton() && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
-                  <Button
-                    variant='contained'
-                    size='large'
-                    startIcon={
-                      startAssessment.isPending ? (
-                        <CircularProgress size={20} color='inherit' />
-                      ) : (
-                        <PlayArrowRounded />
+                              {attempt.data_fim && (
+                                <Box>
+                                  <Typography
+                                    variant='caption'
+                                    color='text.secondary'
+                                  >
+                                    Tempo Gasto
+                                  </Typography>
+                                  <Typography variant='body2' fontWeight={600}>
+                                    {calculateTimeSpent(
+                                      attempt.data_inicio,
+                                      attempt.data_fim
+                                    )}
+                                  </Typography>
+                                </Box>
+                              )}
+
+                              <Box>
+                                <Typography
+                                  variant='caption'
+                                  color='text.secondary'
+                                >
+                                  Iniciada em:
+                                </Typography>
+                                <Typography variant='body2' fontWeight={600}>
+                                  {new Date(
+                                    attempt.criado_em
+                                  ).toLocaleDateString('pt-BR', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Stack>
+                        </Paper>
                       )
-                    }
-                    disabled={startAssessment.isPending}
-                    onClick={handleStartTentativa}
-                    sx={{ minWidth: 200 }}
-                  >
-                    {startAssessment.isPending
-                      ? 'Iniciando...'
-                      : 'Iniciar Avaliação'}
-                  </Button>
-                </Box>
-              )}
-            </Stack>
+                    })}
+                </Stack>
+              </Box>
+            )}
+
+            {/* Botão para iniciar */}
+            {!tentativaStarted && shouldShowStartButton() && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
+                <Button
+                  variant='contained'
+                  size='large'
+                  startIcon={
+                    startAssessment.isPending ? (
+                      <CircularProgress size={20} color='inherit' />
+                    ) : (
+                      <PlayArrowRounded />
+                    )
+                  }
+                  disabled={startAssessment.isPending}
+                  onClick={handleStartTentativa}
+                  sx={{ minWidth: 200 }}
+                >
+                  {startAssessment.isPending
+                    ? 'Iniciando...'
+                    : 'Iniciar Avaliação'}
+                </Button>
+              </Box>
+            )}
           </Box>
         )}
 
         {/* Aba de Questões */}
-        {currentTab === 'questoes' && tentativaStarted && assessmentData && (
-          <QuizContent
-            assessmentData={assessmentData}
-            currentQuestionIndex={currentQuestionIndex}
-            setCurrentQuestionIndex={setCurrentQuestionIndex}
-            respostas={respostas}
-            handleAnswerChange={handleAnswerChange}
-            timeRemaining={timeRemaining}
-            formatTime={formatTime}
-            isSubmitting={isSubmitting}
-            handleSubmit={handleSubmit}
-          />
-        )}
+        {!showReviewTab &&
+          currentTab === 'questoes' &&
+          tentativaStarted &&
+          assessmentData && (
+            <QuizContent
+              assessmentData={assessmentData}
+              currentQuestionIndex={currentQuestionIndex}
+              setCurrentQuestionIndex={setCurrentQuestionIndex}
+              respostas={respostas}
+              handleAnswerChange={handleAnswerChange}
+              timeRemaining={timeRemaining}
+              formatTime={formatTime}
+              isSubmitting={isSubmitting}
+              handleSubmit={handleSubmit}
+            />
+          )}
+
+        {/* Aba de Revisão */}
+        {showReviewTab &&
+          currentTab === 'revisao' &&
+          (reviewLoading && !reviewData ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+              <CircularProgress />
+            </Box>
+          ) : reviewData ? (
+            <AssessmentReviewSummary
+              review={reviewData}
+              finalScore={latestApprovedAttempt?.nota_obtida ?? null}
+            />
+          ) : (
+            <Paper variant='outlined' sx={{ p: 3 }}>
+              <Typography variant='body2' color='text.secondary'>
+                Não foi possível carregar a revisão desta tentativa.
+              </Typography>
+            </Paper>
+          ))}
       </Stack>
     </Box>
   )

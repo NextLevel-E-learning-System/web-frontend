@@ -576,6 +576,7 @@ export interface AttemptForReview {
     data_inicio: string
     data_fim: string
     status: string
+    nota_obtida?: number | null
   }
   avaliacao: {
     codigo: string
@@ -598,6 +599,9 @@ export interface AttemptForReview {
   }>
   respostas_objetivas?: Array<{
     questao_id: string
+    enunciado: string
+    tipo: string
+    peso: number
     resposta_funcionario: string
     resposta_correta: string
     pontuacao: number | null

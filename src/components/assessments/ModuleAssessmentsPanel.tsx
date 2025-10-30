@@ -280,7 +280,7 @@ export default function ModuleAssessmentsPanel({
                         </Typography>
                         {a.nota_minima != null && (
                           <Typography variant='body2' color='text.secondary'>
-                            <strong>Nota mínima:</strong> {a.nota_minima}%
+                            <strong>Nota mínima:</strong> {a.nota_minima}
                           </Typography>
                         )}
                         {a.tempo_limite && (
