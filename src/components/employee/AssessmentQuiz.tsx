@@ -71,9 +71,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
 
     // Verificar se já foi aprovado
     const hasApproved = userAttempts.some(
-      attempt =>
-        attempt.status === 'APROVADO' ||
-        (attempt.nota_obtida !== null && attempt.nota_obtida >= 70)
+      attempt => attempt.status === 'APROVADO'
     )
     if (hasApproved) return false
 
@@ -87,7 +85,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
     const tentativasUsadas = userAttempts.filter(
       a => a.status !== 'EM_ANDAMENTO'
     ).length
-    return tentativasUsadas < (avaliacao.tentativas_permitidas || 2)
+    return tentativasUsadas < (avaliacao.tentativas_permitidas || 0)
   }
 
   // Mapear status para exibição
@@ -96,7 +94,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
       APROVADO: { label: '✅ Aprovado', color: 'success.main' },
       REPROVADO: { label: '❌ Reprovado', color: 'error.main' },
       AGUARDANDO_CORRECAO: {
-        label: '⏳ Pendente de Revisão',
+        label: '⏳ Aguardando correção ',
         color: 'warning.main',
       },
       EM_ANDAMENTO: { label: '🔄 Em Andamento', color: 'info.main' },

@@ -594,6 +594,7 @@ export interface AttemptForReview {
     peso: number
     resposta_funcionario: string
     pontuacao_atual?: number
+    feedback_atual?: string
   }>
   respostas_objetivas?: Array<{
     questao_id: string
@@ -624,6 +625,7 @@ export interface FinalizeReviewInput {
   correcoes: Array<{
     resposta_id: string
     pontuacao: number
+    feedback?: string
   }>
   feedback_geral?: string
 }
