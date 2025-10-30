@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Box,
   Paper,
@@ -42,6 +42,7 @@ interface Props {
 interface QuestionScore {
   resposta_id: string
   pontuacao: number
+  feedback?: string
 }
 
 export default function CourseReviewsPanel({ cursoCodigo }: Props) {
@@ -90,6 +91,38 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
     })
   }
 
+  const handleFeedbackChange = (respostaId: string, feedback: string) => {
+    setQuestionScores(prev => {
+      const existing = prev.find(s => s.resposta_id === respostaId)
+      if (existing) {
+        return prev.map(s =>
+          s.resposta_id === respostaId ? { ...s, feedback } : s
+        )
+      }
+      return [...prev, { resposta_id: respostaId, pontuacao: 0, feedback }]
+    })
+  }
+
+  useEffect(() => {
+    if (!reviewDialog.open || !attemptDetails) return
+
+    const dissertativas = attemptDetails.questoes_dissertativas || []
+    if (dissertativas.length === 0) return
+
+    setQuestionScores(prev => {
+      if (prev.length > 0) return prev
+
+      return dissertativas.map(questao => ({
+        resposta_id: questao.resposta_id,
+        pontuacao:
+          typeof questao.pontuacao_atual === 'number'
+            ? questao.pontuacao_atual
+            : 0,
+        feedback: questao.feedback_atual || '',
+      }))
+    })
+  }, [attemptDetails, reviewDialog.open])
+
   const handleSubmitReview = async () => {
     if (!reviewDialog.tentativaId || !attemptDetails) return
 
@@ -105,10 +138,16 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
     }
 
     try {
+      const correcoesPayload = questionScores.map(score => ({
+        resposta_id: score.resposta_id,
+        pontuacao: score.pontuacao,
+        feedback: score.feedback?.trim() ? score.feedback.trim() : undefined,
+      }))
+
       const result = await finalizeReview.mutateAsync({
         tentativaId: reviewDialog.tentativaId,
         input: {
-          correcoes: questionScores,
+          correcoes: correcoesPayload,
           feedback_geral: feedbackGeral || undefined,
         },
       })
@@ -283,6 +322,10 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
 
               {/* Questões Dissertativas */}
               {attemptDetails.questoes_dissertativas.map(questao => {
+                const currentScore = questionScores.find(
+                  s => s.resposta_id === questao.resposta_id
+                )
+
                 return (
                   <Paper
                     key={questao.resposta_id}
@@ -305,9 +348,13 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                         <TextField
                           type='number'
                           placeholder='0-100'
+                          value={currentScore?.pontuacao ?? ''}
                           onChange={e => {
-                            const value = parseFloat(e.target.value) || 0
-                            const clamped = Math.max(0, Math.min(100, value))
+                            const value = parseFloat(e.target.value)
+                            const clamped = Math.max(
+                              0,
+                              Math.min(100, Number.isNaN(value) ? 0 : value)
+                            )
                             handleScoreChange(questao.resposta_id, clamped)
                           }}
                           inputProps={{
@@ -341,6 +388,21 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                         {questao.resposta_funcionario}
                       </Typography>
                     </Paper>
+                    <TextField
+                      label='Feedback individual (opcional)'
+                      multiline
+                      rows={3}
+                      fullWidth
+                      value={currentScore?.feedback ?? ''}
+                      onChange={e =>
+                        handleFeedbackChange(
+                          questao.resposta_id,
+                          e.target.value
+                        )
+                      }
+                      placeholder='Escreva um feedback específico para esta questão...'
+                      sx={{ mt: 2 }}
+                    />
                   </Paper>
                 )
               })}
