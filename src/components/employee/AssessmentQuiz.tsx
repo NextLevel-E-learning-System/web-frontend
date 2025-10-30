@@ -504,10 +504,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
               <CircularProgress />
             </Box>
           ) : reviewData ? (
-            <AssessmentReviewSummary
-              review={reviewData}
-              finalScore={latestApprovedAttempt?.nota_obtida ?? null}
-            />
+            <AssessmentReviewSummary review={reviewData} />
           ) : (
             <Paper variant='outlined' sx={{ p: 3 }}>
               <Typography variant='body2' color='text.secondary'>
