@@ -77,14 +77,15 @@ export default function CertificateView({
   // Se não tem certificado, mostrar botão para emitir
   if (!certificate) {
     return (
-      <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+      <Box sx={{ mx: 'auto' }}>
         <Paper
           variant='outlined'
           sx={{
             p: 6,
             textAlign: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
+            borderRadius: 1,
+            borderColor: 'success.light',
+            color: 'primary',
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -124,7 +125,7 @@ export default function CertificateView({
             </Typography>
 
             <Button
-              variant='contained'
+              variant='outlined'
               size='large'
               onClick={handleIssueCertificate}
               disabled={isLoading}
@@ -185,8 +186,9 @@ export default function CertificateView({
       <Card
         variant='outlined'
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
+          borderRadius: 1,
+          borderColor: 'success.light',
+          color: 'primary',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -239,16 +241,9 @@ export default function CertificateView({
                 >
                   Código do Certificado
                 </Typography>
-                <Chip
-                  label={certificate.codigo_certificado}
-                  sx={{
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '1rem',
-                    px: 1,
-                  }}
-                />
+                <Typography variant='body1' fontWeight={600}>
+                  {certificate.codigo_certificado}
+                </Typography>
               </Box>
 
               <Box>
@@ -299,7 +294,7 @@ export default function CertificateView({
               justifyContent='center'
             >
               <Button
-                variant='contained'
+                variant='outlined'
                 size='large'
                 onClick={handleDownloadPdf}
                 disabled={isLoading}
@@ -322,7 +317,7 @@ export default function CertificateView({
               >
                 {generatePdfMutation.isPending
                   ? 'Gerando PDF...'
-                  : 'Baixar Certificado (PDF)'}
+                  : 'Baixar Certificado'}
               </Button>
             </Stack>
 
