@@ -362,3 +362,78 @@ export const getEnrollmentStats = (enrollments: UserEnrollment[]) => {
     cursosCancelados: cancelados,
   }
 }
+
+// Types para Certificados
+export interface Certificate {
+  id: number
+  funcionario_id: string
+  curso_id: string
+  codigo_certificado: string
+  data_emissao: string
+  hash_validacao: string
+  storage_key?: string | null
+}
+
+export interface UserCertificatesResponse {
+  items: Certificate[]
+  mensagem: string
+}
+
+export interface IssueCertificateResponse {
+  certificado: Certificate
+  mensagem: string
+}
+
+export interface CertificatePdfResponse {
+  downloadUrl: string
+  key: string
+  codigo: string
+  mensagem: string
+}
+
+// Hook para buscar certificados do usuário
+export function useUserCertificates(userId: string) {
+  return useQuery<UserCertificatesResponse>({
+    queryKey: ['progress', 'certificates', 'user', userId],
+    queryFn: () =>
+      authGet<UserCertificatesResponse>(
+        `${API_ENDPOINTS.PROGRESS}/certificates/user/${userId}`
+      ),
+    enabled: !!userId,
+  })
+}
+
+// Hook para emitir/recuperar certificado de uma inscrição
+export function useIssueCertificate() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['progress', 'certificate', 'issue'],
+    mutationFn: (enrollmentId: string) =>
+      authPost<IssueCertificateResponse>(
+        `${API_ENDPOINTS.PROGRESS}/certificates/enrollment/${enrollmentId}`,
+        {}
+      ),
+    onSuccess: (_, enrollmentId) => {
+      // Invalidar certificados do usuário
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'certificates'],
+      })
+      // Invalidar inscrição específica
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'enrollment', enrollmentId],
+      })
+    },
+  })
+}
+
+// Hook para gerar/baixar PDF do certificado
+export function useGenerateCertificatePdf() {
+  return useMutation({
+    mutationKey: ['progress', 'certificate', 'pdf'],
+    mutationFn: (enrollmentId: string) =>
+      authGet<CertificatePdfResponse>(
+        `${API_ENDPOINTS.PROGRESS}/certificates/enrollment/${enrollmentId}/pdf`
+      ),
+  })
+}

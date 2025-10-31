@@ -22,14 +22,16 @@ import {
   useCourseModules,
   useCourseCatalog,
 } from '../../api/courses'
-import { useUserEnrollments } from '../../api/progress'
+import { useUserEnrollments, useUserCertificates } from '../../api/progress'
 import { useDashboardCompleto } from '../../api/users'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
+import CertificateView from '@/components/employee/CertificateView'
 
 const TAB_INDEX = {
   curriculum: 0,
   overview: 1,
-  discussions: 2,
+  certificate: 2,
+  discussions: 3,
 } as const
 
 type TabIndex = (typeof TAB_INDEX)[keyof typeof TAB_INDEX]
@@ -62,6 +64,9 @@ export default function CourseContent() {
     }
   )
 
+  // Buscar certificados do usuário
+  const { data: certificatesResponse } = useUserCertificates(perfil?.id || '')
+
   // Buscar todos os cursos como backup para garantir dados completos
   const { data: allCourses } = useCourseCatalog({})
 
@@ -71,6 +76,14 @@ export default function CourseContent() {
   const userEnrollments = userEnrollmentsResponse?.items || []
   const enrollment = userEnrollments.find(e => e.curso_id === codigo)
   const isEnrolled = !!enrollment
+  const isCourseCompleted =
+    enrollment?.status === 'CONCLUIDO' &&
+    enrollment?.progresso_percentual === 100
+
+  // Buscar certificado existente para este curso
+  const existingCertificate = certificatesResponse?.items.find(
+    cert => cert.curso_id === codigo
+  )
 
   // Usar dados passados via state quando disponíveis, senão buscar no backend
   const completesCourse =
@@ -134,6 +147,9 @@ export default function CourseContent() {
         >
           <Tab label='Conteúdo' value={TAB_INDEX.curriculum} />
           <Tab label='Visão Geral' value={TAB_INDEX.overview} />
+          {isCourseCompleted && (
+            <Tab label='Certificado' value={TAB_INDEX.certificate} />
+          )}
         </Tabs>
         <Divider />
         <Box sx={{ p: { xs: 2, md: 3 } }}>
@@ -141,6 +157,15 @@ export default function CourseContent() {
             <CourseCurriculum
               modules={modules || []}
               enrollmentId={enrollment.id}
+            />
+          )}
+
+          {activeTab === TAB_INDEX.certificate && isCourseCompleted && (
+            <CertificateView
+              enrollmentId={enrollment.id}
+              cursoTitulo={completesCourse.titulo}
+              dataConclusao={enrollment.data_conclusao}
+              existingCertificate={existingCertificate || null}
             />
           )}
 
