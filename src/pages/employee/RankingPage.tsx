@@ -3,7 +3,7 @@ import { MenuBook, WorkspacePremium, StarRate } from '@mui/icons-material'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboardCompleto } from '@/api/users'
+import { useDashboard, useDashboardCompleto } from '@/api/users'
 import StatsCard from '@/components/common/StatCard'
 import LeaderboardTop from '@/components/common/LeaderboardTop'
 import RankingTable, { type RankItem } from '@/components/common/RankingTable'
@@ -166,12 +166,11 @@ export default function RankingPage() {
   const [tab, setTab] = useState(0)
   const top = tab === 0 ? geralTop : mensalTop
   const rows = tab === 0 ? geralRows : mensalRows
-  const { dashboard, isLoading, error } = useDashboardCompleto()
+  const { isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
+  const { data: dashboardResponse } = useDashboard()
+  const perfil = dashboardResponse?.usuario
 
-  // Type guard para garantir que é um dashboard de aluno
-  const alunoData =
-    dashboard?.tipo_dashboard === 'aluno' ? (dashboard as any) : null
 
   if (isLoading) {
     return (
@@ -188,7 +187,7 @@ export default function RankingPage() {
     )
   }
 
-  if (error || !alunoData) {
+  if (error || !perfil) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error'>Erro ao carregar dados. Tente novamente.</Alert>
@@ -198,15 +197,14 @@ export default function RankingPage() {
 
   return (
     <DashboardLayout items={navigationItems}>
-      <Box sx={{ py: { xs: 3, md: 5 } }}>
+      <Box sx={{ mb: 2 }}>
         <Box
           sx={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: { xs: 'stretch', sm: 'center' },
             justifyContent: 'space-between',
-            mb: 2,
-            flexWrap: 'wrap',
             gap: 2,
+            flexWrap: 'wrap',
           }}
         >
           <Box>
