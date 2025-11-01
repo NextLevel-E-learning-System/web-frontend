@@ -42,22 +42,22 @@ export default function RankingPage() {
   const globalRanking = useMemo(() => {
     if (!globalRankingData) return []
     return globalRankingData.map((entry, index) => ({
-      rank: index + 1,
-      name: entry.user_id, // TODO: buscar nome do usuário
+      rank: entry.posicao || index + 1,
+      name: entry.nome,
       points: entry.xp,
-      change: 0, // TODO: calcular mudança de posição
+      change: 0, // TODO: calcular mudança de posição comparando com ranking anterior
       avatarColor: getAvatarColor(index),
     }))
   }, [globalRankingData])
 
   const monthlyRanking = useMemo(() => {
     if (!monthlyRankingData) return []
-    return monthlyRankingData.map(entry => ({
-      rank: entry.posicao || 0,
-      name: entry.funcionario_id, // TODO: buscar nome do usuário
-      points: entry.xp_mes,
-      change: 0, // TODO: calcular mudança de posição
-      avatarColor: getAvatarColor(entry.posicao || 0),
+    return monthlyRankingData.map((entry, index) => ({
+      rank: entry.posicao || index + 1,
+      name: entry.nome,
+      points: entry.xpMes,
+      change: 0, // TODO: calcular mudança de posição comparando com mês anterior
+      avatarColor: getAvatarColor(index),
     }))
   }, [monthlyRankingData])
 

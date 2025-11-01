@@ -42,20 +42,20 @@ export interface UserAchievements {
   }>
 }
 
-// Ranking global retorna apenas user_id e xp
+// Ranking global retorna user_id, nome, xp e posição
 export interface GlobalRankingEntry {
   user_id: string
+  nome: string
   xp: number
+  posicao: number | null
 }
 
 // Ranking mensal
 export interface MonthlyRankingEntry {
-  id: number
-  mes_ano: string
-  departamento_id: string | null
-  funcionario_id: string
-  xp_mes: number
-  posicao: number | null
+  posicao: number
+  userId: string
+  nome: string
+  xpMes: number
 }
 
 export interface XpHistoryItem {

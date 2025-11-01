@@ -49,16 +49,16 @@ export default function RankingTable({ rows }: Props) {
       <Table size='small'>
         <TableHead>
           <TableRow>
-            <TableCell width={64}>#</TableCell>
+            <TableCell align='center'>Posição</TableCell>
             <TableCell>Aluno</TableCell>
-            <TableCell align='right'>Pontos</TableCell>
-            <TableCell align='right'>Variação</TableCell>
+            <TableCell align='center'>XP</TableCell>
+            <TableCell align='center'>Variação de Posição</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {rows.map(r => (
             <TableRow key={r.rank} hover>
-              <TableCell>{r.rank}</TableCell>
+              <TableCell align='center'>{r.rank}</TableCell>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Avatar
@@ -69,10 +69,10 @@ export default function RankingTable({ rows }: Props) {
                   <Typography fontWeight={600}>{r.name}</Typography>
                 </Box>
               </TableCell>
-              <TableCell align='right'>
-                {r.points.toLocaleString()} pts
+              <TableCell align='center'>
+                {r.points.toLocaleString()} xp
               </TableCell>
-              <TableCell align='right'>
+              <TableCell align='center'>
                 <Trend change={r.change} />
               </TableCell>
             </TableRow>
