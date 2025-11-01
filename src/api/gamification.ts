@@ -10,6 +10,8 @@ export interface Badge {
   criterio?: string
   icone_url?: string
   pontos_necessarios?: number
+  criado_em?: string
+  data_conquista?: string
 }
 
 export interface CreateBadgeInput {
@@ -21,15 +23,9 @@ export interface CreateBadgeInput {
   pontos_necessarios?: number
 }
 
-export interface UserProfile {
-  userId: string
-  xp: number
-  nivel: string
-  proximoNivelXp: number
-  badges: Array<{
-    codigo: string
-    nome: string
-  }>
+// Resposta do /me (apenas badges - XP e nível vêm do user-service)
+export interface MyGamificationProfile {
+  badges: Badge[]
 }
 
 export interface UserAchievements {
@@ -37,10 +33,7 @@ export interface UserAchievements {
   xp: number
   nivel: string
   proximoNivelXp: number
-  badges: Array<{
-    codigo: string
-    nome: string
-  }>
+  badges: Badge[]
   historicoXp: Array<{
     id: string
     xp_ganho: number
@@ -49,13 +42,20 @@ export interface UserAchievements {
   }>
 }
 
-export interface RankingEntry {
-  posicao: number
-  userId: string
-  xpMes?: number
-  xpTotal?: number
-  nome?: string
-  departamento?: string
+// Ranking global retorna apenas user_id e xp
+export interface GlobalRankingEntry {
+  user_id: string
+  xp: number
+}
+
+// Ranking mensal
+export interface MonthlyRankingEntry {
+  id: number
+  mes_ano: string
+  departamento_id: string | null
+  funcionario_id: string
+  xp_mes: number
+  posicao: number | null
 }
 
 export interface XpHistoryItem {
@@ -63,7 +63,7 @@ export interface XpHistoryItem {
   xp_ganho: number
   motivo: string
   referencia_id: string | null
-  data_criacao?: string
+  data_hora: string
 }
 
 export interface XpHistoryResponse {
@@ -108,26 +108,19 @@ export function useCreateBadge() {
 
 // Hooks para Perfil do Usuário
 export function useMyGamificationProfile() {
-  return useQuery<UserProfile>({
+  return useQuery<MyGamificationProfile>({
     queryKey: ['gamification', 'profile', 'me'],
     queryFn: () =>
-      authGet<UserProfile>(`${API_ENDPOINTS.GAMIFICATION}/me`, {
-        headers: {
-          'X-User-Id': 'current-user', // Será substituído pelo middleware
-        },
-      }),
+      authGet<MyGamificationProfile>(`${API_ENDPOINTS.GAMIFICATION}/me`),
   })
 }
 
-export function useUserGamificationProfile(userId: string) {
-  return useQuery<UserProfile>({
-    queryKey: ['gamification', 'profile', userId],
+// Pega badges de um usuário específico
+export function useUserBadges(userId: string) {
+  return useQuery<Badge[]>({
+    queryKey: ['gamification', 'user-badges', userId],
     queryFn: () =>
-      authGet<UserProfile>(`${API_ENDPOINTS.GAMIFICATION}/me`, {
-        headers: {
-          'X-User-Id': userId,
-        },
-      }),
+      authGet<Badge[]>(`${API_ENDPOINTS.GAMIFICATION}/users/${userId}/badges`),
     enabled: !!userId,
   })
 }
@@ -186,18 +179,20 @@ export function useProcessAutoBadges() {
 
 // Hooks para Rankings
 export function useGlobalRanking() {
-  return useQuery<RankingEntry[]>({
+  return useQuery<GlobalRankingEntry[]>({
     queryKey: ['gamification', 'ranking', 'global'],
     queryFn: () =>
-      authGet<RankingEntry[]>(`${API_ENDPOINTS.GAMIFICATION}/ranking/global`),
+      authGet<GlobalRankingEntry[]>(
+        `${API_ENDPOINTS.GAMIFICATION}/ranking/global`
+      ),
   })
 }
 
 export function useDepartmentRanking(departamentoId: string) {
-  return useQuery<RankingEntry[]>({
+  return useQuery<GlobalRankingEntry[]>({
     queryKey: ['gamification', 'ranking', 'department', departamentoId],
     queryFn: () =>
-      authGet<RankingEntry[]>(
+      authGet<GlobalRankingEntry[]>(
         `${API_ENDPOINTS.GAMIFICATION}/ranking/departamento`,
         {
           headers: {
@@ -226,19 +221,9 @@ export function useMonthlyRanking(filters: MonthlyRankingFilters = {}) {
   const queryString = searchParams.toString()
   const url = `${API_ENDPOINTS.GAMIFICATION}/ranking/monthly${queryString ? `?${queryString}` : ''}`
 
-  return useQuery<RankingEntry[]>({
+  return useQuery<MonthlyRankingEntry[]>({
     queryKey: ['gamification', 'ranking', 'monthly', filters],
-    queryFn: () => authGet<RankingEntry[]>(url),
-  })
-}
-
-// Hooks para Badges de Usuário
-export function useUserBadges(userId: string) {
-  return useQuery<Badge[]>({
-    queryKey: ['gamification', 'user-badges', userId],
-    queryFn: () =>
-      authGet<Badge[]>(`${API_ENDPOINTS.GAMIFICATION}/users/${userId}/badges`),
-    enabled: !!userId,
+    queryFn: () => authGet<MonthlyRankingEntry[]>(url),
   })
 }
 
@@ -273,19 +258,15 @@ export function useUserXpHistory(
 // Hook combinado para dashboard de gamificação
 export function useGamificationDashboard() {
   const profile = useMyGamificationProfile()
-  const achievements = useMyAchievements()
   const globalRanking = useGlobalRanking()
 
   return {
-    profile: profile.data,
-    achievements: achievements.data,
+    badges: profile.data?.badges || [],
     globalRanking: globalRanking.data,
-    isLoading:
-      profile.isLoading || achievements.isLoading || globalRanking.isLoading,
-    error: profile.error || achievements.error || globalRanking.error,
+    isLoading: profile.isLoading || globalRanking.isLoading,
+    error: profile.error || globalRanking.error,
     refetch: () => {
       profile.refetch()
-      achievements.refetch()
       globalRanking.refetch()
     },
   }
@@ -310,11 +291,11 @@ export const getLevelFromXp = (
       progresso: (xp / 1000) * 100,
       proximoNivel: 1000,
     }
-  } else if (xp < 5000) {
+  } else if (xp < 3000) {
     return {
       nivel: 'Intermediário',
-      progresso: ((xp - 1000) / 4000) * 100,
-      proximoNivel: 5000,
+      progresso: ((xp - 1000) / 2000) * 100,
+      proximoNivel: 3000,
     }
   } else {
     return { nivel: 'Avançado', progresso: 100, proximoNivel: xp }

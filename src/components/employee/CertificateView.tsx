@@ -8,7 +8,6 @@ import {
   CircularProgress,
   Alert,
   Divider,
-  Chip,
   Card,
   CardContent,
 } from '@mui/material'
@@ -24,7 +23,6 @@ import {
   type Certificate,
 } from '@/api/progress'
 import { showToast } from '@/utils/toast'
-import { toast } from 'react-toastify'
 
 interface CertificateViewProps {
   enrollmentId: string

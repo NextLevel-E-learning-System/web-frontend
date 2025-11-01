@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Box, Card, Chip, LinearProgress, Typography } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
 import { useDashboardCompleto } from '@/api/users'
+import { useMyGamificationProfile } from '@/api/gamification'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown'
 
 interface EmployeeHeaderProps {
@@ -22,8 +23,11 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
   const xpAtual = dashboardData?.xp_atual || 0
   const xpProximoNivel = dashboardData?.xp_proximo_nivel || 1000
   const progressoNivel = dashboardData?.progresso_nivel || 0
-  const badges = dashboardData?.badges_conquistados || []
   const { perfil } = useDashboardCompleto()
+
+  // Buscar badges do gamification service
+  const { data: gamificationProfile } = useMyGamificationProfile()
+  const badges = gamificationProfile?.badges || []
 
   // Calcular quantos XP faltam para o próximo nível
   const xpFaltante = xpProximoNivel - xpAtual
