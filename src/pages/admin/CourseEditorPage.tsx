@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import {
   Box,
   Button,
   Tabs,
   Tab,
   Stack,
-  Typography,
   Paper,
   CircularProgress,
   TextField,
@@ -16,6 +16,7 @@ import {
   MenuItem,
   Checkbox,
   ListItemText,
+  Divider,
 } from '@mui/material'
 import {
   useCourse,
@@ -25,49 +26,100 @@ import {
   useCategories,
   useCourses,
   type Course,
-  type Module,
   type Category,
 } from '@/api/courses'
 import { useFuncionarios } from '@/api/users'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useNavigation from '@/hooks/useNavigation'
 import CourseModulesSection from '@/components/modules/CourseModulesSection'
+import { useCategoryColors } from '@/hooks/useCategoryColors'
+import CourseContentHeader from '@/components/employee/CourseContentHeader'
+import CourseStudentsPanel from '@/components/courses/CourseStudentsPanel'
+import CourseReviewsPanel from '@/components/courses/CourseReviewsPanel'
+import CourseForumPanel from '@/components/admin/CourseForumPanel'
 
 interface TabDefinition {
   id: string
   label: string
 }
 
-const INFO_TAB: TabDefinition = { id: 'info', label: 'Informações' }
+const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
+const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Alunos' }
+const REVIEWS_TAB: TabDefinition = { id: 'reviews', label: 'Correções' }
+const FORUM_TAB: TabDefinition = { id: 'forum', label: 'Fórum' }
+
+interface LocationState {
+  nextTab?: string
+  pathname?: string
+  state?: LocationState
+}
+
+interface FormState {
+  codigo: string
+  titulo: string
+  descricao: string
+  categoria_id: string
+  instrutor_id: string
+  duracao_estimada: number
+  xp_oferecido: number
+  nivel_dificuldade: string
+  pre_requisitos: string[]
+  ativo: boolean
+}
+
+interface CreateCourseResponse {
+  curso?: { codigo: string }
+  codigo?: string
+  mensagem?: string
+}
 
 export default function CourseEditorPage() {
   const { codigo } = useParams<{ codigo: string }>()
   const isEdit = !!codigo
   const navigate = useNavigate()
-  const location = useLocation() as any
+  const location = useLocation()
 
-  const courseQuery = isEdit && codigo ? useCourse(codigo) : null
+  // Verificar se é modo de visualização apenas
+  const isViewOnly =
+    (location.state as LocationState & { viewOnly?: boolean })?.viewOnly ||
+    false
 
-  const rawCourseData: any = courseQuery?.data
-  const course: Course | null | undefined = rawCourseData
-    ? rawCourseData?.codigo
-      ? (rawCourseData as Course)
-      : rawCourseData?.curso?.codigo
-        ? (rawCourseData.curso as Course)
-        : rawCourseData?.item?.codigo
-          ? (rawCourseData.item as Course)
-          : rawCourseData?.data?.codigo
-            ? (rawCourseData.data as Course)
-            : null
-    : null
-  const loadingCourse = courseQuery?.isLoading ?? false
+  // Sempre chama os hooks na mesma ordem
+  const courseQuery = useCourse(codigo || '')
   const createCourse = useCreateCourse()
-  const updateCourse = isEdit && codigo ? useUpdateCourse(codigo) : null
+  const updateCourse = useUpdateCourse(codigo || '')
+  const modulesQuery = useCourseModules(codigo || '')
 
-  // Só executa useCourseModules se temos um código válido
-  const modulesQuery = isEdit && codigo ? useCourseModules(codigo) : null
-  const modules: Module[] = modulesQuery?.data || []
+  // Extrai os dados apenas se estiver em modo de edição
+  const rawCourseData = isEdit ? courseQuery?.data : null
+  const course: Course | null | undefined = useMemo(() => {
+    if (!rawCourseData) return null
+
+    // Verifica se é um Course direto
+    if ('codigo' in rawCourseData && typeof rawCourseData.codigo === 'string') {
+      return rawCourseData as Course
+    }
+
+    // Verifica estruturas aninhadas
+    const dataWithCurso = rawCourseData as { curso?: Course }
+    if (dataWithCurso.curso?.codigo) return dataWithCurso.curso
+
+    const dataWithItem = rawCourseData as { item?: Course }
+    if (dataWithItem.item?.codigo) return dataWithItem.item
+
+    const dataWithData = rawCourseData as { data?: Course }
+    if (dataWithData.data?.codigo) return dataWithData.data
+
+    return null
+  }, [rawCourseData])
+
+  const loadingCourse = isEdit ? (courseQuery?.isLoading ?? false) : false
+
+  const modules = useMemo(
+    () => (isEdit ? modulesQuery?.data || [] : []),
+    [isEdit, modulesQuery?.data]
+  )
   const { navigationItems } = useNavigation()
   // Dados auxiliares para selects
   const { data: categorias = [] } = useCategories()
@@ -79,7 +131,7 @@ export default function CourseEditorPage() {
   const [tab, setTab] = useState<string>(INFO_TAB.id)
 
   // Form state centralizado (pode ser distribuído em subcomponentes via props ou context)
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<FormState>({
     codigo: '',
     titulo: '',
     descricao: '',
@@ -89,17 +141,16 @@ export default function CourseEditorPage() {
     xp_oferecido: 0,
     nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
-    ativo: true,
+    ativo: false,
   })
 
   const [departamentoSelecionado, setDepartamentoSelecionado] = useState('')
 
   useEffect(() => {
     if (isEdit && course) {
-      setForm((f: any) => {
+      setForm(prevForm => {
         // Evita setState se nada mudou (previne loop de profundidade)
-        const next = {
-          ...f,
+        const next: FormState = {
           codigo: course.codigo,
           titulo: course.titulo,
           descricao: course.descricao ?? '',
@@ -112,15 +163,15 @@ export default function CourseEditorPage() {
           ativo: course.ativo,
         }
         const changed = Object.keys(next).some(
-          k => (next as any)[k] !== (f as any)[k]
+          k => next[k as keyof FormState] !== prevForm[k as keyof FormState]
         )
-        return changed ? next : f
+        return changed ? next : prevForm
       })
       if (course.departamento_codigo) {
         setDepartamentoSelecionado(dep => dep || course.departamento_codigo!)
       }
     }
-  }, [isEdit, course?.codigo])
+  }, [isEdit, course])
 
   // Ajusta departamento selecionado ao carregar categorias e curso
   useEffect(() => {
@@ -134,28 +185,35 @@ export default function CourseEditorPage() {
     }
   }, [categorias, form.categoria_id, departamentoSelecionado])
 
+  const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
+    course?.categoria_id
+  )
+
   // Se navegação trouxe state para abrir aba específica (ex: após criar ir para advanced)
   useEffect(() => {
-    if (location.state?.nextTab && location.state.nextTab !== tab) {
-      setTab(location.state.nextTab)
+    const state = location.state as LocationState | undefined
+    if (state?.nextTab && state.nextTab !== tab) {
+      setTab(state.nextTab)
       // Limpa para não reaplicar ao voltar
       navigate(location.pathname, { replace: true })
     }
-  }, [location, navigate, tab, codigo])
+  }, [location, navigate, tab])
 
   // Atualiza xp com base nos módulos se for edição
   useEffect(() => {
     if (isEdit && codigo && modules && Array.isArray(modules)) {
-      const totalXp = modules.reduce((acc, m: any) => acc + (m.xp || 0), 0)
-      setForm((f: any) =>
-        f.xp_oferecido !== totalXp ? { ...f, xp_oferecido: totalXp } : f
+      const totalXp = modules.reduce((acc, m) => acc + (m.xp || 0), 0)
+      setForm(prevForm =>
+        prevForm.xp_oferecido !== totalXp
+          ? { ...prevForm, xp_oferecido: totalXp }
+          : prevForm
       )
     }
-  }, [modules?.length, isEdit, codigo])
+  }, [isEdit, codigo, modules])
 
   const handleSaveInfo = async (goToModules = false) => {
     try {
-      if (!form.titulo?.trim()) return
+      if (!form.titulo?.trim() || !form.codigo?.trim()) return
 
       if (isEdit && updateCourse) {
         const updateData = {
@@ -170,15 +228,52 @@ export default function CourseEditorPage() {
           ativo: form.ativo,
         }
         await updateCourse.mutateAsync(updateData)
+        toast.success('Curso atualizado com sucesso!')
         if (goToModules) {
           setTab(MODULES_TAB.id)
         } else {
-          setTimeout(() => navigate('/manage/courses'), 1500)
+          navigate('/gerenciar/cursos')
         }
       } else {
-        setTimeout(() => navigate('/manage/courses'), 1500)
+        // Criar novo curso
+        const createData = {
+          codigo: form.codigo,
+          titulo: form.titulo,
+          descricao: form.descricao,
+          categoria_id: form.categoria_id,
+          instrutor_id: form.instrutor_id,
+          duracao_estimada: form.duracao_estimada,
+          xp_oferecido: form.xp_oferecido,
+          nivel_dificuldade: form.nivel_dificuldade,
+          pre_requisitos: form.pre_requisitos,
+          ativo: form.ativo,
+        }
+        const result = await createCourse.mutateAsync(createData)
+        toast.success('Curso criado com sucesso!')
+
+        // Extrai o código do curso da resposta
+        // A API retorna { curso: { codigo: "..." }, mensagem: "..." }
+        const responseData = result as CreateCourseResponse
+        const codigoCurso =
+          responseData?.curso?.codigo || responseData?.codigo || form.codigo
+
+        // Após criar, redireciona para edição do curso criado se quiser ir para módulos
+        if (goToModules) {
+          navigate(`/gerenciar/cursos/${codigoCurso}`, {
+            state: { nextTab: MODULES_TAB.id },
+          })
+        } else {
+          navigate('/gerenciar/cursos')
+        }
       }
-    } catch (e: any) {}
+    } catch (error) {
+      toast.error(
+        isEdit
+          ? 'Erro ao atualizar curso. Tente novamente.'
+          : 'Erro ao criar curso. Verifique se o código já não existe.'
+      )
+      console.error('Erro ao salvar curso:', error)
+    }
   }
 
   const renderCurrent = () => {
@@ -206,11 +301,11 @@ export default function CourseEditorPage() {
                 onChange={e => setForm({ ...form, codigo: e.target.value })}
                 fullWidth
                 required
-                disabled={isEdit}
+                disabled={isEdit || isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 3' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={form.ativo ? 'true' : 'false'}
@@ -231,6 +326,7 @@ export default function CourseEditorPage() {
                 onChange={e => setForm({ ...form, titulo: e.target.value })}
                 fullWidth
                 required
+                disabled={isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: 'span 12' }}>
@@ -241,10 +337,11 @@ export default function CourseEditorPage() {
                 fullWidth
                 multiline
                 minRows={2}
+                disabled={isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Departamento</InputLabel>
                 <Select
                   value={departamentoSelecionado}
@@ -269,7 +366,7 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Categoria</InputLabel>
                 <Select
                   value={form.categoria_id || ''}
@@ -296,7 +393,7 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Instrutor</InputLabel>
                 <Select
                   value={form.instrutor_id || ''}
@@ -320,18 +417,19 @@ export default function CourseEditorPage() {
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
               <TextField
-                label='Duração Estimada (h)'
+                label='Duração Estimada (horas)'
                 type='number'
                 value={form.duracao_estimada}
                 onChange={e =>
                   setForm({ ...form, duracao_estimada: Number(e.target.value) })
                 }
                 fullWidth
+                disabled={isViewOnly}
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
               <TextField
-                label='XP Total (módulos)'
+                label='XP Total'
                 type='number'
                 value={form.xp_oferecido}
                 fullWidth
@@ -340,7 +438,7 @@ export default function CourseEditorPage() {
               />
             </Box>
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 4' } }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Nível</InputLabel>
                 <Select
                   value={form.nivel_dificuldade}
@@ -356,7 +454,7 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
             <Box sx={{ gridColumn: 'span 12' }}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={isViewOnly}>
                 <InputLabel>Pré-requisitos</InputLabel>
                 <Select
                   multiple
@@ -392,35 +490,64 @@ export default function CourseEditorPage() {
               </FormControl>
             </Box>
           </Box>
-          <Stack direction='row' gap={1} justifyContent='flex-end'>
-            <Button variant='text' onClick={() => navigate('/manage/courses')}>
-              Cancelar
-            </Button>
-            <Button
-              variant='outlined'
-              onClick={() => handleSaveInfo(false)}
-              disabled={
-                createCourse.isPending ||
-                updateCourse?.isPending ||
-                !form.titulo
-              }
-            >
-              Salvar
-            </Button>
-            {isEdit && (
+          {!isViewOnly && (
+            <Stack direction='row' gap={1} justifyContent='flex-end'>
               <Button
-                variant='contained'
-                onClick={() => handleSaveInfo(true)}
+                variant='text'
+                onClick={() => navigate('/gerenciar/cursos')}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant='outlined'
+                onClick={() => handleSaveInfo(false)}
                 disabled={
                   createCourse.isPending ||
                   updateCourse?.isPending ||
-                  !form.titulo
+                  !form.titulo ||
+                  (!isEdit && !form.codigo)
                 }
               >
-                Próximo
+                Salvar
               </Button>
-            )}
-          </Stack>
+              {isEdit ? (
+                <Button
+                  variant='contained'
+                  onClick={() => handleSaveInfo(true)}
+                  disabled={
+                    createCourse.isPending ||
+                    updateCourse?.isPending ||
+                    !form.titulo
+                  }
+                >
+                  Próximo
+                </Button>
+              ) : (
+                <Button
+                  variant='contained'
+                  onClick={() => handleSaveInfo(true)}
+                  disabled={
+                    createCourse.isPending ||
+                    updateCourse?.isPending ||
+                    !form.titulo ||
+                    !form.codigo
+                  }
+                >
+                  Criar e Adicionar Módulos
+                </Button>
+              )}
+            </Stack>
+          )}
+          {isViewOnly && (
+            <Stack direction='row' gap={1} justifyContent='flex-end'>
+              <Button
+                variant='contained'
+                onClick={() => navigate('/gerenciar/cursos')}
+              >
+                Voltar
+              </Button>
+            </Stack>
+          )}
         </Stack>
       )
     }
@@ -429,37 +556,53 @@ export default function CourseEditorPage() {
         <CourseModulesSection
           cursoCodigo={codigo!}
           onTotalXpChange={total =>
-            setForm((f: any) => ({ ...f, xp_oferecido: total }))
+            setForm(prevForm => ({ ...prevForm, xp_oferecido: total }))
           }
+          isViewOnly={isViewOnly}
         />
       )
+    if (tab === STUDENTS_TAB.id)
+      return <CourseStudentsPanel cursoCodigo={codigo!} />
+    if (tab === REVIEWS_TAB.id)
+      return <CourseReviewsPanel cursoCodigo={codigo!} />
+    if (tab === FORUM_TAB.id) return <CourseForumPanel cursoCodigo={codigo!} />
     return null
   }
 
   return (
     <DashboardLayout items={navigationItems}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Stack
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-          >
-            <Typography variant='h6'>
-              {isEdit ? `${course?.titulo || form.titulo}` : 'Novo Curso'}
-            </Typography>
-          </Stack>
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTab(v)}
-            variant='scrollable'
-            allowScrollButtonsMobile
-          >
-            <Tab value={INFO_TAB.id} label={INFO_TAB.label} />
-            {isEdit && <Tab value={MODULES_TAB.id} label={MODULES_TAB.label} />}
-          </Tabs>
-        </Paper>
-        <Paper sx={{ p: 2, minHeight: 400 }}>
+      <CourseContentHeader
+        title={isEdit ? `${course?.titulo || form.titulo}` : 'Novo Curso'}
+        gradientFrom={isEdit ? gradientFrom : '#6366f1'}
+        gradientTo={isEdit ? gradientTo : '#8b5cf6'}
+        categoryName={isEdit ? categoryName : undefined}
+        showProgress={false}
+        level={
+          isEdit
+            ? course?.nivel_dificuldade || form.nivel_dificuldade
+            : undefined
+        }
+        prerequisites={
+          isEdit ? course?.pre_requisitos || form.pre_requisitos : undefined
+        }
+        backPath='/gerenciar/cursos'
+      />
+      <Paper variant='outlined' sx={{ mt: 4 }}>
+        <Tabs
+          value={tab}
+          onChange={(_, v) => setTab(v)}
+          variant='scrollable'
+          scrollButtons='auto'
+          sx={{ px: { xs: 1.5, md: 3 } }}
+        >
+          <Tab label='Visão Geral' value={INFO_TAB.id} />
+          {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
+          {isEdit && <Tab label='Alunos' value={STUDENTS_TAB.id} />}
+          {isEdit && <Tab label='Correções' value={REVIEWS_TAB.id} />}
+          {isEdit && <Tab label='Fórum' value={FORUM_TAB.id} />}
+        </Tabs>
+        <Divider />
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
           {loadingCourse && isEdit ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
               <CircularProgress />
@@ -467,8 +610,8 @@ export default function CourseEditorPage() {
           ) : (
             renderCurrent()
           )}
-        </Paper>
-      </Box>
+        </Box>
+      </Paper>
     </DashboardLayout>
   )
 }

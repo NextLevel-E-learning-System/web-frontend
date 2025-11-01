@@ -29,7 +29,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
 
 import { useLogout } from '@/hooks/auth'
-import { useMeuPerfil } from '@/api/users'
+import { useDashboardCompleto } from '@/api/users'
 
 export type NavItem = {
   label: string
@@ -48,7 +48,7 @@ export default function DashboardLayout({
   const location = useLocation()
   const { mutate } = useLogout()
   const currentPath = typeof location !== 'undefined' ? location.pathname : ''
-  const { data: perfil } = useMeuPerfil()
+  const { perfil } = useDashboardCompleto()
 
   const avatarText = useMemo(() => {
     if (!perfil?.nome) return ''

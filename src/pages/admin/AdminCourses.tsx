@@ -21,8 +21,10 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material'
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
@@ -46,7 +48,7 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
-  const { navigationItems, isInstrutor, user } = useNavigation()
+  const { navigationItems, isInstrutor, perfil } = useNavigation()
 
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
@@ -79,15 +81,28 @@ export default function AdminCourses() {
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
 
     // Se o usuário for INSTRUTOR, filtrar apenas seus cursos
-    if (isInstrutor && user?.id) {
-      filters.instrutor = user.id
+    if (isInstrutor && perfil?.id) {
+      filters.instrutor = perfil.id
     }
 
     return filters
-  }, [filtros, isInstrutor, user?.id])
+  }, [filtros, isInstrutor, perfil?.id])
 
-  const { data: cursosResponse, isLoading: loadingCursos } =
-    useCourses(coursesFilters)
+  const {
+    data: cursosResponse,
+    isLoading: loadingCursos,
+    refetch,
+  } = useCourses(coursesFilters)
+  const location = useLocation()
+  // Refetch cursos ao voltar para a página
+  useEffect(() => {
+    // Se vier de uma navegação (ex: edição de curso/módulo), faz refetch
+    if (location.state?.fromEditor) {
+      refetch()
+    }
+    // Sempre faz refetch ao montar
+    refetch()
+  }, [location.key])
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
   const { data: funcionariosResponse, isLoading: loadingFuncionarios } =
@@ -105,10 +120,14 @@ export default function AdminCourses() {
   const cursosInativos = cursos.filter(c => c.ativo === false).length
 
   // Handlers substituídos por navegação
-  const handleCreateCourse = () => navigate('/manage/courses/new')
+  const handleCreateCourse = () => navigate('/gerenciar/cursos/novo-curso')
 
   const handleEditCourse = (curso: Curso) => {
-    navigate(`/manage/courses/${curso.codigo}/edit`)
+    navigate(`/gerenciar/cursos/${curso.codigo}`)
+  }
+
+  const handleViewCourse = (curso: Curso) => {
+    navigate(`/gerenciar/cursos/${curso.codigo}`, { state: { viewOnly: true } })
   }
 
   const canEditCourse = (curso: Curso) => {
@@ -454,6 +473,17 @@ export default function AdminCourses() {
           onClose={handleCloseMenu}
         >
           {/* Ação de Avaliações removida: agora ficará dentro da gestão de módulos do curso */}
+          <MenuItem
+            onClick={() => {
+              handleCloseMenu()
+              if (selectedCourseForMenu) {
+                handleViewCourse(selectedCourseForMenu)
+              }
+            }}
+          >
+            <VisibilityIcon sx={{ mr: 1 }} fontSize='small' />
+            Visualizar
+          </MenuItem>
           <MenuItem
             onClick={() => {
               handleCloseMenu()

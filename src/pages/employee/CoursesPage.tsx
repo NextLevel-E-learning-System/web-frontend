@@ -3,7 +3,6 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import TextField from '@mui/material/TextField'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { useMeuPerfil } from '@/api/users'
 import { useNavigation } from '@/hooks/useNavigation'
 import CodeIcon from '@mui/icons-material/Code'
 import BrushIcon from '@mui/icons-material/Brush'
@@ -23,13 +22,17 @@ import {
   type Course as Curso,
   type CatalogFilters as FiltrosCatalogo,
 } from '@/api/courses'
-import { useCreateEnrollment } from '@/api/progress'
+import { useCreateEnrollment, useUserEnrollments } from '@/api/progress'
+import { useCategoryColors } from '@/hooks/useCategoryColors'
 import CategoryChips from '@/components/employee/CategoryChips'
 import CourseCard from '@/components/employee/CourseCard'
+import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import CourseDialog from '@/components/employee/CourseDialog'
 import FilterBar from '@/components/common/FilterBar'
 import { Pagination, CircularProgress, Alert } from '@mui/material'
 import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import {
   Psychology,
   School,
@@ -38,6 +41,7 @@ import {
   Storefront,
   TrendingUp,
 } from '@mui/icons-material'
+import { useDashboard } from '@/api/users'
 
 export interface TileCategory {
   label: string
@@ -51,7 +55,6 @@ export interface TileCategory {
 const getCategoryIcon = (categoryCodigo: string) => {
   const codigo = categoryCodigo.toLowerCase()
 
-  // Códigos existentes
   switch (codigo) {
     case 'compliance':
       return <GavelIcon sx={{ color: '#fff' }} />
@@ -75,7 +78,6 @@ const getCategoryIcon = (categoryCodigo: string) => {
     case 'vendas':
       return <Storefront sx={{ color: '#fff' }} />
 
-    // Códigos adicionais prováveis
     case 'ti':
     case 'tecnologia':
     case 'informatica':
@@ -113,10 +115,76 @@ const getCategoryIcon = (categoryCodigo: string) => {
   }
 }
 
-export default function Courses() {
-  const { data: user } = useMeuPerfil()
-  const { navigationItems } = useNavigation()
+interface CourseItemProps {
+  course: Curso
+  isEnrolled: boolean
+  userProgress?: {
+    progresso_percentual: number
+    status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
+  }
+  calculateTimeLeft: (
+    courseDurationHours: number,
+    progressPercent: number
+  ) => string
+  handleViewCourse: (course: Curso) => void
+  handleGoToCourse: (courseCode: string) => void
+}
 
+function CourseItem({
+  course,
+  isEnrolled,
+  userProgress,
+  calculateTimeLeft,
+  handleViewCourse,
+  handleGoToCourse,
+}: CourseItemProps) {
+  const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
+    course.categoria_id
+  )
+
+  return (
+    <Grid size={{ xs: 12, md: 4 }}>
+      {isEnrolled && userProgress ? (
+        <CourseProgressCard
+          title={course.titulo}
+          description={course.descricao || ''}
+          category={categoryName}
+          progress={userProgress.progresso_percentual}
+          timeLeft={calculateTimeLeft(
+            course.duracao_estimada || 0,
+            userProgress.progresso_percentual
+          )}
+          gradientFrom={gradientFrom}
+          gradientTo={gradientTo}
+          courseCode={course.codigo}
+          status={userProgress.status}
+          onContinueLearning={handleGoToCourse}
+        />
+      ) : (
+        <CourseCard
+          title={course.titulo}
+          category={categoryName}
+          hours={`${course.duracao_estimada}h`}
+          description={course.descricao}
+          gradientFrom={gradientFrom}
+          gradientTo={gradientTo}
+          onViewCourse={() => handleViewCourse(course)}
+          completionRate={course.taxa_conclusao}
+          totalEnrollments={course.total_inscricoes}
+          instructorName={course.instrutor_nome}
+          xpOffered={course.xp_oferecido}
+          level={course.nivel_dificuldade}
+        />
+      )}
+    </Grid>
+  )
+}
+
+export default function Courses() {
+  const { navigationItems } = useNavigation()
+  const navigate = useNavigate()
+  const { data: dashboardResponse } = useDashboard()
+  const perfil = dashboardResponse?.usuario
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
@@ -124,11 +192,9 @@ export default function Courses() {
   const [currentPage, setCurrentPage] = useState(1)
   const coursesPerPage = 6
 
-  // Estados para o dialog do curso
   const [selectedCourse, setSelectedCourse] = useState<Curso | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  // Filtros para a API
   const filters: FiltrosCatalogo = useMemo(() => {
     const f: FiltrosCatalogo = {}
 
@@ -147,14 +213,11 @@ export default function Courses() {
     if (selectedDuration && selectedDuration !== 'all') {
       switch (selectedDuration) {
         case 'lt5':
-          f.duracaoMax = 300 // 5 horas em minutos
+          f.duracaoMax = 5
           break
         case '5-10':
-          // Para range 5-10h, vamos usar uma lógica de filtragem local
-          // pois a API pode não suportar range complexo
           break
         case '>10':
-          // Também será filtrado localmente
           break
       }
     }
@@ -162,7 +225,6 @@ export default function Courses() {
     return f
   }, [searchTerm, selectedCategory, selectedLevel, selectedDuration])
 
-  // Hooks da API
   const { data: categories, error: categoriesError } = useCategories()
   const {
     data: courses,
@@ -172,7 +234,10 @@ export default function Courses() {
   const { mutate: createEnrollment, isPending: isEnrolling } =
     useCreateEnrollment()
 
-  // Função para converter hex para rgba
+  const { data: userEnrollmentsResponse } = useUserEnrollments(perfil?.id || '')
+  const userEnrollments = userEnrollmentsResponse?.items || []
+
+  // Função para converter hex para rgb (necessária para processedCategories)
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
@@ -184,34 +249,30 @@ export default function Courses() {
       : null
   }
 
-  // Filtragem adicional local (para casos não suportados pela API)
   const filteredCourses = useMemo(() => {
     if (!courses) return []
 
     let filtered = courses
 
-    // Filtro de duração local para ranges complexos
     if (selectedDuration === '5-10') {
       filtered = filtered.filter(course => {
         const duration = course.duracao_estimada || 0
-        return duration >= 300 && duration <= 600 // 5-10 horas
+        return duration >= 5 && duration <= 10
       })
     } else if (selectedDuration === '>10') {
       filtered = filtered.filter(course => {
         const duration = course.duracao_estimada || 0
-        return duration > 600 // mais de 10 horas
+        return duration > 10
       })
     }
 
     return filtered
   }, [courses, selectedDuration])
 
-  // Processamento das categorias para o componente CategoryChips
   const processedCategories: TileCategory[] = useMemo(() => {
     if (!categories || !Array.isArray(categories)) return []
 
     return categories.map(category => {
-      // Sempre usar cor do backend (cor_hex sempre existe)
       const rgb = hexToRgb(category.cor_hex)
       const gradientColors = rgb
         ? {
@@ -223,7 +284,6 @@ export default function Courses() {
             gradientTo: '#374151',
           }
 
-      // Contar cursos por categoria (usando cursos filtrados)
       const courseCount =
         filteredCourses?.filter(
           course => course.categoria_id === category.codigo
@@ -239,62 +299,12 @@ export default function Courses() {
     })
   }, [categories, filteredCourses])
 
-  // Paginação dos cursos filtrados
   const paginatedCourses = useMemo(() => {
     const startIndex = (currentPage - 1) * coursesPerPage
     return filteredCourses.slice(startIndex, startIndex + coursesPerPage)
   }, [filteredCourses, currentPage, coursesPerPage])
 
   const totalPages = Math.ceil((filteredCourses?.length || 0) / coursesPerPage)
-
-  // Função para obter cor da categoria para o CourseCard
-  const getCourseCardGradient = (categoryId?: string) => {
-    if (!categoryId || !categories) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    const category = Array.isArray(categories)
-      ? categories.find(c => c.codigo === categoryId)
-      : undefined
-    if (!category) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    // Sempre usar cor do backend (cor_hex sempre existe)
-    const rgb = hexToRgb(category.cor_hex)
-    if (!rgb) {
-      return { gradientFrom: '#6b7280', gradientTo: '#374151' }
-    }
-
-    // Criar gradient com diferentes opacidades
-    const gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)` // 100% opacidade
-    const gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)` // 70% opacidade
-
-    return {
-      gradientFrom,
-      gradientTo,
-    }
-  }
-
-  // Função para obter nome da categoria
-  const getCategoryName = (categoryId?: string) => {
-    if (!categoryId || !categories) return 'Sem categoria'
-    const category = Array.isArray(categories)
-      ? categories.find(c => c.codigo === categoryId)
-      : undefined
-    return category?.nome || 'Sem categoria'
-  }
-
-  // Função para formatar duração
-  const formatDuration = (minutes?: number) => {
-    if (!minutes) return 'Duração não informada'
-    if (minutes < 60) return `${minutes}min`
-    const hours = Math.floor(minutes / 60)
-    const remainingMinutes = minutes % 60
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}min`
-      : `${hours}h`
-  }
 
   // Função para limpar todos os filtros
   const clearAllFilters = () => {
@@ -323,10 +333,73 @@ export default function Courses() {
     setSelectedCourse(null)
   }
 
-  // Função para converter dados do curso para o formato do dialog
-  const convertCourseToDialogData = (course: Curso) => {
-    const gradient = getCourseCardGradient(course.categoria_id)
-    const categoryName = getCategoryName(course.categoria_id)
+  // Função para verificar se o usuário está inscrito no curso
+  const isUserEnrolled = (courseCode: string) => {
+    if (!userEnrollments || !Array.isArray(userEnrollments)) {
+      return false
+    }
+    return userEnrollments.some(
+      enrollment => enrollment.curso_id === courseCode
+    )
+  }
+
+  // Função para obter dados de progresso do usuário para um curso
+  const getUserCourseProgress = (courseCode: string) => {
+    if (!userEnrollments || !Array.isArray(userEnrollments)) {
+      return null
+    }
+    return userEnrollments.find(
+      enrollment => enrollment.curso_id === courseCode
+    )
+  }
+
+  const calculateTimeLeft = (
+    courseDurationHours: number,
+    progressPercent: number
+  ) => {
+    const remainingHours = (courseDurationHours * (100 - progressPercent)) / 100
+    const hours = Math.floor(remainingHours)
+    const minutes = Math.floor((remainingHours % 1) * 60)
+
+    if (hours > 0) {
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+    }
+    return minutes > 0 ? `${minutes}m` : '< 1m'
+  }
+
+  const handleGoToCourse = (courseCode: string) => {
+    const courseData = filteredCourses.find(
+      course => course.codigo === courseCode
+    )
+    const enrollment = getUserCourseProgress(courseCode)
+
+    navigate(`/cursos/${courseCode}`, {
+      state: {
+        courseData,
+        enrollment,
+        fromCatalog: true,
+      },
+    })
+  }
+
+  // Função para criar dados do curso para o dialog
+  const createCourseDialogData = (course: Curso) => {
+    const isEnrolled = isUserEnrolled(course.codigo)
+
+    // Obter dados da categoria manualmente para o dialog
+    const category = categories?.find(c => c.codigo === course.categoria_id)
+    const categoryName = category?.nome || 'Sem categoria'
+
+    let gradientFrom = '#6b7280'
+    let gradientTo = '#374151'
+
+    if (category?.cor_hex) {
+      const rgb = hexToRgb(category.cor_hex)
+      if (rgb) {
+        gradientFrom = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`
+        gradientTo = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`
+      }
+    }
 
     return {
       title: course.titulo,
@@ -336,45 +409,87 @@ export default function Courses() {
       reviews: course.total_avaliacoes || 0,
       students: course.total_inscritos || 0,
       level: course.nivel_dificuldade,
-      hours: formatDuration(course.duracao_estimada),
-      gradientFrom: gradient.gradientFrom,
-      gradientTo: gradient.gradientTo,
+      hours: `${course.duracao_estimada}h`,
+      gradientFrom,
+      gradientTo,
       courseCode: course.codigo,
       xpOffered: course.xp_oferecido || 0,
       isActive: course.ativo,
-      // Novas propriedades
       instructorName: course.instrutor_nome,
       prerequisites: course.pre_requisitos || [],
       completionRate: course.taxa_conclusao || 0,
       totalEnrollments: course.total_inscricoes || 0,
-      modules: course.modulos, // Módulos se disponível
+      modules: course.modulos,
+      isEnrolled,
     }
   }
 
-  // Função para inscrever-se no curso
   const handleEnrollCourse = (courseCode: string) => {
-    if (!user?.id) {
+    if (!perfil?.id) {
       console.error('Usuário não encontrado')
       return
     }
 
     createEnrollment(
       {
-        funcionario_id: user.id,
+        funcionario_id: perfil.id,
         curso_id: courseCode,
       },
       {
         onSuccess: () => {
-          // Fechar o dialog e mostrar sucesso
           setDialogOpen(false)
           setSelectedCourse(null)
-          // Aqui você pode adicionar uma notificação de sucesso
-          console.log('Inscrição realizada com sucesso!')
+          toast.success('Inscrição realizada com sucesso!')
         },
-        onError: error => {
-          // Mostrar erro
+        onError: (error: unknown) => {
           console.error('Erro ao se inscrever:', error)
-          // Aqui você pode adicionar uma notificação de erro
+
+          interface ErrorResponse {
+            mensagem?: string
+            pendentes?: Array<{ titulo: string }>
+          }
+
+          interface HttpError {
+            response: {
+              status: number
+              data: ErrorResponse
+            }
+          }
+
+          const isHttpError = (err: unknown): err is HttpError => {
+            return typeof err === 'object' && err !== null && 'response' in err
+          }
+
+          if (!isHttpError(error)) {
+            toast.error('Erro ao se inscrever no curso. Tente novamente.')
+            return
+          }
+
+          if (error.response.status === 409) {
+            const errorData = error.response.data
+            toast.error(
+              errorData?.mensagem || 'Você já está inscrito neste curso'
+            )
+          } else if (error.response.status === 422) {
+            const errorData = error.response.data
+            if (errorData?.pendentes && Array.isArray(errorData.pendentes)) {
+              const coursesList = errorData.pendentes
+                .map(course => `• ${course.titulo}`)
+                .join('\n')
+              toast.error(`Pré-requisitos não atendidos:\n${coursesList}`)
+            } else {
+              toast.error(errorData?.mensagem || 'Pré-requisitos não atendidos')
+            }
+          } else if (error.response.status === 404) {
+            const errorData = error.response.data
+            toast.error(errorData?.mensagem || 'Curso não encontrado')
+          } else {
+            const errorData = error.response.data
+            toast.error(
+              errorData?.mensagem ||
+                'Erro ao se inscrever no curso. Tente novamente.'
+            )
+          }
         },
       }
     )
@@ -440,24 +555,27 @@ export default function Courses() {
         <>
           <Grid container spacing={3} sx={{ mt: 2 }}>
             {paginatedCourses.map(course => {
-              const gradient = getCourseCardGradient(course.categoria_id)
+              const userProgress = getUserCourseProgress(course.codigo)
+              const isEnrolled = isUserEnrolled(course.codigo)
+
               return (
-                <Grid size={{ xs: 12, md: 4 }} key={course.codigo}>
-                  <CourseCard
-                    title={course.titulo}
-                    category={getCategoryName(course.categoria_id)}
-                    hours={formatDuration(course.duracao_estimada)}
-                    description={course.descricao}
-                    rating={course.avaliacao_media || 0}
-                    gradientFrom={gradient.gradientFrom}
-                    gradientTo={gradient.gradientTo}
-                    onViewCourse={() => handleViewCourse(course)}
-                    // Novas propriedades
-                    completionRate={course.taxa_conclusao}
-                    totalEnrollments={course.total_inscricoes}
-                    instructorName={course.instrutor_nome}
-                  />
-                </Grid>
+                <CourseItem
+                  key={course.codigo}
+                  course={course}
+                  isEnrolled={isEnrolled}
+                  userProgress={
+                    userProgress
+                      ? {
+                          progresso_percentual:
+                            userProgress.progresso_percentual,
+                          status: userProgress.status,
+                        }
+                      : undefined
+                  }
+                  calculateTimeLeft={calculateTimeLeft}
+                  handleViewCourse={handleViewCourse}
+                  handleGoToCourse={handleGoToCourse}
+                />
               )
             })}
           </Grid>
@@ -494,8 +612,9 @@ export default function Courses() {
         <CourseDialog
           open={dialogOpen}
           onClose={handleCloseDialog}
-          course={convertCourseToDialogData(selectedCourse)}
+          course={createCourseDialogData(selectedCourse)}
           onEnroll={handleEnrollCourse}
+          onGoToCourse={handleGoToCourse}
           isEnrolling={isEnrolling}
         />
       )}

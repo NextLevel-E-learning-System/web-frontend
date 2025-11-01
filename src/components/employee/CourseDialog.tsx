@@ -7,22 +7,21 @@ import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import ListItemIcon from '@mui/material/ListItemIcon'
 import CircularProgress from '@mui/material/CircularProgress'
 import Alert from '@mui/material/Alert'
-import PersonIcon from '@mui/icons-material/Person'
-
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
-import AccessTimeIcon from '@mui/icons-material/AccessTime'
-import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium'
-import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay'
+import Stack from '@mui/material/Stack'
+import {
+  Person,
+  PeopleAlt,
+  AccessTime,
+  WorkspacePremium,
+  PlaylistPlay,
+} from '@mui/icons-material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import React from 'react'
-import { useCourseModules } from '@/api/courses'
+import { useCourseModules, type Module } from '@/api/courses'
+import { Card, Paper } from '@mui/material'
 
 export interface CourseData {
   title: string
@@ -46,7 +45,8 @@ export interface CourseData {
   prerequisites?: string[]
   completionRate?: number
   totalEnrollments?: number
-  modules?: any[] // Módulos já carregados, se disponível
+  modules?: Module[]
+  isEnrolled?: boolean
 }
 
 interface Props {
@@ -54,7 +54,75 @@ interface Props {
   onClose: () => void
   course?: CourseData | null
   onEnroll?: (courseCode: string) => void
+  onGoToCourse?: (courseCode: string) => void
   isEnrolling?: boolean
+}
+
+// Componente para visualizar um módulo (somente leitura)
+function ModulePreview({ module }: { module: Module }) {
+  return (
+    <Card
+      sx={{
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: 'none',
+        overflow: 'hidden',
+        '&:before': { display: 'none' },
+      }}
+    >
+      <Paper
+        sx={{
+          px: { xs: 2, md: 3 },
+          py: 2,
+          transition: 'background-color 0.2s ease',
+          '& .MuiAccordionSummary-content': {
+            my: 1.5,
+          },
+        }}
+      >
+        <Stack direction='row' spacing={2} alignItems='center' flex={1}>
+          <Box
+            sx={{
+              minWidth: 32,
+              height: 32,
+              borderRadius: '50%',
+              bgcolor: 'primary.main',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {module.ordem}
+          </Box>
+          <Stack spacing={0.5} flex={1} minWidth={0}>
+            <Typography variant='subtitle1' fontWeight={700}>
+              {module.titulo}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+              <Chip
+                label={module.obrigatorio ? 'Obrigatório' : 'Opcional'}
+                size='small'
+                color={module.obrigatorio ? 'primary' : 'default'}
+                variant='outlined'
+              />
+              {module.xp && (
+                <Chip
+                  label={`${module.xp} XP`}
+                  size='small'
+                  color='secondary'
+                  variant='outlined'
+                />
+              )}
+            </Box>
+          </Stack>
+        </Stack>
+      </Paper>
+    </Card>
+  )
 }
 
 export default function CourseDialog({
@@ -62,29 +130,22 @@ export default function CourseDialog({
   onClose,
   course,
   onEnroll,
+  onGoToCourse,
   isEnrolling,
 }: Props) {
   const [tab, setTab] = React.useState(0)
 
-  // Buscar módulos do curso se não estiverem disponíveis e courseCode estiver presente
   const shouldFetchModules = !course?.modules && !!course?.courseCode
   const {
     data: fetchedModules,
     isLoading: modulesLoading,
     error: modulesError,
-  } = useCourseModules(shouldFetchModules ? course.courseCode : '')
+  } = useCourseModules(shouldFetchModules ? course.courseCode! : '')
 
   // Usar módulos já disponíveis ou os buscados via API
   const modules = course?.modules || fetchedModules
 
   if (!course) return null
-
-  const orig = course.priceOriginal
-    ? Number(String(course.priceOriginal).replace(/[^0-9.]/g, ''))
-    : undefined
-  const curr = course.price
-    ? Number(String(course.price).replace(/[^0-9.]/g, ''))
-    : undefined
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='md'>
@@ -108,19 +169,6 @@ export default function CourseDialog({
         <Typography variant='h4' fontWeight={900} sx={{ mt: 1 }}>
           {course.title}
         </Typography>
-        {course.badgeLabel ? (
-          <Chip
-            label={course.badgeLabel}
-            sx={{
-              bgcolor: 'rgba(17,24,39,0.8)',
-              color: '#fff',
-              fontWeight: 700,
-              position: 'absolute',
-              top: 12,
-              right: 12,
-            }}
-          />
-        ) : null}
         <Box
           sx={{
             display: 'flex',
@@ -130,34 +178,21 @@ export default function CourseDialog({
             flexWrap: 'wrap',
           }}
         >
-          {course.completionRate !== undefined && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <CheckCircleIcon sx={{ fontSize: 18 }} />
+          <Typography variant='body2'>Nível: {course.level}</Typography>
+          {course.prerequisites && course.prerequisites.length > 0 && (
+            <>
+              <Typography variant='body2'>•</Typography>
               <Typography variant='body2'>
-                {course.completionRate.toFixed(1)}% conclusão
+                Pré-requisitos: {course.prerequisites.join(', ')}
               </Typography>
-            </Box>
+            </>
           )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <PeopleAltIcon sx={{ fontSize: 18 }} />
-            <Typography variant='body2'>
-              {course.totalEnrollments || 0} inscritos
-            </Typography>
-          </Box>
-          <Typography variant='body2'>{course.level}</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <AccessTimeIcon sx={{ fontSize: 18 }} />
-            <Typography variant='body2'>
-              {course.hours.replace(' total', '')}
-            </Typography>
-          </Box>
         </Box>
       </Box>
       <DialogContent sx={{ p: 0 }}>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ px: 3 }}>
           <Tab label='Visão Geral' />
-          <Tab label='Módulos' />
-          <Tab label='Avaliações' />
+          <Tab label='Conteúdo' />
         </Tabs>
         <Divider />
         {tab === 0 && (
@@ -195,7 +230,7 @@ export default function CourseDialog({
                     mb: 1,
                   }}
                 >
-                  <PersonIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                  <Person sx={{ fontSize: 16, color: 'text.secondary' }} />
                   <Typography variant='body1' fontWeight={600}>
                     {course.instructorName}
                   </Typography>
@@ -212,7 +247,7 @@ export default function CourseDialog({
                     mb: 1,
                   }}
                 >
-                  <PeopleAltIcon fontSize='small' color='primary' />
+                  <PeopleAlt fontSize='small' color='primary' />
                   <Typography variant='body2'>
                     <strong>{course.totalEnrollments}</strong> inscrições
                   </Typography>
@@ -237,16 +272,16 @@ export default function CourseDialog({
                 </Typography>
                 {[
                   {
-                    icon: <AccessTimeIcon fontSize='small' />,
+                    icon: <AccessTime fontSize='small' />,
                     text: `${course.hours} de conteúdo`,
                   },
                   {
-                    icon: <PlaylistPlayIcon fontSize='small' />,
+                    icon: <PlaylistPlay fontSize='small' />,
                     text: `${modules?.length || 0} módulos`,
                   },
                   {
-                    icon: <WorkspacePremiumIcon fontSize='small' />,
-                    text: `${course.xpOffered || 0} XP ao completar`,
+                    icon: <WorkspacePremium fontSize='small' />,
+                    text: `${course.xpOffered || 0} XP`,
                   },
                   {
                     icon: <BookmarkIcon fontSize='small' />,
@@ -271,9 +306,6 @@ export default function CourseDialog({
             <Box
               sx={{
                 mt: 3,
-                p: 2,
-                borderTop: 1,
-                borderColor: 'divider',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'end',
@@ -282,25 +314,36 @@ export default function CourseDialog({
               }}
             >
               {course.isActive && (
-                <Button
-                  variant='contained'
-                  sx={{ bgcolor: '#0f172a' }}
-                  onClick={() =>
-                    course.courseCode && onEnroll?.(course.courseCode)
-                  }
-                  disabled={isEnrolling}
-                >
-                  {isEnrolling ? 'Inscrevendo...' : 'Inscrever-se'}
-                </Button>
+                <>
+                  {course.isEnrolled ? (
+                    <Button
+                      variant='contained'
+                      sx={{ bgcolor: '#0f172a' }}
+                      onClick={() =>
+                        course.courseCode && onGoToCourse?.(course.courseCode)
+                      }
+                    >
+                      Ir para o curso
+                    </Button>
+                  ) : (
+                    <Button
+                      variant='contained'
+                      sx={{ bgcolor: '#0f172a' }}
+                      onClick={() =>
+                        course.courseCode && onEnroll?.(course.courseCode)
+                      }
+                      disabled={isEnrolling}
+                    >
+                      {isEnrolling ? 'Inscrevendo...' : 'Inscrever-se'}
+                    </Button>
+                  )}
+                </>
               )}
             </Box>
           </Box>
         )}
         {tab === 1 && (
           <Box sx={{ p: 3 }}>
-            <Typography variant='h6' fontWeight={800} gutterBottom>
-              Módulos do Curso
-            </Typography>
             {modulesLoading && shouldFetchModules ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                 <CircularProgress />
@@ -310,217 +353,16 @@ export default function CourseDialog({
                 Erro ao carregar os módulos: {modulesError.message}
               </Alert>
             ) : modules && modules.length > 0 ? (
-              <List>
+              <Stack spacing={2.5}>
                 {modules
                   .sort((a, b) => a.ordem - b.ordem)
-                  .map((module, index) => (
-                    <ListItem key={module.id} sx={{ pl: 0 }}>
-                      <ListItemIcon>
-                        <Box
-                          sx={{
-                            minWidth: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            bgcolor: 'primary.main',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 14,
-                            fontWeight: 700,
-                          }}
-                        >
-                          {index + 1}
-                        </Box>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                            }}
-                          >
-                            <Typography variant='subtitle1' fontWeight={600}>
-                              {module.titulo}
-                            </Typography>
-                            {module.obrigatorio && (
-                              <Chip
-                                label='Obrigatório'
-                                size='small'
-                                color='warning'
-                              />
-                            )}
-                            {module.xp > 0 && (
-                              <Chip
-                                label={`${module.xp} XP`}
-                                size='small'
-                                color='primary'
-                              />
-                            )}
-                          </Box>
-                        }
-                        secondary={
-                          <Box sx={{ mt: 1 }}>
-                            {module.conteudo && (
-                              <Typography
-                                variant='body2'
-                                color='text.secondary'
-                                sx={{ mb: 1 }}
-                              >
-                                {module.conteudo.length > 200
-                                  ? `${module.conteudo.substring(0, 200)}...`
-                                  : module.conteudo}
-                              </Typography>
-                            )}
-                            {module.tipo_conteudo && (
-                              <Chip
-                                label={module.tipo_conteudo}
-                                size='small'
-                                variant='outlined'
-                                sx={{ mr: 1 }}
-                              />
-                            )}
-                          </Box>
-                        }
-                      />
-                    </ListItem>
+                  .map(module => (
+                    <ModulePreview key={module.id} module={module} />
                   ))}
-              </List>
+              </Stack>
             ) : (
               <Typography color='text.secondary'>
                 Este curso ainda não possui módulos cadastrados.
-              </Typography>
-            )}
-          </Box>
-        )}
-        {tab === 2 && (
-          <Box sx={{ p: 3 }}>
-            <Typography variant='h6' fontWeight={800} gutterBottom>
-              Métricas do Curso
-            </Typography>
-            {(course.totalEnrollments !== undefined &&
-              course.totalEnrollments > 0) ||
-            (course.completionRate !== undefined &&
-              course.completionRate > 0) ? (
-              <Box>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                    gap: 3,
-                    mb: 3,
-                  }}
-                >
-                  {/* Taxa de Conclusão */}
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      p: 3,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography
-                      variant='h3'
-                      fontWeight={900}
-                      color='success.main'
-                    >
-                      {(course.completionRate || 0).toFixed(1)}%
-                    </Typography>
-                    <Typography variant='h6' fontWeight={600} sx={{ mt: 1 }}>
-                      Taxa de Conclusão
-                    </Typography>
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ mt: 1 }}
-                    >
-                      Percentual de alunos que completaram o curso
-                    </Typography>
-                  </Box>
-
-                  {/* Total de Inscrições */}
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      p: 3,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography
-                      variant='h3'
-                      fontWeight={900}
-                      color='primary.main'
-                    >
-                      {course.totalEnrollments || 0}
-                    </Typography>
-                    <Typography variant='h6' fontWeight={600} sx={{ mt: 1 }}>
-                      Total de Inscrições
-                    </Typography>
-                    <Typography
-                      variant='body2'
-                      color='text.secondary'
-                      sx={{ mt: 1 }}
-                    >
-                      Número de funcionários inscritos
-                    </Typography>
-                  </Box>
-                </Box>
-
-                {/* Indicadores de Qualidade */}
-                <Box
-                  sx={{
-                    p: 3,
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 2,
-                    bgcolor: 'grey.50',
-                  }}
-                >
-                  <Typography variant='subtitle1' fontWeight={600} gutterBottom>
-                    Indicadores de Qualidade
-                  </Typography>
-                  <Box
-                    sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2 }}
-                  >
-                    {course.completionRate !== undefined && (
-                      <Chip
-                        label={
-                          course.completionRate >= 80
-                            ? 'Alta Taxa de Conclusão'
-                            : course.completionRate >= 60
-                              ? 'Boa Taxa de Conclusão'
-                              : 'Taxa de Conclusão em Melhoria'
-                        }
-                        color={
-                          course.completionRate >= 80
-                            ? 'success'
-                            : course.completionRate >= 60
-                              ? 'warning'
-                              : 'default'
-                        }
-                        variant='filled'
-                      />
-                    )}
-                    {course.totalEnrollments !== undefined &&
-                      course.totalEnrollments > 50 && (
-                        <Chip
-                          label='Curso Popular'
-                          color='primary'
-                          variant='filled'
-                        />
-                      )}
-                  </Box>
-                </Box>
-              </Box>
-            ) : (
-              <Typography color='text.secondary'>
-                Este curso ainda não possui métricas suficientes para exibição.
               </Typography>
             )}
           </Box>

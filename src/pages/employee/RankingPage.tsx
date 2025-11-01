@@ -2,13 +2,9 @@ import { Box, Grid, Alert, CircularProgress, Typography } from '@mui/material'
 import { MenuBook, WorkspacePremium, StarRate } from '@mui/icons-material'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { type DashboardAluno } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
 import { useDashboardCompleto } from '@/api/users'
 import StatsCard from '@/components/common/StatCard'
-import TimeRangeToggle, {
-  type TimeRange,
-} from '@/components/common/TimeRangeToggle'
 import LeaderboardTop from '@/components/common/LeaderboardTop'
 import RankingTable, { type RankItem } from '@/components/common/RankingTable'
 import { useState } from 'react'
@@ -175,7 +171,7 @@ export default function RankingPage() {
 
   // Type guard para garantir que é um dashboard de aluno
   const alunoData =
-    dashboard?.tipo_dashboard === 'aluno' ? (dashboard as DashboardAluno) : null
+    dashboard?.tipo_dashboard === 'aluno' ? (dashboard as any) : null
 
   if (isLoading) {
     return (
@@ -222,12 +218,6 @@ export default function RankingPage() {
               atual (mensal).
             </Typography>
           </Box>
-          <TimeRangeToggle
-            value={'all'}
-            onChange={function (value: TimeRange): void {
-              throw new Error('Function not implemented.')
-            }}
-          />
         </Box>
 
         <Grid container spacing={2}>

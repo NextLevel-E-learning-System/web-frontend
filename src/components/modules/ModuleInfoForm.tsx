@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'react-toastify'
 import {
   Box,
   TextField,
@@ -18,12 +19,14 @@ interface Props {
   cursoCodigo: string
   modulo: Module
   onSaved?: () => void
+  isViewOnly?: boolean
 }
 
 export default function ModuleInfoForm({
   cursoCodigo,
   modulo,
   onSaved,
+  isViewOnly = false,
 }: Props) {
   const [titulo, setTitulo] = useState(modulo.titulo)
   const [ordem, setOrdem] = useState<number>(modulo.ordem)
@@ -35,21 +38,24 @@ export default function ModuleInfoForm({
   )
   const updateModule = useUpdateModule(cursoCodigo, modulo.id)
 
-  // Estado inicializado diretamente com valores do módulo
-  // Componente será remontado via key quando módulo mudar
-
   const handleSave = async () => {
-    await updateModule.mutateAsync({
-      titulo,
-      ordem,
-      xp,
-      obrigatorio,
-      conteudo,
-      tipo_conteudo: tipoConteudo,
-    })
-    onSaved?.()
+    try {
+      const response = await updateModule.mutateAsync({
+        titulo,
+        ordem,
+        xp,
+        obrigatorio,
+        conteudo,
+        tipo_conteudo: tipoConteudo,
+      })
+      if (response?.mensagem) {
+        toast.success(response.mensagem)
+      }
+      onSaved?.()
+    } catch {
+      toast.error('Erro ao atualizar módulo')
+    }
   }
-
   return (
     <Box sx={{ display: 'grid', gap: 2 }}>
       <Grid container spacing={2}>
@@ -60,6 +66,7 @@ export default function ModuleInfoForm({
             onChange={e => setTitulo(e.target.value)}
             fullWidth
             size='small'
+            disabled={isViewOnly}
           />
         </Grid>
         <Grid size={{ xs: 6, md: 3 }}>
@@ -70,6 +77,7 @@ export default function ModuleInfoForm({
             onChange={e => setOrdem(Number(e.target.value) || 1)}
             fullWidth
             size='small'
+            disabled={isViewOnly}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
@@ -80,10 +88,11 @@ export default function ModuleInfoForm({
             onChange={e => setXp(Number(e.target.value) || 0)}
             fullWidth
             size='small'
+            disabled={isViewOnly}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <FormControl fullWidth size='small'>
+          <FormControl fullWidth size='small' disabled={isViewOnly}>
             <InputLabel>Tipo de Conteúdo</InputLabel>
             <Select
               value={tipoConteudo}
@@ -103,6 +112,7 @@ export default function ModuleInfoForm({
               <Switch
                 checked={obrigatorio}
                 onChange={e => setObrigatorio(e.target.checked)}
+                disabled={isViewOnly}
               />
             }
             label={obrigatorio ? 'Obrigatório' : 'Opcional'}
@@ -118,19 +128,22 @@ export default function ModuleInfoForm({
             multiline
             minRows={3}
             placeholder='Descrição, instruções ou URL (para vídeo/link)'
+            disabled={isViewOnly}
           />
         </Grid>
       </Grid>
-      <Stack direction='row' justifyContent='flex-end'>
-        <Button
-          variant='contained'
-          size='small'
-          onClick={handleSave}
-          disabled={updateModule.isPending || !titulo.trim()}
-        >
-          Salvar
-        </Button>
-      </Stack>
+      {!isViewOnly && (
+        <Stack direction='row' justifyContent='flex-end'>
+          <Button
+            variant='contained'
+            size='small'
+            onClick={handleSave}
+            disabled={updateModule.isPending || !titulo.trim()}
+          >
+            Salvar
+          </Button>
+        </Stack>
+      )}
     </Box>
   )
 }

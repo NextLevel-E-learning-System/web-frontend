@@ -84,12 +84,15 @@ export interface UpdateCourseInput {
 export interface Module {
   id: string
   titulo: string
-  conteudo?: string
+  conteudo?: string | null
   ordem: number
   obrigatorio: boolean
   xp: number
-  xp_modulo?: number // campo retornado pelo backend; normalizado para xp
-  tipo_conteudo?: string
+  xp_modulo: number // campo correto do backend
+  tipo_conteudo?: string | null
+  curso_id?: string
+  criado_em?: string
+  atualizado_em?: string
 }
 
 export interface ModuleResponse {
@@ -116,11 +119,13 @@ export interface UpdateModuleInput {
 
 export interface Material {
   id: string
+  modulo_id: string
   nome_arquivo: string
   storage_key: string
-  tamanho: number
+  tamanho: string | number // Vem como string do backend
   tipo_arquivo: string
-  url_download: string
+  url_download?: string
+  criado_em: string
 }
 
 export interface UploadMaterialInput {
@@ -286,12 +291,11 @@ export function useCourseModules(codigo: string) {
       const raw = await authGet<ModuleResponse | Module[]>(
         `${API_ENDPOINTS.COURSES}/${codigo}/modulos`
       )
-      const list: any[] = Array.isArray(raw)
+      const list: Module[] = Array.isArray(raw)
         ? raw
         : (raw as ModuleResponse).items || []
       return list.map(m => ({
         ...m,
-        xp: m.xp !== undefined ? m.xp : (m.xp_modulo ?? 0),
       }))
     },
     enabled: !!codigo,
@@ -304,7 +308,10 @@ export function useCreateModule(codigo: string) {
   return useMutation({
     mutationKey: ['courses', 'modules', 'create', codigo],
     mutationFn: (input: CreateModuleInput) =>
-      authPost<Module>(`${API_ENDPOINTS.COURSES}/${codigo}/modulos`, input),
+      authPost<{ modulo: Module; mensagem: string }>(
+        `${API_ENDPOINTS.COURSES}/${codigo}/modulos`,
+        input
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['courses', 'modules', codigo],
@@ -319,7 +326,7 @@ export function useUpdateModule(codigo: string, moduloId: string) {
   return useMutation({
     mutationKey: ['courses', 'modules', 'update', codigo, moduloId],
     mutationFn: (input: UpdateModuleInput) =>
-      authPatch<Module>(
+      authPatch<{ modulo: Module; mensagem: string }>(
         `${API_ENDPOINTS.COURSES}/${codigo}/modulos/${moduloId}`,
         input
       ),
@@ -331,14 +338,33 @@ export function useUpdateModule(codigo: string, moduloId: string) {
   })
 }
 
+export function useDeleteModule() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['courses', 'modules', 'delete'],
+    mutationFn: (moduloId: string) =>
+      authDelete<{ mensagem: string }>(
+        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}`
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['courses', 'modules'],
+      })
+    },
+  })
+}
+
 // Hooks para Materiais
 export function useModuleMaterials(moduloId: string) {
   return useQuery<Material[]>({
     queryKey: ['courses', 'materials', moduloId],
-    queryFn: () =>
-      authGet<Material[]>(
+    queryFn: async () => {
+      const response = await authGet<{ items: Material[]; mensagem: string }>(
         `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/materiais`
-      ),
+      )
+      return response.items || []
+    },
     enabled: !!moduloId,
   })
 }

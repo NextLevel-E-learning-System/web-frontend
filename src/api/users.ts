@@ -112,30 +112,6 @@ export interface InstructorUpdate {
   especialidades?: string[]
 }
 
-// Dashboard Types
-export interface DashboardAluno {
-  tipo_dashboard: 'aluno'
-  progressao: {
-    xp_atual: number
-    nivel_atual: number
-    xp_proximo_nivel: number
-    progresso_nivel: number
-    badges_conquistados: any[]
-  }
-  cursos: {
-    em_andamento: any[]
-    concluidos: any[]
-    recomendados: any[]
-    populares: any[]
-  }
-  ranking: {
-    posicao_departamento?: number
-    total_departamento?: number
-    posicao_geral?: number
-  }
-  atividades_recentes: any[]
-}
-
 export interface DashboardInstrutor {
   tipo_dashboard: 'instrutor'
   metricas: {
@@ -159,15 +135,21 @@ export interface DashboardInstrutor {
 
 export interface DashboardGerente {
   tipo_dashboard: 'gerente'
-  departamento: {
-    nome: string
+  metricas_gerais: {
     total_funcionarios: number
     funcionarios_ativos: number
-    taxa_conclusao_cursos: number
-    xp_medio_funcionarios: number
+    alunos_ativos?: number
+    total_cursos: number
+    taxa_conclusao_media: number
+    inscricoes_30d?: number
   }
-  top_performers: any[]
-  cursos_departamento: any[]
+  engajamento_departamentos: {
+    codigo: string
+    nome: string
+    total_funcionarios: number
+    xp_medio: number
+    funcionarios_ativos: number
+  }[]
 }
 
 export interface DashboardAdmin {
@@ -192,7 +174,6 @@ export interface DashboardAdmin {
 }
 
 export type DashboardData =
-  | DashboardAluno
   | DashboardInstrutor
   | DashboardGerente
   | DashboardAdmin
@@ -430,31 +411,6 @@ export function useDashboardCompleto() {
     refetch: () => {
       dashboard.refetch()
     },
-  }
-}
-
-// Perfil do usuário autenticado (usa dados do dashboard)
-export function useMeuPerfil() {
-  const dashboard = useDashboard()
-
-  return {
-    data: dashboard.data
-      ? ({
-          id: dashboard.data.usuario.id,
-          nome: dashboard.data.usuario.nome,
-          email: dashboard.data.usuario.email,
-          departamento_id: dashboard.data.usuario.departamento,
-          cargo_nome: dashboard.data.usuario.cargo,
-          xp_total: dashboard.data.usuario.xp_total,
-          nivel: dashboard.data.usuario.nivel,
-          ativo: true, // Se chegou até aqui, está ativo
-          tipo_usuario: (dashboard.data.usuario.roles[0] ||
-            'ALUNO') as UserRole,
-        } as PerfilUsuario)
-      : undefined,
-    isLoading: dashboard.isLoading,
-    error: dashboard.error,
-    refetch: dashboard.refetch,
   }
 }
 

@@ -13,6 +13,7 @@ import {
 } from '@/api/users'
 import { setAccessToken, clearAccessToken, isTokenPersistent } from '@/api/http'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Types específicos para hooks (estendendo os da API)
 export interface LoginCredentials extends LoginRequest {
@@ -32,6 +33,7 @@ export function useLogin() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const loginAPI = useLoginAPI()
+  const { login: authLogin } = useAuth()
 
   return useMutation({
     mutationKey: ['auth', 'login'],
@@ -41,6 +43,9 @@ export function useLogin() {
 
       // Armazenar token baseado na preferência do usuário
       setAccessToken(result.accessToken, rememberMe)
+
+      // Atualizar contexto de autenticação
+      authLogin(result.accessToken)
 
       return result
     },
@@ -95,6 +100,7 @@ export function useLogout() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const logoutAPI = useLogoutAPI()
+  const { logout: authLogout } = useAuth()
 
   return useMutation({
     mutationKey: ['auth', 'logout'],
@@ -112,6 +118,9 @@ export function useLogout() {
       // Limpar token e cache
       clearAccessToken()
       queryClient.clear()
+
+      // Atualizar contexto de autenticação
+      authLogout()
     },
     onSuccess: (result: any) => {
       // Usar apenas mensagem do backend
@@ -125,6 +134,7 @@ export function useLogout() {
       // Mesmo com erro, fazer logout local
       clearAccessToken()
       queryClient.clear()
+      authLogout()
       navigate('/login')
     },
   })
