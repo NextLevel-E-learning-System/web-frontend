@@ -269,14 +269,14 @@ export function useDuplicateCourse() {
   })
 }
 
-export function useToggleCourseStatus(codigo: string) {
+export function useToggleCourseStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['courses', 'toggle-status', codigo],
-    mutationFn: (active: boolean) =>
+    mutationKey: ['courses', 'toggle-status'],
+    mutationFn: ({ codigo, active }: { codigo: string; active: boolean }) =>
       authPatch(`${API_ENDPOINTS.COURSES}/${codigo}/active`, { active }),
-    onSuccess: () => {
+    onSuccess: (_, { codigo }) => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'detail', codigo] })
       queryClient.invalidateQueries({ queryKey: ['courses'] })
     },

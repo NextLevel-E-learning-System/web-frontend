@@ -66,7 +66,6 @@ export default function AdminCourses() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedCourseForMenu, setSelectedCourseForMenu] =
     useState<Curso | null>(null)
-  const [courseToToggle, setCourseToToggle] = useState<string>('')
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     action: 'duplicate' | 'toggle' | null
@@ -113,7 +112,7 @@ export default function AdminCourses() {
   // Mutations
   // Criação/Edição agora ocorrem em CourseEditorPage
   const duplicateCourseMutation = useDuplicateCourse()
-  const toggleStatusMutation = useToggleCourseStatus(courseToToggle)
+  const toggleStatusMutation = useToggleCourseStatus()
 
   // Contadores para as tabs (baseados nos cursos já filtrados pela API, mas sem filtro de status)
   const cursosAtivos = cursos.filter(c => c.ativo === true).length
@@ -148,8 +147,10 @@ export default function AdminCourses() {
 
   const handleToggleStatus = async (curso: Curso) => {
     try {
-      setCourseToToggle(curso.codigo)
-      await toggleStatusMutation.mutateAsync(!curso.ativo)
+      await toggleStatusMutation.mutateAsync({
+        codigo: curso.codigo,
+        active: !curso.ativo,
+      })
       setAnchorEl(null)
     } catch (error) {
       console.error('Erro ao alterar status do curso:', error)
