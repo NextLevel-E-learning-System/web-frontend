@@ -226,35 +226,65 @@ export interface EnrollmentsFilters {
 // Novo: Interface para inscrição com dados do aluno
 export interface CourseEnrollment {
   id: string
-  funcionario: {
-    id: string
-    nome: string
-    email: string
-  }
-  progresso: number
-  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'ABANDONADO'
+  funcionario_id: string
+  funcionario_nome: string
+  funcionario_email: string
+  departamento?: string
+  progresso_percentual: number
+  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
   data_inscricao: string
   data_conclusao?: string
-  modulos_completos: number
+  modulos_concluidos: number
   total_modulos: number
-  nota_media?: number | null
+  nota_final?: number | null
 }
 
-export interface CourseEnrollmentsResponse {
+export interface CourseEnrollmentsApiResponse {
   success: boolean
-  data: CourseEnrollment[]
+  data: Array<{
+    id: string
+    funcionario: {
+      id: string
+      nome: string
+      email: string
+    }
+    progresso: number
+    status: string
+    data_inscricao: string
+    data_conclusao?: string
+    modulos_completos: number
+    total_modulos: number
+    nota_media?: number | null
+  }>
   total: number
   mensagem: string
 }
 
 // Novo: Hook para buscar inscrições de um curso específico (para instrutor)
 export function useCourseEnrollments(cursoId: string, enabled = true) {
-  return useQuery<CourseEnrollmentsResponse>({
+  return useQuery<CourseEnrollment[]>({
     queryKey: ['progress', 'course', cursoId, 'enrollments'],
-    queryFn: () =>
-      authGet<CourseEnrollmentsResponse>(
+    queryFn: async () => {
+      const response = await authGet<CourseEnrollmentsApiResponse>(
         `${API_ENDPOINTS.PROGRESS}/inscricoes?curso_id=${cursoId}`
-      ),
+      )
+
+      // Transformar dados da API para o formato esperado pelo componente
+      return response.data.map(enrollment => ({
+        id: enrollment.id,
+        funcionario_id: enrollment.funcionario.id,
+        funcionario_nome: enrollment.funcionario.nome,
+        funcionario_email: enrollment.funcionario.email,
+        departamento: undefined, // TODO: Adicionar departamento na API
+        progresso_percentual: enrollment.progresso,
+        status: enrollment.status as 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO',
+        data_inscricao: enrollment.data_inscricao,
+        data_conclusao: enrollment.data_conclusao,
+        modulos_concluidos: enrollment.modulos_completos,
+        total_modulos: enrollment.total_modulos,
+        nota_final: enrollment.nota_media,
+      }))
+    },
     enabled: enabled && !!cursoId,
   })
 }

@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import DataTable, { type Column } from '@/components/common/DataTable'
@@ -38,11 +39,14 @@ import {
   useRegisterFuncionario,
   useUpdateFuncionarioRole,
   useExcluirFuncionario,
+  useDashboard,
   type FuncionarioRegister,
   type UpdateRoleInput,
   type UserRole,
   type Funcionario,
+  type DashboardInstrutor,
 } from '@/api/users'
+import { useCourseEnrollments } from '@/api/progress'
 
 interface UserForm {
   nome: string
@@ -56,7 +60,32 @@ interface UserForm {
 }
 
 export default function ProgressoAlunos() {
-  const { navigationItems, user, isGerente } = useNavigation()
+  const { navigationItems, perfil, isGerente } = useNavigation()
+  const navigate = useNavigate()
+  const { data: dashboardData } = useDashboard()
+
+  const instrutorData =
+    dashboardData?.dashboard?.tipo_dashboard === 'instrutor'
+      ? (dashboardData.dashboard as DashboardInstrutor)
+      : null
+
+  const meusCursos = instrutorData?.cursos || []
+
+  // Estado principal: qual aba está ativa
+  const [mainTab, setMainTab] = useState<'usuarios' | 'turmas'>('turmas')
+
+  // Estados para aba de usuários
+  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
+
+  // Estados para aba de turmas
+  const [cursoSelecionado, setCursoSelecionado] = useState<string>('')
+  const [turmasTab, setTurmasTab] = useState<'all' | 'active' | 'disabled'>(
+    'all'
+  )
+
+  // APIs para usuários
   const {
     data: usuariosResponse,
     isLoading: loadingUsers,
@@ -71,13 +100,22 @@ export default function ProgressoAlunos() {
 
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
   const cargos = (cargosResponse as any)?.items || cargosResponse || []
+
   const criarUsuario = useRegisterFuncionario()
-  const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
   const excluirUsuario = useExcluirFuncionario()
   const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
 
-  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
-  const [isAddOpen, setIsAddOpen] = useState(false)
+  // API para turmas
+  const {
+    data: enrollmentsData,
+    isLoading: loadingEnrollments,
+    error: enrollmentsError,
+  } = useCourseEnrollments(
+    cursoSelecionado,
+    !!cursoSelecionado && mainTab === 'turmas'
+  )
+
+  const enrollments = enrollmentsData || []
   const [form, setForm] = useState<UserForm>({
     nome: '',
     cpf: '',
@@ -213,12 +251,12 @@ export default function ProgressoAlunos() {
   const allUsers = useMemo(() => {
     if (!usuarios) return []
 
-    if (isGerente && user?.departamento_id) {
-      return usuarios.filter(u => u.departamento_id === user.departamento_id)
+    if (isGerente && perfil?.departamento) {
+      return usuarios.filter(u => u.departamento_id === perfil.departamento)
     }
 
     return usuarios
-  }, [usuarios, isGerente, user?.departamento_id])
+  }, [usuarios, isGerente, perfil?.departamento])
 
   // Filtrar usuários por status
   const filtered = allUsers.filter(user => {

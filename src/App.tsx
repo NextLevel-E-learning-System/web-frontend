@@ -28,7 +28,7 @@ import theme from './theme'
 import ProgressPage from './pages/employee/ProgressPage'
 import RankingPage from './pages/employee/RankingPage'
 import { AuthProvider } from './contexts/AuthContext'
-import ProgressoAlunos from './pages/instrutor/Alunos'
+import ProgressoAlunos from './pages/instrutor/AlunosTurmas'
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

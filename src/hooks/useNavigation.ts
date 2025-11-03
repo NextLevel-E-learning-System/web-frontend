@@ -54,7 +54,7 @@ export function useNavigation() {
           ],
         },
         {
-          label: 'Alunos',
+          label: 'Alunos & Turmas',
           href: '/alunos',
         },
       ]
