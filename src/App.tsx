@@ -28,6 +28,7 @@ import theme from './theme'
 import ProgressPage from './pages/employee/ProgressPage'
 import RankingPage from './pages/employee/RankingPage'
 import { AuthProvider } from './contexts/AuthContext'
+import ProgressoAlunos from './pages/instrutor/Alunos'
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -75,7 +76,9 @@ const App = () => (
             <Route
               path='/admin/users'
               element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+                <ProtectedRoute
+                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
+                >
                   <AdminUsers />
                 </ProtectedRoute>
               }
@@ -123,6 +126,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={['INSTRUTOR']}>
                   <InstrutorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path='/alunos'
+              element={
+                <ProtectedRoute allowedRoles={['INSTRUTOR']}>
+                  <ProgressoAlunos />
                 </ProtectedRoute>
               }
             />

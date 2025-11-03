@@ -51,15 +51,11 @@ export function useNavigation() {
               label: 'Gerenciar Cursos',
               href: '/gerenciar/cursos',
             },
-            {
-              label: 'Avaliações',
-              href: '/instrutor/avaliacoes',
-            },
           ],
         },
         {
-          label: 'Configurações',
-          href: '/instrutor/configuracoes',
+          label: 'Alunos',
+          href: '/alunos',
         },
       ]
     }

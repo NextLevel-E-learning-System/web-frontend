@@ -16,7 +16,7 @@ export default function MetricCard({ icon, value, label }: Props) {
     <Card
       variant='outlined'
       sx={{
-        borderRadius: 3,
+        borderRadius: 1,
         p: 3,
         display: 'grid',
         gap: 2,

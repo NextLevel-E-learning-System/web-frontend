@@ -126,7 +126,7 @@ export default function InstrutorDashboard() {
             <Paper
               sx={{
                 p: 3,
-                borderRadius: 3,
+                borderRadius: 1,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                 maxWidth: '100%',
                 overflow: 'auto',
