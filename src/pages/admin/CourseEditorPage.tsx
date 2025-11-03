@@ -538,16 +538,6 @@ export default function CourseEditorPage() {
               )}
             </Stack>
           )}
-          {isViewOnly && (
-            <Stack direction='row' gap={1} justifyContent='flex-end'>
-              <Button
-                variant='contained'
-                onClick={() => navigate('/gerenciar/cursos')}
-              >
-                Voltar
-              </Button>
-            </Stack>
-          )}
         </Stack>
       )
     }
@@ -565,7 +555,6 @@ export default function CourseEditorPage() {
       return <CourseStudentsPanel cursoCodigo={codigo!} />
     if (tab === REVIEWS_TAB.id)
       return <CourseReviewsPanel cursoCodigo={codigo!} />
-    if (tab === FORUM_TAB.id) return <CourseForumPanel cursoCodigo={codigo!} />
     return null
   }
 
@@ -599,7 +588,6 @@ export default function CourseEditorPage() {
           {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
           {isEdit && <Tab label='Alunos' value={STUDENTS_TAB.id} />}
           {isEdit && <Tab label='Correções' value={REVIEWS_TAB.id} />}
-          {isEdit && <Tab label='Fórum' value={FORUM_TAB.id} />}
         </Tabs>
         <Divider />
         <Box sx={{ p: { xs: 2, md: 3 } }}>
