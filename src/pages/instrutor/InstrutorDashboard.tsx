@@ -69,12 +69,12 @@ export default function InstrutorDashboard() {
   const handleViewCourse = (cursoCodigo: string, hasPendentes: boolean) => {
     if (hasPendentes) {
       // Se tem pendentes, vai direto para aba de correções
-      navigate(`/gerenciar/cursos/${cursoCodigo}/editar`, {
+      navigate(`/gerenciar/cursos/${cursoCodigo}`, {
         state: { viewOnly: true, nextTab: 'reviews' },
       })
     } else {
       // Senão, vai para visualização normal
-      navigate(`/gerenciar/cursos/${cursoCodigo}/editar`, {
+      navigate(`/gerenciar/cursos/${cursoCodigo}`, {
         state: { viewOnly: true },
       })
     }
@@ -115,7 +115,7 @@ export default function InstrutorDashboard() {
             <MetricCard
               icon={<Assignment color='warning' />}
               value={metricas.pendentes_correcao?.toString() || '0'}
-              label='Correçoes Pendentes'
+              label='Correções Pendentes'
             />
           </Grid>
         </Grid>
@@ -141,9 +141,12 @@ export default function InstrutorDashboard() {
                     <TableHead>
                       <TableRow>
                         <TableCell>Curso</TableCell>
-                        <TableCell align='right'>Inscrições</TableCell>
-                        <TableCell align='right'>Taxa Conclusão</TableCell>
-                        <TableCell align='center'>Pendentes</TableCell>
+                        <TableCell align='center'>Inscritos</TableCell>
+                        <TableCell align='center'>Concluidos</TableCell>
+                        <TableCell align='center'>Taxa Conclusão</TableCell>
+                        <TableCell align='center'>
+                          Correções Pendentes
+                        </TableCell>
                         <TableCell align='center'>Ações</TableCell>
                       </TableRow>
                     </TableHead>
@@ -161,12 +164,17 @@ export default function InstrutorDashboard() {
                               {curso.codigo}
                             </Typography>
                           </TableCell>
-                          <TableCell align='right'>
+                          <TableCell align='center'>
                             <Typography variant='body2'>
                               {curso.inscritos}
                             </Typography>
                           </TableCell>
-                          <TableCell align='right'>
+                          <TableCell align='center'>
+                            <Typography variant='body2'>
+                              {curso.concluidos}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='center'>
                             <Chip
                               label={`${curso.taxa_conclusao || 0}%`}
                               size='small'
@@ -181,22 +189,9 @@ export default function InstrutorDashboard() {
                             />
                           </TableCell>
                           <TableCell align='center'>
-                            {curso.pendentes_correcao > 0 ? (
-                              <Chip
-                                icon={<RateReview />}
-                                label={curso.pendentes_correcao}
-                                size='small'
-                                color='warning'
-                                variant='filled'
-                              />
-                            ) : (
-                              <Chip
-                                label='0'
-                                size='small'
-                                color='default'
-                                variant='outlined'
-                              />
-                            )}
+                            <Typography variant='body2'>
+                              {curso.pendentes_correcao}
+                            </Typography>
                           </TableCell>
                           <TableCell align='center'>
                             <Tooltip
