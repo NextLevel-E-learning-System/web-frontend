@@ -247,27 +247,33 @@ export default function AdminCourses() {
         )
       },
     },
-    {
-      id: 'instrutor',
-      label: 'Instrutor',
-      align: 'center',
-      render: (_, curso) => {
-        const instrutor = funcionarios.find(f => f.id === curso.instrutor_id)
-        return (
-          <Typography variant='body2'>
-            {instrutor?.nome
-              ? (() => {
-                  const nome = instrutor.nome.trim().split(' ')
-                  return `${nome[0]}`
-                })()
-              : '-'}
-          </Typography>
-        )
-      },
-    },
+    ...(!isInstrutor
+      ? [
+          {
+            id: 'instrutor',
+            label: 'Instrutor',
+            align: 'center' as const,
+            render: (_: any, curso: Curso) => {
+              const instrutor = funcionarios.find(
+                f => f.id === curso.instrutor_id
+              )
+              return (
+                <Typography variant='body2'>
+                  {instrutor?.nome
+                    ? (() => {
+                        const nome = instrutor.nome.trim().split(' ')
+                        return `${nome[0]}`
+                      })()
+                    : '-'}
+                </Typography>
+              )
+            },
+          },
+        ]
+      : []),
     {
       id: 'nivel',
-      label: 'Nível',
+      label: 'Dificuldade',
       align: 'center',
       render: (_, curso) => (
         <Chip
@@ -321,21 +327,29 @@ export default function AdminCourses() {
       label: 'Status',
       align: 'center',
       render: (_, curso) => (
-        <FormControlLabel
-          control={
-            <Switch
-              checked={curso.ativo}
-              onChange={async e => {
-                e.stopPropagation()
-                await handleToggleStatus(curso)
-              }}
-              onClick={e => e.stopPropagation()}
-              color='primary'
-              disabled={!canEditCourse(curso)}
-            />
-          }
-          label={curso.ativo ? 'Ativo' : 'Inativo'}
-        />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          <Switch
+            size='small'
+            checked={curso.ativo}
+            onChange={async e => {
+              e.stopPropagation()
+              await handleToggleStatus(curso)
+            }}
+            onClick={e => e.stopPropagation()}
+            color='primary'
+            disabled={!canEditCourse(curso)}
+          />
+          <Typography variant='caption' color='text.secondary'>
+            {curso.ativo ? 'Ativo' : 'Inativo'}
+          </Typography>
+        </Box>
       ),
     },
     {
@@ -472,7 +486,6 @@ export default function AdminCourses() {
           open={Boolean(anchorEl)}
           onClose={handleCloseMenu}
         >
-          {/* Ação de Avaliações removida: agora ficará dentro da gestão de módulos do curso */}
           <MenuItem
             onClick={() => {
               handleCloseMenu()
