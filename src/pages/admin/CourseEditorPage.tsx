@@ -36,7 +36,6 @@ import { useCategoryColors } from '@/hooks/useCategoryColors'
 import CourseContentHeader from '@/components/employee/CourseContentHeader'
 import CourseStudentsPanel from '@/components/courses/CourseStudentsPanel'
 import CourseReviewsPanel from '@/components/courses/CourseReviewsPanel'
-import CourseForumPanel from '@/components/admin/CourseForumPanel'
 
 interface TabDefinition {
   id: string
@@ -47,7 +46,6 @@ const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
 const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Alunos' }
 const REVIEWS_TAB: TabDefinition = { id: 'reviews', label: 'Correções' }
-const FORUM_TAB: TabDefinition = { id: 'forum', label: 'Fórum' }
 
 interface LocationState {
   nextTab?: string

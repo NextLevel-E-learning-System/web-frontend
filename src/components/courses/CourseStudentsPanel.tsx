@@ -16,19 +16,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Card,
-  CardContent,
-  Grid,
   CircularProgress,
   Alert,
 } from '@mui/material'
 import {
   Search as SearchIcon,
   FileDownload as DownloadIcon,
-  TrendingUp as TrendingUpIcon,
-  CheckCircle as CheckCircleIcon,
-  PendingActions as PendingIcon,
-  People as PeopleIcon,
 } from '@mui/icons-material'
 import { useCourseEnrollments } from '@/api/progress'
 
@@ -46,19 +39,6 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
   const filteredEnrollments = enrollments.filter(e =>
     e.funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase())
   )
-
-  const stats = {
-    total: enrollments.length,
-    emAndamento: enrollments.filter(e => e.status === 'EM_ANDAMENTO').length,
-    concluidos: enrollments.filter(e => e.status === 'CONCLUIDO').length,
-    abandonados: enrollments.filter(e => e.status === 'ABANDONADO').length,
-    taxaConclusao:
-      (enrollments.filter(e => e.status === 'CONCLUIDO').length /
-        enrollments.length) *
-      100,
-    mediaProgresso:
-      enrollments.reduce((acc, e) => acc + e.progresso, 0) / enrollments.length,
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
