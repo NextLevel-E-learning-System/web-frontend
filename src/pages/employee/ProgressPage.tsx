@@ -185,52 +185,44 @@ export default function ProgressPage() {
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                icon={<AccessTimeIcon sx={{ fontSize: 26 }} />}
+                icon={<AccessTimeIcon sx={{ fontSize: 26 }} color='info' />}
                 label='Total de Inscrições'
                 value={
                   enrollmentsLoading ? '...' : `${enrollmentStats.total} cursos`
                 }
-                trendLabel='Todos os cursos inscritos'
-                iconColor='#2563eb'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                icon={<CheckCircleIcon sx={{ fontSize: 26 }} />}
+                icon={<CheckCircleIcon sx={{ fontSize: 26 }} color='success' />}
                 label='Cursos Concluídos'
                 value={
                   enrollmentsLoading
                     ? '...'
                     : enrollmentStats.concluidos.toString()
                 }
-                trendLabel='Cursos finalizados com sucesso'
-                iconColor='#10b981'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                icon={<MenuBook sx={{ fontSize: 26 }} />}
+                icon={<MenuBook sx={{ fontSize: 26 }} color='info' />}
                 label='Cursos em Andamento'
                 value={
                   enrollmentsLoading
                     ? '...'
                     : enrollmentStats.emAndamento.toString()
                 }
-                trendLabel='Cursos que você está estudando'
-                iconColor='#8b5cf6'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                icon={<StarRate sx={{ fontSize: 26 }} />}
+                icon={<StarRate sx={{ fontSize: 26 }} color='success' />}
                 label='XP Total'
                 value={
                   enrollmentsLoading
                     ? '...'
                     : perfil?.xp_total?.toString() || '0'
                 }
-                trendLabel='Experiência acumulada'
-                iconColor='#f59e0b'
               />
             </Grid>
           </Grid>

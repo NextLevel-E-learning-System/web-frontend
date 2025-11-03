@@ -129,6 +129,7 @@ export interface DashboardInstrutor {
     taxa_conclusao: number
     avaliacao_media?: number
     status: string
+    pendentes_correcao: number
   }[]
   atividades_recentes: any[]
 }
