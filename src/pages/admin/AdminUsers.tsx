@@ -20,7 +20,6 @@ import {
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Person as PersonIcon,
   Badge as BadgeIcon,
   AdminPanelSettings as AdminIcon,
@@ -37,7 +36,6 @@ import {
   useFuncionarios,
   useRegisterFuncionario,
   useUpdateFuncionarioRole,
-  useExcluirFuncionario,
   type FuncionarioRegister,
   type UpdateRoleInput,
   type UserRole,
@@ -73,7 +71,6 @@ export default function AdminUsers() {
   const cargos = (cargosResponse as any)?.items || cargosResponse || []
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
-  const excluirUsuario = useExcluirFuncionario()
   const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
@@ -104,17 +101,7 @@ export default function AdminUsers() {
         id: 'email',
         label: 'Email',
         minWidth: 200,
-        render: (value: string) => (
-          <Typography
-            component='span'
-            sx={{
-              fontFamily:
-                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-            }}
-          >
-            {value}
-          </Typography>
-        ),
+        render: (value: string) => <Typography>{value}</Typography>,
       },
       {
         id: 'departamento_id',
@@ -146,13 +133,14 @@ export default function AdminUsers() {
       {
         id: 'ativo',
         label: 'Status',
-        minWidth: 120,
+        align: 'center' as const,
         render: (value: boolean, row: any) => (
           <Box
             sx={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 1,
+              gap: 0.5,
             }}
           >
             <Switch
@@ -162,23 +150,19 @@ export default function AdminUsers() {
                 handleToggleAtivo(row.id, row.nome, row.ativo)
               }}
               size='small'
+              color='primary'
               onClick={e => e.stopPropagation()}
             />
-            <Typography
-              variant='body2'
-              color={value ? 'success.main' : 'text.disabled'}
-              fontWeight={500}
-            >
-              {value ? 'ATIVO' : 'INATIVO'}
+            <Typography variant='caption' color='text.secondary'>
+              {value ? 'Ativo' : 'Inativo'}
             </Typography>
           </Box>
         ),
       },
       {
         id: 'actions',
-        label: 'Ações',
-        align: 'right' as const,
-        minWidth: 100,
+        label: 'Editar',
+        align: 'center' as const,
         render: (_, row: any) => (
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <IconButton
@@ -190,17 +174,6 @@ export default function AdminUsers() {
               aria-label='editar'
             >
               <EditIcon />
-            </IconButton>
-            <IconButton
-              size='small'
-              onClick={e => {
-                e.stopPropagation()
-                handleDelete(row.id, row.nome)
-              }}
-              aria-label='excluir'
-              color='error'
-            >
-              <DeleteIcon />
             </IconButton>
           </Box>
         ),
@@ -280,12 +253,16 @@ export default function AdminUsers() {
 
   const handleEdit = (user: Funcionario) => {
     setEditingUser(user)
+    // Buscar o código do cargo baseado no nome
+    const cargoEncontrado = (cargos as { codigo: string; nome: string }[]).find(
+      c => c.nome === user.cargo_nome
+    )
     setForm({
       nome: user.nome,
       cpf: '', // CPF não é retornado na listagem por segurança
       email: user.email,
       departamento_id: user.departamento_id || '',
-      cargo_nome: user.cargo_nome || '',
+      cargo_nome: cargoEncontrado?.codigo || user.cargo_nome || '',
       role: user.role || 'ALUNO',
       ativo: user.ativo,
       biografia: '',
@@ -315,19 +292,6 @@ export default function AdminUsers() {
     } catch (error) {
       toast.error('Erro ao atualizar funcionário')
       console.error(error)
-    }
-  }
-
-  const handleDelete = async (id: string, nome: string) => {
-    if (confirm(`Tem certeza que deseja excluir o usuário "${nome}"?`)) {
-      try {
-        await excluirUsuario.mutateAsync(id)
-        toast.success('Usuário excluído com sucesso!')
-        refetchUsers()
-      } catch (error) {
-        toast.error('Erro ao excluir usuário')
-        console.error(error)
-      }
     }
   }
 

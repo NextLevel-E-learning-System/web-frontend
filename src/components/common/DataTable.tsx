@@ -7,8 +7,6 @@ import {
   TableRow,
   Paper,
   TablePagination,
-  Box,
-  Typography,
 } from '@mui/material'
 import React, { useMemo, type ReactNode } from 'react'
 
