@@ -108,18 +108,6 @@ export default function AdminInstructors() {
         ),
       },
       {
-        id: 'avaliacao',
-        label: 'Avaliação',
-        width: 100,
-        render: (_value: any, row: Instructor) => (
-          <Typography variant='body2'>
-            {row?.avaliacao_media && row.avaliacao_media !== '0'
-              ? `${parseFloat(row.avaliacao_media).toFixed(1)}/5`
-              : '-'}
-          </Typography>
-        ),
-      },
-      {
         id: 'status',
         label: 'Status',
         width: 120,
@@ -148,7 +136,7 @@ export default function AdminInstructors() {
       },
       {
         id: 'actions',
-        label: 'Ações',
+        label: 'Editar',
         width: 120,
         align: 'right' as const,
         render: (_value: any, row: Instructor) => (
@@ -160,14 +148,6 @@ export default function AdminInstructors() {
               disabled={!row}
             >
               <EditIcon />
-            </IconButton>
-            <IconButton
-              size='small'
-              aria-label='excluir'
-              color='error'
-              disabled={!row}
-            >
-              <DeleteIcon />
             </IconButton>
           </Box>
         ),

@@ -24,7 +24,7 @@ import {
   Badge as BadgeIcon,
   AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
@@ -68,11 +68,16 @@ export default function AdminUsers() {
 
   const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
-  const departamentos =
-    (departamentosResponse as any)?.items || departamentosResponse || []
+  const departamentos = useMemo(
+    () => (departamentosResponse as any)?.items || departamentosResponse || [],
+    [departamentosResponse]
+  )
 
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
-  const cargos = (cargosResponse as any)?.items || cargosResponse || []
+  const cargos = useMemo(
+    () => (cargosResponse as any)?.items || cargosResponse || [],
+    [cargosResponse]
+  )
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
   const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
@@ -89,6 +94,66 @@ export default function AdminUsers() {
     ativo: true,
     biografia: '',
   })
+
+  // Funções auxiliares para as colunas
+  const getDepartmentName = useCallback(
+    (id: string) => {
+      return (
+        departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome ||
+        id
+      )
+    },
+    [departamentos]
+  )
+
+  const getCargoName = useCallback(
+    (codigo: string) => {
+      return (
+        cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome ||
+        codigo
+      )
+    },
+    [cargos]
+  )
+
+  const handleEdit = useCallback(
+    (user: Funcionario) => {
+      setEditingUser(user)
+      // Buscar o código do cargo baseado no nome
+      const cargoEncontrado = (
+        cargos as { codigo: string; nome: string }[]
+      ).find(c => c.nome === user.cargo_nome)
+      setForm({
+        nome: user.nome,
+        cpf: '', // CPF não é retornado na listagem por segurança
+        email: user.email,
+        departamento_id: user.departamento_id || '',
+        cargo_nome: cargoEncontrado?.codigo || user.cargo_nome || '',
+        role: user.role || 'ALUNO',
+        ativo: user.ativo,
+        biografia: '',
+      })
+    },
+    [cargos]
+  )
+
+  const handleToggleAtivo = useCallback(
+    async (_id: string, nome: string, ativo: boolean) => {
+      const acao = ativo ? 'desativar' : 'ativar'
+      if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
+        try {
+          toast.success(
+            `Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
+          )
+          refetchUsers()
+        } catch (error) {
+          toast.error(`Erro ao ${acao} usuário`)
+          console.error(error)
+        }
+      }
+    },
+    [refetchUsers]
+  )
 
   // Configuração das colunas da tabela
   const columns: Column[] = useMemo(
@@ -183,7 +248,7 @@ export default function AdminUsers() {
         ),
       },
     ],
-    [departamentos, cargos]
+    [getDepartmentName, getCargoName, handleEdit, handleToggleAtivo]
   )
 
   // Filtrar usuários: GERENTE vê apenas do seu departamento, ADMIN vê todos
@@ -255,24 +320,6 @@ export default function AdminUsers() {
     }
   }
 
-  const handleEdit = (user: Funcionario) => {
-    setEditingUser(user)
-    // Buscar o código do cargo baseado no nome
-    const cargoEncontrado = (cargos as { codigo: string; nome: string }[]).find(
-      c => c.nome === user.cargo_nome
-    )
-    setForm({
-      nome: user.nome,
-      cpf: '', // CPF não é retornado na listagem por segurança
-      email: user.email,
-      departamento_id: user.departamento_id || '',
-      cargo_nome: cargoEncontrado?.codigo || user.cargo_nome || '',
-      role: user.role || 'ALUNO',
-      ativo: user.ativo,
-      biografia: '',
-    })
-  }
-
   const handleUpdate = async () => {
     if (!form.nome.trim() || !form.email.trim()) {
       toast.error('Nome e Email são obrigatórios')
@@ -297,40 +344,6 @@ export default function AdminUsers() {
       toast.error('Erro ao atualizar funcionário')
       console.error(error)
     }
-  }
-
-  const handleToggleAtivo = async (
-    _id: string,
-    nome: string,
-    ativo: boolean
-  ) => {
-    const acao = ativo ? 'desativar' : 'ativar'
-    if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
-      try {
-        // Aqui você precisa implementar a API para ativar/desativar usuário
-        // Por enquanto, só mostro o toast de sucesso
-        toast.success(
-          `Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
-        )
-        refetchUsers()
-      } catch (error) {
-        toast.error(`Erro ao ${acao} usuário`)
-        console.error(error)
-      }
-    }
-  }
-
-  const getDepartmentName = (id: string) => {
-    return (
-      departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome || id
-    )
-  }
-
-  const getCargoName = (codigo: string) => {
-    return (
-      cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome ||
-      codigo
-    )
   }
 
   const getUserTypeIcon = (tipo: string) => {
