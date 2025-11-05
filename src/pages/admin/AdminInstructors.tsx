@@ -72,7 +72,6 @@ export default function AdminInstructors() {
       {
         id: 'nome',
         label: 'Nome',
-        width: 200,
         render: (_value: any, row: Instructor) => (
           <Box>
             <Typography variant='body2' fontWeight={500}>
@@ -82,17 +81,8 @@ export default function AdminInstructors() {
         ),
       },
       {
-        id: 'email',
-        label: 'Email',
-        width: 250,
-        render: (_value: any, row: Instructor) => (
-          <Typography variant='body2'>{row?.email}</Typography>
-        ),
-      },
-      {
         id: 'departamento',
         label: 'Departamento',
-        width: 150,
         render: (_value: any, row: Instructor) => (
           <Typography variant='body2'>
             {row?.departamento_nome || '-'}
@@ -100,35 +90,54 @@ export default function AdminInstructors() {
         ),
       },
       {
-        id: 'cargo',
-        label: 'Cargo',
-        width: 150,
+        id: 'especialidades',
+        label: 'Especialidades',
         render: (_value: any, row: Instructor) => (
-          <Typography variant='body2'>{row?.cargo_nome || '-'}</Typography>
+          <Typography variant='body2'>{row?.especialidades || '-'}</Typography>
+        ),
+      },
+      {
+        id: 'biografia',
+        label: 'Biografia',
+        render: (_value: any, row: Instructor) => (
+          <Typography
+            variant='body2'
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+          >
+            {row?.biografia || '-'}
+          </Typography>
         ),
       },
       {
         id: 'status',
         label: 'Status',
-        width: 120,
+        align: 'center',
         render: (_value: any, row: Instructor) => (
-          <Box display='flex' alignItems='center' gap={1}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 0.5,
+            }}
+          >
             <Switch
-              checked={row?.ativo || false}
-              onChange={() =>
-                handleToggleAtivo(
-                  row?.funcionario_id || '',
-                  row?.nome || '',
-                  row?.ativo || false
-                )
-              }
+              checked={row?.ativo}
+              onChange={e => {
+                e.stopPropagation()
+                handleToggleAtivo(row?.funcionario_id, row?.nome, row?.ativo)
+              }}
               size='small'
+              color='primary'
+              onClick={e => e.stopPropagation()}
             />
-            <Typography
-              variant='body2'
-              color={row?.ativo ? 'success.main' : 'text.disabled'}
-              fontWeight={500}
-            >
+            <Typography variant='caption' color='text.secondary'>
               {row?.ativo ? 'Ativo' : 'Inativo'}
             </Typography>
           </Box>
@@ -136,8 +145,7 @@ export default function AdminInstructors() {
       },
       {
         id: 'actions',
-        label: 'Editar',
-        width: 120,
+        label: '',
         align: 'right' as const,
         render: (_value: any, row: Instructor) => (
           <Box display='flex' gap={1} justifyContent='flex-end'>

@@ -230,7 +230,7 @@ export default function AdminUsers() {
       },
       {
         id: 'actions',
-        label: 'Editar',
+        label: '',
         align: 'center' as const,
         render: (_, row: any) => (
           <Box sx={{ display: 'flex', gap: 0.5 }}>
