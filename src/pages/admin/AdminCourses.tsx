@@ -181,7 +181,16 @@ export default function AdminCourses() {
 
   const getRowId = useCallback((curso: Curso) => curso.codigo, [])
 
-  const getNivelColor = (nivel: string) => {
+  const getNivelColor = (
+    nivel?: string
+  ):
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning' => {
     switch (nivel) {
       case 'Iniciante':
         return 'success'
@@ -247,40 +256,32 @@ export default function AdminCourses() {
         )
       },
     },
-    ...(!isInstrutor
-      ? [
+    ...(isInstrutor
+      ? []
+      : [
           {
             id: 'instrutor',
             label: 'Instrutor',
             align: 'center' as const,
-            render: (_: any, curso: Curso) => {
-              const instrutor = funcionarios.find(
-                f => f.id === curso.instrutor_id
-              )
-              return (
-                <Typography variant='body2'>
-                  {instrutor?.nome
-                    ? (() => {
-                        const nome = instrutor.nome.trim().split(' ')
-                        return `${nome[0]}`
-                      })()
-                    : '-'}
-                </Typography>
-              )
-            },
+            render: (_: unknown, curso: Curso) => (
+              <Typography variant='body2'>
+                {curso.instrutor_nome || '-'}
+              </Typography>
+            ),
           },
-        ]
-      : []),
+        ]),
     {
       id: 'nivel',
       label: 'Dificuldade',
-      align: 'center',
-      render: (_, curso) => (
-        <Chip
-          size='small'
-          label={curso.nivel_dificuldade}
-          color={getNivelColor(curso.nivel_dificuldade) as any}
-        />
+      align: 'center' as const,
+      render: (_: unknown, curso: Curso) => (
+        <Box>
+          <Chip
+            size='small'
+            label={curso.nivel_dificuldade || '-'}
+            color={getNivelColor(curso.nivel_dificuldade)}
+          />
+        </Box>
       ),
     },
     {

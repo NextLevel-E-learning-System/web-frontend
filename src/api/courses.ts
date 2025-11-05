@@ -34,13 +34,13 @@ export interface Course {
   instrutor_id?: string // REFERENCES instrutores(funcionario_id)
   duracao_estimada?: number
   xp_oferecido?: number
-  nivel_dificuldade?: string
+  nivel_dificuldade: string
   ativo: boolean
   pre_requisitos?: string[]
   criado_em: string
   atualizado_em: string
   // Campos relacionados ao instrutor
-  instrutor_nome?: string
+  instrutor_nome: string
   // Campos de categoria
   categoria_nome?: string
   departamento_codigo?: string
