@@ -54,8 +54,8 @@ export function useNavigation() {
           ],
         },
         {
-          label: 'Alunos',
-          href: '/alunos',
+          label: 'Turmas',
+          href: '/turmas',
         },
       ]
     }
@@ -84,18 +84,18 @@ export function useNavigation() {
           label: 'Usuários',
           children: [
             {
-              label: 'Alunos',
-              href: '/admin/users', // Mesma página, mas filtrada
+              label: 'Funcionários',
+              href: '/gerenciar/funcionarios', // Mesma página, mas filtrada
             },
             {
               label: 'Instrutores',
-              href: '/admin/instructors',
+              href: '/gerenciar/instrutores',
             },
           ],
         },
         {
-          label: 'Relatórios',
-          href: '/admin/relatorios', // Mesma página, mas filtrada
+          label: 'Turmas',
+          href: '/turmas', // Mesma página, mas filtrada
         },
       ]
     }
@@ -109,11 +109,11 @@ export function useNavigation() {
         },
         {
           label: 'Departamentos',
-          href: '/admin/departments',
+          href: '/gerenciar/departamentos',
         },
         {
           label: 'Categorias',
-          href: '/admin/categorias',
+          href: '/gerenciar/categorias',
         },
         {
           label: 'Cursos',
@@ -124,17 +124,17 @@ export function useNavigation() {
           children: [
             {
               label: 'Funcionários',
-              href: '/admin/users',
+              href: '/gerenciar/funcionarios',
             },
             {
               label: 'Instrutores',
-              href: '/admin/instructors',
+              href: '/gerenciar/instrutores',
             },
           ],
         },
         {
-          label: 'Relatórios',
-          href: '/admin/relatorios',
+          label: 'Turmas',
+          href: '/turmas',
         },
       ]
     }

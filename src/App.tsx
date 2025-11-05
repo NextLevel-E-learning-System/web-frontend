@@ -30,7 +30,7 @@ import RankingPage from './pages/employee/RankingPage'
 import { AuthProvider } from './contexts/AuthContext'
 import ProgressoAlunos from './pages/instrutor/AlunosTurmas'
 
-const App = () => (
+export const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -58,7 +58,7 @@ const App = () => (
               }
             />
             <Route
-              path='/admin/departments'
+              path='/gerenciar/departamentos'
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminDepartments />
@@ -66,7 +66,7 @@ const App = () => (
               }
             />
             <Route
-              path='/admin/categorias'
+              path='/gerenciar/categorias'
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminCategories />
@@ -74,17 +74,15 @@ const App = () => (
               }
             />
             <Route
-              path='/admin/users'
+              path='/gerenciar/funcionarios'
               element={
-                <ProtectedRoute
-                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
-                >
+                <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
                   <AdminUsers />
                 </ProtectedRoute>
               }
             />
             <Route
-              path='/admin/instructors'
+              path='/gerenciar/instrutores'
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminInstructors />
@@ -130,9 +128,11 @@ const App = () => (
               }
             />
             <Route
-              path='/alunos'
+              path='/turmas'
               element={
-                <ProtectedRoute allowedRoles={['INSTRUTOR']}>
+                <ProtectedRoute
+                  allowedRoles={['INSTRUTOR', 'ADMIN', 'GERENTE']}
+                >
                   <ProgressoAlunos />
                 </ProtectedRoute>
               }
