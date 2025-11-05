@@ -57,11 +57,14 @@ import {
   useUpdateFuncionarioRole,
   useExcluirFuncionario,
   useDashboard,
+  useInstrutores,
+  useToggleInstructorStatus,
   type FuncionarioRegister,
   type UpdateRoleInput,
   type UserRole,
   type Funcionario,
   type DashboardInstrutor,
+  type Instructor,
 } from '@/api/users'
 import { useCourseEnrollments } from '@/api/progress'
 
@@ -77,7 +80,8 @@ interface UserForm {
 }
 
 export default function AlunosTurmas() {
-  const { navigationItems, perfil, isGerente } = useNavigation()
+  const { navigationItems, perfil, isGerente, isAdmin, isInstrutor } =
+    useNavigation()
   const navigate = useNavigate()
   const { data: dashboardData } = useDashboard()
 
@@ -89,7 +93,11 @@ export default function AlunosTurmas() {
   const meusCursos = instrutorData?.cursos || []
 
   // Estado principal: qual aba está ativa
-  const [mainTab, setMainTab] = useState<'turmas' | 'usuarios'>('turmas')
+  // Admin vê: turmas, usuarios, instrutores
+  // Instrutor vê: apenas turmas
+  const [mainTab, setMainTab] = useState<'turmas' | 'usuarios' | 'instrutores'>(
+    'turmas'
+  )
 
   // Estados para aba de usuários
   const [usuariosTab, setUsuariosTab] = useState<'active' | 'disabled' | 'all'>(
@@ -97,6 +105,15 @@ export default function AlunosTurmas() {
   )
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
+
+  // Estados para aba de instrutores
+  const [instrutoresTab, setInstrutoresTab] = useState<
+    'active' | 'disabled' | 'all'
+  >('all')
+  const [isAddInstructorOpen, setIsAddInstructorOpen] = useState(false)
+  const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(
+    null
+  )
 
   // Estados para aba de turmas
   const [cursoSelecionado, setCursoSelecionado] = useState<string>('')
@@ -131,6 +148,16 @@ export default function AlunosTurmas() {
   const criarUsuario = useRegisterFuncionario()
   const excluirUsuario = useExcluirFuncionario()
   const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
+
+  // APIs para instrutores
+  const { data: instrutoresResponse, isLoading: loadingInstrutores } =
+    useInstrutores()
+  const toggleInstructorStatus = useToggleInstructorStatus()
+
+  const instrutores = useMemo(
+    () => instrutoresResponse || [],
+    [instrutoresResponse]
+  )
 
   // API para turmas
   const {
@@ -359,11 +386,6 @@ export default function AlunosTurmas() {
     }
   }
 
-  // Turmas functions
-  const handleViewStudent = (funcionarioId: string) => {
-    navigate(`/progresso/${funcionarioId}`)
-  }
-
   const handleExportPDF = () => {
     // Implementar exportação PDF
     console.log('Exportar PDF')
@@ -372,6 +394,26 @@ export default function AlunosTurmas() {
   const handleExportExcel = () => {
     // Implementar exportação Excel
     console.log('Exportar Excel')
+  }
+
+  // Instrutores functions
+  const handleToggleInstructorStatus = async (
+    funcionario_id: string,
+    nome: string,
+    ativo: boolean
+  ) => {
+    const acao = ativo ? 'desativar' : 'ativar'
+    if (confirm(`Tem certeza que deseja ${acao} o instrutor "${nome}"?`)) {
+      try {
+        await toggleInstructorStatus.mutateAsync(funcionario_id)
+        toast.success(
+          `Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
+        )
+      } catch (error) {
+        toast.error(`Erro ao ${acao} instrutor`)
+        console.error(error)
+      }
+    }
   }
 
   // Filtros
@@ -542,15 +584,15 @@ export default function AlunosTurmas() {
         minWidth: 250,
         render: (value: string, row: (typeof enrollments)[0]) => (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
-              <Person />
+            <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+              <PersonIcon fontSize='small' />
             </Avatar>
             <Box>
-              <Typography variant='body2' fontWeight={600}>
+              <Typography variant='body2' fontWeight={500}>
                 {value}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
-                {row.funcionario_email || 'Email não disponível'}
+                {row.funcionario_email}
               </Typography>
             </Box>
           </Box>
@@ -646,6 +688,127 @@ export default function AlunosTurmas() {
     []
   )
 
+  // Colunas da tabela de instrutores
+  const instrutoresColumns: Column[] = useMemo(
+    () => [
+      {
+        id: 'nome',
+        label: 'Nome',
+        minWidth: 200,
+        render: (value: string) => (
+          <Typography fontWeight={500}>{value}</Typography>
+        ),
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        minWidth: 250,
+        render: (value: string) => (
+          <Typography
+            component='span'
+            sx={{
+              fontFamily:
+                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            }}
+          >
+            {value}
+          </Typography>
+        ),
+      },
+      {
+        id: 'departamento_nome',
+        label: 'Departamento',
+        minWidth: 150,
+        render: (value: string | null) => (
+          <Typography variant='body2'>{value || '—'}</Typography>
+        ),
+      },
+      {
+        id: 'cargo_nome',
+        label: 'Cargo',
+        minWidth: 150,
+        render: (value: string | null) => (
+          <Typography variant='body2'>{value || '—'}</Typography>
+        ),
+      },
+      {
+        id: 'avaliacao_media',
+        label: 'Avaliação',
+        minWidth: 100,
+        render: (value: string) => (
+          <Typography variant='body2'>
+            {value && value !== '0' ? `${parseFloat(value).toFixed(1)}/5` : '—'}
+          </Typography>
+        ),
+      },
+      {
+        id: 'ativo',
+        label: 'Status',
+        minWidth: 120,
+        render: (value: boolean, row: Instructor) => (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Switch
+              checked={value || false}
+              onChange={() =>
+                handleToggleInstructorStatus(
+                  row.funcionario_id || '',
+                  row.nome || '',
+                  row.ativo || false
+                )
+              }
+              size='small'
+            />
+            <Typography
+              variant='body2'
+              color={value ? 'success.main' : 'text.disabled'}
+              fontWeight={500}
+            >
+              {value ? 'ATIVO' : 'INATIVO'}
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: 'actions',
+        label: 'Ações',
+        align: 'right' as const,
+        minWidth: 100,
+        render: (_, row: Instructor) => (
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            <IconButton
+              size='small'
+              onClick={e => {
+                e.stopPropagation()
+                setEditingInstructor(row)
+              }}
+              aria-label='editar'
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton
+              size='small'
+              aria-label='excluir'
+              color='error'
+              disabled={!row}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        ),
+      },
+    ],
+    [handleToggleInstructorStatus]
+  )
+
+  // Filtros de instrutores
+  const filteredInstrutores = useMemo(() => {
+    return (instrutores as Instructor[]).filter(instrutor => {
+      if (instrutoresTab === 'all') return true
+      if (instrutoresTab === 'active') return instrutor.ativo === true
+      return instrutor.ativo === false
+    })
+  }, [instrutores, instrutoresTab])
+
   const cursoAtual = meusCursos.find(c => c.codigo === cursoSelecionado)
 
   if (loadingUsers || loadingDepartments || loadingCargos) {
@@ -674,12 +837,22 @@ export default function AlunosTurmas() {
               label='Turmas'
               value='turmas'
             />
-            <Tab
-              icon={<ManageIcon />}
-              iconPosition='start'
-              label='Gerenciar Usuários'
-              value='usuarios'
-            />
+            {(isAdmin || isGerente) && (
+              <Tab
+                icon={<ManageIcon />}
+                iconPosition='start'
+                label='Gerenciar Usuários'
+                value='usuarios'
+              />
+            )}
+            {(isAdmin || isGerente) && (
+              <Tab
+                icon={<BadgeIcon />}
+                iconPosition='start'
+                label='Instrutores'
+                value='instrutores'
+              />
+            )}
           </Tabs>
         </Paper>
 
@@ -869,7 +1042,7 @@ export default function AlunosTurmas() {
         )}
 
         {/* Conteúdo da Aba de Usuários */}
-        {mainTab === 'usuarios' && (
+        {(isAdmin || isGerente) && mainTab === 'usuarios' && (
           <Box>
             <Box
               sx={{
@@ -909,314 +1082,544 @@ export default function AlunosTurmas() {
               loading={loadingUsers}
               getRowId={row => row.id}
             />
+
+            {/* Dialog Adicionar Usuário */}
+            <Dialog
+              open={isAddOpen}
+              onClose={() => setIsAddOpen(false)}
+              maxWidth='sm'
+              fullWidth
+            >
+              <DialogTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PersonIcon />
+                  Novo Usuário
+                </Box>
+              </DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label='Nome completo'
+                      value={form.nome}
+                      onChange={e => setForm({ ...form, nome: e.target.value })}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='CPF'
+                      value={form.cpf}
+                      onChange={e => setForm({ ...form, cpf: e.target.value })}
+                      placeholder='000.000.000-00'
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='Email'
+                      type='email'
+                      value={form.email}
+                      onChange={e =>
+                        setForm({ ...form, email: e.target.value })
+                      }
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth required>
+                      <InputLabel>Departamento</InputLabel>
+                      <Select
+                        value={form.departamento_id}
+                        onChange={e =>
+                          setForm({ ...form, departamento_id: e.target.value })
+                        }
+                        label='Departamento'
+                      >
+                        <MenuItem value=''>
+                          <em>— Selecione o departamento —</em>
+                        </MenuItem>
+                        {(
+                          departamentos as { codigo: string; nome: string }[]
+                        ).map(dept => (
+                          <MenuItem key={dept.codigo} value={dept.codigo}>
+                            {dept.nome}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Cargo</InputLabel>
+                      <Select
+                        value={form.cargo_nome}
+                        onChange={e =>
+                          setForm({ ...form, cargo_nome: e.target.value })
+                        }
+                        label='Cargo'
+                      >
+                        <MenuItem value=''>
+                          <em>— Selecione o cargo —</em>
+                        </MenuItem>
+                        {(cargos as { codigo: string; nome: string }[]).map(
+                          cargo => (
+                            <MenuItem key={cargo.codigo} value={cargo.codigo}>
+                              {cargo.nome}
+                            </MenuItem>
+                          )
+                        )}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth required>
+                      <InputLabel>Tipo de Usuário</InputLabel>
+                      <Select
+                        value={form.role}
+                        onChange={e =>
+                          setForm({ ...form, role: e.target.value as UserRole })
+                        }
+                        label='Tipo de Usuário'
+                      >
+                        <MenuItem value='ALUNO'>Aluno</MenuItem>
+                        <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
+                        <MenuItem value='GERENTE'>Gerente</MenuItem>
+                        <MenuItem value='ADMIN'>Administrador</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={form.ativo ? 'ATIVO' : 'INATIVO'}
+                        onChange={e =>
+                          setForm({
+                            ...form,
+                            ativo: e.target.value === 'ATIVO',
+                          })
+                        }
+                        label='Status'
+                      >
+                        <MenuItem value='ATIVO'>Ativo</MenuItem>
+                        <MenuItem value='INATIVO'>Inativo</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  {form.role === 'INSTRUTOR' && (
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        label='Biografia (Instrutor)'
+                        value={form.biografia}
+                        onChange={e =>
+                          setForm({ ...form, biografia: e.target.value })
+                        }
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        maxRows={5}
+                        placeholder='Descreva a experiência e qualificações do instrutor...'
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  variant='outlined'
+                  onClick={() => setIsAddOpen(false)}
+                  disabled={criarUsuario.isPending}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant='contained'
+                  onClick={handleAdd}
+                  disabled={criarUsuario.isPending}
+                >
+                  {criarUsuario.isPending ? 'Criando...' : 'Adicionar'}
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            {/* Dialog Editar Usuário */}
+            <Dialog
+              open={!!editingUser}
+              onClose={() => setEditingUser(null)}
+              maxWidth='md'
+              fullWidth
+            >
+              <DialogTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <EditIcon />
+                  Editar Usuário
+                </Box>
+              </DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label='Nome completo'
+                      value={form.nome}
+                      onChange={e => setForm({ ...form, nome: e.target.value })}
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label='Email'
+                      type='email'
+                      value={form.email}
+                      onChange={e =>
+                        setForm({ ...form, email: e.target.value })
+                      }
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Departamento</InputLabel>
+                      <Select
+                        value={form.departamento_id}
+                        onChange={e =>
+                          setForm({ ...form, departamento_id: e.target.value })
+                        }
+                        label='Departamento'
+                      >
+                        <MenuItem value=''>
+                          <em>— Selecione o departamento —</em>
+                        </MenuItem>
+                        {(
+                          departamentos as { codigo: string; nome: string }[]
+                        ).map(dept => (
+                          <MenuItem key={dept.codigo} value={dept.codigo}>
+                            {dept.nome}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Cargo</InputLabel>
+                      <Select
+                        value={form.cargo_nome}
+                        onChange={e =>
+                          setForm({ ...form, cargo_nome: e.target.value })
+                        }
+                        label='Cargo'
+                      >
+                        <MenuItem value=''>
+                          <em>— Selecione o cargo —</em>
+                        </MenuItem>
+                        {(cargos as { codigo: string; nome: string }[]).map(
+                          cargo => (
+                            <MenuItem key={cargo.codigo} value={cargo.codigo}>
+                              {cargo.nome}
+                            </MenuItem>
+                          )
+                        )}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth required>
+                      <InputLabel>Tipo de Usuário</InputLabel>
+                      <Select
+                        value={form.role}
+                        onChange={e =>
+                          setForm({ ...form, role: e.target.value as UserRole })
+                        }
+                        label='Tipo de Usuário'
+                      >
+                        <MenuItem value='ALUNO'>Aluno</MenuItem>
+                        <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
+                        <MenuItem value='GERENTE'>Gerente</MenuItem>
+                        <MenuItem value='ADMIN'>Administrador</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Status</InputLabel>
+                      <Select
+                        value={form.ativo ? 'ATIVO' : 'INATIVO'}
+                        onChange={e =>
+                          setForm({
+                            ...form,
+                            ativo: e.target.value === 'ATIVO',
+                          })
+                        }
+                        label='Status'
+                      >
+                        <MenuItem value='ATIVO'>Ativo</MenuItem>
+                        <MenuItem value='INATIVO'>Inativo</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  {form.role === 'INSTRUTOR' && (
+                    <Grid size={{ xs: 12 }}>
+                      <TextField
+                        label='Biografia (Instrutor)'
+                        value={form.biografia}
+                        onChange={e =>
+                          setForm({ ...form, biografia: e.target.value })
+                        }
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        maxRows={5}
+                        placeholder='Descreva a experiência e qualificações do instrutor...'
+                      />
+                    </Grid>
+                  )}
+                </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  variant='outlined'
+                  onClick={() => setEditingUser(null)}
+                  disabled={atualizarUsuario.isPending}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant='contained'
+                  onClick={handleUpdate}
+                  disabled={atualizarUsuario.isPending}
+                >
+                  {atualizarUsuario.isPending ? 'Atualizando...' : 'Atualizar'}
+                </Button>
+              </DialogActions>
+            </Dialog>
           </Box>
         )}
 
-        {/* Dialog Adicionar Usuário */}
-        <Dialog
-          open={isAddOpen}
-          onClose={() => setIsAddOpen(false)}
-          maxWidth='sm'
-          fullWidth
-        >
-          <DialogTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PersonIcon />
-              Novo Usuário
+        {/* Conteúdo da Aba de Instrutores */}
+        {mainTab === 'instrutores' && (isAdmin || isGerente) && (
+          <Box>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <StatusFilterTabs
+                value={instrutoresTab}
+                onChange={setInstrutoresTab}
+                activeLabel='Instrutores Ativos'
+                inactiveLabel='Instrutores Inativos'
+                activeCount={
+                  (instrutores as Instructor[]).filter(i => i.ativo === true)
+                    .length
+                }
+                inactiveCount={
+                  (instrutores as Instructor[]).filter(i => i.ativo === false)
+                    .length
+                }
+              />
+              <Button
+                onClick={() => setIsAddInstructorOpen(true)}
+                startIcon={<AddIcon />}
+                variant='contained'
+              >
+                Adicionar Instrutor
+              </Button>
             </Box>
-          </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label='Nome completo'
-                  value={form.nome}
-                  onChange={e => setForm({ ...form, nome: e.target.value })}
-                  fullWidth
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='CPF'
-                  value={form.cpf}
-                  onChange={e => setForm({ ...form, cpf: e.target.value })}
-                  placeholder='000.000.000-00'
-                  fullWidth
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='Email'
-                  type='email'
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  fullWidth
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
-                    </MenuItem>
-                    {(departamentos as { codigo: string; nome: string }[]).map(
-                      dept => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select
-                    value={form.cargo_nome}
-                    onChange={e =>
-                      setForm({ ...form, cargo_nome: e.target.value })
-                    }
-                    label='Cargo'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                    {(cargos as { codigo: string; nome: string }[]).map(
-                      cargo => (
-                        <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                          {cargo.nome}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tipo de Usuário</InputLabel>
-                  <Select
-                    value={form.role}
-                    onChange={e =>
-                      setForm({ ...form, role: e.target.value as UserRole })
-                    }
-                    label='Tipo de Usuário'
-                  >
-                    <MenuItem value='ALUNO'>Aluno</MenuItem>
-                    <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                    <MenuItem value='GERENTE'>Gerente</MenuItem>
-                    <MenuItem value='ADMIN'>Administrador</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={form.ativo ? 'ATIVO' : 'INATIVO'}
-                    onChange={e =>
-                      setForm({ ...form, ativo: e.target.value === 'ATIVO' })
-                    }
-                    label='Status'
-                  >
-                    <MenuItem value='ATIVO'>Ativo</MenuItem>
-                    <MenuItem value='INATIVO'>Inativo</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              {form.role === 'INSTRUTOR' && (
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    label='Biografia (Instrutor)'
-                    value={form.biografia}
-                    onChange={e =>
-                      setForm({ ...form, biografia: e.target.value })
-                    }
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    maxRows={5}
-                    placeholder='Descreva a experiência e qualificações do instrutor...'
-                  />
-                </Grid>
-              )}
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              variant='outlined'
-              onClick={() => setIsAddOpen(false)}
-              disabled={criarUsuario.isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant='contained'
-              onClick={handleAdd}
-              disabled={criarUsuario.isPending}
-            >
-              {criarUsuario.isPending ? 'Criando...' : 'Adicionar'}
-            </Button>
-          </DialogActions>
-        </Dialog>
 
-        {/* Dialog Editar Usuário */}
-        <Dialog
-          open={!!editingUser}
-          onClose={() => setEditingUser(null)}
-          maxWidth='md'
-          fullWidth
-        >
-          <DialogTitle>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EditIcon />
-              Editar Usuário
-            </Box>
-          </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label='Nome completo'
-                  value={form.nome}
-                  onChange={e => setForm({ ...form, nome: e.target.value })}
-                  fullWidth
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label='Email'
-                  type='email'
-                  value={form.email}
-                  onChange={e => setForm({ ...form, email: e.target.value })}
-                  fullWidth
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
-                    </MenuItem>
-                    {(departamentos as { codigo: string; nome: string }[]).map(
-                      dept => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
+            {filteredInstrutores.length === 0 ? (
+              <Paper sx={{ p: 3, textAlign: 'center' }}>
+                <Typography color='text.secondary'>
+                  {instrutoresTab === 'all'
+                    ? 'Nenhum instrutor cadastrado. Clique em "Adicionar Instrutor" para começar.'
+                    : `Nenhum instrutor ${instrutoresTab === 'active' ? 'ativo' : 'desabilitado'} encontrado.`}
+                </Typography>
+              </Paper>
+            ) : (
+              <DataTable
+                data={filteredInstrutores}
+                columns={instrutoresColumns}
+                loading={loadingInstrutores}
+                getRowId={row => row.funcionario_id}
+              />
+            )}
+
+            {/* Dialog Adicionar Instrutor */}
+            <Dialog
+              open={isAddInstructorOpen}
+              onClose={() => setIsAddInstructorOpen(false)}
+              maxWidth='md'
+              fullWidth
+            >
+              <DialogTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <AddIcon />
+                  Novo Instrutor
+                </Box>
+              </DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField label='Nome completo' fullWidth required />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField label='Email' type='email' fullWidth required />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      label='CPF'
+                      placeholder='000.000.000-00'
+                      fullWidth
+                      required
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Status</InputLabel>
+                      <Select label='Status'>
+                        <MenuItem value='ATIVO'>Ativo</MenuItem>
+                        <MenuItem value='INATIVO'>Inativo</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth required>
+                      <InputLabel>Departamento</InputLabel>
+                      <Select label='Departamento'>
+                        <MenuItem value=''>
+                          <em>— Selecione o departamento —</em>
                         </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select
-                    value={form.cargo_nome}
-                    onChange={e =>
-                      setForm({ ...form, cargo_nome: e.target.value })
-                    }
-                    label='Cargo'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                    {(cargos as { codigo: string; nome: string }[]).map(
-                      cargo => (
-                        <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                          {cargo.nome}
+                        {(
+                          departamentos as { codigo: string; nome: string }[]
+                        ).map(dept => (
+                          <MenuItem key={dept.codigo} value={dept.codigo}>
+                            {dept.nome}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Cargo</InputLabel>
+                      <Select label='Cargo'>
+                        <MenuItem value=''>
+                          <em>— Selecione o cargo —</em>
                         </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tipo de Usuário</InputLabel>
-                  <Select
-                    value={form.role}
-                    onChange={e =>
-                      setForm({ ...form, role: e.target.value as UserRole })
-                    }
-                    label='Tipo de Usuário'
-                  >
-                    <MenuItem value='ALUNO'>Aluno</MenuItem>
-                    <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                    <MenuItem value='GERENTE'>Gerente</MenuItem>
-                    <MenuItem value='ADMIN'>Administrador</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={form.ativo ? 'ATIVO' : 'INATIVO'}
-                    onChange={e =>
-                      setForm({ ...form, ativo: e.target.value === 'ATIVO' })
-                    }
-                    label='Status'
-                  >
-                    <MenuItem value='ATIVO'>Ativo</MenuItem>
-                    <MenuItem value='INATIVO'>Inativo</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              {form.role === 'INSTRUTOR' && (
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    label='Biografia (Instrutor)'
-                    value={form.biografia}
-                    onChange={e =>
-                      setForm({ ...form, biografia: e.target.value })
-                    }
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    maxRows={5}
-                    placeholder='Descreva a experiência e qualificações do instrutor...'
-                  />
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label='Biografia do Instrutor'
+                      fullWidth
+                      multiline
+                      minRows={3}
+                      maxRows={5}
+                      placeholder='Descreva a experiência, qualificações e especialidades do instrutor...'
+                    />
+                  </Grid>
                 </Grid>
-              )}
-            </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              variant='outlined'
-              onClick={() => setEditingUser(null)}
-              disabled={atualizarUsuario.isPending}
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  variant='outlined'
+                  onClick={() => setIsAddInstructorOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button variant='contained'>Adicionar</Button>
+              </DialogActions>
+            </Dialog>
+
+            {/* Dialog Editar Instrutor */}
+            <Dialog
+              open={!!editingInstructor}
+              onClose={() => setEditingInstructor(null)}
+              maxWidth='md'
+              fullWidth
             >
-              Cancelar
-            </Button>
-            <Button
-              variant='contained'
-              onClick={handleUpdate}
-              disabled={atualizarUsuario.isPending}
-            >
-              {atualizarUsuario.isPending ? 'Atualizando...' : 'Atualizar'}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              <DialogTitle>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <EditIcon />
+                  Editar Instrutor
+                </Box>
+              </DialogTitle>
+              <DialogContent>
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField label='Nome completo' fullWidth required />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField label='Email' type='email' fullWidth required />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Departamento</InputLabel>
+                      <Select label='Departamento'>
+                        <MenuItem value=''>
+                          <em>— Selecione o departamento —</em>
+                        </MenuItem>
+                        {(
+                          departamentos as { codigo: string; nome: string }[]
+                        ).map(dept => (
+                          <MenuItem key={dept.codigo} value={dept.codigo}>
+                            {dept.nome}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Cargo</InputLabel>
+                      <Select label='Cargo'>
+                        <MenuItem value=''>
+                          <em>— Selecione o cargo —</em>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Status</InputLabel>
+                      <Select label='Status'>
+                        <MenuItem value='ATIVO'>Ativo</MenuItem>
+                        <MenuItem value='INATIVO'>Inativo</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <TextField
+                      label='Biografia do Instrutor'
+                      fullWidth
+                      multiline
+                      minRows={3}
+                      maxRows={5}
+                      placeholder='Descreva a experiência, qualificações e especialidades do instrutor...'
+                    />
+                  </Grid>
+                </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  variant='outlined'
+                  onClick={() => setEditingInstructor(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button variant='contained'>Atualizar</Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        )}
       </Box>
     </DashboardLayout>
   )
