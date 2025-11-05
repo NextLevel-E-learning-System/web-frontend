@@ -54,13 +54,17 @@ interface UserForm {
 }
 
 export default function AdminUsers() {
-  const { navigationItems, user, isGerente } = useNavigation()
+  const { navigationItems, perfil, isGerente } = useNavigation()
   const {
     data: usuariosResponse,
     isLoading: loadingUsers,
     refetch: refetchUsers,
   } = useFuncionarios()
-  const usuarios = usuariosResponse?.items || []
+
+  const usuarios = useMemo(
+    () => usuariosResponse?.items || [],
+    [usuariosResponse]
+  )
 
   const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
@@ -186,12 +190,12 @@ export default function AdminUsers() {
   const allUsers = useMemo(() => {
     if (!usuarios) return []
 
-    if (isGerente && user?.departamento_id) {
-      return usuarios.filter(u => u.departamento_id === user.departamento_id)
+    if (isGerente && perfil?.departamento) {
+      return usuarios.filter(u => u.departamento_id === perfil.departamento)
     }
 
     return usuarios
-  }, [usuarios, isGerente, user?.departamento_id])
+  }, [usuarios, isGerente, perfil?.departamento])
 
   // Filtrar usuários por status
   const filtered = allUsers.filter(user => {
