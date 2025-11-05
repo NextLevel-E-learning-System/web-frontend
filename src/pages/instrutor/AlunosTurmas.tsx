@@ -1,88 +1,36 @@
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Switch,
-  TextField,
   Typography,
   Chip,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  Skeleton,
-  Tabs,
-  Tab,
   Paper,
   Alert,
   LinearProgress,
-  Tooltip,
   Stack,
   Avatar,
-  Grid,
 } from '@mui/material'
 import {
-  Add as AddIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
   Person as PersonIcon,
-  Badge as BadgeIcon,
-  AdminPanelSettings as AdminIcon,
   PictureAsPdf as PdfIcon,
   TableChart as ExcelIcon,
   CheckCircle,
   Schedule,
   Cancel,
-  Visibility,
-  Groups as GroupsIcon,
-  ManageAccounts as ManageIcon,
-  Person,
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
-import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import DataTable, { type Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
-import {
-  useListarDepartamentosAdmin,
-  useListarCargos,
-  useFuncionarios,
-  useRegisterFuncionario,
-  useUpdateFuncionarioRole,
-  useExcluirFuncionario,
-  useDashboard,
-  useInstrutores,
-  useToggleInstructorStatus,
-  type FuncionarioRegister,
-  type UpdateRoleInput,
-  type UserRole,
-  type Funcionario,
-  type DashboardInstrutor,
-  type Instructor,
-} from '@/api/users'
+import { useDashboard, type DashboardInstrutor } from '@/api/users'
 import { useCourseEnrollments } from '@/api/progress'
 
-interface UserForm {
-  nome: string
-  cpf: string
-  email: string
-  departamento_id: string
-  cargo_nome: string
-  role: UserRole
-  ativo: boolean
-  biografia: string
-}
-
 export default function AlunosTurmas() {
-  const { navigationItems, perfil, isGerente, isAdmin, isInstrutor } =
-    useNavigation()
-  const navigate = useNavigate()
+  const { navigationItems } = useNavigation()
   const { data: dashboardData } = useDashboard()
 
   const instrutorData =
@@ -92,71 +40,10 @@ export default function AlunosTurmas() {
 
   const meusCursos = instrutorData?.cursos || []
 
-  // Estado principal: qual aba está ativa
-  // Admin vê: turmas, usuarios, instrutores
-  // Instrutor vê: apenas turmas
-  const [mainTab, setMainTab] = useState<'turmas' | 'usuarios' | 'instrutores'>(
-    'turmas'
-  )
-
-  // Estados para aba de usuários
-  const [usuariosTab, setUsuariosTab] = useState<'active' | 'disabled' | 'all'>(
-    'all'
-  )
-  const [isAddOpen, setIsAddOpen] = useState(false)
-  const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
-
-  // Estados para aba de instrutores
-  const [instrutoresTab, setInstrutoresTab] = useState<
-    'active' | 'disabled' | 'all'
-  >('all')
-  const [isAddInstructorOpen, setIsAddInstructorOpen] = useState(false)
-  const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(
-    null
-  )
-
   // Estados para aba de turmas
   const [cursoSelecionado, setCursoSelecionado] = useState<string>('')
   const [turmasTab, setTurmasTab] = useState<'all' | 'active' | 'disabled'>(
     'all'
-  )
-
-  // Form state
-  const [form, setForm] = useState<UserForm>({
-    nome: '',
-    cpf: '',
-    email: '',
-    departamento_id: '',
-    cargo_nome: '',
-    role: 'ALUNO',
-    ativo: true,
-    biografia: '',
-  })
-
-  // APIs para usuários
-  const {
-    data: usuariosResponse,
-    isLoading: loadingUsers,
-    refetch: refetchUsers,
-  } = useFuncionarios()
-
-  const { data: departamentosResponse, isLoading: loadingDepartments } =
-    useListarDepartamentosAdmin()
-
-  const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
-
-  const criarUsuario = useRegisterFuncionario()
-  const excluirUsuario = useExcluirFuncionario()
-  const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
-
-  // APIs para instrutores
-  const { data: instrutoresResponse, isLoading: loadingInstrutores } =
-    useInstrutores()
-  const toggleInstructorStatus = useToggleInstructorStatus()
-
-  const instrutores = useMemo(
-    () => instrutoresResponse || [],
-    [instrutoresResponse]
   )
 
   // API para turmas
@@ -164,67 +51,9 @@ export default function AlunosTurmas() {
     data: enrollmentsData,
     isLoading: loadingEnrollments,
     error: enrollmentsError,
-  } = useCourseEnrollments(
-    cursoSelecionado,
-    !!cursoSelecionado && mainTab === 'turmas'
-  )
+  } = useCourseEnrollments(cursoSelecionado)
 
-  const enrollments = enrollmentsData || []
-  const usuarios = useMemo(
-    () => usuariosResponse?.items || [],
-    [usuariosResponse]
-  )
-  const departamentos = useMemo(
-    () =>
-      (departamentosResponse as { items?: unknown[] })?.items ||
-      departamentosResponse ||
-      [],
-    [departamentosResponse]
-  )
-  const cargos = useMemo(
-    () =>
-      (cargosResponse as { items?: unknown[] })?.items || cargosResponse || [],
-    [cargosResponse]
-  )
-
-  // Helper functions
-  const getDepartmentName = (id: string) => {
-    return (
-      (departamentos as { codigo: string; nome: string }[]).find(
-        d => d.codigo === id
-      )?.nome || id
-    )
-  }
-
-  const getCargoName = (codigo: string) => {
-    return (
-      (cargos as { codigo: string; nome: string }[]).find(
-        c => c.codigo === codigo
-      )?.nome || codigo
-    )
-  }
-
-  const getUserTypeIcon = (tipo: string) => {
-    switch (tipo) {
-      case 'ADMIN':
-        return <AdminIcon fontSize='small' />
-      case 'INSTRUTOR':
-        return <BadgeIcon fontSize='small' />
-      default:
-        return <PersonIcon fontSize='small' />
-    }
-  }
-
-  const getUserTypeColor = (tipo: string): 'error' | 'warning' | 'default' => {
-    switch (tipo) {
-      case 'ADMIN':
-        return 'error'
-      case 'INSTRUTOR':
-        return 'warning'
-      default:
-        return 'default'
-    }
-  }
+  const enrollments = useMemo(() => enrollmentsData || [], [enrollmentsData])
 
   const getStatusColor = (
     status: string
@@ -265,127 +94,6 @@ export default function AlunosTurmas() {
     }
   }
 
-  // User management functions
-  const resetForm = () => {
-    setForm({
-      nome: '',
-      cpf: '',
-      email: '',
-      departamento_id: '',
-      cargo_nome: '',
-      role: 'ALUNO',
-      ativo: true,
-      biografia: '',
-    })
-  }
-
-  const openAdd = () => {
-    resetForm()
-    setEditingUser(null)
-    setIsAddOpen(true)
-  }
-
-  const handleAdd = async () => {
-    if (
-      !form.nome.trim() ||
-      !form.cpf.trim() ||
-      !form.email.trim() ||
-      !form.departamento_id.trim()
-    ) {
-      toast.error('Nome, CPF, Email e Departamento são obrigatórios')
-      return
-    }
-
-    try {
-      const input: FuncionarioRegister = {
-        nome: form.nome.trim(),
-        cpf: form.cpf.trim(),
-        email: form.email.trim(),
-        departamento_id: form.departamento_id.trim(),
-        cargo_nome: form.cargo_nome.trim() || undefined,
-      }
-
-      await criarUsuario.mutateAsync(input)
-      toast.success('Funcionário criado com sucesso!')
-      setIsAddOpen(false)
-      resetForm()
-      refetchUsers()
-    } catch (error) {
-      toast.error('Erro ao criar funcionário')
-      console.error(error)
-    }
-  }
-
-  const handleEdit = (usuario: Funcionario) => {
-    setEditingUser(usuario)
-    setForm({
-      nome: usuario.nome,
-      cpf: '',
-      email: usuario.email,
-      departamento_id: usuario.departamento_id || '',
-      cargo_nome: usuario.cargo_nome || '',
-      role: usuario.role || 'ALUNO',
-      ativo: usuario.ativo,
-      biografia: '',
-    })
-  }
-
-  const handleUpdate = async () => {
-    if (!form.nome.trim() || !form.email.trim()) {
-      toast.error('Nome e Email são obrigatórios')
-      return
-    }
-
-    if (!editingUser) return
-
-    try {
-      const input: UpdateRoleInput = {
-        role: form.role,
-      }
-
-      await atualizarUsuario.mutateAsync(input)
-      toast.success('Role do funcionário atualizada com sucesso!')
-      setEditingUser(null)
-      resetForm()
-      refetchUsers()
-    } catch (error) {
-      toast.error('Erro ao atualizar funcionário')
-      console.error(error)
-    }
-  }
-
-  const handleDelete = async (id: string, nome: string) => {
-    if (confirm(`Tem certeza que deseja excluir o usuário "${nome}"?`)) {
-      try {
-        await excluirUsuario.mutateAsync(id)
-        toast.success('Usuário excluído com sucesso!')
-        refetchUsers()
-      } catch (error) {
-        toast.error('Erro ao excluir usuário')
-        console.error(error)
-      }
-    }
-  }
-
-  const handleToggleAtivo = async (
-    _id: string,
-    nome: string,
-    ativo: boolean
-  ) => {
-    const acao = ativo ? 'desativar' : 'ativar'
-    if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
-      try {
-        toast.success(
-          `Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
-        )
-        refetchUsers()
-      } catch (error) {
-        toast.error(`Erro ao ${acao} usuário`)
-        console.error(error)
-      }
-    }
-  }
-
   const handleExportPDF = () => {
     // Implementar exportação PDF
     console.log('Exportar PDF')
@@ -396,45 +104,7 @@ export default function AlunosTurmas() {
     console.log('Exportar Excel')
   }
 
-  // Instrutores functions
-  const handleToggleInstructorStatus = async (
-    funcionario_id: string,
-    nome: string,
-    ativo: boolean
-  ) => {
-    const acao = ativo ? 'desativar' : 'ativar'
-    if (confirm(`Tem certeza que deseja ${acao} o instrutor "${nome}"?`)) {
-      try {
-        await toggleInstructorStatus.mutateAsync(funcionario_id)
-        toast.success(
-          `Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
-        )
-      } catch (error) {
-        toast.error(`Erro ao ${acao} instrutor`)
-        console.error(error)
-      }
-    }
-  }
-
   // Filtros
-  const allUsers = useMemo(() => {
-    if (!usuarios) return []
-    if (isGerente && perfil?.departamento) {
-      return (usuarios as Funcionario[]).filter(
-        u => u.departamento_id === perfil.departamento
-      )
-    }
-    return usuarios
-  }, [usuarios, isGerente, perfil?.departamento])
-
-  const filteredUsers = useMemo(() => {
-    return (allUsers as Funcionario[]).filter(usuario => {
-      if (usuariosTab === 'all') return true
-      if (usuariosTab === 'active') return usuario.ativo === true
-      return usuario.ativo === false
-    })
-  }, [allUsers, usuariosTab])
-
   const filteredEnrollments = useMemo(() => {
     if (!enrollments.length) return []
     if (turmasTab === 'all') return enrollments
@@ -460,120 +130,6 @@ export default function AlunosTurmas() {
 
     return { total, concluidos, emAndamento, mediaProgresso }
   }, [enrollments])
-
-  // Colunas da tabela de usuários
-  const usuariosColumns: Column[] = useMemo(
-    () => [
-      {
-        id: 'nome',
-        label: 'Nome',
-        minWidth: 200,
-        render: (value: string) => (
-          <Typography fontWeight={500}>{value}</Typography>
-        ),
-      },
-      {
-        id: 'email',
-        label: 'Email',
-        minWidth: 200,
-        render: (value: string) => (
-          <Typography
-            component='span'
-            sx={{
-              fontFamily:
-                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-            }}
-          >
-            {value}
-          </Typography>
-        ),
-      },
-      {
-        id: 'departamento_id',
-        label: 'Departamento',
-        minWidth: 150,
-        render: (value: string | null) =>
-          value ? getDepartmentName(value) : '—',
-      },
-      {
-        id: 'cargo_nome',
-        label: 'Cargo',
-        minWidth: 150,
-        render: (value: string | null) => (value ? getCargoName(value) : '—'),
-      },
-      {
-        id: 'role',
-        label: 'Tipo',
-        minWidth: 120,
-        render: (value: string) => (
-          <Chip
-            icon={getUserTypeIcon(value)}
-            variant='outlined'
-            label={value}
-            color={getUserTypeColor(value)}
-            size='small'
-          />
-        ),
-      },
-      {
-        id: 'ativo',
-        label: 'Status',
-        minWidth: 120,
-        render: (value: boolean, row: Funcionario) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Switch
-              checked={value}
-              onChange={e => {
-                e.stopPropagation()
-                handleToggleAtivo(row.id, row.nome, row.ativo)
-              }}
-              size='small'
-              onClick={e => e.stopPropagation()}
-            />
-            <Typography
-              variant='body2'
-              color={value ? 'success.main' : 'text.disabled'}
-              fontWeight={500}
-            >
-              {value ? 'ATIVO' : 'INATIVO'}
-            </Typography>
-          </Box>
-        ),
-      },
-      {
-        id: 'actions',
-        label: 'Ações',
-        align: 'right' as const,
-        minWidth: 100,
-        render: (_, row: Funcionario) => (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <IconButton
-              size='small'
-              onClick={e => {
-                e.stopPropagation()
-                handleEdit(row)
-              }}
-              aria-label='editar'
-            >
-              <EditIcon />
-            </IconButton>
-            <IconButton
-              size='small'
-              onClick={e => {
-                e.stopPropagation()
-                handleDelete(row.id, row.nome)
-              }}
-              aria-label='excluir'
-              color='error'
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Box>
-        ),
-      },
-    ],
-    [getDepartmentName, getCargoName]
-  )
 
   // Colunas da tabela de turmas
   const turmasColumns: Column[] = useMemo(
@@ -688,938 +244,179 @@ export default function AlunosTurmas() {
     []
   )
 
-  // Colunas da tabela de instrutores
-  const instrutoresColumns: Column[] = useMemo(
-    () => [
-      {
-        id: 'nome',
-        label: 'Nome',
-        minWidth: 200,
-        render: (value: string) => (
-          <Typography fontWeight={500}>{value}</Typography>
-        ),
-      },
-      {
-        id: 'email',
-        label: 'Email',
-        minWidth: 250,
-        render: (value: string) => (
-          <Typography
-            component='span'
-            sx={{
-              fontFamily:
-                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-            }}
-          >
-            {value}
-          </Typography>
-        ),
-      },
-      {
-        id: 'departamento_nome',
-        label: 'Departamento',
-        minWidth: 150,
-        render: (value: string | null) => (
-          <Typography variant='body2'>{value || '—'}</Typography>
-        ),
-      },
-      {
-        id: 'cargo_nome',
-        label: 'Cargo',
-        minWidth: 150,
-        render: (value: string | null) => (
-          <Typography variant='body2'>{value || '—'}</Typography>
-        ),
-      },
-      {
-        id: 'avaliacao_media',
-        label: 'Avaliação',
-        minWidth: 100,
-        render: (value: string) => (
-          <Typography variant='body2'>
-            {value && value !== '0' ? `${parseFloat(value).toFixed(1)}/5` : '—'}
-          </Typography>
-        ),
-      },
-      {
-        id: 'ativo',
-        label: 'Status',
-        minWidth: 120,
-        render: (value: boolean, row: Instructor) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Switch
-              checked={value || false}
-              onChange={() =>
-                handleToggleInstructorStatus(
-                  row.funcionario_id || '',
-                  row.nome || '',
-                  row.ativo || false
-                )
-              }
-              size='small'
-            />
-            <Typography
-              variant='body2'
-              color={value ? 'success.main' : 'text.disabled'}
-              fontWeight={500}
-            >
-              {value ? 'ATIVO' : 'INATIVO'}
-            </Typography>
-          </Box>
-        ),
-      },
-      {
-        id: 'actions',
-        label: 'Ações',
-        align: 'right' as const,
-        minWidth: 100,
-        render: (_, row: Instructor) => (
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            <IconButton
-              size='small'
-              onClick={e => {
-                e.stopPropagation()
-                setEditingInstructor(row)
-              }}
-              aria-label='editar'
-            >
-              <EditIcon />
-            </IconButton>
-            <IconButton
-              size='small'
-              aria-label='excluir'
-              color='error'
-              disabled={!row}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Box>
-        ),
-      },
-    ],
-    [handleToggleInstructorStatus]
-  )
-
-  // Filtros de instrutores
-  const filteredInstrutores = useMemo(() => {
-    return (instrutores as Instructor[]).filter(instrutor => {
-      if (instrutoresTab === 'all') return true
-      if (instrutoresTab === 'active') return instrutor.ativo === true
-      return instrutor.ativo === false
-    })
-  }, [instrutores, instrutoresTab])
-
   const cursoAtual = meusCursos.find(c => c.codigo === cursoSelecionado)
-
-  if (loadingUsers || loadingDepartments || loadingCargos) {
-    return (
-      <DashboardLayout items={navigationItems}>
-        <Box>
-          <Skeleton variant='rectangular' height={300} />
-        </Box>
-      </DashboardLayout>
-    )
-  }
 
   return (
     <DashboardLayout items={navigationItems}>
       <Box>
-        {/* Tabs Principais */}
-        <Paper sx={{ mb: 2 }}>
-          <Tabs
-            value={mainTab}
-            onChange={(_, newValue) => setMainTab(newValue)}
-            sx={{ borderBottom: 1, borderColor: 'divider' }}
-          >
-            <Tab
-              icon={<GroupsIcon />}
-              iconPosition='start'
-              label='Turmas'
-              value='turmas'
-            />
-            {(isAdmin || isGerente) && (
-              <Tab
-                icon={<ManageIcon />}
-                iconPosition='start'
-                label='Gerenciar Usuários'
-                value='usuarios'
-              />
-            )}
-            {(isAdmin || isGerente) && (
-              <Tab
-                icon={<BadgeIcon />}
-                iconPosition='start'
-                label='Instrutores'
-                value='instrutores'
-              />
-            )}
-          </Tabs>
-        </Paper>
-
-        {/* Conteúdo da Aba de Turmas */}
-        {mainTab === 'turmas' && (
-          <Box>
-            {/* Seletor de Curso */}
-            <Paper sx={{ p: 3, mb: 2 }}>
-              <FormControl fullWidth>
-                <InputLabel>Selecione um Curso</InputLabel>
-                <Select
-                  value={cursoSelecionado}
-                  onChange={e => setCursoSelecionado(e.target.value)}
-                  label='Selecione um Curso'
-                >
-                  <MenuItem value=''>
-                    <em>— Selecione um curso —</em>
+        <Box>
+          {/* Seletor de Curso */}
+          <Paper sx={{ p: 3, mb: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel>Selecione um Curso</InputLabel>
+              <Select
+                value={cursoSelecionado}
+                onChange={e => setCursoSelecionado(e.target.value)}
+                label='Selecione um Curso'
+              >
+                <MenuItem value=''>
+                  <em>— Selecione um curso —</em>
+                </MenuItem>
+                {meusCursos.map(curso => (
+                  <MenuItem key={curso.codigo} value={curso.codigo}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography>{curso.titulo}</Typography>
+                    </Box>
                   </MenuItem>
-                  {meusCursos.map(curso => (
-                    <MenuItem key={curso.codigo} value={curso.codigo}>
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                      >
-                        <Typography>{curso.titulo}</Typography>
-                        <Chip
-                          label={`${curso.inscritos} aluno${curso.inscritos !== 1 ? 's' : ''}`}
-                          size='small'
-                          color='primary'
-                          variant='outlined'
-                        />
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                ))}
+              </Select>
+            </FormControl>
+          </Paper>
+
+          {!cursoSelecionado ? (
+            <Alert severity='info' icon={<PersonIcon />}>
+              <Typography variant='body2'>
+                Selecione um curso para visualizar os alunos inscritos e seus
+                progressos
+              </Typography>
+            </Alert>
+          ) : loadingEnrollments ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <LinearProgress />
             </Paper>
-
-            {!cursoSelecionado ? (
-              <Alert severity='info' icon={<PersonIcon />}>
-                <Typography variant='body2'>
-                  Selecione um curso para visualizar os alunos inscritos e seus
-                  progressos
-                </Typography>
-              </Alert>
-            ) : loadingEnrollments ? (
-              <Paper sx={{ p: 4, textAlign: 'center' }}>
-                <LinearProgress sx={{ mb: 2 }} />
-                <Typography>Carregando alunos...</Typography>
-              </Paper>
-            ) : enrollmentsError ? (
-              <Alert severity='error'>
-                Erro ao carregar inscrições. Tente novamente.
-              </Alert>
-            ) : (
-              <>
-                {/* Estatísticas */}
-                {enrollments.length > 0 && (
-                  <Paper sx={{ p: 3, mb: 3 }}>
-                    <Typography variant='h6' gutterBottom fontWeight={600}>
-                      📊 Resumo do Curso: {cursoAtual?.titulo}
-                    </Typography>
-                    <Stack
-                      direction={{ xs: 'column', md: 'row' }}
-                      spacing={3}
-                      sx={{ mt: 2 }}
-                    >
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant='caption' color='text.secondary'>
-                          Total de Alunos
-                        </Typography>
-                        <Typography
-                          variant='h4'
-                          fontWeight={700}
-                          color='primary'
-                        >
-                          {turmasStats.total}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant='caption' color='text.secondary'>
-                          Concluíram
-                        </Typography>
-                        <Typography
-                          variant='h4'
-                          fontWeight={700}
-                          color='success.main'
-                        >
-                          {turmasStats.concluidos}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant='caption' color='text.secondary'>
-                          Em Andamento
-                        </Typography>
-                        <Typography
-                          variant='h4'
-                          fontWeight={700}
-                          color='primary.main'
-                        >
-                          {turmasStats.emAndamento}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant='caption' color='text.secondary'>
-                          Progresso Médio
-                        </Typography>
-                        <Typography
-                          variant='h4'
-                          fontWeight={700}
-                          color='info.main'
-                        >
-                          {turmasStats.mediaProgresso.toFixed(1)}%
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Paper>
-                )}
-
-                {/* Ações e Filtros */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2,
-                    gap: 2,
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <StatusFilterTabs
-                    value={turmasTab}
-                    onChange={setTurmasTab}
-                    activeCount={
-                      enrollments.filter(e => e.status !== 'CONCLUIDO').length
-                    }
-                    inactiveCount={
-                      enrollments.filter(e => e.status === 'CONCLUIDO').length
-                    }
-                    activeLabel='Em Andamento'
-                    inactiveLabel='Concluídos'
-                  />
-
-                  <Stack direction='row' spacing={1}>
-                    <Button
-                      startIcon={<ExcelIcon />}
-                      variant='outlined'
-                      size='small'
-                      onClick={handleExportExcel}
-                      disabled={!filteredEnrollments.length}
-                    >
-                      Excel
-                    </Button>
-                    <Button
-                      startIcon={<PdfIcon />}
-                      variant='outlined'
-                      size='small'
-                      onClick={handleExportPDF}
-                      disabled={!filteredEnrollments.length}
-                    >
-                      PDF
-                    </Button>
+          ) : enrollmentsError ? (
+            <Alert severity='error'>
+              Erro ao carregar inscrições. Tente novamente.
+            </Alert>
+          ) : (
+            <>
+              {/* Estatísticas */}
+              {enrollments.length > 0 && (
+                <Paper sx={{ p: 3, mb: 3 }}>
+                  <Typography variant='h6' gutterBottom fontWeight={600}>
+                    📊 Resumo do Curso: {cursoAtual?.titulo}
+                  </Typography>
+                  <Stack
+                    direction={{ xs: 'column', md: 'row' }}
+                    spacing={3}
+                    sx={{ mt: 2 }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant='caption' color='text.secondary'>
+                        Total de Alunos
+                      </Typography>
+                      <Typography variant='h4' fontWeight={700} color='primary'>
+                        {turmasStats.total}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant='caption' color='text.secondary'>
+                        Concluíram
+                      </Typography>
+                      <Typography
+                        variant='h4'
+                        fontWeight={700}
+                        color='success.main'
+                      >
+                        {turmasStats.concluidos}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant='caption' color='text.secondary'>
+                        Em Andamento
+                      </Typography>
+                      <Typography
+                        variant='h4'
+                        fontWeight={700}
+                        color='primary.main'
+                      >
+                        {turmasStats.emAndamento}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant='caption' color='text.secondary'>
+                        Progresso Médio
+                      </Typography>
+                      <Typography
+                        variant='h4'
+                        fontWeight={700}
+                        color='info.main'
+                      >
+                        {turmasStats.mediaProgresso.toFixed(1)}%
+                      </Typography>
+                    </Box>
                   </Stack>
-                </Box>
+                </Paper>
+              )}
 
-                {/* Tabela de Alunos da Turma */}
-                <DataTable
-                  columns={turmasColumns}
-                  data={filteredEnrollments}
-                  loading={loadingEnrollments}
-                  getRowId={row => row.id}
+              {/* Ações e Filtros */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 2,
+                  gap: 2,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <StatusFilterTabs
+                  value={turmasTab}
+                  onChange={setTurmasTab}
+                  activeCount={
+                    enrollments.filter(e => e.status !== 'CONCLUIDO').length
+                  }
+                  inactiveCount={
+                    enrollments.filter(e => e.status === 'CONCLUIDO').length
+                  }
+                  activeLabel='Em Andamento'
+                  inactiveLabel='Concluídos'
                 />
 
-                {filteredEnrollments.length === 0 && !loadingEnrollments && (
-                  <Paper sx={{ p: 4, textAlign: 'center' }}>
-                    <Typography variant='body1' color='text.secondary'>
-                      {turmasTab === 'all'
-                        ? 'Nenhum aluno inscrito neste curso'
-                        : turmasTab === 'active'
-                          ? 'Nenhum aluno em andamento'
-                          : 'Nenhum aluno concluiu este curso'}
-                    </Typography>
-                  </Paper>
-                )}
-              </>
-            )}
-          </Box>
-        )}
+                <Stack direction='row' spacing={1}>
+                  <Button
+                    startIcon={<ExcelIcon />}
+                    variant='outlined'
+                    size='small'
+                    onClick={handleExportExcel}
+                    disabled={!filteredEnrollments.length}
+                  >
+                    Excel
+                  </Button>
+                  <Button
+                    startIcon={<PdfIcon />}
+                    variant='outlined'
+                    size='small'
+                    onClick={handleExportPDF}
+                    disabled={!filteredEnrollments.length}
+                  >
+                    PDF
+                  </Button>
+                </Stack>
+              </Box>
 
-        {/* Conteúdo da Aba de Usuários */}
-        {(isAdmin || isGerente) && mainTab === 'usuarios' && (
-          <Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                mb: 2,
-              }}
-            >
-              <StatusFilterTabs
-                value={usuariosTab}
-                onChange={setUsuariosTab}
-                activeCount={
-                  (allUsers as Funcionario[]).filter(u => u.ativo === true)
-                    .length
-                }
-                inactiveCount={
-                  (allUsers as Funcionario[]).filter(u => u.ativo === false)
-                    .length
-                }
-                activeLabel='Usuários Ativos'
-                inactiveLabel='Usuários Inativos'
-              />
-              <Button
-                onClick={openAdd}
-                startIcon={<AddIcon />}
-                variant='contained'
-                disabled={criarUsuario.isPending}
-              >
-                Adicionar Usuário
-              </Button>
-            </Box>
-
-            <DataTable
-              columns={usuariosColumns}
-              data={filteredUsers}
-              loading={loadingUsers}
-              getRowId={row => row.id}
-            />
-
-            {/* Dialog Adicionar Usuário */}
-            <Dialog
-              open={isAddOpen}
-              onClose={() => setIsAddOpen(false)}
-              maxWidth='sm'
-              fullWidth
-            >
-              <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PersonIcon />
-                  Novo Usuário
-                </Box>
-              </DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label='Nome completo'
-                      value={form.nome}
-                      onChange={e => setForm({ ...form, nome: e.target.value })}
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='CPF'
-                      value={form.cpf}
-                      onChange={e => setForm({ ...form, cpf: e.target.value })}
-                      placeholder='000.000.000-00'
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='Email'
-                      type='email'
-                      value={form.email}
-                      onChange={e =>
-                        setForm({ ...form, email: e.target.value })
-                      }
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Departamento</InputLabel>
-                      <Select
-                        value={form.departamento_id}
-                        onChange={e =>
-                          setForm({ ...form, departamento_id: e.target.value })
-                        }
-                        label='Departamento'
-                      >
-                        <MenuItem value=''>
-                          <em>— Selecione o departamento —</em>
-                        </MenuItem>
-                        {(
-                          departamentos as { codigo: string; nome: string }[]
-                        ).map(dept => (
-                          <MenuItem key={dept.codigo} value={dept.codigo}>
-                            {dept.nome}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Cargo</InputLabel>
-                      <Select
-                        value={form.cargo_nome}
-                        onChange={e =>
-                          setForm({ ...form, cargo_nome: e.target.value })
-                        }
-                        label='Cargo'
-                      >
-                        <MenuItem value=''>
-                          <em>— Selecione o cargo —</em>
-                        </MenuItem>
-                        {(cargos as { codigo: string; nome: string }[]).map(
-                          cargo => (
-                            <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                              {cargo.nome}
-                            </MenuItem>
-                          )
-                        )}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Tipo de Usuário</InputLabel>
-                      <Select
-                        value={form.role}
-                        onChange={e =>
-                          setForm({ ...form, role: e.target.value as UserRole })
-                        }
-                        label='Tipo de Usuário'
-                      >
-                        <MenuItem value='ALUNO'>Aluno</MenuItem>
-                        <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                        <MenuItem value='GERENTE'>Gerente</MenuItem>
-                        <MenuItem value='ADMIN'>Administrador</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={form.ativo ? 'ATIVO' : 'INATIVO'}
-                        onChange={e =>
-                          setForm({
-                            ...form,
-                            ativo: e.target.value === 'ATIVO',
-                          })
-                        }
-                        label='Status'
-                      >
-                        <MenuItem value='ATIVO'>Ativo</MenuItem>
-                        <MenuItem value='INATIVO'>Inativo</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  {form.role === 'INSTRUTOR' && (
-                    <Grid size={{ xs: 12 }}>
-                      <TextField
-                        label='Biografia (Instrutor)'
-                        value={form.biografia}
-                        onChange={e =>
-                          setForm({ ...form, biografia: e.target.value })
-                        }
-                        fullWidth
-                        multiline
-                        minRows={3}
-                        maxRows={5}
-                        placeholder='Descreva a experiência e qualificações do instrutor...'
-                      />
-                    </Grid>
-                  )}
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  variant='outlined'
-                  onClick={() => setIsAddOpen(false)}
-                  disabled={criarUsuario.isPending}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  variant='contained'
-                  onClick={handleAdd}
-                  disabled={criarUsuario.isPending}
-                >
-                  {criarUsuario.isPending ? 'Criando...' : 'Adicionar'}
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            {/* Dialog Editar Usuário */}
-            <Dialog
-              open={!!editingUser}
-              onClose={() => setEditingUser(null)}
-              maxWidth='md'
-              fullWidth
-            >
-              <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <EditIcon />
-                  Editar Usuário
-                </Box>
-              </DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label='Nome completo'
-                      value={form.nome}
-                      onChange={e => setForm({ ...form, nome: e.target.value })}
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label='Email'
-                      type='email'
-                      value={form.email}
-                      onChange={e =>
-                        setForm({ ...form, email: e.target.value })
-                      }
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Departamento</InputLabel>
-                      <Select
-                        value={form.departamento_id}
-                        onChange={e =>
-                          setForm({ ...form, departamento_id: e.target.value })
-                        }
-                        label='Departamento'
-                      >
-                        <MenuItem value=''>
-                          <em>— Selecione o departamento —</em>
-                        </MenuItem>
-                        {(
-                          departamentos as { codigo: string; nome: string }[]
-                        ).map(dept => (
-                          <MenuItem key={dept.codigo} value={dept.codigo}>
-                            {dept.nome}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Cargo</InputLabel>
-                      <Select
-                        value={form.cargo_nome}
-                        onChange={e =>
-                          setForm({ ...form, cargo_nome: e.target.value })
-                        }
-                        label='Cargo'
-                      >
-                        <MenuItem value=''>
-                          <em>— Selecione o cargo —</em>
-                        </MenuItem>
-                        {(cargos as { codigo: string; nome: string }[]).map(
-                          cargo => (
-                            <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                              {cargo.nome}
-                            </MenuItem>
-                          )
-                        )}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Tipo de Usuário</InputLabel>
-                      <Select
-                        value={form.role}
-                        onChange={e =>
-                          setForm({ ...form, role: e.target.value as UserRole })
-                        }
-                        label='Tipo de Usuário'
-                      >
-                        <MenuItem value='ALUNO'>Aluno</MenuItem>
-                        <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                        <MenuItem value='GERENTE'>Gerente</MenuItem>
-                        <MenuItem value='ADMIN'>Administrador</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Status</InputLabel>
-                      <Select
-                        value={form.ativo ? 'ATIVO' : 'INATIVO'}
-                        onChange={e =>
-                          setForm({
-                            ...form,
-                            ativo: e.target.value === 'ATIVO',
-                          })
-                        }
-                        label='Status'
-                      >
-                        <MenuItem value='ATIVO'>Ativo</MenuItem>
-                        <MenuItem value='INATIVO'>Inativo</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  {form.role === 'INSTRUTOR' && (
-                    <Grid size={{ xs: 12 }}>
-                      <TextField
-                        label='Biografia (Instrutor)'
-                        value={form.biografia}
-                        onChange={e =>
-                          setForm({ ...form, biografia: e.target.value })
-                        }
-                        fullWidth
-                        multiline
-                        minRows={3}
-                        maxRows={5}
-                        placeholder='Descreva a experiência e qualificações do instrutor...'
-                      />
-                    </Grid>
-                  )}
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  variant='outlined'
-                  onClick={() => setEditingUser(null)}
-                  disabled={atualizarUsuario.isPending}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  variant='contained'
-                  onClick={handleUpdate}
-                  disabled={atualizarUsuario.isPending}
-                >
-                  {atualizarUsuario.isPending ? 'Atualizando...' : 'Atualizar'}
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </Box>
-        )}
-
-        {/* Conteúdo da Aba de Instrutores */}
-        {mainTab === 'instrutores' && (isAdmin || isGerente) && (
-          <Box>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <StatusFilterTabs
-                value={instrutoresTab}
-                onChange={setInstrutoresTab}
-                activeLabel='Instrutores Ativos'
-                inactiveLabel='Instrutores Inativos'
-                activeCount={
-                  (instrutores as Instructor[]).filter(i => i.ativo === true)
-                    .length
-                }
-                inactiveCount={
-                  (instrutores as Instructor[]).filter(i => i.ativo === false)
-                    .length
-                }
-              />
-              <Button
-                onClick={() => setIsAddInstructorOpen(true)}
-                startIcon={<AddIcon />}
-                variant='contained'
-              >
-                Adicionar Instrutor
-              </Button>
-            </Box>
-
-            {filteredInstrutores.length === 0 ? (
-              <Paper sx={{ p: 3, textAlign: 'center' }}>
-                <Typography color='text.secondary'>
-                  {instrutoresTab === 'all'
-                    ? 'Nenhum instrutor cadastrado. Clique em "Adicionar Instrutor" para começar.'
-                    : `Nenhum instrutor ${instrutoresTab === 'active' ? 'ativo' : 'desabilitado'} encontrado.`}
-                </Typography>
-              </Paper>
-            ) : (
+              {/* Tabela de Alunos da Turma */}
               <DataTable
-                data={filteredInstrutores}
-                columns={instrutoresColumns}
-                loading={loadingInstrutores}
-                getRowId={row => row.funcionario_id}
+                columns={turmasColumns}
+                data={filteredEnrollments}
+                loading={loadingEnrollments}
+                getRowId={row => row.id}
               />
-            )}
 
-            {/* Dialog Adicionar Instrutor */}
-            <Dialog
-              open={isAddInstructorOpen}
-              onClose={() => setIsAddInstructorOpen(false)}
-              maxWidth='md'
-              fullWidth
-            >
-              <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AddIcon />
-                  Novo Instrutor
-                </Box>
-              </DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label='Nome completo' fullWidth required />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label='Email' type='email' fullWidth required />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField
-                      label='CPF'
-                      placeholder='000.000.000-00'
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Status</InputLabel>
-                      <Select label='Status'>
-                        <MenuItem value='ATIVO'>Ativo</MenuItem>
-                        <MenuItem value='INATIVO'>Inativo</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth required>
-                      <InputLabel>Departamento</InputLabel>
-                      <Select label='Departamento'>
-                        <MenuItem value=''>
-                          <em>— Selecione o departamento —</em>
-                        </MenuItem>
-                        {(
-                          departamentos as { codigo: string; nome: string }[]
-                        ).map(dept => (
-                          <MenuItem key={dept.codigo} value={dept.codigo}>
-                            {dept.nome}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Cargo</InputLabel>
-                      <Select label='Cargo'>
-                        <MenuItem value=''>
-                          <em>— Selecione o cargo —</em>
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label='Biografia do Instrutor'
-                      fullWidth
-                      multiline
-                      minRows={3}
-                      maxRows={5}
-                      placeholder='Descreva a experiência, qualificações e especialidades do instrutor...'
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  variant='outlined'
-                  onClick={() => setIsAddInstructorOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button variant='contained'>Adicionar</Button>
-              </DialogActions>
-            </Dialog>
-
-            {/* Dialog Editar Instrutor */}
-            <Dialog
-              open={!!editingInstructor}
-              onClose={() => setEditingInstructor(null)}
-              maxWidth='md'
-              fullWidth
-            >
-              <DialogTitle>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <EditIcon />
-                  Editar Instrutor
-                </Box>
-              </DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label='Nome completo' fullWidth required />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField label='Email' type='email' fullWidth required />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Departamento</InputLabel>
-                      <Select label='Departamento'>
-                        <MenuItem value=''>
-                          <em>— Selecione o departamento —</em>
-                        </MenuItem>
-                        {(
-                          departamentos as { codigo: string; nome: string }[]
-                        ).map(dept => (
-                          <MenuItem key={dept.codigo} value={dept.codigo}>
-                            {dept.nome}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Cargo</InputLabel>
-                      <Select label='Cargo'>
-                        <MenuItem value=''>
-                          <em>— Selecione o cargo —</em>
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Status</InputLabel>
-                      <Select label='Status'>
-                        <MenuItem value='ATIVO'>Ativo</MenuItem>
-                        <MenuItem value='INATIVO'>Inativo</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid size={{ xs: 12 }}>
-                    <TextField
-                      label='Biografia do Instrutor'
-                      fullWidth
-                      multiline
-                      minRows={3}
-                      maxRows={5}
-                      placeholder='Descreva a experiência, qualificações e especialidades do instrutor...'
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  variant='outlined'
-                  onClick={() => setEditingInstructor(null)}
-                >
-                  Cancelar
-                </Button>
-                <Button variant='contained'>Atualizar</Button>
-              </DialogActions>
-            </Dialog>
-          </Box>
-        )}
+              {filteredEnrollments.length === 0 && !loadingEnrollments && (
+                <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography variant='body1' color='text.secondary'>
+                    {turmasTab === 'all'
+                      ? 'Nenhum aluno inscrito neste curso'
+                      : turmasTab === 'active'
+                        ? 'Nenhum aluno em andamento'
+                        : 'Nenhum aluno concluiu este curso'}
+                  </Typography>
+                </Paper>
+              )}
+            </>
+          )}
+        </Box>
       </Box>
     </DashboardLayout>
   )
