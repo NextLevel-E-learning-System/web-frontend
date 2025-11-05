@@ -49,14 +49,6 @@ function DataTableInner<T extends Record<string, any>>({
     setPage(0)
   }
 
-  if (loading) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>Carregando...</Typography>
-      </Box>
-    )
-  }
-
   const pageData = useMemo(
     () => data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [data, page, rowsPerPage]

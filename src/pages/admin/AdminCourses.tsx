@@ -204,7 +204,7 @@ export default function AdminCourses() {
   }
 
   // Definição das colunas para o DataTable
-  const courseColumns: Column[] = [
+  const allColumns: (Column | null)[] = [
     {
       id: 'titulo',
       label: 'Curso',
@@ -256,25 +256,21 @@ export default function AdminCourses() {
         )
       },
     },
-    ...(isInstrutor
-      ? []
-      : [
-          {
-            id: 'instrutor',
-            label: 'Instrutor',
-            align: 'center' as const,
-            render: (_: unknown, curso: Curso) => (
-              <Typography variant='body2'>
-                {curso.instrutor_nome || '-'}
-              </Typography>
-            ),
-          },
-        ]),
+    !isInstrutor
+      ? {
+          id: 'instrutor_nome',
+          label: 'Instrutor',
+          align: 'center' as const,
+          render: (value: string | null) => (
+            <Typography variant='body2'>{value || '-'}</Typography>
+          ),
+        }
+      : null,
     {
       id: 'nivel',
       label: 'Dificuldade',
       align: 'center' as const,
-      render: (_: unknown, curso: Curso) => (
+      render: (_value: unknown, curso: Curso) => (
         <Box>
           <Chip
             size='small'
@@ -370,6 +366,10 @@ export default function AdminCourses() {
       ),
     },
   ]
+
+  const courseColumns: Column[] = allColumns.filter(
+    (col): col is Column => col !== null
+  )
 
   if (loadingCursos || loadingCategorias || loadingFuncionarios) {
     return (

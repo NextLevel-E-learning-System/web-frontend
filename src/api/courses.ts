@@ -40,7 +40,7 @@ export interface Course {
   criado_em: string
   atualizado_em: string
   // Campos relacionados ao instrutor
-  instrutor_nome: string
+  instrutor_nome: string | null
   // Campos de categoria
   categoria_nome?: string
   departamento_codigo?: string
