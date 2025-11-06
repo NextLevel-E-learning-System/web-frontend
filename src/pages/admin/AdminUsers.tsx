@@ -43,6 +43,7 @@ import {
   type UserRole,
   type Funcionario,
 } from '@/api/users'
+import { useRegister } from '@/hooks/auth'
 
 interface UserForm {
   nome: string
@@ -50,8 +51,8 @@ interface UserForm {
   email: string
   departamento_id: string
   cargo_nome: string
-  role: UserRole
-  ativo: boolean
+  role?: UserRole
+  ativo?: boolean
 }
 
 export default function AdminUsers() {
@@ -80,7 +81,7 @@ export default function AdminUsers() {
     () => (cargosResponse as any)?.items || cargosResponse || [],
     [cargosResponse]
   )
-  const criarUsuario = useRegisterFuncionario()
+  const criarUsuario = useRegister()
   const [editingUser, setEditingUser] = useState<string>('')
   const atualizarUsuario = useUpdateFuncionario(editingUser)
   const [userToToggle, setUserToToggle] = useState<string>('')
@@ -103,8 +104,6 @@ export default function AdminUsers() {
     email: '',
     departamento_id: '',
     cargo_nome: '',
-    role: 'FUNCIONARIO',
-    ativo: true,
   })
 
   // Funções auxiliares para as colunas
@@ -326,9 +325,10 @@ export default function AdminUsers() {
       !form.nome.trim() ||
       !form.cpf.trim() ||
       !form.email.trim() ||
-      !form.departamento_id.trim()
+      !form.departamento_id.trim() ||
+      !form.cargo_nome.trim()
     ) {
-      toast.error('Nome, CPF, Email e Departamento são obrigatórios')
+      toast.error('Preencha todos os campos obrigatórios')
       return
     }
 
@@ -345,8 +345,7 @@ export default function AdminUsers() {
         cpf: cpfLimpo,
         email: form.email.trim(),
         departamento_id: form.departamento_id.trim(),
-        cargo_nome: form.cargo_nome.trim() || undefined,
-        role: form.role || 'FUNCIONARIO',
+        cargo_nome: form.cargo_nome.trim(),
       }
 
       await criarUsuario.mutateAsync(input)
@@ -362,11 +361,6 @@ export default function AdminUsers() {
   }
 
   const handleUpdate = async () => {
-    if (!form.nome.trim() || !form.email.trim()) {
-      toast.error('Nome e Email são obrigatórios')
-      return
-    }
-
     if (!editingUser) return
 
     try {
