@@ -478,7 +478,6 @@ export default function AdminCourses() {
         <DataTable
           data={filtered}
           columns={courseColumns}
-          loading={loadingCursos || loadingCategorias || loadingFuncionarios}
           getRowId={getRowId}
         />
         {/* Menu de ações */}

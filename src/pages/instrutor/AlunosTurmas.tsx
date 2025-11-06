@@ -276,8 +276,7 @@ export default function AlunosTurmas() {
           {!cursoSelecionado ? (
             <Alert severity='info' icon={<PersonIcon />}>
               <Typography variant='body2'>
-                Selecione um curso para visualizar os funcionários inscritos e seus
-                progressos
+                Selecione um curso para visualizar os funcionários inscritos.
               </Typography>
             </Alert>
           ) : loadingEnrollments ? (
@@ -399,7 +398,6 @@ export default function AlunosTurmas() {
               <DataTable
                 columns={turmasColumns}
                 data={filteredEnrollments}
-                loading={loadingEnrollments}
                 getRowId={row => row.id}
               />
 

@@ -21,7 +21,6 @@ export interface Column {
 interface DataTableProps<T extends Record<string, any> = Record<string, any>> {
   columns: Column[]
   data: T[]
-  loading?: boolean
   size?: 'small'
   onRowClick?: (row: T, index: number) => void
   getRowId?: (row: T, index: number) => string | number
@@ -30,7 +29,6 @@ interface DataTableProps<T extends Record<string, any> = Record<string, any>> {
 function DataTableInner<T extends Record<string, any>>({
   columns,
   data,
-  loading = false,
   size = 'small',
   onRowClick,
   getRowId = (_, index) => index,

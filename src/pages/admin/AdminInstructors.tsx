@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  Switch,
   TextField,
   Typography,
   Select,
@@ -28,7 +27,6 @@ import { useNavigation } from '@/hooks/useNavigation'
 import DataTable from '@/components/common/DataTable'
 import {
   useInstrutores,
-  useToggleInstructorStatus,
   useFuncionarios,
   useCreateInstrutor,
   useUpdateInstrutor,
@@ -79,7 +77,6 @@ export default function AdminInstructors() {
     especialidades: [],
   })
 
-  const toggleStatusMutation = useToggleInstructorStatus()
   const createMutation = useCreateInstrutor()
   const updateMutation = useUpdateInstrutor()
   const deleteMutation = useDeleteInstrutor()
@@ -206,24 +203,6 @@ export default function AdminInstructors() {
     [deleteMutation]
   )
 
-  const handleToggleAtivo = useCallback(
-    async (funcionario_id: string, nome: string, ativo: boolean) => {
-      const acao = ativo ? 'desativar' : 'ativar'
-      if (confirm(`Tem certeza que deseja ${acao} o instrutor "${nome}"?`)) {
-        try {
-          await toggleStatusMutation.mutateAsync(funcionario_id)
-          toast.success(
-            `Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
-          )
-        } catch (error) {
-          toast.error(`Erro ao ${acao} instrutor`)
-          console.error(error)
-        }
-      }
-    },
-    [toggleStatusMutation]
-  )
-
   const getRowId = useCallback((row: Instructor) => row.funcionario_id, [])
 
   const filtered = useMemo(() => {
@@ -283,35 +262,6 @@ export default function AdminInstructors() {
         ),
       },
       {
-        id: 'status',
-        label: 'Status',
-        align: 'center' as const,
-        render: (_value: any, row: Instructor) => (
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 0.5,
-            }}
-          >
-            <Switch
-              checked={row?.ativo}
-              onChange={e => {
-                e.stopPropagation()
-                handleToggleAtivo(row?.funcionario_id, row?.nome, row?.ativo)
-              }}
-              size='small'
-              color='primary'
-              onClick={e => e.stopPropagation()}
-            />
-            <Typography variant='caption' color='text.secondary'>
-              {row?.ativo ? 'Ativo' : 'Inativo'}
-            </Typography>
-          </Box>
-        ),
-      },
-      {
         id: 'actions',
         label: '',
         align: 'right' as const,
@@ -338,7 +288,7 @@ export default function AdminInstructors() {
         ),
       },
     ],
-    [handleToggleAtivo, handleEdit, handleDelete]
+    [handleEdit, handleDelete]
   )
 
   if (loadingInstrutores || loadingFuncionarios) {
@@ -387,7 +337,6 @@ export default function AdminInstructors() {
         <DataTable
           data={filtered}
           columns={instructorColumns}
-          loading={loadingInstrutores}
           getRowId={getRowId}
         />
 

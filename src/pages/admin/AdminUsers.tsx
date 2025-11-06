@@ -35,9 +35,9 @@ import {
   useListarCargos,
   useFuncionarios,
   useRegisterFuncionario,
-  useUpdateFuncionarioRole,
+  useUpdateFuncionario,
   type FuncionarioRegister,
-  type UpdateRoleInput,
+  type UpdateFuncionarioInput,
   type UserRole,
   type Funcionario,
 } from '@/api/users'
@@ -79,7 +79,7 @@ export default function AdminUsers() {
   )
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
-  const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
+  const atualizarUsuario = useUpdateFuncionario(editingUser?.id || '0')
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -114,6 +114,17 @@ export default function AdminUsers() {
     [cargos]
   )
 
+  const maskCPF = (cpf: string) => {
+    if (!cpf) return ''
+    // Remove formatação
+    const numbers = cpf.replace(/\D/g, '')
+    // Formato: 123.***.***-45 (mostra primeiros 3 e últimos 2)
+    if (numbers.length === 11) {
+      return `${numbers.slice(0, 3)}.***.***-${numbers.slice(-2)}`
+    }
+    return cpf
+  }
+
   const handleEdit = useCallback(
     (user: Funcionario) => {
       setEditingUser(user)
@@ -123,7 +134,7 @@ export default function AdminUsers() {
       ).find(c => c.nome === user.cargo_nome)
       setForm({
         nome: user.nome,
-        cpf: user.cpf,
+        cpf: maskCPF(user.cpf),
         email: user.email,
         departamento_id: user.departamento_id || '',
         cargo_nome: cargoEncontrado?.codigo || user.cargo_nome || '',
@@ -337,14 +348,18 @@ export default function AdminUsers() {
     if (!editingUser) return
 
     try {
-      // Para atualizar role, usamos API específica de role
-      const input: UpdateRoleInput = {
+      const input: UpdateFuncionarioInput = {
+        nome: form.nome.trim(),
+        email: form.email.trim(),
+        departamento_id: form.departamento_id || undefined,
+        cargo_nome: form.cargo_nome || undefined,
         role: form.role,
+        ativo: form.ativo,
       }
 
       await atualizarUsuario.mutateAsync(input)
 
-      toast.success('Role do funcionário atualizada com sucesso!')
+      toast.success('Funcionário atualizado com sucesso!')
       setEditingUser(null)
       resetForm()
       refetchUsers()
@@ -436,12 +451,7 @@ export default function AdminUsers() {
           inactiveLabel='Usuários Inativos'
         />
 
-        <DataTable
-          columns={columns}
-          data={filtered}
-          loading={loadingUsers}
-          getRowId={row => row.id}
-        />
+        <DataTable columns={columns} data={filtered} getRowId={row => row.id} />
 
         {/* Dialog Adicionar Usuário */}
         <Dialog
@@ -458,7 +468,7 @@ export default function AdminUsers() {
           </DialogTitle>
           <DialogContent sx={{ py: 0 }}>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Nome completo'
                   value={form.nome}
@@ -585,7 +595,7 @@ export default function AdminUsers() {
         <Dialog
           open={!!editingUser}
           onClose={() => setEditingUser(null)}
-          maxWidth='md'
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>
@@ -596,7 +606,7 @@ export default function AdminUsers() {
           </DialogTitle>
           <DialogContent sx={{ py: 0 }}>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Nome completo'
                   value={form.nome}
@@ -605,7 +615,10 @@ export default function AdminUsers() {
                   required
                 />
               </Grid>
-              <Grid size={{ xs: 12 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField label='CPF' value={form.cpf} fullWidth disabled />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Email'
                   type='email'

@@ -75,6 +75,15 @@ export interface UpdateRoleInput {
   role: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'FUNCIONARIO' // Atualizado
 }
 
+export interface UpdateFuncionarioInput {
+  nome?: string
+  email?: string
+  departamento_id?: string
+  cargo_nome?: string
+  role?: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'FUNCIONARIO'
+  ativo?: boolean
+}
+
 export interface ResetPasswordInput {
   email: string
 }
@@ -367,11 +376,28 @@ export function useUpdateFuncionarioRole(funcionarioId: string) {
     mutationKey: ['users', 'funcionarios', 'role', funcionarioId],
     mutationFn: (input: UpdateRoleInput) =>
       authPut<Funcionario>(
-        `${API_ENDPOINTS.USERS}/${funcionarioId}/role`,
+        `${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}/role`,
         input
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
+    },
+  })
+}
+
+export function useUpdateFuncionario(funcionarioId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['users', 'funcionarios', 'update', funcionarioId],
+    mutationFn: (input: UpdateFuncionarioInput) =>
+      authPut<Funcionario>(
+        `${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}`,
+        input
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
+      queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
     },
   })
 }

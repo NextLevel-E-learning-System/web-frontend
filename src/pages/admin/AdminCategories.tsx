@@ -312,7 +312,6 @@ export default function AdminCategories() {
         <DataTable
           data={categoriasFiltradas}
           columns={categoryColumns}
-          loading={loadingDepartamentos || loadingCategorias}
           getRowId={categoria => categoria.codigo}
         />
 
