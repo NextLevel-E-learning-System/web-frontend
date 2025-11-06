@@ -16,6 +16,7 @@ import {
   FormControl,
   InputLabel,
   Skeleton,
+  Autocomplete,
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -68,23 +69,20 @@ export default function AdminUsers() {
 
   const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
-  const departamentos = useMemo(() => {
-    const items =
-      (departamentosResponse as any)?.items || departamentosResponse || []
-    console.log('Departamentos processados:', items)
-    return items
-  }, [departamentosResponse])
+  const departamentos = useMemo(
+    () => (departamentosResponse as any)?.items || departamentosResponse || [],
+    [departamentosResponse]
+  )
 
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
-  const cargos = useMemo(() => {
-    const items = (cargosResponse as any)?.items || cargosResponse || []
-    console.log('Cargos processados:', items)
-    return items
-  }, [cargosResponse])
+  const cargos = useMemo(
+    () => (cargosResponse as any)?.items || cargosResponse || [],
+    [cargosResponse]
+  )
   const criarUsuario = useRegisterFuncionario()
-  const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
-  const atualizarUsuario = useUpdateFuncionario(editingUser?.id || '0')
+  const [editingUser, setEditingUser] = useState<string>('')
+  const atualizarUsuario = useUpdateFuncionario(editingUser)
   const [userToToggle, setUserToToggle] = useState<string>('')
   const toggleUsuario = useUpdateFuncionario(userToToggle)
 
@@ -141,25 +139,19 @@ export default function AdminUsers() {
     return cpf
   }
 
-  const handleEdit = useCallback(
-    (user: Funcionario) => {
-      setEditingUser(user)
-      // Buscar o código do cargo baseado no nome
-      const cargoEncontrado = (
-        cargos as { codigo: string; nome: string }[]
-      ).find(c => c.nome === user.cargo_nome)
-      setForm({
-        nome: user.nome,
-        cpf: maskCPF(user.cpf),
-        email: user.email,
-        departamento_id: user.departamento_id || '',
-        cargo_nome: cargoEncontrado?.codigo || user.cargo_nome || '',
-        role: user.role || 'FUNCIONARIO',
-        ativo: user.ativo,
-      })
-    },
-    [cargos]
-  )
+  const handleEdit = useCallback((user: Funcionario) => {
+    setEditingUser(user.id)
+    // Manter o código do departamento (não converter para nome)
+    setForm({
+      nome: user.nome,
+      cpf: user.cpf,
+      email: user.email,
+      departamento_id: user.departamento_id || '',
+      cargo_nome: user.cargo_nome || '',
+      role: user.role,
+      ativo: user.ativo,
+    })
+  }, [])
 
   const handleToggleAtivo = useCallback((user: Funcionario) => {
     setUserToToggle(user.id)
@@ -325,7 +317,7 @@ export default function AdminUsers() {
 
   const openAdd = () => {
     resetForm()
-    setEditingUser(null)
+    setEditingUser('')
     setIsAddOpen(true)
   }
 
@@ -383,7 +375,7 @@ export default function AdminUsers() {
       await atualizarUsuario.mutateAsync(input)
 
       toast.success('Funcionário atualizado com sucesso!')
-      setEditingUser(null)
+      setEditingUser('')
       resetForm()
       refetchUsers()
     } catch (error) {
@@ -521,78 +513,53 @@ export default function AdminUsers() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
-                    </MenuItem>
-                    {departamentos.map(
-                      (dept: { codigo: string; nome: string }) => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={departamentos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    departamentos.find(
+                      (d: any) => d.codigo === form.departamento_id
+                    ) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({
+                      ...form,
+                      departamento_id: newValue?.codigo || '',
+                    })
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label='Departamento'
+                      required
+                      placeholder='Departamento'
+                    />
+                  )}
+                  noOptionsText='Nenhum departamento encontrado'
+                  fullWidth
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select
-                    value={form.cargo_nome}
-                    onChange={e =>
-                      setForm({ ...form, cargo_nome: e.target.value })
-                    }
-                    label='Cargo'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                    {cargos.map((cargo: { codigo: string; nome: string }) => (
-                      <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                        {cargo.nome}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tipo de Usuário</InputLabel>
-                  <Select
-                    value={form.role}
-                    onChange={e =>
-                      setForm({ ...form, role: e.target.value as UserRole })
-                    }
-                    label='Tipo de Usuário'
-                  >
-                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
-                    <MenuItem value='ADMIN'>Administrador</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={form.ativo ? 'ATIVO' : 'INATIVO'}
-                    onChange={e =>
-                      setForm({ ...form, ativo: e.target.value === 'ATIVO' })
-                    }
-                    label='Status'
-                  >
-                    <MenuItem value='ATIVO'>Ativo</MenuItem>
-                    <MenuItem value='INATIVO'>Inativo</MenuItem>
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={cargos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    cargos.find((c: any) => c.nome === form.cargo_nome) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({ ...form, cargo_nome: newValue?.nome || '' })
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label='Cargo'
+                      required
+                      placeholder='Cargo'
+                    />
+                  )}
+                  noOptionsText='Nenhum cargo encontrado'
+                  fullWidth
+                />
               </Grid>
             </Grid>
           </DialogContent>
@@ -617,7 +584,7 @@ export default function AdminUsers() {
         {/* Dialog Editar Usuário */}
         <Dialog
           open={!!editingUser}
-          onClose={() => setEditingUser(null)}
+          onClose={() => setEditingUser('')}
           maxWidth='sm'
           fullWidth
         >
@@ -639,7 +606,13 @@ export default function AdminUsers() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label='CPF' value={form.cpf} fullWidth disabled />
+                <TextField
+                  label='CPF'
+                  value={maskCPF(form.cpf)}
+                  onChange={e => setForm({ ...form, cpf: e.target.value })}
+                  fullWidth
+                  disabled
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
@@ -652,48 +625,47 @@ export default function AdminUsers() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
-                    </MenuItem>
-                    {departamentos.map(
-                      (dept: { codigo: string; nome: string }) => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={departamentos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    departamentos.find(
+                      (d: any) => d.codigo === form.departamento_id
+                    ) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({
+                      ...form,
+                      departamento_id: newValue?.codigo || '',
+                    })
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label='Departamento'
+                      placeholder='Departamento'
+                    />
+                  )}
+                  noOptionsText='Nenhum departamento encontrado'
+                  fullWidth
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select
-                    value={form.cargo_nome}
-                    onChange={e =>
-                      setForm({ ...form, cargo_nome: e.target.value })
-                    }
-                    label='Cargo'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                    {cargos.map((cargo: { codigo: string; nome: string }) => (
-                      <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                        {cargo.nome}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={cargos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    cargos.find((c: any) => c.nome === form.cargo_nome) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({ ...form, cargo_nome: newValue?.nome || '' })
+                  }}
+                  renderInput={params => (
+                    <TextField {...params} label='Cargo' placeholder='Cargo' />
+                  )}
+                  noOptionsText='Nenhum cargo encontrado'
+                  fullWidth
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
@@ -708,6 +680,7 @@ export default function AdminUsers() {
                     <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
+                    <MenuItem value='GERENTE'>Gestor</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -731,7 +704,7 @@ export default function AdminUsers() {
           <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
-              onClick={() => setEditingUser(null)}
+              onClick={() => setEditingUser('')}
               disabled={atualizarUsuario.isPending}
             >
               Cancelar
