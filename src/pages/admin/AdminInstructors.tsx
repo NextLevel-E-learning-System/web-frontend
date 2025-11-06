@@ -24,7 +24,6 @@ import {
 import { useMemo, useState, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import DataTable from '@/components/common/DataTable'
 import {
@@ -86,14 +85,18 @@ export default function AdminInstructors() {
   const updateMutation = useUpdateInstrutor()
   const deleteMutation = useDeleteInstrutor()
 
-  // Filtrar apenas funcionários com role INSTRUTOR que ainda não são instrutores
+  // Filtrar funcionários: excluir ADMIN e os que já são instrutores
   const funcionariosDisponiveis = useMemo(() => {
     const instrutoresIds = new Set(
       instrutores.map((i: Instructor) => i.funcionario_id)
     )
-    return funcionarios.filter(
-      (f: Funcionario) => f.role === 'INSTRUTOR' && !instrutoresIds.has(f.id)
+    const disponiveis = funcionarios.filter(
+      (f: Funcionario) =>
+        f.role !== 'ADMIN' && // Excluir ADMIN
+        !instrutoresIds.has(f.id) // Excluir quem já é instrutor
     )
+
+    return disponiveis
   }, [funcionarios, instrutores])
 
   const resetForm = () => {
@@ -108,6 +111,17 @@ export default function AdminInstructors() {
     resetForm()
     setEditingInstructor(null)
     setIsAddOpen(true)
+  }
+
+  const handleFuncionarioChange = (funcionarioId: string) => {
+    const funcionario = funcionarios.find(
+      (f: Funcionario) => f.id === funcionarioId
+    )
+    setForm({
+      ...form,
+      funcionario_id: funcionarioId,
+      departamento_id: funcionario?.departamento_id || '',
+    })
   }
 
   const handleAdd = async () => {
@@ -140,6 +154,7 @@ export default function AdminInstructors() {
     setEditingInstructor(instructor)
     setForm({
       funcionario_id: instructor.funcionario_id,
+      departamento_id: instructor.departamento_id || '',
       biografia: instructor.biografia || '',
       especialidades: instructor.especialidades || [],
     })
@@ -390,48 +405,27 @@ export default function AdminInstructors() {
           </DialogTitle>
           <DialogContent sx={{ py: 0 }}>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <FormControl fullWidth required>
                   <InputLabel>Funcionário</InputLabel>
                   <Select
                     value={form.funcionario_id}
-                    onChange={e =>
-                      setForm({ ...form, funcionario_id: e.target.value })
-                    }
+                    onChange={e => handleFuncionarioChange(e.target.value)}
                     label='Funcionário'
                   >
                     <MenuItem value=''>
                       <em>— Selecione um funcionário —</em>
                     </MenuItem>
+                    {funcionariosDisponiveis.length === 0 && (
+                      <MenuItem value='' disabled>
+                        <em>Nenhum funcionário disponível</em>
+                      </MenuItem>
+                    )}
                     {funcionariosDisponiveis.map((func: Funcionario) => (
                       <MenuItem key={func.id} value={func.id}>
                         {func.nome}
                       </MenuItem>
                     ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                    disabled
-                  >
-                    <MenuItem value=''>
-                      <em>— Departamento —</em>
-                    </MenuItem>
-                    {departamentos.map(
-                      (dept: { codigo: string; nome: string }) => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
-                        </MenuItem>
-                      )
-                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -501,37 +495,13 @@ export default function AdminInstructors() {
           </DialogTitle>
           <DialogContent sx={{ py: 0 }}>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid size={{ xs: 12, md: 6 }}>
+              <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Funcionário'
                   value={editingInstructor?.nome || ''}
                   fullWidth
                   disabled
                 />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                    disabled
-                  >
-                    <MenuItem value=''>
-                      <em>— Departamento —</em>
-                    </MenuItem>
-                    {departamentos.map(
-                      (dept: { codigo: string; nome: string }) => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField

@@ -72,7 +72,7 @@ export default function AdminUsers() {
     () => (departamentosResponse as any)?.items || departamentosResponse || [],
     [departamentosResponse]
   )
-
+  const [selectedDept, setSelectedDept] = useState<string>('all')
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
   const cargos = useMemo(
     () => (cargosResponse as any)?.items || cargosResponse || [],
@@ -386,16 +386,29 @@ export default function AdminUsers() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            mb: 3,
+            gap: 2,
+            flexWrap: 'wrap',
           }}
         >
-          <StatusFilterTabs
-            value={tab}
-            onChange={setTab}
-            activeCount={allUsers.filter(u => u.ativo === true).length}
-            inactiveCount={allUsers.filter(u => u.ativo === false).length}
-            activeLabel='Usuários Ativos'
-            inactiveLabel='Usuários Inativos'
-          />
+          <FormControl>
+            <InputLabel>Departamento</InputLabel>
+            <Select
+              value={selectedDept}
+              onChange={e => setSelectedDept(e.target.value)}
+              label='Departamento'
+            >
+              <MenuItem key='all' value='all'>
+                <em>Todos os Departamentos</em>
+              </MenuItem>
+              {departamentos.map((dept: { codigo: string; nome: string }) => (
+                <MenuItem key={dept.codigo} value={dept.codigo}>
+                  {dept.codigo} - {dept.nome}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -405,6 +418,15 @@ export default function AdminUsers() {
             Adicionar Usuário
           </Button>
         </Box>
+
+        <StatusFilterTabs
+          value={tab}
+          onChange={setTab}
+          activeCount={allUsers.filter(u => u.ativo === true).length}
+          inactiveCount={allUsers.filter(u => u.ativo === false).length}
+          activeLabel='Usuários Ativos'
+          inactiveLabel='Usuários Inativos'
+        />
 
         <DataTable
           columns={columns}
