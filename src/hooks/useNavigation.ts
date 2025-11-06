@@ -5,7 +5,7 @@ export function useNavigation() {
   const { perfil } = useDashboardCompleto()
 
   // Cada usuário tem apenas 1 role - simples assim
-  const userRole = perfil?.roles?.[0]
+  const userRole = perfil?.role
   const isAluno = userRole === 'FUNCIONARIO'
   const isInstrutor = userRole === 'INSTRUTOR'
   const isAdmin = userRole === 'ADMIN'

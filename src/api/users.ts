@@ -198,7 +198,7 @@ export interface DashboardResponse {
     cargo?: string
     nivel: string
     xp_total: number
-    roles: string[]
+    role: string
   }
   notificacoes_nao_lidas: number
   notificacoes: any[]

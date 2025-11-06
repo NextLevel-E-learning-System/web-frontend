@@ -10,13 +10,11 @@ import {
   Typography,
   Alert,
 } from '@mui/material'
-import Visibility from '@mui/icons-material/Visibility'
-import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
-import SendIcon from '@mui/icons-material/Send'
+import { Send, Visibility, VisibilityOff } from '@mui/icons-material'
 import { useLogin } from '@/hooks/auth'
 
 export default function Login() {
@@ -115,7 +113,7 @@ export default function Login() {
           variant='contained'
           size='large'
           sx={{ mt: 2, borderRadius: 8 }}
-          endIcon={<SendIcon />}
+          endIcon={<Send />}
           disabled={login.isPending}
         >
           {login.isPending ? 'Entrando...' : 'Entrar'}
