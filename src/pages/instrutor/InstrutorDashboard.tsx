@@ -101,7 +101,7 @@ export default function InstrutorDashboard() {
             <MetricCard
               icon={<People color='info' />}
               value={metricas.total_alunos?.toString() || '0'}
-              label='Total de Alunos'
+              label='Total de Funcionários'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>

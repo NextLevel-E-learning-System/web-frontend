@@ -91,8 +91,8 @@ export default function AdminDashboard() {
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
                   )?.alunos_ativos?.toString() || '0'
                 }
-                label='Total de Alunos'
-                trendLabel='Alunos ativos'
+                label='Total de Funcionários'
+                trendLabel='Funcionários ativos'
                 trendDirection='up'
                 iconColor='#0288d1'
               />
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  Alunos Ativos por Departamento
+                  Funcionários Ativos por Departamento
                 </Typography>
                 <DepartmentBarChart
                   data={
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
                       <TableRow>
                         <TableCell>Departamento</TableCell>
                         <TableCell align='right'>Total Funcionários</TableCell>
-                        <TableCell align='right'>Alunos Ativos</TableCell>
+                        <TableCell align='right'>Funcionários Ativos</TableCell>
                         <TableCell align='right'>XP Médio</TableCell>
                       </TableRow>
                     </TableHead>

@@ -44,7 +44,7 @@ interface TabDefinition {
 
 const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
-const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Alunos' }
+const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Funcionários' }
 const REVIEWS_TAB: TabDefinition = { id: 'reviews', label: 'Correções' }
 
 interface LocationState {
@@ -584,7 +584,7 @@ export default function CourseEditorPage() {
         >
           <Tab label='Visão Geral' value={INFO_TAB.id} />
           {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
-          {isEdit && <Tab label='Alunos' value={STUDENTS_TAB.id} />}
+          {isEdit && <Tab label='Funcionários' value={STUDENTS_TAB.id} />}
           {isEdit && <Tab label='Correções' value={REVIEWS_TAB.id} />}
         </Tabs>
         <Divider />

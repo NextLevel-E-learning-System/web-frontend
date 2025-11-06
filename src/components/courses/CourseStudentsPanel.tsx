@@ -137,12 +137,12 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
           </Stack>
         </Stack>
 
-        {/* Tabela de Alunos */}
+        {/* Tabela de Funcionários */}
         <TableContainer component={Paper} variant='outlined'>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Aluno</TableCell>
+                <TableCell>Funcionário</TableCell>
                 <TableCell align='center'>Status</TableCell>
                 <TableCell align='center'>Progresso</TableCell>
                 <TableCell align='center'>Módulos</TableCell>

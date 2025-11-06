@@ -50,7 +50,6 @@ interface UserForm {
   cargo_nome: string
   role: UserRole
   ativo: boolean
-  biografia: string
 }
 
 export default function AdminUsers() {
@@ -90,9 +89,8 @@ export default function AdminUsers() {
     email: '',
     departamento_id: '',
     cargo_nome: '',
-    role: 'ALUNO',
+    role: 'FUNCIONARIO',
     ativo: true,
-    biografia: '',
   })
 
   // Funções auxiliares para as colunas
@@ -125,13 +123,12 @@ export default function AdminUsers() {
       ).find(c => c.nome === user.cargo_nome)
       setForm({
         nome: user.nome,
-        cpf: '', // CPF não é retornado na listagem por segurança
+        cpf: user.cpf,
         email: user.email,
         departamento_id: user.departamento_id || '',
         cargo_nome: cargoEncontrado?.codigo || user.cargo_nome || '',
-        role: user.role || 'ALUNO',
+        role: user.role || 'FUNCIONARIO',
         ativo: user.ativo,
-        biografia: '',
       })
     },
     [cargos]
@@ -288,9 +285,8 @@ export default function AdminUsers() {
       email: '',
       departamento_id: '',
       cargo_nome: '',
-      role: 'ALUNO',
+      role: 'FUNCIONARIO',
       ativo: true,
-      biografia: '',
     })
   }
 
@@ -545,7 +541,7 @@ export default function AdminUsers() {
                     }
                     label='Tipo de Usuário'
                   >
-                    <MenuItem value='ALUNO'>Aluno</MenuItem>
+                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
                     <MenuItem value='GERENTE'>Gerente</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
@@ -567,22 +563,6 @@ export default function AdminUsers() {
                   </Select>
                 </FormControl>
               </Grid>
-              {form.role === 'INSTRUTOR' && (
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    label='Biografia (Instrutor)'
-                    value={form.biografia}
-                    onChange={e =>
-                      setForm({ ...form, biografia: e.target.value })
-                    }
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    maxRows={5}
-                    placeholder='Descreva a experiência e qualificações do instrutor...'
-                  />
-                </Grid>
-              )}
             </Grid>
           </DialogContent>
           <DialogActions sx={{ p: 3 }}>
@@ -691,7 +671,7 @@ export default function AdminUsers() {
                     }
                     label='Tipo de Usuário'
                   >
-                    <MenuItem value='ALUNO'>Aluno</MenuItem>
+                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
                     <MenuItem value='GERENTE'>Gerente</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
@@ -713,22 +693,6 @@ export default function AdminUsers() {
                   </Select>
                 </FormControl>
               </Grid>
-              {form.role === 'INSTRUTOR' && (
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    label='Biografia (Instrutor)'
-                    value={form.biografia}
-                    onChange={e =>
-                      setForm({ ...form, biografia: e.target.value })
-                    }
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    maxRows={5}
-                    placeholder='Descreva a experiência e qualificações do instrutor...'
-                  />
-                </Grid>
-              )}
             </Grid>
           </DialogContent>
           <DialogActions sx={{ p: 3 }}>

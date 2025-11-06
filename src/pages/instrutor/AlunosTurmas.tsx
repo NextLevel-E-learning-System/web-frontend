@@ -136,7 +136,7 @@ export default function AlunosTurmas() {
     () => [
       {
         id: 'funcionario_nome',
-        label: 'Aluno',
+        label: 'Funcionário',
         minWidth: 250,
         render: (value: string, row: (typeof enrollments)[0]) => (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -276,7 +276,7 @@ export default function AlunosTurmas() {
           {!cursoSelecionado ? (
             <Alert severity='info' icon={<PersonIcon />}>
               <Typography variant='body2'>
-                Selecione um curso para visualizar os alunos inscritos e seus
+                Selecione um curso para visualizar os funcionários inscritos e seus
                 progressos
               </Typography>
             </Alert>
@@ -303,7 +303,7 @@ export default function AlunosTurmas() {
                   >
                     <Box sx={{ flex: 1 }}>
                       <Typography variant='caption' color='text.secondary'>
-                        Total de Alunos
+                        Total de Funcionários
                       </Typography>
                       <Typography variant='h4' fontWeight={700} color='primary'>
                         {turmasStats.total}
@@ -395,7 +395,7 @@ export default function AlunosTurmas() {
                 </Stack>
               </Box>
 
-              {/* Tabela de Alunos da Turma */}
+              {/* Tabela de Funcionários da Turma */}
               <DataTable
                 columns={turmasColumns}
                 data={filteredEnrollments}

@@ -62,7 +62,7 @@ export function useLogin() {
         // Tratar tanto string quanto array para roles
         const userRole = Array.isArray(tokenPayload.roles)
           ? tokenPayload.roles[0]
-          : tokenPayload.roles || 'ALUNO'
+          : tokenPayload.roles || 'FUNCIONARIO'
 
         console.log('[useLogin] User role from token:', userRole)
 
@@ -77,7 +77,7 @@ export function useLogin() {
             console.log('[useLogin] Redirecting to /dashboard/instrutor')
             navigate('/dashboard/instrutor')
             break
-          default: // ALUNO ou qualquer outra
+          default: // FUNCIONARIO ou qualquer outra
             console.log('[useLogin] Redirecting to /dashboard/funcionario')
             navigate('/dashboard/funcionario')
             break

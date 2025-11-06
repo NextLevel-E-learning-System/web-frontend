@@ -44,7 +44,7 @@ export const App = () => (
             <Route
               path='/dashboard/funcionario'
               element={
-                <ProtectedRoute allowedRoles={['ALUNO']}>
+                <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
                   <EmployeeDashboard />
                 </ProtectedRoute>
               }
@@ -148,7 +148,7 @@ export const App = () => (
             <Route
               path='/cursos/:codigo'
               element={
-                <ProtectedRoute allowedRoles={['ALUNO']}>
+                <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
                   <CourseContent />
                 </ProtectedRoute>
               }
@@ -156,7 +156,7 @@ export const App = () => (
             <Route
               path='/meu-progresso'
               element={
-                <ProtectedRoute allowedRoles={['ALUNO']}>
+                <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
                   <ProgressPage />
                 </ProtectedRoute>
               }

@@ -6,17 +6,17 @@ export function useNavigation() {
 
   // Cada usuário tem apenas 1 role - simples assim
   const userRole = perfil?.roles?.[0]
-  const isAluno = userRole === 'ALUNO'
+  const isAluno = userRole === 'FUNCIONARIO'
   const isInstrutor = userRole === 'INSTRUTOR'
   const isAdmin = userRole === 'ADMIN'
   const isGerente = userRole === 'GERENTE'
   const getNavigationItems = (): NavItem[] => {
-    // ALUNO - Acesso básico aos cursos e gamificação
+    // FUNCIONARIO - Acesso básico aos cursos e gamificação
     if (isAluno) {
       return [
         {
           label: 'Dashboard',
-          href: '/dashboard/funcionario', // Rota correta para ALUNO
+          href: '/dashboard/funcionario', // Rota correta para FUNCIONARIO
         },
         {
           label: 'Cursos',

@@ -363,7 +363,7 @@ export function useReviewAttempt(attemptId: string) {
   })
 }
 
-// ===== NOVOS HOOKS PARA FLUXO DO ALUNO =====
+// ===== NOVOS HOOKS PARA FLUXO DO FUNCIONARIO =====
 
 // Buscar avaliação de um módulo para o aluno
 export interface AssessmentForStudent {

@@ -50,7 +50,7 @@ export default function RankingTable({ rows }: Props) {
         <TableHead>
           <TableRow>
             <TableCell align='center'>Posição</TableCell>
-            <TableCell>Aluno</TableCell>
+            <TableCell>Funcionário</TableCell>
             <TableCell align='center'>XP</TableCell>
             <TableCell align='center'>Variação de Posição</TableCell>
           </TableRow>

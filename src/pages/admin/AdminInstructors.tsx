@@ -189,12 +189,12 @@ export default function AdminInstructors() {
     async (funcionario_id: string, nome: string) => {
       if (
         confirm(
-          `Tem certeza que deseja remover "${nome}" como instrutor?\nA role será alterada para ALUNO.`
+          `Tem certeza que deseja remover "${nome}" como instrutor?\nA role será alterada para FUNCIONARIO.`
         )
       ) {
         try {
           await deleteMutation.mutateAsync(funcionario_id)
-          toast.success('Instrutor removido e role alterada para ALUNO!')
+          toast.success('Instrutor removido e role alterada para FUNCIONARIO!')
         } catch (error: any) {
           const errorMsg =
             error?.response?.data?.mensagem || 'Erro ao remover instrutor'

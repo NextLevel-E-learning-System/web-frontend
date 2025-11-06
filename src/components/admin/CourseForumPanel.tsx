@@ -21,7 +21,7 @@ export default function CourseForumPanel({
         <Alert severity='info' sx={{ mt: 2 }}>
           Funcionalidade de fórum em desenvolvimento. Em breve você poderá:
           <ul>
-            <li>Visualizar perguntas dos alunos</li>
+            <li>Visualizar perguntas dos funcionários</li>
             <li>Responder dúvidas</li>
             <li>Criar discussões</li>
             <li>Marcar tópicos como resolvidos</li>

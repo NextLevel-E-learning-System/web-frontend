@@ -9,7 +9,7 @@ import { getAccessToken, clearAccessToken } from '@/api/http'
 import { jwtDecode } from 'jwt-decode'
 
 // Types
-export type UserRole = 'ALUNO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE'
+export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE'
 
 export interface User {
   id: string

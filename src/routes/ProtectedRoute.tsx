@@ -62,7 +62,7 @@ export function ProtectedRoute({
 
     // Redirecionar para dashboard apropriado baseado na role do usuário
     switch (userRole) {
-      case 'ALUNO':
+      case 'FUNCIONARIO':
         return <Navigate to='/dashboard/funcionario' replace />
       case 'INSTRUTOR':
         return <Navigate to='/dashboard/instrutor' replace />
