@@ -542,8 +542,6 @@ export default function AdminUsers() {
                     label='Tipo de Usuário'
                   >
                     <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
-                    <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                    <MenuItem value='GERENTE'>Gerente</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
                   </Select>
                 </FormControl>
@@ -673,7 +671,6 @@ export default function AdminUsers() {
                   >
                     <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                    <MenuItem value='GERENTE'>Gerente</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
                   </Select>
                 </FormControl>
