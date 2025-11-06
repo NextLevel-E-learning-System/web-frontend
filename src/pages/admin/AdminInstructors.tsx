@@ -28,43 +28,195 @@ import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import { useNavigation } from '@/hooks/useNavigation'
 import DataTable from '@/components/common/DataTable'
 import {
-  useListarDepartamentosAdmin,
-  useListarCargos,
   useInstrutores,
   useToggleInstructorStatus,
+  useFuncionarios,
+  useCreateInstrutor,
+  useUpdateInstrutor,
+  useDeleteInstrutor,
   type Instructor,
+  type InstructorCreate,
+  type InstructorUpdate,
+  type Funcionario,
+  useListarDepartamentosAdmin,
 } from '@/api/users'
+
+interface InstructorForm {
+  funcionario_id: string
+  biografia: string
+  especialidades: string[]
+  departamento_id?: string
+}
 
 export default function AdminInstructors() {
   const { navigationItems } = useNavigation()
 
   const { data: instrutoresResponse, isLoading: loadingInstrutores } =
     useInstrutores()
-  const { data: departamentosResponse, isLoading: loadingDepartments } =
-    useListarDepartamentosAdmin()
-  const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
+  const { data: funcionariosResponse, isLoading: loadingFuncionarios } =
+    useFuncionarios()
 
   const instrutores = useMemo(
     () => instrutoresResponse || [],
     [instrutoresResponse]
   )
-  const departamentos = useMemo(
-    () => (departamentosResponse as any)?.items || departamentosResponse || [],
-    [departamentosResponse]
+  const funcionarios = useMemo(
+    () => funcionariosResponse?.items || [],
+    [funcionariosResponse]
   )
-  const cargos = useMemo(
-    () => (cargosResponse as any)?.items || cargosResponse || [],
-    [cargosResponse]
-  )
+  const { data: departamentosResponse, isLoading: loadingDepartamentos } =
+    useListarDepartamentosAdmin()
+  const departamentos =
+    (departamentosResponse as any)?.items || departamentosResponse || []
 
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(
     null
   )
-
-  const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
+  const [selectedDept, setSelectedDept] = useState<string>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [form, setForm] = useState<InstructorForm>({
+    funcionario_id: '',
+    departamento_id: '',
+    biografia: '',
+    especialidades: [],
+  })
 
   const toggleStatusMutation = useToggleInstructorStatus()
+  const createMutation = useCreateInstrutor()
+  const updateMutation = useUpdateInstrutor()
+  const deleteMutation = useDeleteInstrutor()
+
+  // Filtrar apenas funcionários com role INSTRUTOR que ainda não são instrutores
+  const funcionariosDisponiveis = useMemo(() => {
+    const instrutoresIds = new Set(
+      instrutores.map((i: Instructor) => i.funcionario_id)
+    )
+    return funcionarios.filter(
+      (f: Funcionario) => f.role === 'INSTRUTOR' && !instrutoresIds.has(f.id)
+    )
+  }, [funcionarios, instrutores])
+
+  const resetForm = () => {
+    setForm({
+      funcionario_id: '',
+      biografia: '',
+      especialidades: [],
+    })
+  }
+
+  const openAdd = () => {
+    resetForm()
+    setEditingInstructor(null)
+    setIsAddOpen(true)
+  }
+
+  const handleAdd = async () => {
+    if (!form.funcionario_id) {
+      toast.error('Selecione um funcionário')
+      return
+    }
+
+    try {
+      const input: InstructorCreate = {
+        funcionario_id: form.funcionario_id,
+        biografia: form.biografia.trim() || undefined,
+        especialidades:
+          form.especialidades.length > 0 ? form.especialidades : undefined,
+      }
+
+      await createMutation.mutateAsync(input)
+      toast.success('Instrutor criado com sucesso!')
+      setIsAddOpen(false)
+      resetForm()
+    } catch (error: any) {
+      const errorMsg =
+        error?.response?.data?.mensagem || 'Erro ao criar instrutor'
+      toast.error(errorMsg)
+      console.error(error)
+    }
+  }
+
+  const handleEdit = useCallback((instructor: Instructor) => {
+    setEditingInstructor(instructor)
+    setForm({
+      funcionario_id: instructor.funcionario_id,
+      biografia: instructor.biografia || '',
+      especialidades: instructor.especialidades || [],
+    })
+  }, [])
+
+  const handleUpdate = async () => {
+    if (!editingInstructor) return
+
+    try {
+      const input: InstructorUpdate = {
+        biografia: form.biografia.trim() || undefined,
+        especialidades:
+          form.especialidades.length > 0 ? form.especialidades : undefined,
+      }
+
+      await updateMutation.mutateAsync({
+        id: editingInstructor.funcionario_id,
+        data: input,
+      })
+
+      toast.success('Instrutor atualizado com sucesso!')
+      setEditingInstructor(null)
+      resetForm()
+    } catch (error: any) {
+      const errorMsg =
+        error?.response?.data?.mensagem || 'Erro ao atualizar instrutor'
+      toast.error(errorMsg)
+      console.error(error)
+    }
+  }
+
+  const handleDelete = useCallback(
+    async (funcionario_id: string, nome: string) => {
+      if (
+        confirm(
+          `Tem certeza que deseja remover "${nome}" como instrutor?\nA role será alterada para ALUNO.`
+        )
+      ) {
+        try {
+          await deleteMutation.mutateAsync(funcionario_id)
+          toast.success('Instrutor removido e role alterada para ALUNO!')
+        } catch (error: any) {
+          const errorMsg =
+            error?.response?.data?.mensagem || 'Erro ao remover instrutor'
+          toast.error(errorMsg)
+          console.error(error)
+        }
+      }
+    },
+    [deleteMutation]
+  )
+
+  const handleToggleAtivo = useCallback(
+    async (funcionario_id: string, nome: string, ativo: boolean) => {
+      const acao = ativo ? 'desativar' : 'ativar'
+      if (confirm(`Tem certeza que deseja ${acao} o instrutor "${nome}"?`)) {
+        try {
+          await toggleStatusMutation.mutateAsync(funcionario_id)
+          toast.success(
+            `Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
+          )
+        } catch (error) {
+          toast.error(`Erro ao ${acao} instrutor`)
+          console.error(error)
+        }
+      }
+    },
+    [toggleStatusMutation]
+  )
+
+  const getRowId = useCallback((row: Instructor) => row.funcionario_id, [])
+
+  const filtered = useMemo(() => {
+    return instrutores.filter((i: Instructor) => {
+      return true // 'all'
+    })
+  }, [instrutores, selectedDept])
 
   // Definir colunas da tabela
   const instructorColumns = useMemo(
@@ -117,7 +269,7 @@ export default function AdminInstructors() {
       {
         id: 'status',
         label: 'Status',
-        align: 'center',
+        align: 'center' as const,
         render: (_value: any, row: Instructor) => (
           <Box
             sx={{
@@ -151,54 +303,29 @@ export default function AdminInstructors() {
           <Box display='flex' gap={1} justifyContent='flex-end'>
             <IconButton
               size='small'
-              onClick={() => setEditingInstructor(row)}
+              onClick={() => handleEdit(row)}
               aria-label='editar'
               disabled={!row}
             >
               <EditIcon />
             </IconButton>
+            <IconButton
+              size='small'
+              onClick={() => handleDelete(row.funcionario_id, row.nome)}
+              aria-label='remover'
+              color='error'
+              disabled={!row}
+            >
+              <DeleteIcon />
+            </IconButton>
           </Box>
         ),
       },
     ],
-    [departamentos, cargos]
+    [handleToggleAtivo, handleEdit, handleDelete]
   )
 
-  const getRowId = useCallback((row: Instructor) => row.funcionario_id, [])
-
-  // Filtrar dados baseado no tab selecionado
-  const filtered = useMemo(() => {
-    return instrutores.filter((i: Instructor) => {
-      if (tab === 'active') return i.ativo === true
-      if (tab === 'disabled') return i.ativo === false
-      return true // 'all'
-    })
-  }, [instrutores, tab])
-
-  const openAdd = () => {
-    setIsAddOpen(true)
-  }
-
-  const handleToggleAtivo = async (
-    funcionario_id: string,
-    nome: string,
-    ativo: boolean
-  ) => {
-    const acao = ativo ? 'desativar' : 'ativar'
-    if (confirm(`Tem certeza que deseja ${acao} o instrutor "${nome}"?`)) {
-      try {
-        await toggleStatusMutation.mutateAsync(funcionario_id)
-        toast.success(
-          `Instrutor ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
-        )
-      } catch (error) {
-        toast.error(`Erro ao ${acao} instrutor`)
-        console.error(error)
-      }
-    }
-  }
-
-  if (loadingDepartments || loadingCargos || loadingInstrutores) {
+  if (loadingInstrutores || loadingFuncionarios) {
     return (
       <DashboardLayout items={navigationItems}>
         <Box>
@@ -216,47 +343,43 @@ export default function AdminInstructors() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            mb: 3,
           }}
         >
-          <StatusFilterTabs
-            value={tab}
-            onChange={setTab}
-            activeLabel='Instrutores Ativos'
-            inactiveLabel='Instrutores Inativos'
-            activeCount={
-              instrutores.filter((i: Instructor) => i.ativo === true).length
-            }
-            inactiveCount={
-              instrutores.filter((i: Instructor) => i.ativo === false).length
-            }
-          />
+          <FormControl>
+            <InputLabel>Departamento</InputLabel>
+            <Select
+              value={selectedDept}
+              onChange={e => setSelectedDept(e.target.value)}
+              label='Departamento'
+            >
+              <MenuItem key='all' value='all'>
+                <em>Todos os Departamentos</em>
+              </MenuItem>
+              {departamentos.map((dept: { codigo: string; nome: string }) => (
+                <MenuItem key={dept.codigo} value={dept.codigo}>
+                  {dept.codigo} - {dept.nome}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Button onClick={openAdd} startIcon={<AddIcon />} variant='contained'>
             Adicionar Instrutor
           </Button>
         </Box>
 
-        {filtered.length === 0 ? (
-          <Box p={3} textAlign='center'>
-            <Typography color='text.secondary'>
-              {tab === 'all'
-                ? 'Nenhum instrutor cadastrado. Clique em "Adicionar Instrutor" para começar.'
-                : `Nenhum instrutor ${tab === 'active' ? 'ativo' : 'desabilitado'} encontrado.`}
-            </Typography>
-          </Box>
-        ) : (
-          <DataTable
-            data={filtered}
-            columns={instructorColumns}
-            loading={loadingInstrutores}
-            getRowId={getRowId}
-          />
-        )}
+        <DataTable
+          data={filtered}
+          columns={instructorColumns}
+          loading={loadingInstrutores}
+          getRowId={getRowId}
+        />
 
         {/* Dialog Adicionar Instrutor */}
         <Dialog
           open={isAddOpen}
           onClose={() => setIsAddOpen(false)}
-          maxWidth='md'
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>
@@ -265,37 +388,42 @@ export default function AdminInstructors() {
               Novo Instrutor
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label='Nome completo' fullWidth required />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label='Email' type='email' fullWidth required />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  label='CPF'
-                  placeholder='000.000.000-00'
-                  fullWidth
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select label='Status'>
-                    <MenuItem value='ATIVO'>Ativo</MenuItem>
-                    <MenuItem value='INATIVO'>Inativo</MenuItem>
+                <FormControl fullWidth required>
+                  <InputLabel>Funcionário</InputLabel>
+                  <Select
+                    value={form.funcionario_id}
+                    onChange={e =>
+                      setForm({ ...form, funcionario_id: e.target.value })
+                    }
+                    label='Funcionário'
+                  >
+                    <MenuItem value=''>
+                      <em>— Selecione um funcionário —</em>
+                    </MenuItem>
+                    {funcionariosDisponiveis.map((func: Funcionario) => (
+                      <MenuItem key={func.id} value={func.id}>
+                        {func.nome}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth>
                   <InputLabel>Departamento</InputLabel>
-                  <Select label='Departamento'>
+                  <Select
+                    value={form.departamento_id}
+                    onChange={e =>
+                      setForm({ ...form, departamento_id: e.target.value })
+                    }
+                    label='Departamento'
+                    disabled
+                  >
                     <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
+                      <em>— Departamento —</em>
                     </MenuItem>
                     {departamentos.map(
                       (dept: { codigo: string; nome: string }) => (
@@ -307,33 +435,54 @@ export default function AdminInstructors() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select label='Cargo'>
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label='Biografia do Instrutor'
+                  label='Biografia'
+                  value={form.biografia}
+                  onChange={e =>
+                    setForm({ ...form, biografia: e.target.value })
+                  }
                   fullWidth
                   multiline
                   minRows={3}
                   maxRows={5}
-                  placeholder='Descreva a experiência, qualificações e especialidades do instrutor...'
+                  placeholder='Descreva a experiência, qualificações e certificações...'
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  label='Especialidades (separadas por vírgula)'
+                  value={form.especialidades.join(', ')}
+                  onChange={e =>
+                    setForm({
+                      ...form,
+                      especialidades: e.target.value
+                        .split(',')
+                        .map(s => s.trim())
+                        .filter(s => s),
+                    })
+                  }
+                  fullWidth
+                  placeholder='Ex: JavaScript, React, Node.js'
                 />
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions>
-            <Button variant='outlined' onClick={() => setIsAddOpen(false)}>
+          <DialogActions sx={{ p: 3 }}>
+            <Button
+              variant='outlined'
+              onClick={() => setIsAddOpen(false)}
+              disabled={createMutation.isPending}
+            >
               Cancelar
             </Button>
-            <Button variant='contained'>'Adicionar'</Button>
+            <Button
+              variant='contained'
+              onClick={handleAdd}
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? 'Adicionando...' : 'Adicionar'}
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -341,7 +490,7 @@ export default function AdminInstructors() {
         <Dialog
           open={!!editingInstructor}
           onClose={() => setEditingInstructor(null)}
-          maxWidth='md'
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>
@@ -350,20 +499,29 @@ export default function AdminInstructors() {
               Editar Instrutor
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label='Nome completo' fullWidth required />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <TextField label='Email' type='email' fullWidth required />
+                <TextField
+                  label='Funcionário'
+                  value={editingInstructor?.nome || ''}
+                  fullWidth
+                  disabled
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth>
                   <InputLabel>Departamento</InputLabel>
-                  <Select label='Departamento'>
+                  <Select
+                    value={form.departamento_id}
+                    onChange={e =>
+                      setForm({ ...form, departamento_id: e.target.value })
+                    }
+                    label='Departamento'
+                    disabled
+                  >
                     <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
+                      <em>— Departamento —</em>
                     </MenuItem>
                     {departamentos.map(
                       (dept: { codigo: string; nome: string }) => (
@@ -375,45 +533,54 @@ export default function AdminInstructors() {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select label='Cargo'>
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select label='Status'>
-                    <MenuItem value='ATIVO'>Ativo</MenuItem>
-                    <MenuItem value='INATIVO'>Inativo</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label='Biografia do Instrutor'
+                  label='Biografia'
+                  value={form.biografia}
+                  onChange={e =>
+                    setForm({ ...form, biografia: e.target.value })
+                  }
                   fullWidth
                   multiline
                   minRows={3}
                   maxRows={5}
-                  placeholder='Descreva a experiência, qualificações e especialidades do instrutor...'
+                  placeholder='Descreva a experiência, qualificações e certificações ...'
+                />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <TextField
+                  label='Especialidades (separadas por vírgula)'
+                  value={form.especialidades.join(', ')}
+                  onChange={e =>
+                    setForm({
+                      ...form,
+                      especialidades: e.target.value
+                        .split(',')
+                        .map(s => s.trim())
+                        .filter(s => s),
+                    })
+                  }
+                  fullWidth
+                  placeholder='Ex: JavaScript, React, Node.js'
                 />
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
               onClick={() => setEditingInstructor(null)}
+              disabled={updateMutation.isPending}
             >
               Cancelar
             </Button>
-            <Button variant='contained'>'Atualizar'</Button>
+            <Button
+              variant='contained'
+              onClick={handleUpdate}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? 'Atualizando...' : 'Atualizar'}
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>

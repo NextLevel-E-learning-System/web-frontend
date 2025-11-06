@@ -426,9 +426,9 @@ export default function AdminUsers() {
               Novo Usuário
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
-              <Grid size={{ xs: 12 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Nome completo'
                   value={form.nome}
@@ -551,7 +551,7 @@ export default function AdminUsers() {
               )}
             </Grid>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
               onClick={() => setIsAddOpen(false)}
@@ -582,9 +582,9 @@ export default function AdminUsers() {
               Editar Usuário
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
-              <Grid size={{ xs: 12 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Nome completo'
                   value={form.nome}
@@ -697,7 +697,7 @@ export default function AdminUsers() {
               )}
             </Grid>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
               onClick={() => setEditingUser(null)}

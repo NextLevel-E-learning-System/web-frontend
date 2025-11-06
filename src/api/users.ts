@@ -461,12 +461,13 @@ export function useCreateInstrutor() {
   return useMutation({
     mutationKey: ['users', 'instrutores', 'create'],
     mutationFn: (data: InstructorCreate) =>
-      authPost<{ instrutor: Instructor }>(
+      authPost<{ instrutor: Instructor; mensagem: string }>(
         `${API_ENDPOINTS.USERS}/instrutores`,
         data
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
+      queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
     },
   })
 }
@@ -477,7 +478,7 @@ export function useUpdateInstrutor() {
   return useMutation({
     mutationKey: ['users', 'instrutores', 'update'],
     mutationFn: ({ id, data }: { id: string; data: InstructorUpdate }) =>
-      authPut<{ instrutor: Instructor }>(
+      authPut<{ instrutor: Instructor; mensagem: string }>(
         `${API_ENDPOINTS.USERS}/instrutores/${id}`,
         data
       ),
@@ -496,9 +497,12 @@ export function useDeleteInstrutor() {
   return useMutation({
     mutationKey: ['users', 'instrutores', 'delete'],
     mutationFn: (id: string) =>
-      authDelete(`${API_ENDPOINTS.USERS}/instrutores/${id}`),
+      authDelete<{ mensagem: string }>(
+        `${API_ENDPOINTS.USERS}/instrutores/${id}`
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
+      queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
     },
   })
 }
