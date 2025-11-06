@@ -262,12 +262,24 @@ export default function AdminUsers() {
     return usuarios
   }, [usuarios, isGerente, perfil?.departamento])
 
-  // Filtrar usuários por status
-  const filtered = allUsers.filter(user => {
-    if (tab === 'all') return true
-    if (tab === 'active') return user.ativo === true
-    return user.ativo === false
-  })
+  // Filtrar usuários por departamento e status
+  const filtered = useMemo(() => {
+    let result = allUsers
+
+    // Filtrar por departamento
+    if (selectedDept !== 'all') {
+      result = result.filter(user => user.departamento_id === selectedDept)
+    }
+
+    // Filtrar por status
+    if (tab === 'active') {
+      result = result.filter(user => user.ativo === true)
+    } else if (tab === 'disabled') {
+      result = result.filter(user => user.ativo === false)
+    }
+
+    return result
+  }, [allUsers, selectedDept, tab])
 
   const resetForm = () => {
     setForm({

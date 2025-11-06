@@ -63,8 +63,7 @@ export default function AdminInstructors() {
     () => funcionariosResponse?.items || [],
     [funcionariosResponse]
   )
-  const { data: departamentosResponse, isLoading: loadingDepartamentos } =
-    useListarDepartamentosAdmin()
+  const { data: departamentosResponse } = useListarDepartamentosAdmin()
   const departamentos =
     (departamentosResponse as any)?.items || departamentosResponse || []
 
@@ -228,8 +227,10 @@ export default function AdminInstructors() {
   const getRowId = useCallback((row: Instructor) => row.funcionario_id, [])
 
   const filtered = useMemo(() => {
+    if (selectedDept === 'all') return instrutores
+
     return instrutores.filter((i: Instructor) => {
-      return true // 'all'
+      return i.departamento_id === selectedDept
     })
   }, [instrutores, selectedDept])
 
