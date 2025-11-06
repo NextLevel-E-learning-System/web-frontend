@@ -51,6 +51,13 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Validar CPF
+    const cpfLimpo = formData.cpf.replace(/\D/g, '')
+    if (cpfLimpo.length !== 11) {
+      showToast.error('CPF deve conter exatamente 11 dígitos')
+      return
+    }
+
     // Validar se departamento e cargo foram selecionados
     if (!selectedDepartamento || !selectedCargo) {
       showToast.error('Selecione um departamento e cargo válidos.')
@@ -59,6 +66,7 @@ const Register = () => {
 
     const submitData = {
       ...formData,
+      cpf: cpfLimpo, // Enviar apenas números
       departamento_id: selectedDepartamento.codigo,
       cargo_nome: selectedCargo.nome,
     }
@@ -69,9 +77,16 @@ const Register = () => {
 
   const handleChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement> | any) => {
+      let value = e.target.value as string
+
+      // Se for CPF, aceitar apenas números
+      if (field === 'cpf') {
+        value = value.replace(/\D/g, '').slice(0, 11) // Remove não-números e limita a 11
+      }
+
       setFormData(prev => ({
         ...prev,
-        [field]: e.target.value as string,
+        [field]: value,
       }))
     }
   return (
@@ -86,6 +101,8 @@ const Register = () => {
           onChange={handleChange('cpf')}
           required
           inputMode='numeric'
+          placeholder='00000000000'
+          helperText='Digite apenas os 11 dígitos do CPF (sem pontos ou traços)'
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
