@@ -332,10 +332,17 @@ export default function AdminUsers() {
       return
     }
 
+    // Validar CPF
+    const cpfLimpo = form.cpf.replace(/\D/g, '')
+    if (cpfLimpo.length !== 11) {
+      toast.error('CPF deve conter exatamente 11 dígitos')
+      return
+    }
+
     try {
       const input: FuncionarioRegister = {
         nome: form.nome.trim(),
-        cpf: form.cpf.trim(),
+        cpf: cpfLimpo,
         email: form.email.trim(),
         departamento_id: form.departamento_id.trim(),
         cargo_nome: form.cargo_nome.trim() || undefined,
@@ -496,8 +503,12 @@ export default function AdminUsers() {
                 <TextField
                   label='CPF'
                   value={form.cpf}
-                  onChange={e => setForm({ ...form, cpf: e.target.value })}
-                  placeholder='000.000.000-00'
+                  onChange={e => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 11)
+                    setForm({ ...form, cpf: value })
+                  }}
+                  placeholder='00000000000'
+                  inputMode='numeric'
                   fullWidth
                   required
                 />

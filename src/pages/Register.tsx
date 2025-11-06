@@ -102,7 +102,6 @@ const Register = () => {
           required
           inputMode='numeric'
           placeholder='00000000000'
-          helperText='Digite apenas os 11 dígitos do CPF (sem pontos ou traços)'
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
