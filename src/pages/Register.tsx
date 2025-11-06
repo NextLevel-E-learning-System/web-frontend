@@ -10,14 +10,15 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
+import { PersonOutlineOutlined } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useRegister } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
 import { useListarDepartamentos, useListarCargos } from '@/api/users'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { showToast } from '@/utils/toast'
+import { de } from 'date-fns/locale'
 
 const Register = () => {
   const navigate = useNavigate()
@@ -26,8 +27,15 @@ const Register = () => {
     useListarDepartamentos()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
 
-  const departamentosArray = Array.isArray(departamentos) ? departamentos : []
-  const cargosArray = Array.isArray(cargos) ? cargos : []
+  const departamentosArray = useMemo(() => {
+    const items = (departamentos as any)?.items || departamentos || []
+    return items
+  }, [departamentos])
+
+  const cargosArray = useMemo(() => {
+    const items = (cargos as any)?.items || cargos || []
+    return items
+  }, [cargos])
 
   const [formData, setFormData] = useState({
     cpf: '',
@@ -98,7 +106,7 @@ const Register = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <PersonOutlineOutlinedIcon color='disabled' />
+                <PersonOutlineOutlined color='disabled' />
               </InputAdornment>
             ),
           }}

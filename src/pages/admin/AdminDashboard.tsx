@@ -72,15 +72,12 @@ export default function AdminDashboard() {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 label='Total de Funcionários'
-                trendLabel='Funcionários ativos'
                 value={
                   (
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
                   )?.funcionarios_ativos?.toString() || '0'
                 }
                 icon={<People />}
-                trendDirection='neutral'
-                iconColor='#1976d2'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -92,9 +89,6 @@ export default function AdminDashboard() {
                   )?.alunos_ativos?.toString() || '0'
                 }
                 label='Total de Funcionários'
-                trendLabel='Funcionários ativos'
-                trendDirection='up'
-                iconColor='#0288d1'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -106,29 +100,13 @@ export default function AdminDashboard() {
                 }
                 icon={<School />}
                 label='Total de Cursos'
-                trendLabel='Cursos criados'
-                trendDirection='up'
-                iconColor='#1976d2'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 label='Taxa de Conclusão'
-                trendLabel='Performance geral'
                 value={`${((adminData?.metricas_gerais || gerenteData?.metricas_gerais)?.taxa_conclusao_media || 0).toFixed(1)}%`}
-                trendDirection={
-                  ((adminData?.metricas_gerais || gerenteData?.metricas_gerais)
-                    ?.taxa_conclusao_media || 0) >= 75
-                    ? 'up'
-                    : ((
-                          adminData?.metricas_gerais ||
-                          gerenteData?.metricas_gerais
-                        )?.taxa_conclusao_media || 0) >= 50
-                      ? 'neutral'
-                      : 'down'
-                }
                 icon={<CheckCircle />}
-                iconColor='#2e7d32'
               />
             </Grid>
           </Grid>

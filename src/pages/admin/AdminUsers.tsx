@@ -29,6 +29,7 @@ import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import DataTable, { type Column } from '@/components/common/DataTable'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useListarDepartamentosAdmin,
@@ -67,22 +68,37 @@ export default function AdminUsers() {
 
   const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
-  const departamentos = useMemo(
-    () => (departamentosResponse as any)?.items || departamentosResponse || [],
-    [departamentosResponse]
-  )
+  const departamentos = useMemo(() => {
+    const items =
+      (departamentosResponse as any)?.items || departamentosResponse || []
+    console.log('Departamentos processados:', items)
+    return items
+  }, [departamentosResponse])
+
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
-  const cargos = useMemo(
-    () => (cargosResponse as any)?.items || cargosResponse || [],
-    [cargosResponse]
-  )
+  const cargos = useMemo(() => {
+    const items = (cargosResponse as any)?.items || cargosResponse || []
+    console.log('Cargos processados:', items)
+    return items
+  }, [cargosResponse])
   const criarUsuario = useRegisterFuncionario()
   const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
   const atualizarUsuario = useUpdateFuncionario(editingUser?.id || '0')
+  const [userToToggle, setUserToToggle] = useState<string>('')
+  const toggleUsuario = useUpdateFuncionario(userToToggle)
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [toggleDialog, setToggleDialog] = useState<{
+    open: boolean
+    user: Funcionario | null
+    newStatus: boolean
+  }>({
+    open: false,
+    user: null,
+    newStatus: false,
+  })
   const [form, setForm] = useState<UserForm>({
     nome: '',
     cpf: '',
@@ -145,23 +161,34 @@ export default function AdminUsers() {
     [cargos]
   )
 
-  const handleToggleAtivo = useCallback(
-    async (_id: string, nome: string, ativo: boolean) => {
-      const acao = ativo ? 'desativar' : 'ativar'
-      if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
-        try {
-          toast.success(
-            `Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
-          )
-          refetchUsers()
-        } catch (error) {
-          toast.error(`Erro ao ${acao} usuário`)
-          console.error(error)
-        }
-      }
-    },
-    [refetchUsers]
-  )
+  const handleToggleAtivo = useCallback((user: Funcionario) => {
+    setUserToToggle(user.id)
+    setToggleDialog({
+      open: true,
+      user,
+      newStatus: !user.ativo,
+    })
+  }, [])
+
+  const confirmToggleAtivo = async () => {
+    if (!toggleDialog.user) return
+
+    try {
+      await toggleUsuario.mutateAsync({
+        ativo: toggleDialog.newStatus,
+      })
+
+      const acao = toggleDialog.newStatus ? 'ativado' : 'desativado'
+      toast.success(`Usuário ${acao} com sucesso!`)
+
+      setToggleDialog({ open: false, user: null, newStatus: false })
+      refetchUsers()
+    } catch (error) {
+      const acao = toggleDialog.newStatus ? 'ativar' : 'desativar'
+      toast.error(`Erro ao ${acao} usuário`)
+      console.error(error)
+    }
+  }
 
   // Configuração das colunas da tabela
   const columns: Column[] = useMemo(
@@ -169,7 +196,6 @@ export default function AdminUsers() {
       {
         id: 'nome',
         label: 'Nome',
-        minWidth: 200,
         render: (value: string) => (
           <Typography fontWeight={500}>{value}</Typography>
         ),
@@ -177,26 +203,22 @@ export default function AdminUsers() {
       {
         id: 'email',
         label: 'Email',
-        minWidth: 200,
         render: (value: string) => <Typography>{value}</Typography>,
       },
       {
         id: 'departamento_id',
         label: 'Departamento',
-        minWidth: 150,
         render: (value: string | null) =>
           value ? getDepartmentName(value) : '—',
       },
       {
         id: 'cargo_nome',
         label: 'Cargo',
-        minWidth: 150,
         render: (value: string | null) => (value ? getCargoName(value) : '—'),
       },
       {
         id: 'role',
         label: 'Tipo',
-        minWidth: 120,
         render: (value: string) => (
           <Chip
             icon={getUserTypeIcon(value)}
@@ -224,7 +246,7 @@ export default function AdminUsers() {
               checked={value}
               onChange={e => {
                 e.stopPropagation()
-                handleToggleAtivo(row.id, row.nome, row.ativo)
+                handleToggleAtivo(row)
               }}
               size='small'
               color='primary'
@@ -325,6 +347,7 @@ export default function AdminUsers() {
         email: form.email.trim(),
         departamento_id: form.departamento_id.trim(),
         cargo_nome: form.cargo_nome.trim() || undefined,
+        role: form.role || 'FUNCIONARIO',
       }
 
       await criarUsuario.mutateAsync(input)
@@ -722,6 +745,27 @@ export default function AdminUsers() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Dialog Confirmação Toggle Status */}
+        <ConfirmationDialog
+          open={toggleDialog.open}
+          onClose={() =>
+            setToggleDialog({ open: false, user: null, newStatus: false })
+          }
+          onConfirm={confirmToggleAtivo}
+          title={
+            toggleDialog.newStatus ? 'Ativar Usuário' : 'Desativar Usuário'
+          }
+          message={
+            toggleDialog.newStatus
+              ? `Tem certeza que deseja ativar o usuário "${toggleDialog.user?.nome}"? O usuário poderá fazer login novamente.`
+              : `Tem certeza que deseja desativar o usuário "${toggleDialog.user?.nome}"? O usuário será deslogado imediatamente e não poderá mais fazer login.`
+          }
+          confirmText={toggleDialog.newStatus ? 'Ativar' : 'Desativar'}
+          cancelText='Cancelar'
+          severity={toggleDialog.newStatus ? 'info' : 'warning'}
+          isLoading={toggleUsuario.isPending}
+        />
       </Box>
     </DashboardLayout>
   )
