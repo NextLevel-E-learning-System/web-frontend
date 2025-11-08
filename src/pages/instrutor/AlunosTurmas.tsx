@@ -28,17 +28,42 @@ import DataTable, { type Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
 import { useDashboard, type DashboardInstrutor } from '@/api/users'
 import { useCourseEnrollments } from '@/api/progress'
+import { useCourseCatalog } from '@/api/courses'
 
 export default function AlunosTurmas() {
-  const { navigationItems } = useNavigation()
+  const { navigationItems, perfil } = useNavigation()
   const { data: dashboardData } = useDashboard()
+
+  // Verificar se é ADMIN ou INSTRUTOR
+  const isAdmin = perfil?.role === 'ADMIN'
+  const isInstrutor = perfil?.role === 'INSTRUTOR'
 
   const instrutorData =
     dashboardData?.dashboard?.tipo_dashboard === 'instrutor'
       ? (dashboardData.dashboard as DashboardInstrutor)
       : null
 
-  const meusCursos = instrutorData?.cursos || []
+  const { data: allCoursesData } = useCourseCatalog({ ativo: true })
+
+  const cursosDisponiveis = useMemo(() => {
+    if (isInstrutor) {
+      // INSTRUTOR vê apenas seus cursos
+      return instrutorData?.cursos || []
+    } else if (isAdmin && allCoursesData) {
+      // ADMIN vê todos os cursos
+      return allCoursesData.map(course => ({
+        codigo: course.codigo,
+        titulo: course.titulo,
+        inscritos: course.total_inscritos || 0,
+        concluidos: course.total_conclusoes || 0,
+        taxa_conclusao: course.taxa_conclusao || 0,
+        avaliacao_media: course.avaliacao_media || null,
+        status: course.ativo,
+        pendentes_correcao: 0,
+      }))
+    }
+    return []
+  }, [isInstrutor, isAdmin, instrutorData?.cursos, allCoursesData])
 
   // Estados para aba de turmas
   const [cursoSelecionado, setCursoSelecionado] = useState<string>('')
@@ -244,7 +269,7 @@ export default function AlunosTurmas() {
     []
   )
 
-  const cursoAtual = meusCursos.find(c => c.codigo === cursoSelecionado)
+  const cursoAtual = cursosDisponiveis.find(c => c.codigo === cursoSelecionado)
 
   return (
     <DashboardLayout items={navigationItems}>
@@ -262,7 +287,7 @@ export default function AlunosTurmas() {
                 <MenuItem value=''>
                   <em>— Selecione um curso —</em>
                 </MenuItem>
-                {meusCursos.map(curso => (
+                {cursosDisponiveis.map(curso => (
                   <MenuItem key={curso.codigo} value={curso.codigo}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography>{curso.titulo}</Typography>
@@ -273,13 +298,7 @@ export default function AlunosTurmas() {
             </FormControl>
           </Paper>
 
-          {!cursoSelecionado ? (
-            <Alert severity='info' icon={<PersonIcon />}>
-              <Typography variant='body2'>
-                Selecione um curso para visualizar os funcionários inscritos.
-              </Typography>
-            </Alert>
-          ) : loadingEnrollments ? (
+          {loadingEnrollments ? (
             <Paper sx={{ p: 4, textAlign: 'center' }}>
               <LinearProgress />
             </Paper>

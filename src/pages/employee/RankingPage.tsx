@@ -142,8 +142,8 @@ export default function RankingPage() {
               Ranking de Gamificação
             </Typography>
             <Typography color='text.secondary'>
-              Veja o ranking dos funcionários por pontuação total (geral) e do mês
-              atual (mensal).
+              Veja o ranking dos funcionários por pontuação total (geral) e do
+              mês atual (mensal).
             </Typography>
           </Box>
         </Box>
