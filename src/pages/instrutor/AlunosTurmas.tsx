@@ -162,7 +162,6 @@ export default function AlunosTurmas() {
       {
         id: 'funcionario_nome',
         label: 'Funcionário',
-        minWidth: 250,
         render: (value: string, row: (typeof enrollments)[0]) => (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
@@ -180,17 +179,16 @@ export default function AlunosTurmas() {
         ),
       },
       {
-        id: 'departamento',
+        id: 'funcionario_departamento',
         label: 'Departamento',
-        minWidth: 150,
         render: (value: string) => (
-          <Typography variant='body2'>{value || '—'}</Typography>
+          <Typography variant='body2'>{value}</Typography>
         ),
       },
       {
         id: 'status',
         label: 'Status',
-        minWidth: 140,
+        align: 'center',
         render: (value: string) => (
           <Chip
             icon={getStatusIcon(value)}
@@ -204,37 +202,19 @@ export default function AlunosTurmas() {
       {
         id: 'progresso_percentual',
         label: 'Progresso',
-        minWidth: 180,
+        align: 'center',
         render: (value: number) => (
           <Box sx={{ width: '100%' }}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                mb: 0.5,
-              }}
-            >
-              <Typography variant='caption' color='text.secondary'>
-                {value || 0}%
-              </Typography>
-            </Box>
+            <Typography variant='body2' fontWeight={500}>
+              {value || 0}%
+            </Typography>
             <LinearProgress
               variant='determinate'
               value={value || 0}
-              sx={{
-                height: 8,
-                borderRadius: 1,
-                bgcolor: 'grey.200',
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 1,
-                  bgcolor:
-                    value >= 100
-                      ? 'success.main'
-                      : value >= 50
-                        ? 'primary.main'
-                        : 'warning.main',
-                },
-              }}
+              color={
+                value >= 100 ? 'success' : value >= 70 ? 'warning' : 'error'
+              }
+              sx={{ mt: 0.5 }}
             />
           </Box>
         ),
@@ -242,7 +222,6 @@ export default function AlunosTurmas() {
       {
         id: 'modulos_concluidos',
         label: 'Módulos',
-        minWidth: 100,
         align: 'center' as const,
         render: (value: number, row: (typeof enrollments)[0]) => (
           <Typography variant='body2' fontWeight={500}>
@@ -253,7 +232,7 @@ export default function AlunosTurmas() {
       {
         id: 'data_inscricao',
         label: 'Data de Inscrição',
-        minWidth: 130,
+        align: 'center',
         render: (value: string) =>
           value ? (
             <Typography variant='body2'>

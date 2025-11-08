@@ -247,6 +247,7 @@ export interface CourseEnrollmentsApiResponse {
       id: string
       nome: string
       email: string
+      departamento: string
     }
     progresso: number
     status: string
@@ -275,7 +276,7 @@ export function useCourseEnrollments(cursoId: string, enabled = true) {
         funcionario_id: enrollment.funcionario.id,
         funcionario_nome: enrollment.funcionario.nome,
         funcionario_email: enrollment.funcionario.email,
-        departamento: undefined, // TODO: Adicionar departamento na API
+        funcionario_departamento: enrollment.funcionario.departamento,
         progresso_percentual: enrollment.progresso,
         status: enrollment.status as 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO',
         data_inscricao: enrollment.data_inscricao,
