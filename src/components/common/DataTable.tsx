@@ -7,7 +7,10 @@ import {
   TableRow,
   Paper,
   TablePagination,
+  Box,
+  Typography,
 } from '@mui/material'
+import { InboxOutlined } from '@mui/icons-material'
 import React, { useMemo, type ReactNode } from 'react'
 
 export interface Column {
@@ -68,32 +71,61 @@ function DataTableInner<T extends Record<string, any>>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {pageData.map((row, index) => {
-              const actualIndex = page * rowsPerPage + index
-              const rowId = getRowId(row, actualIndex)
-              return (
-                <TableRow
-                  hover
-                  tabIndex={-1}
-                  key={rowId}
-                  onClick={
-                    onRowClick ? () => onRowClick(row, actualIndex) : undefined
-                  }
-                  sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                >
-                  {columns.map(column => {
-                    const value = (row as any)[column.id]
-                    return (
-                      <TableCell key={column.id} align={column.align || 'left'}>
-                        {column.render
-                          ? column.render(value, row, actualIndex)
-                          : value}
-                      </TableCell>
-                    )
-                  })}
-                </TableRow>
-              )
-            })}
+            {pageData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      py: 8,
+                      gap: 2,
+                    }}
+                  >
+                    <InboxOutlined
+                      sx={{ fontSize: 64, color: 'text.disabled' }}
+                    />
+                    <Typography variant='body1' color='text.secondary'>
+                      Nenhum registro encontrado
+                    </Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ) : (
+              pageData.map((row, index) => {
+                const actualIndex = page * rowsPerPage + index
+                const rowId = getRowId(row, actualIndex)
+                return (
+                  <TableRow
+                    hover
+                    tabIndex={-1}
+                    key={rowId}
+                    onClick={
+                      onRowClick
+                        ? () => onRowClick(row, actualIndex)
+                        : undefined
+                    }
+                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                  >
+                    {columns.map(column => {
+                      const value = (row as any)[column.id]
+                      return (
+                        <TableCell
+                          key={column.id}
+                          align={column.align || 'left'}
+                        >
+                          {column.render
+                            ? column.render(value, row, actualIndex)
+                            : value}
+                        </TableCell>
+                      )
+                    })}
+                  </TableRow>
+                )
+              })
+            )}
           </TableBody>
         </Table>
       </TableContainer>
