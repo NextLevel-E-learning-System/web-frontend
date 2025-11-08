@@ -277,7 +277,7 @@ export default function AlunosTurmas() {
             </FormControl>
           </Paper>
 
-          {loadingEnrollments ? (
+          {!cursoSelecionado ? null : loadingEnrollments ? (
             <Paper sx={{ p: 4, textAlign: 'center' }}>
               <LinearProgress />
             </Paper>
