@@ -467,45 +467,6 @@ export function useCoursesByDepartment(departmentCode: string) {
   })
 }
 
-// Hooks para Instrutor
-export interface InstructorCoursesFilters {
-  status?: 'ATIVOS' | 'INATIVOS'
-}
-
-export function useInstructorCourses(filters: InstructorCoursesFilters = {}) {
-  const searchParams = new URLSearchParams()
-
-  if (filters.status) {
-    searchParams.append('status', filters.status)
-  }
-
-  const queryString = searchParams.toString()
-  const url = `${API_ENDPOINTS.COURSES}/me/cursos${queryString ? `?${queryString}` : ''}`
-
-  return useQuery<CoursesResponse>({
-    queryKey: ['courses', 'instructor', filters],
-    queryFn: () => authGet<CoursesResponse>(url),
-  })
-}
-
-export interface ReactivateCoursesInput {
-  codigos?: string[]
-}
-
-export function useReactivateCourses() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['courses', 'reactivate'],
-    mutationFn: (input: ReactivateCoursesInput = {}) =>
-      authPatch(`${API_ENDPOINTS.COURSES}/me/cursos/reativar`, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses', 'instructor'] })
-      queryClient.invalidateQueries({ queryKey: ['courses'] })
-    },
-  })
-}
-
 // Helper para conversão de arquivo para Base64
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {

@@ -30,45 +30,41 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import DataTable, { type Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
-import { useDashboard, type DashboardInstrutor } from '@/api/users'
 import { useCourseEnrollments } from '@/api/progress'
-import { useCourseCatalog } from '@/api/courses'
+import { useCourseCatalog, useCourses } from '@/api/courses'
 import MetricCard from '@/components/common/StatCard'
 
 export default function AlunosTurmas() {
   const { navigationItems, perfil } = useNavigation()
-  const { data: dashboardData } = useDashboard()
 
   // Verificar se é ADMIN ou INSTRUTOR
   const isAdmin = perfil?.role === 'ADMIN'
   const isInstrutor = perfil?.role === 'INSTRUTOR'
 
-  const instrutorData =
-    dashboardData?.dashboard?.tipo_dashboard === 'instrutor'
-      ? (dashboardData.dashboard as DashboardInstrutor)
-      : null
+  // Hook para buscar cursos do instrutor (filtrando por instrutor_id)
+  const { data: instructorCoursesData } = useCourses(
+    isInstrutor ? { instrutor: perfil?.id, ativo: true } : {}
+  )
 
+  // Hook para buscar todos os cursos (ADMIN)
   const { data: allCoursesData } = useCourseCatalog({ ativo: true })
 
   const cursosDisponiveis = useMemo(() => {
-    if (isInstrutor) {
-      // INSTRUTOR vê apenas seus cursos
-      return instrutorData?.cursos || []
+    if (isInstrutor && instructorCoursesData) {
+      // INSTRUTOR vê apenas seus cursos vindos do endpoint específico
+      return instructorCoursesData.items.map(course => ({
+        codigo: course.codigo,
+        titulo: course.titulo,
+      }))
     } else if (isAdmin && allCoursesData) {
       // ADMIN vê todos os cursos
       return allCoursesData.map(course => ({
         codigo: course.codigo,
         titulo: course.titulo,
-        inscritos: course.total_inscritos || 0,
-        concluidos: course.total_conclusoes || 0,
-        taxa_conclusao: course.taxa_conclusao || 0,
-        avaliacao_media: course.avaliacao_media || null,
-        status: course.ativo,
-        pendentes_correcao: 0,
       }))
     }
     return []
-  }, [isInstrutor, isAdmin, instrutorData?.cursos, allCoursesData])
+  }, [isInstrutor, isAdmin, instructorCoursesData, allCoursesData])
 
   // Estados para aba de turmas
   const [cursoSelecionado, setCursoSelecionado] = useState<string>('')
@@ -252,8 +248,6 @@ export default function AlunosTurmas() {
     ],
     []
   )
-
-  const cursoAtual = cursosDisponiveis.find(c => c.codigo === cursoSelecionado)
 
   return (
     <DashboardLayout items={navigationItems}>

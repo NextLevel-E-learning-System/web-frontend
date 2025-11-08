@@ -130,17 +130,6 @@ export interface DashboardInstrutor {
     avaliacao_media_geral: number
     pendentes_correcao: number
   }
-  cursos: {
-    codigo: string
-    titulo: string
-    inscritos: number
-    concluidos: number
-    taxa_conclusao: number
-    avaliacao_media?: number
-    status: string
-    pendentes_correcao: number
-  }[]
-  atividades_recentes: any[]
 }
 
 export interface DashboardGerente {

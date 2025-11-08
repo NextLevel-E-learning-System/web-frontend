@@ -123,8 +123,6 @@ export default function DashboardLayout({
       >
         <Toolbar disableGutters sx={{ gap: 3, px: 2 }}>
           <Box
-            component={RouterLink}
-            to='/'
             sx={{
               display: 'flex',
               alignItems: 'center',
