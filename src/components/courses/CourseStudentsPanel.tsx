@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Box,
   Paper,
@@ -7,9 +6,6 @@ import {
   Avatar,
   LinearProgress,
   Chip,
-  Button,
-  TextField,
-  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -19,10 +15,6 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material'
-import {
-  Search as SearchIcon,
-  FileDownload as DownloadIcon,
-} from '@mui/icons-material'
 import { useCourseEnrollments } from '@/api/progress'
 
 interface Props {
@@ -30,15 +22,9 @@ interface Props {
 }
 
 export default function CourseStudentsPanel({ cursoCodigo }: Props) {
-  const [searchTerm, setSearchTerm] = useState('')
-
-  // Buscar inscrições do curso
-  const { data: response, isLoading } = useCourseEnrollments(cursoCodigo)
-  const enrollments = response?.data || []
-
-  const filteredEnrollments = enrollments.filter(e =>
-    e.funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const { data: enrollmentsData, isLoading: loadingEnrollments } =
+    useCourseEnrollments(cursoCodigo)
+  const enrollments = enrollmentsData || []
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,18 +52,8 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
     }
   }
 
-  const handleExportPDF = () => {
-    // Implementar exportação PDF
-    console.log('Exportar PDF')
-  }
-
-  const handleExportExcel = () => {
-    // Implementar exportação Excel
-    console.log('Exportar Excel')
-  }
-
   // Loading state
-  if (isLoading) {
+  if (loadingEnrollments) {
     return (
       <Box display='flex' justifyContent='center' alignItems='center' py={8}>
         <CircularProgress />
@@ -87,56 +63,12 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
 
   // Empty state
   if (enrollments.length === 0) {
-    return (
-      <Alert severity='info'>Nenhum aluno inscrito neste curso ainda.</Alert>
-    )
+    return <Alert severity='info'>Nenhuma inscrição neste curso.</Alert>
   }
 
   return (
     <Box>
       <Stack gap={3}>
-        {/* Barra de Ações */}
-        <Stack
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
-          flexWrap='wrap'
-          gap={2}
-        >
-          <TextField
-            size='small'
-            placeholder='Buscar aluno...'
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position='start'>
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ minWidth: 250 }}
-          />
-          <Stack direction='row' gap={1}>
-            <Button
-              variant='outlined'
-              startIcon={<DownloadIcon />}
-              onClick={handleExportPDF}
-              size='small'
-            >
-              PDF
-            </Button>
-            <Button
-              variant='outlined'
-              startIcon={<DownloadIcon />}
-              onClick={handleExportExcel}
-              size='small'
-            >
-              Excel
-            </Button>
-          </Stack>
-        </Stack>
-
         {/* Tabela de Funcionários */}
         <TableContainer component={Paper} variant='outlined'>
           <Table>
@@ -151,19 +83,19 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredEnrollments.map(enrollment => (
+              {enrollments.map(enrollment => (
                 <TableRow key={enrollment.id} hover>
                   <TableCell>
                     <Stack direction='row' alignItems='center' gap={1.5}>
                       <Avatar sx={{ width: 36, height: 36 }}>
-                        {enrollment.funcionario.nome.charAt(0)}
+                        {enrollment.funcionario_nome.charAt(0)}
                       </Avatar>
                       <Box>
                         <Typography variant='body2' fontWeight={600}>
-                          {enrollment.funcionario.nome}
+                          {enrollment.funcionario_nome}
                         </Typography>
                         <Typography variant='caption' color='text.secondary'>
-                          {enrollment.funcionario.email}
+                          {enrollment.funcionario_email}
                         </Typography>
                       </Box>
                     </Stack>
@@ -187,24 +119,24 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
                   <TableCell align='center'>
                     <Box sx={{ minWidth: 120 }}>
                       <Typography variant='body2' fontWeight={600} mb={0.5}>
-                        {enrollment.progresso}%
+                        {enrollment.progresso_percentual}%
                       </Typography>
                       <LinearProgress
                         variant='determinate'
-                        value={enrollment.progresso}
+                        value={enrollment.progresso_percentual}
                         color={
-                          enrollment.progresso === 100
+                          enrollment.progresso_percentual === 100
                             ? 'success'
-                            : enrollment.progresso > 50
-                              ? 'primary'
-                              : 'warning'
+                            : enrollment.progresso_percentual > 50
+                              ? 'warning'
+                              : 'error'
                         }
                       />
                     </Box>
                   </TableCell>
                   <TableCell align='center'>
                     <Typography variant='body2'>
-                      {enrollment.modulos_completos}/{enrollment.total_modulos}
+                      {enrollment.modulos_concluidos}/{enrollment.total_modulos}
                     </Typography>
                   </TableCell>
                   <TableCell align='center'>
@@ -212,14 +144,14 @@ export default function CourseStudentsPanel({ cursoCodigo }: Props) {
                       variant='body2'
                       fontWeight={600}
                       color={
-                        enrollment.nota_media
-                          ? enrollment.nota_media >= 7
+                        enrollment.nota_final
+                          ? enrollment.nota_final >= 7
                             ? 'success.main'
                             : 'error.main'
                           : 'text.secondary'
                       }
                     >
-                      {enrollment.nota_media}
+                      {enrollment.nota_final}
                     </Typography>
                   </TableCell>
                   <TableCell align='center'>

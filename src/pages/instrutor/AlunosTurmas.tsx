@@ -213,7 +213,7 @@ export default function AlunosTurmas() {
               variant='determinate'
               value={value || 0}
               color={
-                value >= 100 ? 'success' : value >= 70 ? 'warning' : 'error'
+                value >= 100 ? 'success' : value >= 50 ? 'warning' : 'error'
               }
               sx={{ mt: 0.5 }}
             />

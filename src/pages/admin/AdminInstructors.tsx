@@ -50,11 +50,8 @@ export default function AdminInstructors() {
 
   const { data: instrutoresResponse, isLoading: loadingInstrutores } =
     useInstrutores()
-  const {
-    data: funcionariosResponse,
-    isLoading: loadingFuncionarios,
-    refetch: refetchUsers,
-  } = useFuncionarios()
+  const { data: funcionariosResponse, isLoading: loadingFuncionarios } =
+    useFuncionarios()
 
   const instrutores = useMemo(
     () => instrutoresResponse || [],
