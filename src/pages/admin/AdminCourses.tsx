@@ -12,6 +12,8 @@ import {
   IconButton,
   Menu,
   Switch,
+  Badge,
+  Tooltip,
 } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
@@ -21,6 +23,7 @@ import {
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
   Visibility as VisibilityIcon,
+  RateReview,
 } from '@mui/icons-material'
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -73,7 +76,7 @@ export default function AdminCourses() {
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
-    const filters: any = {}
+    const filters: Record<string, string | boolean> = {}
     if (filtros.categoria !== 'all') filters.categoria = filtros.categoria
     if (filtros.instrutor !== 'all') filters.instrutor = filtros.instrutor
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
@@ -100,12 +103,17 @@ export default function AdminCourses() {
     }
     // Sempre faz refetch ao montar
     refetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key])
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
   const { data: funcionariosResponse, isLoading: loadingFuncionarios } =
     useFuncionarios()
-  const cursos = cursosResponse?.items || []
+
+  const cursos = useMemo(
+    () => cursosResponse?.items || [],
+    [cursosResponse?.items]
+  )
   const funcionarios = funcionariosResponse?.items || []
 
   // Mutations
@@ -125,7 +133,13 @@ export default function AdminCourses() {
   }
 
   const handleViewCourse = (curso: Curso) => {
-    navigate(`/gerenciar/cursos/${curso.codigo}`, { state: { viewOnly: true } })
+    const hasPendentes = (curso.pendentes_correcao || 0) > 0
+    navigate(`/gerenciar/cursos/${curso.codigo}`, {
+      state: {
+        viewOnly: true,
+        ...(hasPendentes && { nextTab: 'reviews' }),
+      },
+    })
   }
 
   const canEditCourse = (curso: Curso) => {
@@ -139,7 +153,7 @@ export default function AdminCourses() {
     try {
       await duplicateCourseMutation.mutateAsync(curso.codigo)
       setAnchorEl(null)
-    } catch (error) {
+    } catch {
       // erro ao duplicar curso
     }
   }
@@ -290,11 +304,32 @@ export default function AdminCourses() {
             {curso.total_inscricoes || 0} inscrições
           </Typography>
           <Typography variant='caption' color='success.main'>
-            {curso.total_conclusoes || 0} concluídos
+            {curso.total_conclusoes || 0} conclusões
           </Typography>
         </Box>
       ),
     },
+    // Coluna de correções pendentes (apenas para INSTRUTOR)
+    isInstrutor
+      ? {
+          id: 'pendentes_correcao',
+          label: 'Correções Pendentes',
+          align: 'center' as const,
+          render: (_value: unknown, curso: Curso) => (
+            <Typography
+              variant='body2'
+              fontWeight={500}
+              color={
+                curso.pendentes_correcao && curso.pendentes_correcao > 0
+                  ? 'warning.main'
+                  : 'text.secondary'
+              }
+            >
+              {curso.pendentes_correcao || 0}
+            </Typography>
+          ),
+        }
+      : null,
     {
       id: 'taxa_conclusao',
       label: 'Taxa Conclusão',
@@ -353,17 +388,29 @@ export default function AdminCourses() {
       id: 'acoes',
       label: 'Ações',
       align: 'center',
-      render: (_, curso) => (
-        <IconButton
-          size='small'
-          onClick={e => {
-            e.stopPropagation()
-            handleOpenMenu(e, curso)
-          }}
-        >
-          <MoreVertIcon />
-        </IconButton>
-      ),
+      render: (_, curso) => {
+        const hasPendentes = isInstrutor && (curso.pendentes_correcao || 0) > 0
+        return (
+          <Tooltip
+            title={hasPendentes ? 'Correções pendentes!' : 'Mais opções'}
+          >
+            <IconButton
+              size='small'
+              onClick={e => {
+                e.stopPropagation()
+                handleOpenMenu(e, curso)
+              }}
+            >
+              <Badge
+                badgeContent={hasPendentes ? curso.pendentes_correcao : 0}
+                color='warning'
+              >
+                <MoreVertIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+        )
+      },
     },
   ]
 
@@ -486,6 +533,31 @@ export default function AdminCourses() {
           open={Boolean(anchorEl)}
           onClose={handleCloseMenu}
         >
+          {/* Opção especial para correções pendentes (apenas para INSTRUTOR) */}
+          {isInstrutor &&
+            selectedCourseForMenu &&
+            (selectedCourseForMenu.pendentes_correcao || 0) > 0 && (
+              <MenuItem
+                onClick={() => {
+                  handleCloseMenu()
+                  if (selectedCourseForMenu) {
+                    navigate(
+                      `/gerenciar/cursos/${selectedCourseForMenu.codigo}`,
+                      {
+                        state: { viewOnly: true, nextTab: 'reviews' },
+                      }
+                    )
+                  }
+                }}
+                sx={{
+                  color: 'warning.main',
+                  fontWeight: 500,
+                }}
+              >
+                <RateReview sx={{ mr: 1 }} fontSize='small' />
+                Ver Correções ({selectedCourseForMenu.pendentes_correcao})
+              </MenuItem>
+            )}
           <MenuItem
             onClick={() => {
               handleCloseMenu()
