@@ -398,18 +398,6 @@ export default function AlunosTurmas() {
                 data={filteredEnrollments}
                 getRowId={row => row.id}
               />
-
-              {filteredEnrollments.length === 0 && !loadingEnrollments && (
-                <Paper sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography variant='body1' color='text.secondary'>
-                    {turmasTab === 'all'
-                      ? 'Nenhum aluno inscrito neste curso'
-                      : turmasTab === 'active'
-                        ? 'Nenhum aluno em andamento'
-                        : 'Nenhum aluno concluiu este curso'}
-                  </Typography>
-                </Paper>
-              )}
             </>
           )}
         </Box>
