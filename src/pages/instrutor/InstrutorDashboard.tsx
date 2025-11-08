@@ -64,7 +64,7 @@ export default function InstrutorDashboard() {
     )
   }
 
-  const { metricas, cursos } = instrutorData || { metricas: {}, cursos: [] }
+  const { metricas } = instrutorData || { metricas: {} }
 
   const handleViewCourse = (cursoCodigo: string, hasPendentes: boolean) => {
     if (hasPendentes) {
@@ -132,10 +132,7 @@ export default function InstrutorDashboard() {
                 overflow: 'auto',
               }}
             >
-              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                Meus Cursos ({cursos.length})
-              </Typography>
-              {cursos.length > 0 ? (
+{/*               {cursos.length > 0 ? (
                 <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Table>
                     <TableHead>
@@ -236,7 +233,7 @@ export default function InstrutorDashboard() {
                 >
                   Nenhum curso encontrado
                 </Typography>
-              )}
+              )} */}
             </Paper>
           </Grid>
         </Grid>
