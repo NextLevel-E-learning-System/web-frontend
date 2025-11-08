@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles'
 
 interface Props {
   icon: React.ReactNode
-  value: string
+  value: string | number
   label: string
 }
 
@@ -17,10 +17,11 @@ export default function MetricCard({ icon, value, label }: Props) {
       variant='outlined'
       sx={{
         borderRadius: 1,
-        p: 3,
         display: 'grid',
         gap: 2,
+        px: 3,
         bgcolor: theme.palette.background.paper,
+        height: 100,
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

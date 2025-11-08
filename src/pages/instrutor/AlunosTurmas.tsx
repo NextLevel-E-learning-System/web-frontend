@@ -12,6 +12,7 @@ import {
   LinearProgress,
   Stack,
   Avatar,
+  Grid,
 } from '@mui/material'
 import {
   Person as PersonIcon,
@@ -20,6 +21,10 @@ import {
   CheckCircle,
   Schedule,
   Cancel,
+  Start,
+  People,
+  IncompleteCircle,
+  Percent,
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -29,6 +34,7 @@ import { useNavigation } from '@/hooks/useNavigation'
 import { useDashboard, type DashboardInstrutor } from '@/api/users'
 import { useCourseEnrollments } from '@/api/progress'
 import { useCourseCatalog } from '@/api/courses'
+import MetricCard from '@/components/common/StatCard'
 
 export default function AlunosTurmas() {
   const { navigationItems, perfil } = useNavigation()
@@ -289,61 +295,36 @@ export default function AlunosTurmas() {
             <>
               {/* Estatísticas */}
               {enrollments.length > 0 && (
-                <Paper sx={{ p: 3, mb: 3 }}>
-                  <Typography variant='h6' gutterBottom fontWeight={600}>
-                    📊 Resumo do Curso: {cursoAtual?.titulo}
-                  </Typography>
-                  <Stack
-                    direction={{ xs: 'column', md: 'row' }}
-                    spacing={3}
-                    sx={{ mt: 2 }}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant='caption' color='text.secondary'>
-                        Total de Funcionários
-                      </Typography>
-                      <Typography variant='h4' fontWeight={700} color='primary'>
-                        {turmasStats.total}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant='caption' color='text.secondary'>
-                        Concluíram
-                      </Typography>
-                      <Typography
-                        variant='h4'
-                        fontWeight={700}
-                        color='success.main'
-                      >
-                        {turmasStats.concluidos}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant='caption' color='text.secondary'>
-                        Em Andamento
-                      </Typography>
-                      <Typography
-                        variant='h4'
-                        fontWeight={700}
-                        color='primary.main'
-                      >
-                        {turmasStats.emAndamento}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant='caption' color='text.secondary'>
-                        Progresso Médio
-                      </Typography>
-                      <Typography
-                        variant='h4'
-                        fontWeight={700}
-                        color='info.main'
-                      >
-                        {turmasStats.mediaProgresso.toFixed(1)}%
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <MetricCard
+                      icon={<People color='info' />}
+                      value={turmasStats.total}
+                      label='Total de Inscrições'
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <MetricCard
+                      icon={<CheckCircle color='success' />}
+                      value={turmasStats.concluidos}
+                      label='Conclusões'
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <MetricCard
+                      icon={<IncompleteCircle color='warning' />}
+                      value={turmasStats.emAndamento}
+                      label='Em Andamento'
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <MetricCard
+                      icon={<Percent color='info' />}
+                      value={`${turmasStats.mediaProgresso}%`}
+                      label='Progresso Médio'
+                    />
+                  </Grid>
+                </Grid>
               )}
 
               {/* Ações e Filtros */}
