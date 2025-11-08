@@ -71,18 +71,18 @@ export default function AdminDashboard() {
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                label='Total de Funcionários'
+                label='Funcionários Ativos'
                 value={
                   (
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
                   )?.funcionarios_ativos?.toString() || '0'
                 }
-                icon={<People />}
+                icon={<People color='info' />}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                icon={<School />}
+                icon={<School color='info' />}
                 value={
                   (
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
@@ -98,19 +98,18 @@ export default function AdminDashboard() {
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
                   )?.total_cursos?.toString() || '0'
                 }
-                icon={<School />}
+                icon={<School color='info' />}
                 label='Total de Cursos'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 label='Taxa de Conclusão'
-                value={`${((adminData?.metricas_gerais || gerenteData?.metricas_gerais)?.taxa_conclusao_media || 0).toFixed(1)}%`}
-                icon={<CheckCircle />}
+                value={`${(adminData?.metricas_gerais || gerenteData?.metricas_gerais)?.taxa_conclusao_media || 0}%`}
+                icon={<CheckCircle color='success' />}
               />
             </Grid>
           </Grid>
-
           {/* Alert para Gerente */}
           {gerenteData && (
             <Alert severity='info' sx={{ mb: 3 }}>

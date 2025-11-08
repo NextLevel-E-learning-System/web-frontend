@@ -21,7 +21,6 @@ import {
   CheckCircle,
   Schedule,
   Cancel,
-  Start,
   People,
   IncompleteCircle,
   Percent,
