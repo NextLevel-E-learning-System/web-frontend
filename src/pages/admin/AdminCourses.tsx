@@ -282,12 +282,12 @@ export default function AdminCourses() {
     },
     {
       id: 'inscritos',
-      label: 'Inscritos',
+      label: 'Inscrições',
       align: 'center',
       render: (_, curso) => (
         <Box>
           <Typography variant='body2' fontWeight={500}>
-            {curso.total_inscricoes || 0}
+            {curso.total_inscricoes || 0} inscrições
           </Typography>
           <Typography variant='caption' color='success.main'>
             {curso.total_conclusoes || 0} concluídos
