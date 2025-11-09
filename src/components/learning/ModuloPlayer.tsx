@@ -6,10 +6,8 @@ import {
   Step,
   StepLabel,
   Button,
-  LinearProgress,
   Paper,
   Alert,
-  Chip,
   Stack,
 } from '@mui/material'
 import {
@@ -223,6 +221,9 @@ export default function ModuloPlayer({
             >
               Voltar
             </Button>
+            <Button variant='contained' onClick={handleNext}>
+              Concluir Módulo
+            </Button>
             <Typography variant='h4' fontWeight={900}>
               {modulo.titulo}
             </Typography>
@@ -342,23 +343,6 @@ export default function ModuloPlayer({
             onCancel={onBack}
           />
         )}
-      </Paper>
-
-      {/* Navegação */}
-      <Paper sx={{ p: 2 }}>
-        <Stack direction='row' justifyContent='space-between'>
-          <Button onClick={handleBack} disabled={currentStep === 0 && !onBack}>
-            Voltar
-          </Button>
-
-          <Button
-            variant='contained'
-            onClick={handleNext}
-            disabled={marcarConcluidoMutation.isPending}
-          >
-            {currentStep === steps.length - 1 ? 'Concluir Módulo' : 'Próximo'}
-          </Button>
-        </Stack>
       </Paper>
     </Box>
   )
