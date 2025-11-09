@@ -170,24 +170,14 @@ export default function CourseContent() {
     <DashboardLayout items={navigationItems}>
       {/* Se tem módulo em reprodução, mostrar apenas o player */}
       {moduloEmReproducao && moduloAtual && moduloProgressoAtual ? (
-        <Box sx={{ p: 3 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={handleCloseModulo}
-            sx={{ mb: 3 }}
-          >
-            Voltar para o curso
-          </Button>
-
-          <ModuloPlayer
-            modulo={moduloAtual}
-            inscricaoId={enrollment?.id || ''}
-            liberado={moduloProgressoAtual.liberado}
-            concluido={moduloProgressoAtual.concluido}
-            onComplete={handleModuloComplete}
-            onBack={handleCloseModulo}
-          />
-        </Box>
+        <ModuloPlayer
+          modulo={moduloAtual}
+          inscricaoId={enrollment?.id || ''}
+          liberado={moduloProgressoAtual.liberado}
+          concluido={moduloProgressoAtual.concluido}
+          onComplete={handleModuloComplete}
+          onBack={handleCloseModulo}
+        />
       ) : (
         <>
           <CourseContentHeader

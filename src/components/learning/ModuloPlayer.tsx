@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Box,
   Typography,
@@ -19,14 +19,12 @@ import {
   Quiz,
   Article,
   PictureAsPdf,
+  ArrowBackIosNewRounded,
 } from '@mui/icons-material'
 import VideoPlayer from '../learning/VideoPlayer'
 import QuizPlayer from '../learning/QuizPlayer'
 import type { ModuloCompleto } from '@/api/courses'
-import {
-  useMarcarConteudoVisualizado,
-  useMarcarModuloConcluido,
-} from '@/api/progress'
+import { useMarcarModuloConcluido } from '@/api/progress'
 
 interface ModuloPlayerProps {
   modulo: ModuloCompleto
@@ -47,9 +45,8 @@ export default function ModuloPlayer({
 }: ModuloPlayerProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
-  const [tempoInicio, setTempoInicio] = useState<number>(Date.now())
+  const [tempoInicio] = useState<number>(Date.now())
 
-  const marcarVisualizadoMutation = useMarcarConteudoVisualizado()
   const marcarConcluidoMutation = useMarcarModuloConcluido()
 
   // Construir steps (materiais + avaliação + conteúdo texto)
@@ -119,25 +116,13 @@ export default function ModuloPlayer({
 
   const currentStepData = steps[currentStep]
 
-  // Marcar como visualizado ao montar
-  useEffect(() => {
-    if (liberado && !concluido) {
-      marcarVisualizadoMutation.mutate({
-        inscricaoId,
-        moduloId: modulo.modulo_id,
-        tipoConteudo: modulo.tipo_conteudo || undefined,
-      })
-      setTempoInicio(Date.now())
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liberado, concluido, inscricaoId, modulo.modulo_id, modulo.tipo_conteudo])
-
   const handleStepComplete = () => {
-    setCompletedSteps(prev => new Set(prev).add(currentStep))
+    const newCompletedSteps = new Set(completedSteps).add(currentStep)
+    setCompletedSteps(newCompletedSteps)
 
     // Se for o último step, marcar módulo como concluído
     if (currentStep === steps.length - 1) {
-      const tempoGasto = Math.floor((Date.now() - tempoInicio) / 1000)
+      const tempoGasto = Math.floor((Date.now() - tempoInicio) / 60000) // Converter para minutos
 
       marcarConcluidoMutation.mutate(
         {
@@ -212,38 +197,36 @@ export default function ModuloPlayer({
       {/* Header */}
       <Paper sx={{ p: 3, mb: 3 }}>
         <Stack
-          direction='row'
+          direction={{ xs: 'column', md: 'row' }}
           alignItems='center'
           justifyContent='space-between'
-          mb={2}
         >
           <Box>
-            <Typography variant='h5' gutterBottom>
+            <Button
+              onClick={handleBack}
+              startIcon={<ArrowBackIosNewRounded fontSize='small' />}
+              sx={{
+                position: 'absolute',
+                top: { xs: 12, md: 16 },
+                right: { xs: 12, md: 20 },
+                fontWeight: 600,
+                color: 'common.white',
+                backdropFilter: 'blur(10px)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.2)',
+                },
+              }}
+            >
+              Voltar
+            </Button>
+            <Typography variant='h4' fontWeight={900}>
               {modulo.titulo}
             </Typography>
             <Stack direction='row' spacing={1}>
-              <Chip
-                label={modulo.tipo_conteudo || 'material'}
-                size='small'
-                color='primary'
-                variant='outlined'
-              />
-              {modulo.obrigatorio && (
-                <Chip label='Obrigatório' size='small' color='error' />
-              )}
-              <Chip label={`${modulo.xp_modulo} XP`} size='small' />
+              <Typography variant='body2'>{modulo.conteudo}</Typography>
             </Stack>
           </Box>
-
-          <Box textAlign='right'>
-            <Typography variant='h6'>{Math.round(progress)}%</Typography>
-            <Typography variant='caption' color='text.secondary'>
-              {completedSteps.size} de {steps.length} concluídos
-            </Typography>
-          </Box>
         </Stack>
-
-        <LinearProgress variant='determinate' value={progress} />
       </Paper>
 
       {/* Stepper (se houver múltiplos steps) */}
@@ -251,11 +234,50 @@ export default function ModuloPlayer({
         <Paper sx={{ p: 2, mb: 3 }}>
           <Stepper activeStep={currentStep} alternativeLabel>
             {steps.map((step, index) => (
-              <Step key={index} completed={completedSteps.has(index)}>
+              <Step
+                key={index}
+                completed={completedSteps.has(index)}
+                onClick={() => {
+                  // Permitir navegação para steps anteriores
+                  if (index < currentStep) {
+                    setCurrentStep(index)
+                  }
+                  // Permitir navegação para próximo step se atual estiver completo
+                  else if (
+                    index === currentStep + 1 &&
+                    completedSteps.has(currentStep)
+                  ) {
+                    setCurrentStep(index)
+                  }
+                }}
+                sx={{
+                  cursor:
+                    index < currentStep ||
+                    (index === currentStep + 1 &&
+                      completedSteps.has(currentStep))
+                      ? 'pointer'
+                      : 'default',
+                  '&:hover': {
+                    opacity:
+                      index < currentStep ||
+                      (index === currentStep + 1 &&
+                        completedSteps.has(currentStep))
+                        ? 0.8
+                        : 1,
+                  },
+                }}
+              >
                 <StepLabel icon={step.icon}>{step.label}</StepLabel>
               </Step>
             ))}
           </Stepper>
+
+          {/* Indicador de progresso dos materiais */}
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Typography variant='caption' color='text.secondary'>
+              {completedSteps.size} de {steps.length} item(s) concluído(s)
+            </Typography>
+          </Box>
         </Paper>
       )}
 
@@ -339,7 +361,7 @@ export default function ModuloPlayer({
           <Button
             variant='contained'
             onClick={handleNext}
-            disabled={modulo.obrigatorio && !completedSteps.has(currentStep)}
+            disabled={marcarConcluidoMutation.isPending}
           >
             {currentStep === steps.length - 1 ? 'Concluir Módulo' : 'Próximo'}
           </Button>
