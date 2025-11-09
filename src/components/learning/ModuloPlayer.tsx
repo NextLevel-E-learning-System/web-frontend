@@ -152,23 +152,6 @@ export default function ModuloPlayer({
     onBack?.()
   }
 
-  if (concluido) {
-    return (
-      <Paper sx={{ p: 4, textAlign: 'center' }}>
-        <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
-        <Typography variant='h6' gutterBottom>
-          Módulo Concluído!
-        </Typography>
-        <Typography color='text.secondary' gutterBottom>
-          Você ganhou <strong>{modulo.xp_modulo} XP</strong>
-        </Typography>
-        <Button variant='outlined' onClick={onComplete} sx={{ mt: 2 }}>
-          Próximo Módulo
-        </Button>
-      </Paper>
-    )
-  }
-
   return (
     <Box>
       {/* Header com botões */}
@@ -182,6 +165,9 @@ export default function ModuloPlayer({
             <Typography variant='h5' fontWeight={600}>
               {modulo.titulo}
             </Typography>
+            {concluido && (
+              <CheckCircle sx={{ color: 'success.main', fontSize: 28 }} />
+            )}
           </Stack>
 
           <Stack direction='row' spacing={2} alignItems='center'>
@@ -192,27 +178,37 @@ export default function ModuloPlayer({
             >
               Voltar
             </Button>
-            <Button
-              variant='contained'
-              onClick={handleCompleteModule}
-              disabled={marcarConcluidoMutation.isPending}
-            >
-              Próximo Módulo
-            </Button>
+            {!concluido && (
+              <Button
+                variant='contained'
+                onClick={handleCompleteModule}
+                disabled={marcarConcluidoMutation.isPending}
+              >
+                Próximo Módulo
+              </Button>
+            )}
           </Stack>
         </Stack>
       </Paper>
 
       {/* Layout: Sidebar + Conteúdo */}
-      <Grid container spacing={2}>
+      <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
         {/* Sidebar com lista de materiais */}
         {steps.length > 1 && (
           <Grid size={{ xs: 12, md: 3 }}>
-            <Paper sx={{ p: 2 }}>
+            <Paper
+              sx={{
+                p: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: 500,
+              }}
+            >
               <Typography variant='subtitle2' color='text.secondary' mb={2}>
                 CONTEÚDO DO MÓDULO
               </Typography>
-              <List>
+              <List sx={{ flex: 1, overflow: 'auto' }}>
                 {steps.map((step, index) => (
                   <ListItemButton
                     key={index}
@@ -252,7 +248,15 @@ export default function ModuloPlayer({
 
         {/* Conteúdo do step atual */}
         <Grid size={{ xs: 12, md: steps.length > 1 ? 9 : 12 }}>
-          <Paper sx={{ p: 2, minHeight: 500 }}>
+          <Paper
+            sx={{
+              p: 2,
+              height: '100%',
+              minHeight: 500,
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
             {currentStepData?.type === 'material' &&
               currentStepData.data.tipo_arquivo?.includes('video') && (
                 <VideoPlayer material={currentStepData.data} />
