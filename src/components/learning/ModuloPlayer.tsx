@@ -198,19 +198,23 @@ export default function ModuloPlayer({
       <Paper sx={{ p: 3, mb: 3 }}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
-          alignItems='center'
-          justifyContent='space-between'
+          spacing={{ xs: 2, md: 3 }}
+          alignItems={{ md: 'stretch' }}
         >
-          <Box>
+          <Box
+            sx={{
+              flex: 1,
+              position: 'relative',
+            }}
+          >
             <Button
               onClick={handleBack}
               startIcon={<ArrowBackIosNewRounded fontSize='small' />}
               sx={{
                 position: 'absolute',
                 top: { xs: 12, md: 16 },
-                right: { xs: 12, md: 20 },
+                right: { xs: 12 },
                 fontWeight: 600,
-                color: 'common.white',
                 backdropFilter: 'blur(10px)',
                 '&:hover': {
                   bgcolor: 'rgba(255, 255, 255, 0.2)',
@@ -222,9 +226,8 @@ export default function ModuloPlayer({
             <Typography variant='h4' fontWeight={900}>
               {modulo.titulo}
             </Typography>
-            <Stack direction='row' spacing={1}>
-              <Typography variant='body2'>{modulo.conteudo}</Typography>
-            </Stack>
+
+            <Typography variant='body2'>{modulo.conteudo}</Typography>
           </Box>
         </Stack>
       </Paper>
@@ -271,13 +274,6 @@ export default function ModuloPlayer({
               </Step>
             ))}
           </Stepper>
-
-          {/* Indicador de progresso dos materiais */}
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant='caption' color='text.secondary'>
-              {completedSteps.size} de {steps.length} item(s) concluído(s)
-            </Typography>
-          </Box>
         </Paper>
       )}
 
@@ -314,9 +310,6 @@ export default function ModuloPlayer({
                   página.
                 </Alert>
               )}
-              <Alert severity='info' sx={{ mt: 2 }}>
-                Após ler o material, clique em "Próximo" para continuar
-              </Alert>
             </Box>
           )}
 
