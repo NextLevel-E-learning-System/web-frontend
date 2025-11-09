@@ -285,7 +285,6 @@ export default function ModuloPlayer({
             {currentStepData?.type === 'quiz' && (
               <QuizPlayer
                 avaliacaoId={currentStepData.data.codigo}
-                funcionarioId={inscricaoId}
                 onComplete={aprovado => {
                   if (aprovado) {
                     handleCompleteModule()

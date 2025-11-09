@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Box,
   Typography,
@@ -19,6 +19,7 @@ import {
   ListItemButton,
   ListItemText,
   ListItemIcon,
+  TextField,
 } from '@mui/material'
 import {
   Timer,
@@ -26,6 +27,8 @@ import {
   NavigateNext,
   NavigateBefore,
   PlayArrow,
+  PlayArrowRounded,
+  TimerRounded,
 } from '@mui/icons-material'
 import {
   useStartAssessment,
@@ -33,6 +36,7 @@ import {
   useActiveAttempt,
   useUserAttempts,
   type StartAssessmentResponse,
+  useAttemptForReview,
 } from '@/api/assessments'
 import { toast } from 'react-toastify'
 
@@ -47,18 +51,14 @@ interface AvaliacaoInfo {
 
 interface QuizPlayerProps {
   avaliacaoId: string
-  funcionarioId: string
   avaliacaoInfo?: AvaliacaoInfo
-  onComplete: (aprovado: boolean, nota: number) => void
-  onCancel?: () => void
+  onComplete: (aprovado: boolean) => void
 }
 
 export default function QuizPlayer({
   avaliacaoId,
-  funcionarioId,
   avaliacaoInfo,
   onComplete,
-  onCancel,
 }: QuizPlayerProps) {
   const startAssessment = useStartAssessment()
   const submitAssessment = useSubmitAssessment()
@@ -67,8 +67,25 @@ export default function QuizPlayer({
   const { data: activeAttempt } = useActiveAttempt(avaliacaoId, true)
 
   // Buscar histórico de tentativas
-  const { data: userAttempts = [], isLoading: loadingAttempts } =
-    useUserAttempts(avaliacaoId, true)
+  const { data: userAttempts = [] } = useUserAttempts(avaliacaoId, true)
+
+  const latestApprovedAttempt = useMemo(() => {
+    return (
+      userAttempts
+        .filter(attempt => attempt.status === 'APROVADO')
+        .sort(
+          (a, b) =>
+            new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()
+        )[0] || null
+    )
+  }, [userAttempts])
+
+  const reviewAttemptId = latestApprovedAttempt?.id ?? ''
+
+  const { data: reviewData } = useAttemptForReview(
+    reviewAttemptId,
+    !!reviewAttemptId
+  )
 
   const [assessmentData, setAssessmentData] =
     useState<StartAssessmentResponse | null>(null)
@@ -77,6 +94,15 @@ export default function QuizPlayer({
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
+
+  // Calcular tempo gasto em minutos
+  const calculateTimeSpent = (dataInicio: string, dataFim: string | null) => {
+    if (!dataFim) return 'Em andamento'
+    const inicio = new Date(dataInicio).getTime()
+    const fim = new Date(dataFim).getTime()
+    const minutos = Math.floor((fim - inicio) / 60000)
+    return `${minutos} min`
+  }
 
   // Verificar se deve mostrar o botão de iniciar
   const shouldShowStartButton = () => {
@@ -151,7 +177,7 @@ export default function QuizPlayer({
     } finally {
       setIsSubmitting(false)
     }
-  }, [assessmentData, respostas, submitAssessment, onComplete])
+  }, [assessmentData, respostas, submitAssessment])
 
   // Recuperar tentativa ativa se existir
   useEffect(() => {
@@ -259,179 +285,229 @@ export default function QuizPlayer({
     setRespostas(prev => ({ ...prev, [questaoId]: resposta }))
   }
 
-  const questoesRespondidas = Object.keys(respostas).length
-  const todasRespondidas =
-    assessmentData && questoesRespondidas === assessmentData.questoes.length
-  const progressoQuestoes = assessmentData
-    ? ((currentQuestionIndex + 1) / assessmentData.questoes.length) * 100
-    : 0
-
-  // Tela de informações (antes de iniciar)
-  if (!tentativaStarted) {
-    return (
-      <Box>
-        <Paper sx={{ p: 4 }}>
-          <Typography variant='h5' gutterBottom fontWeight={600}>
-            {avaliacaoInfo?.titulo || 'Informações da Avaliação'}
-          </Typography>
-
-          <Divider sx={{ my: 3 }} />
-
-          <Stack spacing={3}>
-            {loadingAttempts ? (
-              <Box textAlign='center' py={4}>
-                <CircularProgress />
-              </Box>
-            ) : (
-              <>
-                <Stack spacing={2}>
-                  <Box>
-                    <Typography variant='body1' color='text.secondary'>
-                      <strong>⏱️ Tempo limite:</strong>{' '}
-                      {avaliacaoInfo?.tempo_limite || 'N/A'} minutos
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Typography variant='body1' color='text.secondary'>
-                      <strong>📊 Nota mínima para aprovação:</strong>{' '}
-                      {avaliacaoInfo?.nota_minima || 'N/A'}
-                    </Typography>
-                  </Box>
-
-                  <Box>
-                    <Typography variant='body1' color='text.secondary'>
-                      <strong>🔄 Tentativas permitidas:</strong>{' '}
-                      {avaliacaoInfo?.tentativas_permitidas || 'Ilimitadas'}
-                    </Typography>
-                  </Box>
-
-                  <Divider sx={{ my: 2 }} />
-
-                  <Alert severity='info'>
-                    <Typography variant='body2'>
-                      Certifique-se de revisar todo o conteúdo antes de iniciar
-                      a avaliação. O tempo começará a contar assim que você
-                      clicar em "Iniciar Avaliação".
-                    </Typography>
-                  </Alert>
-                </Stack>
-
-                {/* Histórico de Tentativas */}
-                {userAttempts.length > 0 && (
-                  <Box>
-                    <Typography variant='h6' gutterBottom>
-                      Histórico de Tentativas
-                    </Typography>
-                    <Stack gap={1.5}>
-                      {userAttempts
-                        .filter(a => a.status !== 'EM_ANDAMENTO')
-                        .sort(
-                          (a, b) =>
-                            new Date(b.criado_em).getTime() -
-                            new Date(a.criado_em).getTime()
-                        )
-                        .map((attempt, index) => {
-                          const statusInfo = getStatusDisplay(attempt.status)
-                          return (
-                            <Paper
-                              key={attempt.id}
-                              elevation={2}
-                              sx={{
-                                p: 2,
-                                borderLeft: theme =>
-                                  `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`,
-                              }}
-                            >
-                              <Stack gap={1}>
-                                <Box
-                                  display='flex'
-                                  justifyContent='space-between'
-                                  alignItems='center'
-                                >
-                                  <Typography
-                                    variant='subtitle2'
-                                    fontWeight={600}
-                                  >
-                                    Tentativa {userAttempts.length - index}
-                                  </Typography>
-                                  <Chip
-                                    label={statusInfo.label}
-                                    size='small'
-                                    sx={{
-                                      bgcolor: statusInfo.color,
-                                      color: 'white',
-                                    }}
-                                  />
-                                </Box>
-
-                                {attempt.nota_obtida !== null && (
-                                  <Typography variant='body2'>
-                                    Nota: <strong>{attempt.nota_obtida}</strong>
-                                  </Typography>
-                                )}
-                              </Stack>
-                            </Paper>
-                          )
-                        })}
-                    </Stack>
-                  </Box>
-                )}
-
-                {/* Botão para iniciar */}
-                {!tentativaStarted && shouldShowStartButton() && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      gap: 2,
-                      pt: 2,
-                    }}
-                  >
-                    <Button
-                      variant='contained'
-                      size='large'
-                      startIcon={
-                        startAssessment.isPending ? (
-                          <CircularProgress size={20} color='inherit' />
-                        ) : (
-                          <PlayArrow />
-                        )
-                      }
-                      disabled={startAssessment.isPending}
-                      onClick={handleStartTentativa}
-                      sx={{ minWidth: 200 }}
-                    >
-                      {startAssessment.isPending
-                        ? 'Iniciando...'
-                        : 'Iniciar Avaliação'}
-                    </Button>
-                  </Box>
-                )}
-              </>
-            )}
-          </Stack>
-        </Paper>
-      </Box>
-    )
-  }
-
-  // Loading state
-  if (!assessmentData || assessmentData.questoes.length === 0) {
-    return (
-      <Box textAlign='center' py={8}>
-        <CircularProgress sx={{ mb: 2 }} />
-        <Typography>Carregando questões...</Typography>
-      </Box>
-    )
-  }
-
-  const currentQuestion = assessmentData.questoes[currentQuestionIndex]
-
-  // Tela do quiz (após iniciar) - Layout com sidebar
   return (
     <Box>
-      {/* Header com Timer e Progresso */}
+      <Typography variant='h5' gutterBottom fontWeight={600}>
+        {avaliacaoInfo?.titulo || 'Informações da Avaliação'}
+      </Typography>
+
+      <Divider sx={{ my: 3 }} />
+
+      <Stack spacing={2}>
+        <Box>
+          <Typography variant='body1' color='text.secondary'>
+            <strong>⏱️ Tempo limite:</strong>{' '}
+            {avaliacaoInfo?.tempo_limite || 'N/A'} minutos
+          </Typography>
+        </Box>
+
+        <Box>
+          <Typography variant='body1' color='text.secondary'>
+            <strong>📊 Nota mínima para aprovação:</strong>{' '}
+            {avaliacaoInfo?.nota_minima || 'N/A'}
+          </Typography>
+        </Box>
+
+        <Box>
+          <Typography variant='body1' color='text.secondary'>
+            <strong>🔄 Tentativas permitidas:</strong>{' '}
+            {avaliacaoInfo?.tentativas_permitidas || 'Ilimitadas'}
+          </Typography>
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
+
+        <Alert severity='info'>
+          <Typography variant='body2'>
+            Certifique-se de revisar todo o conteúdo antes de iniciar a
+            avaliação. O tempo começará a contar assim que você clicar em
+            "Iniciar Avaliação".
+          </Typography>
+        </Alert>
+      </Stack>
+
+      {userAttempts.length > 0 && (
+        <Box sx={{ pt: 3 }}>
+          <Typography variant='h6' gutterBottom>
+            Histórico de Tentativas
+          </Typography>
+          <Stack gap={1.5}>
+            {userAttempts
+              .filter(a => a.status !== 'EM_ANDAMENTO')
+              .sort(
+                (a, b) =>
+                  new Date(b.criado_em).getTime() -
+                  new Date(a.criado_em).getTime()
+              )
+              .map((attempt, index) => {
+                const statusInfo = getStatusDisplay(attempt.status)
+                return (
+                  <Paper
+                    key={attempt.id}
+                    elevation={2}
+                    sx={{
+                      p: 2,
+                      borderLeft: theme =>
+                        `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`,
+                    }}
+                  >
+                    <Stack gap={1}>
+                      <Box
+                        display='flex'
+                        justifyContent='space-between'
+                        alignItems='center'
+                      >
+                        <Typography variant='subtitle2' fontWeight={600}>
+                          Tentativa {userAttempts.length - index}
+                        </Typography>
+                        <Chip
+                          label={statusInfo.label}
+                          size='small'
+                          sx={{
+                            bgcolor: statusInfo.color,
+                            color: 'white',
+                          }}
+                        />
+                      </Box>
+
+                      <Box
+                        display='flex'
+                        gap={3}
+                        flexWrap='wrap'
+                        sx={{ fontSize: '0.875rem' }}
+                      >
+                        {attempt.nota_obtida !== null && (
+                          <Box>
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
+                              Nota Obtida
+                            </Typography>
+                            <Typography
+                              variant='body2'
+                              fontWeight={600}
+                              color={
+                                attempt.nota_obtida >= 70
+                                  ? 'success.main'
+                                  : 'error.main'
+                              }
+                            >
+                              {attempt.nota_obtida}
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {attempt.data_fim && (
+                          <Box>
+                            <Typography
+                              variant='caption'
+                              color='text.secondary'
+                            >
+                              Tempo Gasto
+                            </Typography>
+                            <Typography variant='body2' fontWeight={600}>
+                              {calculateTimeSpent(
+                                attempt.data_inicio,
+                                attempt.data_fim
+                              )}
+                            </Typography>
+                          </Box>
+                        )}
+
+                        <Box>
+                          <Typography variant='caption' color='text.secondary'>
+                            Iniciada em:
+                          </Typography>
+                          <Typography variant='body2' fontWeight={600}>
+                            {new Date(attempt.criado_em).toLocaleDateString(
+                              'pt-BR',
+                              {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }
+                            )}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Stack>
+                  </Paper>
+                )
+              })}
+          </Stack>
+        </Box>
+      )}
+
+      {/* Botão para iniciar */}
+      {!tentativaStarted && shouldShowStartButton() && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
+          <Button
+            variant='contained'
+            size='large'
+            startIcon={
+              startAssessment.isPending ? (
+                <CircularProgress size={20} color='inherit' />
+              ) : (
+                <PlayArrowRounded />
+              )
+            }
+            disabled={startAssessment.isPending}
+            onClick={handleStartTentativa}
+            sx={{ minWidth: 200 }}
+          >
+            {startAssessment.isPending ? 'Iniciando...' : 'Iniciar Avaliação'}
+          </Button>
+        </Box>
+      )}
+
+      {tentativaStarted && assessmentData && (
+        <QuizContent
+          assessmentData={assessmentData}
+          currentQuestionIndex={currentQuestionIndex}
+          setCurrentQuestionIndex={setCurrentQuestionIndex}
+          respostas={respostas}
+          handleAnswerChange={handleAnswerChange}
+          timeRemaining={timeRemaining}
+          formatTime={formatTime}
+          isSubmitting={isSubmitting}
+          handleSubmit={handleSubmit}
+        />
+      )}
+    </Box>
+  )
+}
+
+function QuizContent({
+  assessmentData,
+  currentQuestionIndex,
+  setCurrentQuestionIndex,
+  respostas,
+  handleAnswerChange,
+  timeRemaining,
+  formatTime,
+  isSubmitting,
+  handleSubmit,
+}: {
+  assessmentData: StartAssessmentResponse
+  currentQuestionIndex: number
+  setCurrentQuestionIndex: (fn: (prev: number) => number) => void
+  respostas: Record<string, string>
+  handleAnswerChange: (questaoId: string, resposta: string) => void
+  timeRemaining: number | null
+  formatTime: (seconds: number) => string
+  isSubmitting: boolean
+  handleSubmit: () => void
+}) {
+  const currentQuestion = assessmentData.questoes[currentQuestionIndex]
+  const progress =
+    ((currentQuestionIndex + 1) / assessmentData.questoes.length) * 100
+
+  return (
+    <Box>
+      {/* Header com informações */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Stack
           direction='row'
@@ -457,213 +533,125 @@ export default function QuizPlayer({
                 variant={timeRemaining < 300 ? 'filled' : 'outlined'}
               />
             )}
-            <Chip
-              label={`${questoesRespondidas}/${assessmentData.questoes.length} respondidas`}
-              color={todasRespondidas ? 'success' : 'default'}
-            />
           </Stack>
         </Stack>
 
         <LinearProgress
           variant='determinate'
-          value={progressoQuestoes}
+          value={
+            ((currentQuestionIndex + 1) / assessmentData.questoes.length) * 100
+          }
           sx={{ mt: 2 }}
         />
       </Paper>
 
-      {/* Layout: Sidebar de Questões + Conteúdo */}
-      <Grid container spacing={2} alignItems='stretch'>
-        {/* Sidebar - Lista de Questões */}
-        <Grid size={3}>
-          <Paper
-            sx={{
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: 500,
-            }}
-          >
-            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant='subtitle2' fontWeight={600}>
-                Questões
+      {/* Questão atual */}
+      <Grid size={9}>
+        <Paper
+          sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 500,
+            p: 4,
+          }}
+        >
+          <Stack spacing={3}>
+            <Box>
+              <Typography variant='body1' fontWeight={500}>
+                {currentQuestion.enunciado}
+              </Typography>
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                sx={{ mt: 1 }}
+              >
+                Peso: {currentQuestion.peso}
               </Typography>
             </Box>
 
-            <List
-              sx={{
-                flex: 1,
-                overflow: 'auto',
-                py: 0,
-              }}
-            >
-              {assessmentData.questoes.map((questao, index) => {
-                const isAtual = index === currentQuestionIndex
-                const isRespondida = !!respostas[questao.id]
-
-                return (
-                  <ListItemButton
-                    key={questao.id}
-                    selected={isAtual}
-                    onClick={() => setCurrentQuestionIndex(index)}
-                    sx={{
-                      borderLeft: isAtual ? 4 : 0,
-                      borderColor: 'primary.main',
-                      backgroundColor: isRespondida
-                        ? 'success.lighter'
-                        : 'inherit',
-                      '&.Mui-selected': {
-                        backgroundColor: isRespondida
-                          ? 'success.light'
-                          : 'action.selected',
-                      },
-                      '&:hover': {
-                        backgroundColor: isRespondida
-                          ? 'success.light'
-                          : 'action.hover',
-                      },
-                    }}
-                  >
-                    <ListItemIcon>
-                      {isRespondida ? (
-                        <CheckCircle color='success' />
-                      ) : (
-                        <Box
-                          sx={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: '50%',
-                            border: 2,
-                            borderColor: isAtual ? 'primary.main' : 'divider',
-                          }}
-                        />
-                      )}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`Questão ${index + 1}`}
-                      primaryTypographyProps={{
-                        fontWeight: isAtual ? 600 : 400,
+            {/* Opções de resposta */}
+            {(currentQuestion.tipo === 'MULTIPLA_ESCOLHA' ||
+              currentQuestion.tipo === 'VERDADEIRO_FALSO') && (
+              <FormControl>
+                <RadioGroup
+                  value={respostas[currentQuestion.id] || ''}
+                  onChange={e =>
+                    handleAnswerChange(currentQuestion.id, e.target.value)
+                  }
+                >
+                  {currentQuestion.opcoes_resposta.map((opcao, idx) => (
+                    <FormControlLabel
+                      key={idx}
+                      value={opcao}
+                      control={<Radio />}
+                      label={
+                        <Typography variant='body2'>
+                          <strong>{String.fromCharCode(65 + idx)}.</strong>{' '}
+                          {opcao}
+                        </Typography>
+                      }
+                      sx={{
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        borderRadius: 1,
+                        px: 2,
+                        py: 1,
+                        mb: 1,
+                        '&:hover': {
+                          bgcolor: 'action.hover',
+                        },
                       }}
                     />
-                  </ListItemButton>
-                )
-              })}
-            </List>
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            )}
 
-            {/* Botão Finalizar na sidebar */}
-            <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-              <Button
+            {/* Questão dissertativa */}
+            {currentQuestion.tipo === 'DISSERTATIVA' && (
+              <TextField
+                multiline
+                rows={6}
                 fullWidth
-                variant='contained'
-                color='success'
-                startIcon={
-                  isSubmitting ? (
-                    <CircularProgress size={20} color='inherit' />
-                  ) : (
-                    <CheckCircle />
-                  )
-                }
-                onClick={handleSubmit}
-                disabled={!todasRespondidas || isSubmitting}
-              >
-                {isSubmitting ? 'Finalizando...' : 'Finalizar Avaliação'}
-              </Button>
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* Conteúdo - Questão Atual */}
-        <Grid size={9}>
-          <Paper
-            sx={{
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: 500,
-              p: 4,
-            }}
-          >
-            <Typography variant='h6' gutterBottom>
-              Questão {currentQuestionIndex + 1}
-            </Typography>
-
-            <Typography variant='body1' paragraph>
-              {currentQuestion.enunciado}
-            </Typography>
-
-            <Divider sx={{ my: 3 }} />
-
-            <FormControl component='fieldset' fullWidth sx={{ flex: 1 }}>
-              <RadioGroup
+                placeholder='Digite sua resposta aqui...'
                 value={respostas[currentQuestion.id] || ''}
                 onChange={e =>
                   handleAnswerChange(currentQuestion.id, e.target.value)
                 }
-              >
-                {currentQuestion.opcoes_resposta.map((opcao, idx) => (
-                  <FormControlLabel
-                    key={idx}
-                    value={opcao}
-                    control={<Radio />}
-                    label={
-                      <Typography variant='body1'>
-                        <strong>{String.fromCharCode(65 + idx)}.</strong>{' '}
-                        {opcao}
-                      </Typography>
-                    }
-                    sx={{
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      mb: 1,
-                      px: 2,
-                      py: 1,
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-
-            {!respostas[currentQuestion.id] && (
-              <Alert severity='info' sx={{ mt: 3 }}>
-                Selecione uma alternativa para esta questão
-              </Alert>
+              />
             )}
-
-            {/* Navegação inferior */}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                mt: 3,
-                pt: 2,
-                borderTop: 1,
-                borderColor: 'divider',
-              }}
+          </Stack>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              mt: 3,
+              pt: 2,
+              borderTop: 1,
+              borderColor: 'divider',
+            }}
+          >
+            <Button
+              startIcon={<NavigateBefore />}
+              onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+              disabled={currentQuestionIndex === 0}
             >
-              <Button
-                startIcon={<NavigateBefore />}
-                onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-                disabled={currentQuestionIndex === 0}
-              >
-                Anterior
-              </Button>
+              Anterior
+            </Button>
 
-              <Button
-                endIcon={<NavigateNext />}
-                onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-                variant='contained'
-                disabled={
-                  currentQuestionIndex === assessmentData.questoes.length - 1
-                }
-              >
-                Próxima
-              </Button>
-            </Box>
-          </Paper>
-        </Grid>
+            <Button
+              endIcon={<NavigateNext />}
+              onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+              variant='contained'
+              disabled={
+                currentQuestionIndex === assessmentData.questoes.length - 1
+              }
+            >
+              Próxima
+            </Button>
+          </Box>
+        </Paper>
       </Grid>
     </Box>
   )
