@@ -178,15 +178,13 @@ export default function ModuloPlayer({
             >
               Voltar
             </Button>
-            {!concluido && (
-              <Button
-                variant='contained'
-                onClick={handleCompleteModule}
-                disabled={marcarConcluidoMutation.isPending}
-              >
-                Próximo Módulo
-              </Button>
-            )}
+            <Button
+              variant='contained'
+              onClick={concluido ? onComplete : handleCompleteModule}
+              disabled={!concluido && marcarConcluidoMutation.isPending}
+            >
+              Próximo Módulo
+            </Button>
           </Stack>
         </Stack>
       </Paper>
