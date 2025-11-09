@@ -36,7 +36,6 @@ import {
   useListarDepartamentosAdmin,
   useListarCargos,
   useFuncionarios,
-  useRegisterFuncionario,
   useUpdateFuncionario,
   type FuncionarioRegister,
   type UpdateFuncionarioInput,

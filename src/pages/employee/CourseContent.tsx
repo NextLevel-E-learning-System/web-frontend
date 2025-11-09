@@ -12,9 +12,7 @@ import {
   Divider,
   Stack,
   Avatar,
-  Button,
 } from '@mui/material'
-import { ArrowBack } from '@mui/icons-material'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import CourseContentHeader from '../../components/employee/CourseContentHeader'
 import { useNavigation } from '../../hooks/useNavigation'
@@ -173,7 +171,6 @@ export default function CourseContent() {
         <ModuloPlayer
           modulo={moduloAtual}
           inscricaoId={enrollment?.id || ''}
-          liberado={moduloProgressoAtual.liberado}
           concluido={moduloProgressoAtual.concluido}
           onComplete={handleModuloComplete}
           onBack={handleCloseModulo}
