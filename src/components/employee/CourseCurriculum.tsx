@@ -19,7 +19,7 @@ import { useModuleAssessment } from '@/api/assessments'
 import {
   useStartModule,
   useCompleteModule,
-  useEnrollmentModuleProgress,
+  useModulosComProgresso,
 } from '../../api/progress'
 import AssessmentQuiz from './AssessmentQuiz'
 
@@ -49,6 +49,8 @@ function ModuleAccordion({
     modulo_id: string
     data_inicio?: string
     data_conclusao?: string
+    liberado: boolean
+    concluido: boolean
   }>
   onOpenModulo?: (moduloId: string) => void
 }) {
@@ -60,6 +62,9 @@ function ModuleAccordion({
   const moduleProgressData = moduleProgress?.find(
     p => p.modulo_id === module.id
   )
+
+  // Verificar se módulo está liberado (baseado no backend)
+  const isLiberado = moduleProgressData?.liberado ?? false
 
   // Determinar status do módulo baseado no progresso
   const getModuleStatus = (): ModuleItemStatus => {
@@ -80,6 +85,11 @@ function ModuleAccordion({
 
   const handleStartModule = async (e: React.MouseEvent) => {
     e.stopPropagation() // Previne expansão do accordion
+
+    // Bloquear se não estiver liberado
+    if (!isLiberado) {
+      return
+    }
 
     if (isInProgress || isCompleted) {
       // Se tem player disponível e módulo já está em progresso, abrir o player
@@ -128,6 +138,7 @@ function ModuleAccordion({
     if (isStarting) return 'Iniciando...'
     if (isCompleted) return 'Concluído'
     if (isInProgress) return 'Continuar'
+    if (!isLiberado) return 'Bloqueado'
     return 'Iniciar'
   }
 
@@ -232,13 +243,15 @@ function ModuleAccordion({
             size='small'
             variant={isCompleted || isInProgress ? 'outlined' : 'contained'}
             color={isCompleted ? 'success' : 'primary'}
-            disabled={isStarting || isCompleted}
+            disabled={isStarting || isCompleted || !isLiberado}
             onClick={handleStartModule}
             startIcon={
               isStarting ? (
                 <CircularProgress size={16} color='inherit' />
               ) : isCompleted ? (
                 <CheckCircleRoundedIcon />
+              ) : !isLiberado ? (
+                <LockRoundedIcon />
               ) : null
             }
             sx={{
@@ -255,7 +268,7 @@ function ModuleAccordion({
         <Divider sx={{ mb: 3 }} />
 
         {/* Aviso de módulo bloqueado */}
-        {!isInProgress && !isCompleted && (
+        {!isLiberado && (
           <Box
             sx={{
               p: 3,
@@ -274,8 +287,7 @@ function ModuleAccordion({
                 Módulo Bloqueado
               </Typography>
               <Typography variant='body2' color='text.secondary'>
-                Clique em "Iniciar" para desbloquear e acessar o conteúdo deste
-                módulo.
+                Complete o módulo anterior para desbloquear este conteúdo.
               </Typography>
             </Stack>
           </Box>
@@ -323,6 +335,16 @@ export default function CourseCurriculum({
   const [expandedModule, setExpandedModule] = useState<string | false>(false)
 
   // Buscar progresso dos módulos do banco
+  const { data: moduleProgress = [], isLoading: progressLoading } =
+    useModulosComProgresso(enrollmentId)
+
+  if (progressLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   return (
     <Stack spacing={2}>
@@ -335,6 +357,7 @@ export default function CourseCurriculum({
             setExpandedModule(expandedModule === module.id ? false : module.id)
           }
           enrollmentId={enrollmentId}
+          moduleProgress={moduleProgress}
           onOpenModulo={onOpenModulo}
         />
       ))}

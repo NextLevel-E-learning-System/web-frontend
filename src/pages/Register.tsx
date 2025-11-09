@@ -18,7 +18,6 @@ import { useNavigate } from 'react-router-dom'
 import { useListarDepartamentos, useListarCargos } from '@/api/users'
 import { useMemo, useState } from 'react'
 import { showToast } from '@/utils/toast'
-import { de } from 'date-fns/locale'
 
 const Register = () => {
   const navigate = useNavigate()
