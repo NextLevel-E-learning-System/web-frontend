@@ -776,21 +776,13 @@ export function useFinalizarTentativa() {
 
   return useMutation({
     mutationKey: ['assessments', 'finalizar-tentativa'],
-    mutationFn: async ({ tentativaId }: { tentativaId: string }) => {
+    mutationFn: async (input: SubmitAssessmentInput) => {
       // Finalizar tentativa
       const response = await authPost<{
         success: boolean
         data: SubmitAssessmentResponse
-      }>(`${API_ENDPOINTS.ASSESSMENTS}/submit-complete`, {
-        tentativa_id: tentativaId,
-        respostas: [], // Respostas já foram salvas individualmente
-      })
-
-      return {
-        tentativa_id: tentativaId,
-        status: response.data.status,
-        nota_obtida: response.data.nota_obtida || 0,
-      }
+      }>(`${API_ENDPOINTS.ASSESSMENTS}/submit-complete`, input)
+      return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] })

@@ -115,13 +115,10 @@ export default function ModuloPlayer({
   const currentStepData = steps[currentStep]
 
   const handleCompleteModule = () => {
-    const tempoGasto = Math.floor((Date.now() - tempoInicio) / 60000) // Converter para minutos
-
     marcarConcluidoMutation.mutate(
       {
         inscricaoId,
         moduloId: modulo.modulo_id,
-        tempoGasto,
       },
       {
         onSuccess: () => {
@@ -300,11 +297,9 @@ export default function ModuloPlayer({
                 funcionarioId={inscricaoId}
                 onComplete={aprovado => {
                   if (aprovado) {
-                    // Quiz aprovado, pode concluir módulo
                     handleCompleteModule()
                   }
                 }}
-                onCancel={onBack}
               />
             )}
           </Paper>

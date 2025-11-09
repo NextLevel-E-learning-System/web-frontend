@@ -609,15 +609,12 @@ export function useMarcarModuloConcluido() {
     mutationFn: ({
       inscricaoId,
       moduloId,
-      tempoGasto,
     }: {
       inscricaoId: string
       moduloId: string
-      tempoGasto?: number
     }) =>
       authPost(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/concluir`,
-        { tempo_gasto: tempoGasto }
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/concluir`
       ),
     onSuccess: (_, { inscricaoId }) => {
       queryClient.invalidateQueries({
