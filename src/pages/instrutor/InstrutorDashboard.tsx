@@ -132,7 +132,7 @@ export default function InstrutorDashboard() {
                 overflow: 'auto',
               }}
             >
-{/*               {cursos.length > 0 ? (
+              {/*               {cursos.length > 0 ? (
                 <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Table>
                     <TableHead>

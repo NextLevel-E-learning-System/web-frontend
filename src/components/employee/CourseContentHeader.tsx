@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography'
 import { ArrowBackIosNewRounded } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { Chip } from '@mui/material'
+import { usePrerequisitesTitles } from '@/api/courses'
 
 interface CourseContentHeaderProps {
   title: string
@@ -31,6 +32,7 @@ export default function CourseContentHeader({
   backPath,
 }: CourseContentHeaderProps) {
   const navigate = useNavigate()
+  const prerequisitesTitles = usePrerequisitesTitles(prerequisites)
 
   const handleGoBack = () => {
     if (backPath) {
@@ -100,12 +102,17 @@ export default function CourseContentHeader({
               flexWrap: 'wrap',
             }}
           >
-            {level && <Typography variant='body2'>Nível: {level}</Typography>}
-            {prerequisites && prerequisites.length > 0 && (
+            {level && (
+              <Typography variant='body2'>
+                <strong>Nível:</strong> {level}
+              </Typography>
+            )}
+            {prerequisitesTitles && prerequisitesTitles.length > 0 && (
               <>
                 <Typography variant='body2'>•</Typography>
                 <Typography variant='body2'>
-                  Pré-requisitos: {prerequisites.join(', ')}
+                  <strong>Pré-requisitos:</strong>{' '}
+                  {prerequisitesTitles.join(', ')}
                 </Typography>
               </>
             )}

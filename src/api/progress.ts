@@ -468,3 +468,177 @@ export function useGenerateCertificatePdf() {
       ),
   })
 }
+
+// ===============================================
+// MÓDULOS COMPOSTOS - PROGRESSO
+// ===============================================
+
+export interface ProgressoModulo {
+  modulo_id: string
+  modulo_titulo: string
+  modulo_ordem: number
+  modulo_obrigatorio: boolean
+  data_inicio?: string | null
+  data_conclusao?: string | null
+  tempo_gasto?: number | null
+  concluido: boolean
+}
+
+export interface ProgressoDetalhado {
+  inscricao_id: string
+  funcionario_id: string
+  curso_id: string
+  status_curso: string
+  progresso_percentual: number
+  data_inscricao: string
+  data_conclusao?: string | null
+  funcionario_nome: string
+  funcionario_email: string
+  curso_titulo: string
+  modulos_progresso: ProgressoModulo[]
+  total_modulos: number
+  modulos_concluidos: number
+  modulos_obrigatorios: number
+  modulos_obrigatorios_concluidos: number
+}
+
+export interface ProximoModulo {
+  modulo_id: string
+  titulo: string
+  ordem: number
+  tipo_conteudo?: string | null
+  tem_avaliacao: boolean
+}
+
+export interface ModuloComProgresso {
+  modulo_id: string
+  titulo: string
+  ordem: number
+  tipo_conteudo: string
+  obrigatorio: boolean
+  xp_modulo: number
+  concluido: boolean
+  liberado: boolean
+  data_conclusao?: string
+  tem_avaliacao: boolean
+  total_materiais: number
+}
+
+// Hook para buscar progresso detalhado de uma inscrição
+export function useProgressoDetalhado(inscricaoId: string) {
+  return useQuery<ProgressoDetalhado>({
+    queryKey: ['progress', 'detalhado', inscricaoId],
+    queryFn: async () => {
+      const response = await authGet<{ data: ProgressoDetalhado }>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/progresso-detalhado`
+      )
+      return response.data
+    },
+    enabled: !!inscricaoId,
+  })
+}
+
+// Hook para buscar próximo módulo não concluído
+export function useProximoModulo(inscricaoId: string) {
+  return useQuery<ProximoModulo | null>({
+    queryKey: ['progress', 'proximo-modulo', inscricaoId],
+    queryFn: async () => {
+      const response = await authGet<{ data: ProximoModulo | null }>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/proximo-modulo`
+      )
+      return response.data
+    },
+    enabled: !!inscricaoId,
+  })
+}
+
+// Hook para verificar se módulo está liberado
+export function useModuloLiberado(inscricaoId: string, moduloId: string) {
+  return useQuery<boolean>({
+    queryKey: ['progress', 'modulo-liberado', inscricaoId, moduloId],
+    queryFn: async () => {
+      const response = await authGet<{ liberado: boolean }>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/liberado`
+      )
+      return response.liberado
+    },
+    enabled: !!inscricaoId && !!moduloId,
+  })
+}
+
+// Hook para listar módulos com progresso
+export function useModulosComProgresso(inscricaoId: string) {
+  return useQuery<ModuloComProgresso[]>({
+    queryKey: ['progress', 'modulos-progresso', inscricaoId],
+    queryFn: async () => {
+      const response = await authGet<{ items: ModuloComProgresso[] }>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos-progresso`
+      )
+      return response.items || []
+    },
+    enabled: !!inscricaoId,
+  })
+}
+
+// Hook para marcar conteúdo como visualizado
+export function useMarcarConteudoVisualizado() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['progress', 'marcar-visualizado'],
+    mutationFn: ({
+      inscricaoId,
+      moduloId,
+      tipoConteudo,
+    }: {
+      inscricaoId: string
+      moduloId: string
+      tipoConteudo?: string
+    }) =>
+      authPost(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/visualizar`,
+        { tipo_conteudo: tipoConteudo }
+      ),
+    onSuccess: (_, { inscricaoId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'modulos-progresso', inscricaoId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'detalhado', inscricaoId],
+      })
+    },
+  })
+}
+
+// Hook para marcar módulo como concluído
+export function useMarcarModuloConcluido() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationKey: ['progress', 'marcar-concluido'],
+    mutationFn: ({
+      inscricaoId,
+      moduloId,
+      tempoGasto,
+    }: {
+      inscricaoId: string
+      moduloId: string
+      tempoGasto?: number
+    }) =>
+      authPost(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/concluir`,
+        { tempo_gasto: tempoGasto }
+      ),
+    onSuccess: (_, { inscricaoId }) => {
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'modulos-progresso', inscricaoId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'detalhado', inscricaoId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['progress', 'proximo-modulo', inscricaoId],
+      })
+    },
+  })
+}

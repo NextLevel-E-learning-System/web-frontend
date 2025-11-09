@@ -16,7 +16,7 @@ export interface CourseCardProps {
   onViewCourse?: () => void
   completionRate?: number
   totalEnrollments?: number
-  instructorName?: string
+  instructorName?: string | null
   xpOffered?: number
   level?: string
 }

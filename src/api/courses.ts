@@ -90,10 +90,47 @@ export interface Module {
   obrigatorio: boolean
   xp: number
   xp_modulo: number // campo correto do backend
-  tipo_conteudo?: string | null
+  tipo_conteudo: string
   curso_id?: string
   criado_em?: string
   atualizado_em?: string
+}
+
+// Módulo Composto (com materiais e avaliação)
+export interface MaterialModulo {
+  id: string
+  nome_arquivo: string
+  tipo_arquivo: string
+  tamanho: number
+  storage_key: string
+  url_download?: string // Presigned URL do S3
+  criado_em: string
+}
+
+export interface AvaliacaoModulo {
+  codigo: string
+  titulo: string
+  tempo_limite?: number
+  tentativas_permitidas?: number
+  nota_minima?: number
+  ativo: boolean
+}
+
+export interface ModuloCompleto {
+  modulo_id: string
+  curso_id: string
+  ordem: number
+  titulo: string
+  conteudo?: string | null
+  tipo_conteudo?: string | null
+  obrigatorio: boolean
+  xp_modulo: number
+  criado_em: string
+  atualizado_em: string
+  materiais: MaterialModulo[]
+  avaliacao?: AvaliacaoModulo | null
+  total_materiais: number
+  tem_avaliacao: boolean
 }
 
 export interface ModuleResponse {
@@ -104,7 +141,7 @@ export interface CreateModuleInput {
   titulo: string
   conteudo?: string
   ordem?: number
-  obrigatorio?: boolean
+  obrigatorio: boolean
   xp?: number
   tipo_conteudo?: string
 }
@@ -113,7 +150,7 @@ export interface UpdateModuleInput {
   titulo?: string
   conteudo?: string
   ordem?: number
-  obrigatorio?: boolean
+  obrigatorio: boolean
   xp?: number
   tipo_conteudo?: string
 }
@@ -468,6 +505,38 @@ export function useCoursesByDepartment(departmentCode: string) {
   })
 }
 
+// ===============================================
+// MÓDULOS COMPOSTOS
+// ===============================================
+
+// Hook para buscar módulos completos de um curso
+export function useModulosCompletos(cursoId: string) {
+  return useQuery<ModuloCompleto[]>({
+    queryKey: ['courses', 'modulos-completos', cursoId],
+    queryFn: async () => {
+      const response = await authGet<{ items: ModuloCompleto[] }>(
+        `${API_ENDPOINTS.COURSES}/${cursoId}/modulos/completos`
+      )
+      return response.items || []
+    },
+    enabled: !!cursoId,
+  })
+}
+
+// Hook para buscar um módulo completo específico
+export function useModuloCompleto(moduloId: string) {
+  return useQuery<ModuloCompleto>({
+    queryKey: ['courses', 'modulo-completo', moduloId],
+    queryFn: async () => {
+      const response = await authGet<{ data: ModuloCompleto }>(
+        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/completo`
+      )
+      return response.data
+    },
+    enabled: !!moduloId,
+  })
+}
+
 // Helper para conversão de arquivo para Base64
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -481,4 +550,53 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
+}
+
+// Hook customizado para resolver títulos de pré-requisitos
+export function usePrerequisitesTitles(
+  prerequisiteCodes: string[] | undefined
+) {
+  const { data: coursesResponse, isLoading } = useCourses()
+
+  // Debug: log dos dados recebidos
+  console.log('[usePrerequisitesTitles] Input:', {
+    prerequisiteCodes,
+    coursesResponse,
+    isLoading,
+  })
+
+  if (!prerequisiteCodes || prerequisiteCodes.length === 0) {
+    console.log('[usePrerequisitesTitles] Sem pré-requisitos')
+    return []
+  }
+
+  if (!coursesResponse || !coursesResponse.items) {
+    console.log(
+      '[usePrerequisitesTitles] Cursos ainda não carregados, retornando códigos'
+    )
+    return prerequisiteCodes // Retorna só os códigos se ainda não carregou
+  }
+
+  const allCourses = coursesResponse.items
+
+  console.log(
+    `[usePrerequisitesTitles] Total de cursos carregados: ${allCourses.length}`
+  )
+
+  // Mapear códigos para títulos
+  const titles = prerequisiteCodes.map(code => {
+    const course = allCourses.find(c => c.codigo === code)
+    if (course) {
+      console.log(
+        `[usePrerequisitesTitles] Encontrado: ${code} -> ${course.titulo}`
+      )
+      return course.titulo
+    } else {
+      console.warn(`[usePrerequisitesTitles] Curso não encontrado: ${code}`)
+      return code
+    }
+  })
+
+  console.log('[usePrerequisitesTitles] Resultado final:', titles)
+  return titles
 }

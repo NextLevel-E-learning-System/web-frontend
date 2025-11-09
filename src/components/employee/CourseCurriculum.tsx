@@ -74,9 +74,7 @@ function ModuleAccordion({
   const [materialsViewed, setMaterialsViewed] = useState<Set<string>>(new Set())
 
   // Buscar materiais APENAS se tipo_conteudo for video ou document E se o módulo estiver expandido
-  const shouldFetchMaterials =
-    (module.tipo_conteudo === 'video' || module.tipo_conteudo === 'pdf') &&
-    expanded
+  const shouldFetchMaterials = module.tipo_conteudo === 'material' && expanded
 
   const { data: materialsData, isLoading: materialsLoading } =
     useModuleMaterials(module.id)
