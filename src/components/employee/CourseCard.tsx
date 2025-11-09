@@ -15,7 +15,6 @@ export interface CourseCardProps {
   gradientTo: string
   onViewCourse?: () => void
   completionRate?: number
-  totalEnrollments?: number
   instructorName?: string | null
   xpOffered?: number
   level?: string
@@ -30,7 +29,6 @@ export default function CourseCard({
   gradientTo,
   onViewCourse,
   completionRate: _completionRate,
-  totalEnrollments: _totalEnrollments,
   instructorName: _instructorName,
   xpOffered,
   level,

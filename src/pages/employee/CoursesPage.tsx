@@ -170,7 +170,6 @@ function CourseItem({
           gradientTo={gradientTo}
           onViewCourse={() => handleViewCourse(course)}
           completionRate={course.taxa_conclusao}
-          totalEnrollments={course.total_inscricoes}
           instructorName={course.instrutor_nome}
           xpOffered={course.xp_oferecido}
           level={course.nivel_dificuldade}

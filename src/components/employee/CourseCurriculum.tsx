@@ -323,16 +323,6 @@ export default function CourseCurriculum({
   const [expandedModule, setExpandedModule] = useState<string | false>(false)
 
   // Buscar progresso dos módulos do banco
-  const { data: moduleProgress = [], isLoading: progressLoading } =
-    useEnrollmentModuleProgress(enrollmentId)
-
-  if (progressLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
-    )
-  }
 
   return (
     <Stack spacing={2}>
@@ -345,7 +335,6 @@ export default function CourseCurriculum({
             setExpandedModule(expandedModule === module.id ? false : module.id)
           }
           enrollmentId={enrollmentId}
-          moduleProgress={moduleProgress}
           onOpenModulo={onOpenModulo}
         />
       ))}
