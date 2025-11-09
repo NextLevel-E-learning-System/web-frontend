@@ -282,15 +282,6 @@ export default function ModuloPlayer({
                 </Box>
               )}
 
-            {currentStepData?.type === 'texto' && (
-              <Box>
-                <div
-                  dangerouslySetInnerHTML={{ __html: currentStepData.data }}
-                  style={{ minHeight: 300 }}
-                />
-              </Box>
-            )}
-
             {currentStepData?.type === 'quiz' && (
               <QuizPlayer
                 avaliacaoId={currentStepData.data.codigo}

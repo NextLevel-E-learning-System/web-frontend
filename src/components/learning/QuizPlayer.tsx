@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Typography,
@@ -28,13 +28,13 @@ import {
   PlayArrow,
 } from '@mui/icons-material'
 import {
-  useIniciarTentativa,
-  useResponderQuestao,
-  useFinalizarTentativa,
+  useStartAssessment,
+  useSubmitAssessment,
+  useActiveAttempt,
   useUserAttempts,
-  type Tentativa,
-  type Questao,
+  type StartAssessmentResponse,
 } from '@/api/assessments'
+import { toast } from 'react-toastify'
 
 interface AvaliacaoInfo {
   codigo: string
@@ -60,20 +60,47 @@ export default function QuizPlayer({
   onComplete,
   onCancel,
 }: QuizPlayerProps) {
-  const [tentativaIniciada, setTentativaIniciada] = useState(false)
-  const [tentativa, setTentativa] = useState<Tentativa | null>(null)
-  const [questoes, setQuestoes] = useState<Questao[]>([])
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [respostas, setRespostas] = useState<Record<string, string>>({})
-  const [tempoRestante, setTempoRestante] = useState<number | null>(null)
-  const [finalizando, setFinalizando] = useState(false)
+  const startAssessment = useStartAssessment()
+  const submitAssessment = useSubmitAssessment()
 
-  const iniciarMutation = useIniciarTentativa()
-  const finalizarMutation = useFinalizarTentativa()
+  // Buscar tentativa ativa ao montar o componente
+  const { data: activeAttempt } = useActiveAttempt(avaliacaoId, true)
 
   // Buscar histórico de tentativas
   const { data: userAttempts = [], isLoading: loadingAttempts } =
     useUserAttempts(avaliacaoId, true)
+
+  const [assessmentData, setAssessmentData] =
+    useState<StartAssessmentResponse | null>(null)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [respostas, setRespostas] = useState<Record<string, string>>({})
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [tentativaStarted, setTentativaStarted] = useState(false)
+
+  // Verificar se deve mostrar o botão de iniciar
+  const shouldShowStartButton = () => {
+    // Se não há tentativas, pode iniciar
+    if (userAttempts.length === 0) return true
+
+    // Verificar se já foi aprovado
+    const hasApproved = userAttempts.some(
+      attempt => attempt.status === 'APROVADO'
+    )
+    if (hasApproved) return false
+
+    // Verificar se há tentativa pendente de revisão
+    const hasPendingReview = userAttempts.some(
+      attempt => attempt.status === 'AGUARDANDO_CORRECAO'
+    )
+    if (hasPendingReview) return false
+
+    // Verificar se ainda tem tentativas disponíveis
+    const tentativasUsadas = userAttempts.filter(
+      a => a.status !== 'EM_ANDAMENTO'
+    ).length
+    return tentativasUsadas < (avaliacaoInfo?.tentativas_permitidas || 0)
+  }
 
   // Mapear status para exibição
   const getStatusDisplay = (status: string) => {
@@ -89,40 +116,129 @@ export default function QuizPlayer({
     return statusMap[status] || { label: status, color: 'text.secondary' }
   }
 
-  const handleIniciarTentativa = () => {
-    iniciarMutation.mutate(
-      { avaliacaoId, funcionarioId },
-      {
-        onSuccess: data => {
-          setTentativa(data.tentativa)
-          setQuestoes(data.questoes)
-          setTentativaIniciada(true)
+  const handleSubmit = useCallback(async () => {
+    if (!assessmentData) return
 
-          // Configurar timer se houver tempo limite
-          if (data.tentativa.tempo_limite_minutos) {
-            setTempoRestante(data.tentativa.tempo_limite_minutos * 60)
-          }
-        },
-        onError: error => {
-          console.error('Erro ao iniciar tentativa:', error)
-        },
+    // Verificar se todas as questões foram respondidas
+    const unanswered = assessmentData.questoes.filter(q => !respostas[q.id])
+    if (unanswered.length > 0) {
+      const confirm = window.confirm(
+        `Você tem ${unanswered.length} questão(ões) não respondida(s). Deseja enviar mesmo assim?`
+      )
+      if (!confirm) return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await submitAssessment.mutateAsync({
+        tentativa_id: assessmentData.tentativa.id,
+        respostas: Object.entries(respostas).map(([questao_id, resposta]) => ({
+          questao_id,
+          resposta_funcionario: resposta,
+        })),
+      })
+
+      // Resetar estado
+      setTentativaStarted(false)
+      setAssessmentData(null)
+      setRespostas({})
+      setCurrentQuestionIndex(0)
+      setTimeRemaining(null)
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      toast.error(err.message || 'Erro ao enviar avaliação')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [assessmentData, respostas, submitAssessment, onComplete])
+
+  // Recuperar tentativa ativa se existir
+  useEffect(() => {
+    if (activeAttempt && !assessmentData) {
+      console.log('🔄 Recuperando tentativa ativa:', activeAttempt)
+      setAssessmentData(activeAttempt)
+      setTentativaStarted(true)
+
+      // Calcular tempo restante se houver tempo limite
+      if (
+        activeAttempt.avaliacao.tempo_limite &&
+        activeAttempt.tentativa.data_inicio
+      ) {
+        const inicioMs = new Date(activeAttempt.tentativa.data_inicio).getTime()
+        const agoraMs = Date.now()
+        const decorrido = Math.floor((agoraMs - inicioMs) / 1000)
+        const limiteSegundos = activeAttempt.avaliacao.tempo_limite * 60
+        const restante = limiteSegundos - decorrido
+
+        if (restante > 0) {
+          setTimeRemaining(restante)
+        } else {
+          // Tempo esgotado, submeter automaticamente
+          toast.warning(
+            'Tempo esgotado! Submetendo respostas automaticamente...'
+          )
+          setTimeout(() => handleSubmit(), 1000)
+        }
       }
-    )
+    }
+  }, [activeAttempt, assessmentData, handleSubmit])
+
+  // Handler para iniciar a tentativa
+  const handleStartTentativa = async () => {
+    try {
+      const result = await startAssessment.mutateAsync(avaliacaoId)
+      console.log('📝 Tentativa iniciada:', result)
+      setAssessmentData(result)
+      setTentativaStarted(true)
+
+      // Configurar timer se houver tempo limite
+      if (result.avaliacao.tempo_limite) {
+        setTimeRemaining(result.avaliacao.tempo_limite * 60)
+      }
+    } catch (error: unknown) {
+      console.error('❌ Erro ao iniciar tentativa:', error)
+      const err = error as {
+        message?: string
+        response?: {
+          data?: {
+            message?: string
+            error?: string
+            details?: { message?: string; incomplete_modules?: string[] }
+          }
+        }
+      }
+
+      const errorDetails = err.response?.data?.details
+      const errorMessage =
+        errorDetails?.message ||
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message
+
+      if (
+        errorDetails?.incomplete_modules &&
+        errorDetails.incomplete_modules.length > 0
+      ) {
+        toast.error(
+          `❌ ${errorMessage}\n\nMódulos pendentes:\n${errorDetails.incomplete_modules.join('\n')}`,
+          { autoClose: 10000 }
+        )
+      } else {
+        toast.error(errorMessage || 'Erro ao iniciar tentativa')
+      }
+    }
   }
 
-  // Timer countdown
+  // Countdown timer
   useEffect(() => {
-    if (tempoRestante === null || tempoRestante <= 0) return
+    if (timeRemaining === null || timeRemaining <= 0) return
 
     const interval = setInterval(() => {
-      setTempoRestante(prev => {
+      setTimeRemaining(prev => {
         if (prev === null || prev <= 1) {
-          // Tempo esgotado - finalizar automaticamente
-         
-           clearInterval(interval)
-            finalizarMutation()
-         
-            
+          clearInterval(interval)
+          handleSubmit()
           return 0
         }
         return prev - 1
@@ -131,64 +247,32 @@ export default function QuizPlayer({
 
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tempoRestante])
+  }, [timeRemaining])
 
-  const currentQuestion = questoes[currentQuestionIndex]
-
-  const handleNext = () => {
-    if (currentQuestionIndex < questoes.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1)
-    }
-  }
-
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1)
-    }
-  }
-
-  const handleFinalizarTentativa = () => {
-    if (!tentativa) return
-
-    setFinalizando(true)
-
-    try {
-      await finalizarMutation.mutateAsync({
-        tentativa_id: assessmentData.tentativa.id,
-        respostas: Object.entries(respostas).map(([questao_id, resposta]) => ({
-          questao_id,
-          resposta_funcionario: resposta,
-        })),
-      })
-
-  
-          setFinalizando(false)
-        },
-      }
-    )
-  }
-
-  const formatTempo = (segundos: number) => {
-    const mins = Math.floor(segundos / 60)
-    const secs = segundos % 60
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
-  const progressoQuestoes =
-    questoes.length > 0
-      ? ((currentQuestionIndex + 1) / questoes.length) * 100
-      : 0
+  const handleAnswerChange = (questaoId: string, resposta: string) => {
+    setRespostas(prev => ({ ...prev, [questaoId]: resposta }))
+  }
 
   const questoesRespondidas = Object.keys(respostas).length
-  const todasRespondidas = questoesRespondidas === questoes.length
+  const todasRespondidas =
+    assessmentData && questoesRespondidas === assessmentData.questoes.length
+  const progressoQuestoes = assessmentData
+    ? ((currentQuestionIndex + 1) / assessmentData.questoes.length) * 100
+    : 0
 
   // Tela de informações (antes de iniciar)
-  if (!tentativaIniciada) {
+  if (!tentativaStarted) {
     return (
       <Box>
         <Paper sx={{ p: 4 }}>
           <Typography variant='h5' gutterBottom fontWeight={600}>
-            Informações da Avaliação
+            {avaliacaoInfo?.titulo || 'Informações da Avaliação'}
           </Typography>
 
           <Divider sx={{ my: 3 }} />
@@ -202,39 +286,35 @@ export default function QuizPlayer({
               <>
                 <Stack spacing={2}>
                   <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      <strong>Importante:</strong> Todos os módulos obrigatórios
-                      devem estar concluídos antes de iniciar esta avaliação.
+                    <Typography variant='body1' color='text.secondary'>
+                      <strong>⏱️ Tempo limite:</strong>{' '}
+                      {avaliacaoInfo?.tempo_limite || 'N/A'} minutos
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      <strong>Tempo limite:</strong>{' '}
-                      {tentativa?.tempo_limite_minutos || 'N/A'} minutos
+                    <Typography variant='body1' color='text.secondary'>
+                      <strong>📊 Nota mínima para aprovação:</strong>{' '}
+                      {avaliacaoInfo?.nota_minima || 'N/A'}
                     </Typography>
                   </Box>
 
                   <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      <strong>Nota mínima:</strong>{' '}
-                      {tentativa?.nota_minima || 'N/A'}
+                    <Typography variant='body1' color='text.secondary'>
+                      <strong>🔄 Tentativas permitidas:</strong>{' '}
+                      {avaliacaoInfo?.tentativas_permitidas || 'Ilimitadas'}
                     </Typography>
                   </Box>
 
-                  <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      <strong>Tentativas permitidas:</strong>{' '}
-                      {tentativa?.tentativas_permitidas || 'N/A'}
-                    </Typography>
-                  </Box>
+                  <Divider sx={{ my: 2 }} />
 
-                  <Box>
-                    <Typography variant='body2' color='text.secondary'>
-                      Novas tentativas são permitidas se você não atingir a nota
-                      mínima para aprovação.
+                  <Alert severity='info'>
+                    <Typography variant='body2'>
+                      Certifique-se de revisar todo o conteúdo antes de iniciar
+                      a avaliação. O tempo começará a contar assim que você
+                      clicar em "Iniciar Avaliação".
                     </Typography>
-                  </Box>
+                  </Alert>
                 </Stack>
 
                 {/* Histórico de Tentativas */}
@@ -299,38 +379,35 @@ export default function QuizPlayer({
                 )}
 
                 {/* Botão para iniciar */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    gap: 2,
-                    pt: 2,
-                  }}
-                >
-                  {onCancel && (
-                    <Button variant='outlined' onClick={onCancel}>
-                      Voltar
-                    </Button>
-                  )}
-                  <Button
-                    variant='contained'
-                    size='large'
-                    startIcon={
-                      iniciarMutation.isPending ? (
-                        <CircularProgress size={20} color='inherit' />
-                      ) : (
-                        <PlayArrow />
-                      )
-                    }
-                    disabled={iniciarMutation.isPending}
-                    onClick={handleIniciarTentativa}
-                    sx={{ minWidth: 200 }}
+                {!tentativaStarted && shouldShowStartButton() && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: 2,
+                      pt: 2,
+                    }}
                   >
-                    {iniciarMutation.isPending
-                      ? 'Iniciando...'
-                      : 'Iniciar Avaliação'}
-                  </Button>
-                </Box>
+                    <Button
+                      variant='contained'
+                      size='large'
+                      startIcon={
+                        startAssessment.isPending ? (
+                          <CircularProgress size={20} color='inherit' />
+                        ) : (
+                          <PlayArrow />
+                        )
+                      }
+                      disabled={startAssessment.isPending}
+                      onClick={handleStartTentativa}
+                      sx={{ minWidth: 200 }}
+                    >
+                      {startAssessment.isPending
+                        ? 'Iniciando...'
+                        : 'Iniciar Avaliação'}
+                    </Button>
+                  </Box>
+                )}
               </>
             )}
           </Stack>
@@ -339,17 +416,19 @@ export default function QuizPlayer({
     )
   }
 
-  // Loading/Error states (após iniciar)
-  if (!tentativa || questoes.length === 0) {
+  // Loading state
+  if (!assessmentData || assessmentData.questoes.length === 0) {
     return (
       <Box textAlign='center' py={8}>
-        <LinearProgress sx={{ mb: 2 }} />
+        <CircularProgress sx={{ mb: 2 }} />
         <Typography>Carregando questões...</Typography>
       </Box>
     )
   }
 
-  // Tela do quiz (após iniciar)
+  const currentQuestion = assessmentData.questoes[currentQuestionIndex]
+
+  // Tela do quiz (após iniciar) - Layout com sidebar
   return (
     <Box>
       {/* Header com Timer e Progresso */}
@@ -360,23 +439,26 @@ export default function QuizPlayer({
           alignItems='center'
         >
           <Box>
-            <Typography variant='h6'>{tentativa.avaliacao_titulo}</Typography>
+            <Typography variant='h6'>
+              {assessmentData.avaliacao.titulo}
+            </Typography>
             <Typography variant='body2' color='text.secondary'>
-              Questão {currentQuestionIndex + 1} de {questoes.length}
+              Questão {currentQuestionIndex + 1} de{' '}
+              {assessmentData.questoes.length}
             </Typography>
           </Box>
 
           <Stack direction='row' spacing={2} alignItems='center'>
-            {tempoRestante !== null && (
+            {timeRemaining !== null && (
               <Chip
                 icon={<Timer />}
-                label={formatTempo(tempoRestante)}
-                color={tempoRestante < 300 ? 'error' : 'default'}
-                variant={tempoRestante < 300 ? 'filled' : 'outlined'}
+                label={formatTime(timeRemaining)}
+                color={timeRemaining < 300 ? 'error' : 'default'}
+                variant={timeRemaining < 300 ? 'filled' : 'outlined'}
               />
             )}
             <Chip
-              label={`${questoesRespondidas}/${questoes.length} respondidas`}
+              label={`${questoesRespondidas}/${assessmentData.questoes.length} respondidas`}
               color={todasRespondidas ? 'success' : 'default'}
             />
           </Stack>
@@ -414,7 +496,7 @@ export default function QuizPlayer({
                 py: 0,
               }}
             >
-              {questoes.map((questao, index) => {
+              {assessmentData.questoes.map((questao, index) => {
                 const isAtual = index === currentQuestionIndex
                 const isRespondida = !!respostas[questao.id]
 
@@ -473,11 +555,17 @@ export default function QuizPlayer({
                 fullWidth
                 variant='contained'
                 color='success'
-                startIcon={<CheckCircle />}
-                onClick={handleFinalizarTentativa}
-                disabled={!todasRespondidas || finalizando}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size={20} color='inherit' />
+                  ) : (
+                    <CheckCircle />
+                  )
+                }
+                onClick={handleSubmit}
+                disabled={!todasRespondidas || isSubmitting}
               >
-                {finalizando ? 'Finalizando...' : 'Finalizar Avaliação'}
+                {isSubmitting ? 'Finalizando...' : 'Finalizar Avaliação'}
               </Button>
             </Box>
           </Paper>
@@ -502,45 +590,25 @@ export default function QuizPlayer({
               {currentQuestion.enunciado}
             </Typography>
 
-            {currentQuestion.imagem_url && (
-              <Box sx={{ my: 3, textAlign: 'center' }}>
-                <img
-                  src={currentQuestion.imagem_url}
-                  alt='Imagem da questão'
-                  style={{ maxWidth: '100%', maxHeight: 400, borderRadius: 8 }}
-                />
-              </Box>
-            )}
-
             <Divider sx={{ my: 3 }} />
 
             <FormControl component='fieldset' fullWidth sx={{ flex: 1 }}>
               <RadioGroup
                 value={respostas[currentQuestion.id] || ''}
                 onChange={e =>
-                  handleRespostaChange(currentQuestion.id, e.target.value)
+                  handleAnswerChange(currentQuestion.id, e.target.value)
                 }
               >
-                {currentQuestion.alternativas.map(alternativa => (
+                {currentQuestion.opcoes_resposta.map((opcao, idx) => (
                   <FormControlLabel
-                    key={alternativa.id}
-                    value={alternativa.id}
+                    key={idx}
+                    value={opcao}
                     control={<Radio />}
                     label={
-                      <Box sx={{ py: 1 }}>
-                        <Typography variant='body1'>
-                          {alternativa.ordem}. {alternativa.texto}
-                        </Typography>
-                        {alternativa.imagem_url && (
-                          <Box sx={{ mt: 1 }}>
-                            <img
-                              src={alternativa.imagem_url}
-                              alt={`Alternativa ${alternativa.ordem}`}
-                              style={{ maxWidth: 200, borderRadius: 4 }}
-                            />
-                          </Box>
-                        )}
-                      </Box>
+                      <Typography variant='body1'>
+                        <strong>{String.fromCharCode(65 + idx)}.</strong>{' '}
+                        {opcao}
+                      </Typography>
                     }
                     sx={{
                       border: '1px solid',
@@ -548,6 +616,7 @@ export default function QuizPlayer({
                       borderRadius: 1,
                       mb: 1,
                       px: 2,
+                      py: 1,
                       '&:hover': {
                         backgroundColor: 'action.hover',
                       },
@@ -576,7 +645,7 @@ export default function QuizPlayer({
             >
               <Button
                 startIcon={<NavigateBefore />}
-                onClick={handlePrevious}
+                onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
                 disabled={currentQuestionIndex === 0}
               >
                 Anterior
@@ -584,9 +653,11 @@ export default function QuizPlayer({
 
               <Button
                 endIcon={<NavigateNext />}
-                onClick={handleNext}
+                onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
                 variant='contained'
-                disabled={currentQuestionIndex === questoes.length - 1}
+                disabled={
+                  currentQuestionIndex === assessmentData.questoes.length - 1
+                }
               >
                 Próxima
               </Button>
