@@ -178,7 +178,7 @@ export default function ModuloPlayer({
               onClick={handleCompleteModule}
               disabled={marcarConcluidoMutation.isPending}
             >
-              Concluir Módulo
+              Próximo Módulo
             </Button>
           </Stack>
         </Stack>
