@@ -28,7 +28,6 @@ interface CertificateViewProps {
   enrollmentId: string
   cursoTitulo: string
   dataConclusao?: string
-  existingCertificate?: Certificate | null
   onCertificateIssued?: (certificate: Certificate) => void
 }
 
@@ -36,12 +35,9 @@ export default function CertificateView({
   enrollmentId,
   cursoTitulo,
   dataConclusao,
-  existingCertificate,
   onCertificateIssued,
 }: CertificateViewProps) {
-  const [certificate, setCertificate] = useState<Certificate | null>(
-    existingCertificate || null
-  )
+  const [certificate, setCertificate] = useState<Certificate | null>(null)
 
   const issueMutation = useIssueCertificate()
   const generatePdfMutation = useGenerateCertificatePdf()

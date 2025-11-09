@@ -9,29 +9,18 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import IconButton from '@mui/material/IconButton'
 
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
-import CloseIcon from '@mui/icons-material/Close'
-import {
-  PlayCircleFilled,
-  PictureAsPdfRounded,
-  OpenInNew,
-} from '@mui/icons-material'
+
 import type { Module } from '../../api/courses'
-import { useModuleMaterials } from '../../api/courses'
 import { useModuleAssessment } from '@/api/assessments'
 import {
   useStartModule,
   useCompleteModule,
   useEnrollmentModuleProgress,
 } from '../../api/progress'
-import { Tooltip } from '@mui/material'
 import AssessmentQuiz from './AssessmentQuiz'
 
 // Tipos baseados no backend (course-service)
@@ -66,24 +55,6 @@ function ModuleAccordion({
   const startModuleMutation = useStartModule()
   const completeModuleMutation = useCompleteModule()
   const [isStarting, setIsStarting] = useState(false)
-  const [isCompleting, setIsCompleting] = useState(false)
-  const [mediaDialog, setMediaDialog] = useState<{
-    open: boolean
-    url?: string
-    name?: string
-    materialId?: string
-    type?: string
-  }>({ open: false })
-  const [materialsViewed, setMaterialsViewed] = useState<Set<string>>(new Set())
-
-  // Buscar materiais APENAS se tipo_conteudo for video ou document E se o módulo estiver expandido
-  const shouldFetchMaterials = module.tipo_conteudo === 'material' && expanded
-
-  const { data: materialsData, isLoading: materialsLoading } =
-    useModuleMaterials(module.id)
-
-  // Só usar os materiais se deveríamos buscá-los
-  const materials = shouldFetchMaterials ? materialsData || [] : []
 
   // Buscar progresso deste módulo no banco
   const moduleProgressData = moduleProgress?.find(
@@ -139,11 +110,10 @@ function ModuleAccordion({
     }
   }
 
-  // Handler para concluir módulo
+  // Handler para concluir módulo (usado pelo AssessmentQuiz quando usuário passa no quiz)
   const handleCompleteModule = async () => {
     if (isCompleted) return
 
-    setIsCompleting(true)
     try {
       await completeModuleMutation.mutateAsync({
         enrollmentId,
@@ -151,47 +121,14 @@ function ModuleAccordion({
       })
     } catch (error) {
       console.error('Erro ao concluir módulo:', error)
-    } finally {
-      setIsCompleting(false)
     }
   }
-
-  const handleOpenMedia = (
-    url: string,
-    name: string,
-    materialId: string,
-    type: string
-  ) => {
-    setMediaDialog({ url, name, materialId, type, open: true })
-    setMaterialsViewed(prev => new Set(prev).add(materialId))
-  }
-
-  const handleCloseMedia = () => {
-    setMediaDialog({ open: false })
-  }
-
-  const allMaterialsViewed =
-    materials.length > 0 && materials.every(m => materialsViewed.has(m.id))
-
-  const canCompleteModule =
-    module.tipo_conteudo === 'pdf' || module.tipo_conteudo === 'video'
-      ? allMaterialsViewed
-      : module.tipo_conteudo === 'quiz'
-        ? false // Quiz será concluído automaticamente após submeter
-        : true
 
   const getActionLabel = () => {
     if (isStarting) return 'Iniciando...'
     if (isCompleted) return 'Concluído'
     if (isInProgress) return 'Continuar'
     return 'Iniciar'
-  }
-
-  const iconFor = (tipo: string) => {
-    if (tipo.includes('pdf'))
-      return <PictureAsPdfRounded color='error' sx={{ fontSize: 32 }} />
-    if (tipo.includes('video'))
-      return <PlayCircleFilled sx={{ color: 'primary.main', fontSize: 32 }} />
   }
 
   return (
@@ -344,214 +281,36 @@ function ModuleAccordion({
           </Box>
         )}
 
-        {/* Conteúdo do módulo - só exibir se iniciado ou concluído */}
+        {/* Info: Clique em Iniciar/Continuar para abrir o módulo no player */}
         {(isInProgress || isCompleted) && (
-          <Stack spacing={2}>
-            {/* Materiais (Vídeo ou PDF) */}
-            {(module.tipo_conteudo === 'video' ||
-              module.tipo_conteudo === 'pdf') && (
-              <Box>
-                {!materialsLoading && materials.length > 0 && (
-                  <Stack spacing={1.5}>
-                    {materials.map(material => (
-                      <Box
-                        key={material.id}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2,
-                          bgcolor: 'rgba(59,130,246,0.08)',
-                          border: '1px solid rgba(59,130,246,0.2)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            bgcolor: 'rgba(59,130,246,0.12)',
-                            transform: 'translateY(-2px)',
-                          },
-                        }}
-                      >
-                        {iconFor(material.tipo_arquivo)}
-                        <Stack flex={1}>
-                          <Typography variant='body1' fontWeight={600}>
-                            {material.nome_arquivo}
-                          </Typography>
-                          <Typography variant='caption' color='text.secondary'>
-                            {(Number(material.tamanho) / 1024 / 1024).toFixed(
-                              2
-                            )}{' '}
-                            MB
-                          </Typography>
-                        </Stack>
-                        <Tooltip title='Visualizar'>
-                          <IconButton
-                            size='small'
-                            color='primary'
-                            onClick={() => {
-                              if (material.url_download) {
-                                const tipo = material.tipo_arquivo.includes(
-                                  'pdf'
-                                )
-                                  ? 'pdf'
-                                  : 'video'
-                                handleOpenMedia(
-                                  material.url_download,
-                                  material.nome_arquivo,
-                                  material.id,
-                                  tipo
-                                )
-                              }
-                            }}
-                          >
-                            <OpenInNew fontSize='inherit' />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    ))}
-                  </Stack>
-                )}
-              </Box>
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+            {module.tipo_conteudo === 'quiz' && moduleAssessment ? (
+              <>
+                Avaliação: {moduleAssessment.titulo}. Clique em "Continuar
+                Módulo" para realizar.
+              </>
+            ) : module.tipo_conteudo === 'video' ? (
+              'Clique em "Continuar Módulo" para assistir ao vídeo.'
+            ) : module.tipo_conteudo === 'pdf' ? (
+              'Clique em "Continuar Módulo" para visualizar o PDF.'
+            ) : (
+              'Clique em "Continuar Módulo" para prosseguir.'
             )}
-
-            {/* Quiz */}
-            {module.tipo_conteudo === 'quiz' && (
-              <Box>
-                {moduleAssessment ? (
-                  <AssessmentQuiz
-                    avaliacao={moduleAssessment}
-                    onComplete={handleCompleteModule}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      p: 3,
-                      borderRadius: 2,
-                      bgcolor: 'rgba(234,179,8,0.08)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <Typography variant='body2' color='text.secondary'>
-                      Carregando avaliação...
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            )}
-
-            {/* Alerta se ainda há materiais não visualizados */}
-            {isInProgress &&
-              !isCompleted &&
-              (module.tipo_conteudo === 'pdf' ||
-                module.tipo_conteudo === 'video') &&
-              !allMaterialsViewed && (
-                <Box
-                  sx={{
-                    p: 2,
-
-                    mt: 2,
-                  }}
-                >
-                  <Typography variant='body2' color='primary' fontWeight={600}>
-                    ℹ️ Você precisa visualizar todos os materiais antes de
-                    concluir este módulo.
-                  </Typography>
-                </Box>
-              )}
-
-            {/* Botão de Concluir Módulo - não mostrar para quiz (conclusão automática) */}
-            {isInProgress &&
-              !isCompleted &&
-              module.tipo_conteudo !== 'quiz' && (
-                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-                  <Button
-                    variant='contained'
-                    color='success'
-                    size='large'
-                    disabled={isCompleting || !canCompleteModule}
-                    onClick={handleCompleteModule}
-                    startIcon={
-                      isCompleting ? (
-                        <CircularProgress size={20} color='inherit' />
-                      ) : (
-                        <CheckCircleRoundedIcon />
-                      )
-                    }
-                    sx={{ minWidth: 200 }}
-                  >
-                    {isCompleting ? 'Concluindo...' : 'Concluir Módulo'}
-                  </Button>
-                </Box>
-              )}
-          </Stack>
-        )}
-      </AccordionDetails>
-
-      {/* Modal para visualizar PDF ou Vídeo */}
-      <Dialog
-        open={mediaDialog.open}
-        onClose={handleCloseMedia}
-        maxWidth='lg'
-        fullWidth
-        PaperProps={{
-          sx: {
-            height: '90vh',
-            maxHeight: '90vh',
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Typography variant='h6' fontWeight={600}>
-            {mediaDialog.name}
           </Typography>
-          <IconButton
-            edge='end'
-            color='inherit'
-            onClick={handleCloseMedia}
-            aria-label='fechar'
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column' }}>
-          {mediaDialog.url && (
-            <Box
-              sx={{ flex: 1, width: '100%', height: '100%', bgcolor: '#000' }}
-            >
-              {mediaDialog.type === 'pdf' ? (
-                <iframe
-                  src={`${mediaDialog.url}#toolbar=1&navpanes=1&scrollbar=1`}
-                  width='100%'
-                  height='100%'
-                  style={{ border: 'none' }}
-                  title={mediaDialog.name}
-                />
-              ) : (
-                <video
-                  controls
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                  }}
-                  src={mediaDialog.url}
-                >
-                  <source src={mediaDialog.url} type='video/mp4' />
-                  Seu navegador não suporta a reprodução de vídeos.
-                </video>
-              )}
+        )}
+
+        {/* Quiz stats (se for quiz e tiver avaliação) */}
+        {(isInProgress || isCompleted) &&
+          module.tipo_conteudo === 'quiz' &&
+          moduleAssessment && (
+            <Box>
+              <AssessmentQuiz
+                avaliacao={moduleAssessment}
+                onComplete={handleCompleteModule}
+              />
             </Box>
           )}
-        </DialogContent>
-      </Dialog>
+      </AccordionDetails>
     </Accordion>
   )
 }

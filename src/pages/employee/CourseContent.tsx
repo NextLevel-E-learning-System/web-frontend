@@ -19,17 +19,8 @@ import DashboardLayout from '../../components/layout/DashboardLayout'
 import CourseContentHeader from '../../components/employee/CourseContentHeader'
 import { useNavigation } from '../../hooks/useNavigation'
 import { useCategoryColors } from '../../hooks/useCategoryColors'
-import {
-  useCourse,
-  useCourseModules,
-  useCourseCatalog,
-  useModulosCompletos,
-} from '../../api/courses'
-import {
-  useUserEnrollments,
-  useUserCertificates,
-  useModulosComProgresso,
-} from '../../api/progress'
+import { useCourseCatalog, useModulosCompletos } from '../../api/courses'
+import { useUserEnrollments, useModulosComProgresso } from '../../api/progress'
 import { useDashboardCompleto } from '../../api/users'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 import CertificateView from '@/components/employee/CertificateView'
@@ -59,15 +50,12 @@ export default function CourseContent() {
     null
   )
 
-  // Buscar dados do curso
-  const {
-    data: course,
-    isLoading: courseLoading,
-    error: courseError,
-  } = useCourse(codigo || '')
-  const { data: modules, isLoading: modulesLoading } = useCourseModules(
-    codigo || ''
-  )
+  // Buscar dados do curso do cache (CoursesPage já carregou todos)
+  const { data: allCourses } = useCourseCatalog({})
+
+  // Buscar módulos completos (ÚNICA requisição de módulos necessária!)
+  const { data: modulosCompletos = [], isLoading: modulosLoading } =
+    useModulosCompletos(codigo || '')
 
   // SEMPRE buscar dados atualizados das inscrições (não usar passedEnrollment)
   const { data: userEnrollmentsResponse } = useUserEnrollments(
@@ -76,16 +64,6 @@ export default function CourseContent() {
       refetchOnMount: 'always', // Força refetch ao montar
     }
   )
-
-  // Buscar certificados do usuário
-  const { data: certificatesResponse } = useUserCertificates(perfil?.id || '')
-
-  // Buscar todos os cursos como backup para garantir dados completos
-  const { data: allCourses } = useCourseCatalog({})
-
-  // Buscar módulos completos (para o player)
-  const { data: modulosCompletos = [] } = useModulosCompletos(codigo || '')
-
   // Buscar progresso dos módulos
   const enrollment = userEnrollmentsResponse?.items.find(
     e => e.curso_id === codigo
@@ -102,14 +80,23 @@ export default function CourseContent() {
     enrollment?.status === 'CONCLUIDO' &&
     enrollment?.progresso_percentual === 100
 
-  // Buscar certificado existente para este curso
-  const existingCertificate = certificatesResponse?.items.find(
-    cert => cert.curso_id === codigo
-  )
-
-  // Usar dados passados via state quando disponíveis, senão buscar no backend
+  // Usar dados passados via state quando disponíveis, senão buscar no cache
   const completesCourse =
-    passedCourseData || course || allCourses?.find(c => c.codigo === codigo)
+    passedCourseData || allCourses?.find(c => c.codigo === codigo)
+
+  // Converter módulos completos para formato simples (para CourseCurriculum)
+  const modules = modulosCompletos.map(m => ({
+    id: m.modulo_id,
+    titulo: m.titulo,
+    conteudo: m.conteudo || '',
+    ordem: m.ordem,
+    obrigatorio: m.obrigatorio,
+    xp: m.xp_modulo,
+    xp_modulo: m.xp_modulo,
+    tipo_conteudo: m.tipo_conteudo || 'text',
+    criado_em: m.criado_em,
+    atualizado_em: m.atualizado_em,
+  }))
 
   // Usar hook para obter cores e nome da categoria
   const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
@@ -118,12 +105,12 @@ export default function CourseContent() {
 
   // Se não estiver inscrito, redirecionar para a página de cursos
   useEffect(() => {
-    if (!courseLoading && !isEnrolled && codigo) {
+    if (!isEnrolled && codigo) {
       navigate('/cursos')
     }
-  }, [courseLoading, isEnrolled, codigo, navigate])
+  }, [isEnrolled, codigo, navigate])
 
-  if (courseLoading || modulesLoading) {
+  if (modulosLoading) {
     return (
       <DashboardLayout items={navigationItems}>
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
@@ -133,11 +120,11 @@ export default function CourseContent() {
     )
   }
 
-  if (courseError || !completesCourse) {
+  if (!completesCourse) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error' sx={{ mb: 2 }}>
-          {courseError?.message || 'Curso não encontrado'}
+          Curso não encontrado
         </Alert>
       </DashboardLayout>
     )
@@ -242,7 +229,6 @@ export default function CourseContent() {
                   enrollmentId={enrollment.id}
                   cursoTitulo={completesCourse.titulo}
                   dataConclusao={enrollment.data_conclusao}
-                  existingCertificate={existingCertificate || null}
                 />
               )}
 
