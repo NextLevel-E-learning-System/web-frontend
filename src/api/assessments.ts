@@ -363,7 +363,7 @@ export function useReviewAttempt(attemptId: string) {
   })
 }
 
-// ===== NOVOS HOOKS PARA FLUXO DO FUNCIONARIO =====
+// ===== NOVOS HOOKS PARA FLUXO DO ALUNO =====
 
 // Buscar avaliação de um módulo para o aluno
 export interface AssessmentForStudent {
@@ -669,124 +669,6 @@ export function useFinalizeReview() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments', 'reviews'] })
       queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
-    },
-  })
-}
-
-// ===== HOOKS PARA QUIZ PLAYER (FLUXO INTEGRADO) =====
-
-export interface Tentativa {
-  id: string
-  avaliacao_id: string
-  avaliacao_titulo: string
-  funcionario_id: string
-  data_inicio: string
-  tempo_limite_minutos?: number
-  status: string
-}
-
-export interface Questao {
-  id: string
-  enunciado: string
-  tipo: string
-  ordem: number
-  imagem_url?: string
-  alternativas: Array<{
-    id: string
-    texto: string
-    ordem: string
-    imagem_url?: string
-  }>
-}
-
-export interface IniciarTentativaResponse {
-  tentativa: Tentativa
-  questoes: Questao[]
-}
-
-// Iniciar tentativa e buscar questões
-export function useIniciarTentativa() {
-  return useMutation({
-    mutationKey: ['assessments', 'iniciar-tentativa'],
-    mutationFn: async ({
-      avaliacaoId,
-      funcionarioId: _funcionarioId,
-    }: {
-      avaliacaoId: string
-      funcionarioId: string
-    }): Promise<IniciarTentativaResponse> => {
-      // Iniciar tentativa
-      const startResponse = await authPost<{
-        success: boolean
-        data: StartAssessmentResponse
-      }>(`${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoId}/start-complete`, {})
-
-      const { tentativa, avaliacao, questoes } = startResponse.data
-
-      // Converter para formato esperado pelo QuizPlayer
-      return {
-        tentativa: {
-          id: tentativa.id,
-          avaliacao_id: tentativa.avaliacao_id,
-          avaliacao_titulo: avaliacao.titulo,
-          funcionario_id: tentativa.funcionario_id,
-          data_inicio: tentativa.data_inicio,
-          tempo_limite_minutos: avaliacao.tempo_limite,
-          status: tentativa.status,
-        },
-        questoes: questoes.map((q, index) => ({
-          id: q.id,
-          enunciado: q.enunciado,
-          tipo: q.tipo,
-          ordem: index + 1,
-          alternativas: q.opcoes_resposta.map((texto, idx) => ({
-            id: `${q.id}-alt-${idx}`,
-            texto,
-            ordem: String.fromCharCode(65 + idx), // A, B, C, D...
-          })),
-        })),
-      }
-    },
-  })
-}
-
-// Responder questão (salvar resposta individual)
-export function useResponderQuestao() {
-  return useMutation({
-    mutationKey: ['assessments', 'responder-questao'],
-    mutationFn: async ({
-      tentativaId: _tentativaId,
-      questaoId: _questaoId,
-      alternativaId: _alternativaId,
-    }: {
-      tentativaId: string
-      questaoId: string
-      alternativaId: string
-    }) => {
-      // Por enquanto apenas retorna sucesso
-      // O backend pode implementar salvar respostas individuais
-      return { success: true }
-    },
-  })
-}
-
-// Finalizar tentativa e submeter respostas
-export function useFinalizarTentativa() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'finalizar-tentativa'],
-    mutationFn: async (input: SubmitAssessmentInput) => {
-      // Finalizar tentativa
-      const response = await authPost<{
-        success: boolean
-        data: SubmitAssessmentResponse
-      }>(`${API_ENDPOINTS.ASSESSMENTS}/submit-complete`, input)
-      return response.data
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments'] })
-      queryClient.invalidateQueries({ queryKey: ['progress'] })
     },
   })
 }

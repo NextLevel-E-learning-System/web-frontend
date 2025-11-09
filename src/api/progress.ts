@@ -226,66 +226,36 @@ export interface EnrollmentsFilters {
 // Novo: Interface para inscrição com dados do aluno
 export interface CourseEnrollment {
   id: string
-  funcionario_id: string
-  funcionario_nome: string
-  funcionario_email: string
-  departamento?: string
-  progresso_percentual: number
-  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
+  funcionario: {
+    id: string
+    nome: string
+    email: string
+    departamento: string
+  }
+  progresso: number
+  status: string
   data_inscricao: string
   data_conclusao?: string
-  modulos_concluidos: number
+  modulos_completos: number
   total_modulos: number
-  nota_final?: number | null
+  nota_media?: number | null
 }
 
-export interface CourseEnrollmentsApiResponse {
+export interface CourseEnrollmentsResponse {
   success: boolean
-  data: Array<{
-    id: string
-    funcionario: {
-      id: string
-      nome: string
-      email: string
-      departamento: string
-    }
-    progresso: number
-    status: string
-    data_inscricao: string
-    data_conclusao?: string
-    modulos_completos: number
-    total_modulos: number
-    nota_media?: number | null
-  }>
+  data: CourseEnrollment[]
   total: number
   mensagem: string
 }
 
 // Novo: Hook para buscar inscrições de um curso específico (para instrutor)
 export function useCourseEnrollments(cursoId: string, enabled = true) {
-  return useQuery<CourseEnrollment[]>({
+  return useQuery<CourseEnrollmentsResponse>({
     queryKey: ['progress', 'course', cursoId, 'enrollments'],
-    queryFn: async () => {
-      const response = await authGet<CourseEnrollmentsApiResponse>(
+    queryFn: () =>
+      authGet<CourseEnrollmentsResponse>(
         `${API_ENDPOINTS.PROGRESS}/inscricoes?curso_id=${cursoId}`
-      )
-
-      // Transformar dados da API para o formato esperado pelo componente
-      return response.data.map(enrollment => ({
-        id: enrollment.id,
-        funcionario_id: enrollment.funcionario.id,
-        funcionario_nome: enrollment.funcionario.nome,
-        funcionario_email: enrollment.funcionario.email,
-        funcionario_departamento: enrollment.funcionario.departamento,
-        progresso_percentual: enrollment.progresso,
-        status: enrollment.status as 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO',
-        data_inscricao: enrollment.data_inscricao,
-        data_conclusao: enrollment.data_conclusao,
-        modulos_concluidos: enrollment.modulos_completos,
-        total_modulos: enrollment.total_modulos,
-        nota_final: enrollment.nota_media,
-      }))
-    },
+      ),
     enabled: enabled && !!cursoId,
   })
 }
@@ -355,6 +325,18 @@ export function useReactivateEnrollment() {
       })
       queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
     },
+  })
+}
+
+// Hook para buscar progresso dos módulos de uma inscrição
+export function useEnrollmentModuleProgress(enrollmentId: string) {
+  return useQuery<ModuleProgress[]>({
+    queryKey: ['progress', 'enrollment', enrollmentId, 'modules'],
+    queryFn: () =>
+      authGet<ModuleProgress[]>(
+        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos`
+      ),
+    enabled: !!enrollmentId,
   })
 }
 
@@ -567,65 +549,5 @@ export function useModulosComProgresso(inscricaoId: string) {
       return response.items || []
     },
     enabled: !!inscricaoId,
-  })
-}
-
-// Hook para marcar conteúdo como visualizado
-export function useMarcarConteudoVisualizado() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['progress', 'marcar-visualizado'],
-    mutationFn: ({
-      inscricaoId,
-      moduloId,
-      tipoConteudo,
-    }: {
-      inscricaoId: string
-      moduloId: string
-      tipoConteudo?: string
-    }) =>
-      authPost(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/visualizar`,
-        { tipo_conteudo: tipoConteudo }
-      ),
-    onSuccess: (_, { inscricaoId }) => {
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'modulos-progresso', inscricaoId],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'detalhado', inscricaoId],
-      })
-    },
-  })
-}
-
-// Hook para marcar módulo como concluído
-export function useMarcarModuloConcluido() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['progress', 'marcar-concluido'],
-    mutationFn: ({
-      inscricaoId,
-      moduloId,
-    }: {
-      inscricaoId: string
-      moduloId: string
-    }) =>
-      authPost(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/concluir`
-      ),
-    onSuccess: (_, { inscricaoId }) => {
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'modulos-progresso', inscricaoId],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'detalhado', inscricaoId],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'proximo-modulo', inscricaoId],
-      })
-    },
   })
 }

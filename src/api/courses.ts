@@ -34,13 +34,13 @@ export interface Course {
   instrutor_id?: string // REFERENCES instrutores(funcionario_id)
   duracao_estimada?: number
   xp_oferecido?: number
-  nivel_dificuldade: string
+  nivel_dificuldade?: string
   ativo: boolean
   pre_requisitos?: string[]
   criado_em: string
   atualizado_em: string
   // Campos relacionados ao instrutor
-  instrutor_nome: string | null
+  instrutor_nome?: string
   // Campos de categoria
   categoria_nome?: string
   departamento_codigo?: string
@@ -50,7 +50,6 @@ export interface Course {
   taxa_conclusao?: number
   media_conclusao?: number
   total_modulos?: number
-  pendentes_correcao?: number
   // Módulos do curso (quando detalhado)
   modulos?: Module[]
   // Campos legados (manter por compatibilidade)
@@ -90,13 +89,12 @@ export interface Module {
   obrigatorio: boolean
   xp: number
   xp_modulo: number // campo correto do backend
-  tipo_conteudo: string
+  tipo_conteudo?: string | null
   curso_id?: string
   criado_em?: string
   atualizado_em?: string
 }
 
-// Módulo Composto (com materiais e avaliação)
 export interface MaterialModulo {
   id: string
   nome_arquivo: string
@@ -141,7 +139,7 @@ export interface CreateModuleInput {
   titulo: string
   conteudo?: string
   ordem?: number
-  obrigatorio: boolean
+  obrigatorio?: boolean
   xp?: number
   tipo_conteudo?: string
 }
@@ -150,7 +148,7 @@ export interface UpdateModuleInput {
   titulo?: string
   conteudo?: string
   ordem?: number
-  obrigatorio: boolean
+  obrigatorio?: boolean
   xp?: number
   tipo_conteudo?: string
 }
@@ -307,14 +305,14 @@ export function useDuplicateCourse() {
   })
 }
 
-export function useToggleCourseStatus() {
+export function useToggleCourseStatus(codigo: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['courses', 'toggle-status'],
-    mutationFn: ({ codigo, active }: { codigo: string; active: boolean }) =>
+    mutationKey: ['courses', 'toggle-status', codigo],
+    mutationFn: (active: boolean) =>
       authPatch(`${API_ENDPOINTS.COURSES}/${codigo}/active`, { active }),
-    onSuccess: (_, { codigo }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'detail', codigo] })
       queryClient.invalidateQueries({ queryKey: ['courses'] })
     },
@@ -505,38 +503,6 @@ export function useCoursesByDepartment(departmentCode: string) {
   })
 }
 
-// ===============================================
-// MÓDULOS COMPOSTOS
-// ===============================================
-
-// Hook para buscar módulos completos de um curso
-export function useModulosCompletos(cursoId: string) {
-  return useQuery<ModuloCompleto[]>({
-    queryKey: ['courses', 'modulos-completos', cursoId],
-    queryFn: async () => {
-      const response = await authGet<{ items: ModuloCompleto[] }>(
-        `${API_ENDPOINTS.COURSES}/${cursoId}/modulos/completos`
-      )
-      return response.items || []
-    },
-    enabled: !!cursoId,
-  })
-}
-
-// Hook para buscar um módulo completo específico
-export function useModuloCompleto(moduloId: string) {
-  return useQuery<ModuloCompleto>({
-    queryKey: ['courses', 'modulo-completo', moduloId],
-    queryFn: async () => {
-      const response = await authGet<{ data: ModuloCompleto }>(
-        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/completo`
-      )
-      return response.data
-    },
-    enabled: !!moduloId,
-  })
-}
-
 // Helper para conversão de arquivo para Base64
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -599,4 +565,18 @@ export function usePrerequisitesTitles(
 
   console.log('[usePrerequisitesTitles] Resultado final:', titles)
   return titles
+}
+
+// Hook para buscar um módulo completo específico
+export function useModuloCompleto(moduloId: string) {
+  return useQuery<ModuloCompleto>({
+    queryKey: ['courses', 'modulo-completo', moduloId],
+    queryFn: async () => {
+      const response = await authGet<{ data: ModuloCompleto }>(
+        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/completo`
+      )
+      return response.data
+    },
+    enabled: !!moduloId,
+  })
 }
