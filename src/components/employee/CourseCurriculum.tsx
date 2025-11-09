@@ -49,6 +49,7 @@ function ModuleAccordion({
     modulo_id: string
     data_inicio?: string
     data_conclusao?: string
+    tempo_gasto?: number
     liberado: boolean
     concluido: boolean
   }>

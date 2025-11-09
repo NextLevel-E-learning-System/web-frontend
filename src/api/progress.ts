@@ -507,7 +507,9 @@ export interface ModuloComProgresso {
   xp_modulo: number
   concluido: boolean
   liberado: boolean
+  data_inicio?: string
   data_conclusao?: string
+  tempo_gasto?: number
   tem_avaliacao: boolean
   total_materiais: number
 }
