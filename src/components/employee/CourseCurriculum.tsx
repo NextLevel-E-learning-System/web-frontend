@@ -40,6 +40,7 @@ type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
 interface CourseCurriculumProps {
   modules: Module[]
   enrollmentId: string
+  onOpenModulo?: (moduloId: string) => void
 }
 
 // Componente para um módulo individual
@@ -49,6 +50,7 @@ function ModuleAccordion({
   onToggle,
   enrollmentId,
   moduleProgress,
+  onOpenModulo,
 }: {
   module: Module
   expanded: boolean
@@ -59,6 +61,7 @@ function ModuleAccordion({
     data_inicio?: string
     data_conclusao?: string
   }>
+  onOpenModulo?: (moduloId: string) => void
 }) {
   const startModuleMutation = useStartModule()
   const completeModuleMutation = useCompleteModule()
@@ -108,7 +111,12 @@ function ModuleAccordion({
     e.stopPropagation() // Previne expansão do accordion
 
     if (isInProgress || isCompleted) {
-      onToggle()
+      // Se tem player disponível e módulo já está em progresso, abrir o player
+      if (onOpenModulo) {
+        onOpenModulo(module.id)
+      } else {
+        onToggle()
+      }
       return
     }
 
@@ -118,7 +126,10 @@ function ModuleAccordion({
         enrollmentId,
         moduleId: module.id,
       })
-      if (!expanded) {
+      // Após iniciar, abrir no player se disponível
+      if (onOpenModulo) {
+        onOpenModulo(module.id)
+      } else if (!expanded) {
         onToggle()
       }
     } catch (error) {
@@ -548,6 +559,7 @@ function ModuleAccordion({
 export default function CourseCurriculum({
   modules,
   enrollmentId,
+  onOpenModulo,
 }: CourseCurriculumProps) {
   const [expandedModule, setExpandedModule] = useState<string | false>(false)
 
@@ -575,6 +587,7 @@ export default function CourseCurriculum({
           }
           enrollmentId={enrollmentId}
           moduleProgress={moduleProgress}
+          onOpenModulo={onOpenModulo}
         />
       ))}
     </Stack>
