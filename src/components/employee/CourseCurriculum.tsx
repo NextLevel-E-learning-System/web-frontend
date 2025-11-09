@@ -87,13 +87,14 @@ function ModuleAccordion({
   const handleStartModule = async (e: React.MouseEvent) => {
     e.stopPropagation() // Previne expansão do accordion
 
-    // Bloquear se não estiver liberado
-    if (!isLiberado) {
+    // Bloquear se não estiver liberado E não estiver concluído
+    // (módulos concluídos podem ser revistos)
+    if (!isLiberado && !isCompleted) {
       return
     }
 
+    // Se módulo já foi iniciado (em progresso ou concluído), abrir diretamente
     if (isInProgress || isCompleted) {
-      // Se tem player disponível e módulo já está em progresso, abrir o player
       if (onOpenModulo) {
         onOpenModulo(module.id)
       } else {
@@ -102,6 +103,7 @@ function ModuleAccordion({
       return
     }
 
+    // Módulo ainda não iniciado - iniciar agora
     setIsStarting(true)
     try {
       await startModuleMutation.mutateAsync({
@@ -137,7 +139,7 @@ function ModuleAccordion({
 
   const getActionLabel = () => {
     if (isStarting) return 'Iniciando...'
-    if (isCompleted) return 'Concluído'
+    if (isCompleted) return 'Revisar'
     if (isInProgress) return 'Continuar'
     if (!isLiberado) return 'Bloqueado'
     return 'Iniciar'
@@ -244,7 +246,7 @@ function ModuleAccordion({
             size='small'
             variant={isCompleted || isInProgress ? 'outlined' : 'contained'}
             color={isCompleted ? 'success' : 'primary'}
-            disabled={isStarting || isCompleted || !isLiberado}
+            disabled={isStarting || (!isLiberado && !isCompleted)}
             onClick={handleStartModule}
             startIcon={
               isStarting ? (
@@ -269,7 +271,7 @@ function ModuleAccordion({
         <Divider sx={{ mb: 3 }} />
 
         {/* Aviso de módulo bloqueado */}
-        {!isLiberado && (
+        {!isLiberado && !isCompleted && (
           <Box
             sx={{
               p: 3,
@@ -294,21 +296,18 @@ function ModuleAccordion({
           </Box>
         )}
 
-        {/* Info: Clique em Iniciar/Continuar para abrir o módulo no player */}
+        {/* Info: Clique em Iniciar/Continuar/Revisar para abrir o módulo no player */}
         {(isInProgress || isCompleted) && (
           <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-            {module.tipo_conteudo === 'quiz' && moduleAssessment ? (
-              <>
-                Avaliação: {moduleAssessment.titulo}. Clique em "Continuar
-                Módulo" para realizar.
-              </>
-            ) : module.tipo_conteudo === 'video' ? (
-              'Clique em "Continuar Módulo" para assistir ao vídeo.'
-            ) : module.tipo_conteudo === 'pdf' ? (
-              'Clique em "Continuar Módulo" para visualizar o PDF.'
-            ) : (
-              'Clique em "Continuar Módulo" para prosseguir.'
-            )}
+            {isCompleted
+              ? 'Módulo concluído. Clique em "Revisar" para visualizar o conteúdo novamente.'
+              : module.tipo_conteudo === 'quiz' && moduleAssessment
+                ? `Avaliação: ${moduleAssessment.titulo}. Clique em "Continuar Módulo" para realizar.`
+                : module.tipo_conteudo === 'video'
+                  ? 'Clique em "Continuar Módulo" para assistir ao vídeo.'
+                  : module.tipo_conteudo === 'pdf'
+                    ? 'Clique em "Continuar Módulo" para visualizar o PDF.'
+                    : 'Clique em "Continuar Módulo" para prosseguir.'}
           </Typography>
         )}
 

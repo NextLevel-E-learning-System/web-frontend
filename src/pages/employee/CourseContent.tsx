@@ -18,7 +18,11 @@ import CourseContentHeader from '../../components/employee/CourseContentHeader'
 import { useNavigation } from '../../hooks/useNavigation'
 import { useCategoryColors } from '../../hooks/useCategoryColors'
 import { useCourseCatalog, useModulosCompletos } from '../../api/courses'
-import { useUserEnrollments, useModulosComProgresso } from '../../api/progress'
+import {
+  useUserEnrollments,
+  useModulosComProgresso,
+  useStartModule,
+} from '../../api/progress'
 import { useDashboardCompleto } from '../../api/users'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 import CertificateView from '@/components/employee/CertificateView'
@@ -39,6 +43,8 @@ export default function CourseContent() {
   const location = useLocation()
   const { perfil } = useDashboardCompleto()
   const { navigationItems } = useNavigation()
+
+  const startModuleMutation = useStartModule()
 
   // Dados passados via state (quando vem da ProgressPage)
   const passedCourseData = location.state?.courseData
@@ -141,7 +147,7 @@ export default function CourseContent() {
     setModuloEmReproducao(null)
   }
 
-  const handleModuloComplete = () => {
+  const handleModuloComplete = async () => {
     // Buscar próximo módulo
     const currentIndex = modulosProgresso.findIndex(
       m => m.modulo_id === moduloEmReproducao
@@ -149,7 +155,20 @@ export default function CourseContent() {
 
     if (currentIndex >= 0 && currentIndex < modulosProgresso.length - 1) {
       // Avançar para o próximo módulo
-      setModuloEmReproducao(modulosProgresso[currentIndex + 1].modulo_id)
+      const proximoModuloId = modulosProgresso[currentIndex + 1].modulo_id
+
+      // Iniciar o próximo módulo automaticamente
+      try {
+        await startModuleMutation.mutateAsync({
+          enrollmentId: enrollment?.id || '',
+          moduleId: proximoModuloId,
+        })
+        setModuloEmReproducao(proximoModuloId)
+      } catch (error) {
+        console.error('Erro ao iniciar próximo módulo:', error)
+        // Mesmo com erro, avança para o próximo
+        setModuloEmReproducao(proximoModuloId)
+      }
     } else {
       // Último módulo concluído, fechar player
       setModuloEmReproducao(null)

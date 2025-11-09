@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Box,
   Typography,
@@ -43,6 +44,7 @@ export default function ModuloPlayer({
   const [currentStep, setCurrentStep] = useState(0)
   const [tempoInicio] = useState<number>(Date.now())
 
+  const queryClient = useQueryClient()
   const marcarConcluidoMutation = useMarcarModuloConcluido()
 
   // Construir steps (materiais + avaliação + conteúdo texto)
@@ -123,6 +125,16 @@ export default function ModuloPlayer({
       },
       {
         onSuccess: () => {
+          // Invalidar queries para atualizar dados
+          queryClient.invalidateQueries({
+            queryKey: ['progress', 'modulos-progresso', inscricaoId],
+          })
+          queryClient.invalidateQueries({
+            queryKey: ['progress', 'user'],
+          })
+          queryClient.invalidateQueries({
+            queryKey: ['users', 'dashboard'],
+          })
           onComplete()
         },
       }
@@ -130,6 +142,13 @@ export default function ModuloPlayer({
   }
 
   const handleBack = () => {
+    // Invalidar queries para atualizar dados ao voltar
+    queryClient.invalidateQueries({
+      queryKey: ['progress', 'modulos-progresso', inscricaoId],
+    })
+    queryClient.invalidateQueries({
+      queryKey: ['progress', 'user'],
+    })
     onBack?.()
   }
 
