@@ -146,19 +146,34 @@ export function useStartModule() {
         `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/iniciar`,
         {}
       ),
-    onSuccess: (_, variables) => {
-      // Invalidar módulos da inscrição
+    onSuccess: (data, variables) => {
+      // Atualização otimista: atualizar cache diretamente sem refetch
+      queryClient.setQueryData<ModuloComProgresso[]>(
+        ['progress', 'modulos-progresso', variables.enrollmentId],
+        (old = []) => {
+          return old.map(modulo =>
+            modulo.modulo_id === variables.moduleId
+              ? {
+                  ...modulo,
+                  data_inicio: data.progresso_modulo.criado_em,
+                  liberado: true,
+                }
+              : modulo
+          )
+        }
+      )
+
+      // Invalidar apenas dados críticos (sem refetch imediato)
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'enrollment', variables.enrollmentId, 'modules'],
+        queryKey: ['progress', 'modulos-progresso', variables.enrollmentId],
+        refetchType: 'none', // Não refaz a query imediatamente
       })
 
+      // Invalidar dashboard em background
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'user'],
+        queryKey: ['users', 'dashboard'],
+        refetchType: 'none',
       })
-      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
-
-      // Invalidar dashboard do usuário para garantir dados sempre atualizados
-      queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
     },
   })
 }
@@ -191,24 +206,45 @@ export function useCompleteModule() {
         {}
       ),
     onSuccess: (data, variables) => {
-      // Invalidar módulos da inscrição
+      // Atualização otimista: atualizar cache diretamente
+      queryClient.setQueryData<ModuloComProgresso[]>(
+        ['progress', 'modulos-progresso', variables.enrollmentId],
+        (old = []) => {
+          return old.map(modulo =>
+            modulo.modulo_id === variables.moduleId
+              ? {
+                  ...modulo,
+                  concluido: true,
+                  data_conclusao: new Date().toISOString(),
+                }
+              : modulo
+          )
+        }
+      )
+
+      // Invalidar módulos da inscrição (refetch em background)
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'enrollment', variables.enrollmentId, 'modules'],
+        queryKey: ['progress', 'modulos-progresso', variables.enrollmentId],
+        refetchType: 'none',
       })
 
-      // Invalidar inscrições do usuário (atualiza progresso no header)
+      // Invalidar inscrições do usuário para atualizar progresso
       queryClient.invalidateQueries({
         queryKey: ['progress', 'user', data.resultado.funcionario_id],
       })
 
-      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
-
-      // Invalidar dashboard do usuário para atualizar XP e nível
-      queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
+      // Invalidar dashboard em background
+      queryClient.invalidateQueries({
+        queryKey: ['users', 'dashboard'],
+        refetchType: 'none',
+      })
 
       // If course was completed, invalidate gamification data
       if (data.resultado.curso_concluido) {
-        queryClient.invalidateQueries({ queryKey: ['gamification'] })
+        queryClient.invalidateQueries({
+          queryKey: ['gamification'],
+          refetchType: 'none',
+        })
       }
     },
   })

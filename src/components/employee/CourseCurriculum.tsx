@@ -23,7 +23,6 @@ import {
 import AssessmentQuiz from './AssessmentQuiz'
 import ModuloPlayer from '../learning/ModuloPlayer'
 
-// Tipos baseados no backend (course-service)
 type ModuleItemStatus = 'completed' | 'in_progress' | 'locked'
 
 interface CourseCurriculumProps {
@@ -83,11 +82,15 @@ function ModuleAccordion({
   )
 
   const handleStartModule = async (e: React.MouseEvent) => {
-    e.stopPropagation() // Previne expansão do accordion
+    e.stopPropagation()
 
     if (isInProgress || isCompleted) {
       onToggle()
       return
+    }
+
+    if (!expanded) {
+      onToggle()
     }
 
     setIsStarting(true)
@@ -96,17 +99,16 @@ function ModuleAccordion({
         enrollmentId,
         moduleId: module.id,
       })
-      if (!expanded) {
-        onToggle()
-      }
     } catch (error) {
       console.error('Erro ao iniciar módulo:', error)
+      if (expanded) {
+        onToggle()
+      }
     } finally {
       setIsStarting(false)
     }
   }
 
-  // Handler para concluir módulo
   const handleCompleteModule = async () => {
     if (isCompleted) return
 
