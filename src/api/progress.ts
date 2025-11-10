@@ -496,48 +496,6 @@ export interface ModuloComProgresso {
   total_materiais: number
 }
 
-// Hook para buscar progresso detalhado de uma inscrição
-export function useProgressoDetalhado(inscricaoId: string) {
-  return useQuery<ProgressoDetalhado>({
-    queryKey: ['progress', 'detalhado', inscricaoId],
-    queryFn: async () => {
-      const response = await authGet<{ data: ProgressoDetalhado }>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/progresso-detalhado`
-      )
-      return response.data
-    },
-    enabled: !!inscricaoId,
-  })
-}
-
-// Hook para buscar próximo módulo não concluído
-export function useProximoModulo(inscricaoId: string) {
-  return useQuery<ProximoModulo | null>({
-    queryKey: ['progress', 'proximo-modulo', inscricaoId],
-    queryFn: async () => {
-      const response = await authGet<{ data: ProximoModulo | null }>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/proximo-modulo`
-      )
-      return response.data
-    },
-    enabled: !!inscricaoId,
-  })
-}
-
-// Hook para verificar se módulo está liberado
-export function useModuloLiberado(inscricaoId: string, moduloId: string) {
-  return useQuery<boolean>({
-    queryKey: ['progress', 'modulo-liberado', inscricaoId, moduloId],
-    queryFn: async () => {
-      const response = await authGet<{ liberado: boolean }>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${inscricaoId}/modulos/${moduloId}/liberado`
-      )
-      return response.liberado
-    },
-    enabled: !!inscricaoId && !!moduloId,
-  })
-}
-
 // Hook para listar módulos com progresso
 export function useModulosComProgresso(inscricaoId: string) {
   return useQuery<ModuloComProgresso[]>({

@@ -474,7 +474,7 @@ export interface SubmitAssessmentInput {
   tentativa_id: string
   respostas: Array<{
     questao_id: string
-    resposta_funcionario: string
+    resposta_funcionario: string | null
   }>
 }
 
