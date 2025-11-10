@@ -97,13 +97,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
     const currentAssessmentData = assessmentDataRef.current
     const currentRespostas = respostasRef.current
 
-    console.log('🚀 Auto-submit iniciado', {
-      hasData: !!currentAssessmentData,
-      respostasCount: Object.keys(currentRespostas).length,
-    })
-
     if (!currentAssessmentData) {
-      console.error('❌ Auto-submit cancelado: assessmentData não disponível')
       return
     }
 
@@ -117,23 +111,10 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
         resposta_funcionario: currentRespostas[questao.id] || null,
       }))
 
-      console.log('📤 Enviando respostas (auto-submit)...', {
-        tentativa_id: currentAssessmentData.tentativa.id,
-        total_questoes: todasQuestoes.length,
-        respondidas: respostasParaEnviar.filter(
-          r => r.resposta_funcionario !== null
-        ).length,
-        nao_respondidas: respostasParaEnviar.filter(
-          r => r.resposta_funcionario === null
-        ).length,
-      })
-
       await submitAssessment.mutateAsync({
         tentativa_id: currentAssessmentData.tentativa.id,
         respostas: respostasParaEnviar,
       })
-
-      console.log('✅ Auto-submit concluído com sucesso!')
 
       // Resetar estado do quiz
       setTentativaStarted(false)
@@ -145,7 +126,6 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
       setHasAutoSubmitted(false)
     } catch (error: unknown) {
       const err = error as { message?: string }
-      console.error('❌ Erro no auto-submit:', error)
       toast.error(err.message || 'Erro ao enviar avaliação automaticamente')
     } finally {
       setIsSubmitting(false)
@@ -202,15 +182,11 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
   }
 
   const handleSubmit = useCallback(async () => {
-    console.log('🚀 handleSubmit chamado', { assessmentData, respostas })
-
     if (!assessmentData) {
-      console.warn('⚠️ handleSubmit cancelado: assessmentData não existe')
       return
     }
 
     if (isSubmitting) {
-      console.warn('⚠️ handleSubmit cancelado: já está submetendo')
       return
     }
 
@@ -224,23 +200,10 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
         resposta_funcionario: respostas[questao.id] || null,
       }))
 
-      console.log('📤 Enviando respostas...', {
-        tentativa_id: assessmentData.tentativa.id,
-        total_questoes: todasQuestoes.length,
-        respondidas: respostasParaEnviar.filter(
-          r => r.resposta_funcionario !== null
-        ).length,
-        nao_respondidas: respostasParaEnviar.filter(
-          r => r.resposta_funcionario === null
-        ).length,
-      })
-
       await submitAssessment.mutateAsync({
         tentativa_id: assessmentData.tentativa.id,
         respostas: respostasParaEnviar,
       })
-
-      console.log('✅ Avaliação enviada com sucesso!')
 
       // Resetar estado do quiz para voltar à tela de informações
       setTentativaStarted(false)
@@ -255,7 +218,6 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
       // Não é mais necessário chamar onComplete() aqui
     } catch (error: unknown) {
       const err = error as { message?: string }
-      console.error('❌ Erro ao enviar avaliação:', error)
       toast.error(err.message || 'Erro ao enviar avaliação')
     } finally {
       setIsSubmitting(false)
@@ -265,7 +227,6 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
   // Recuperar tentativa ativa se existir
   useEffect(() => {
     if (activeAttempt && !assessmentData) {
-      console.log('🔄 Recuperando tentativa ativa:', activeAttempt)
       setAssessmentData(activeAttempt)
       setTentativaStarted(true)
       setCurrentTab('questoes') // Mudar para aba de questões automaticamente
@@ -281,20 +242,10 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
         const limiteSegundos = activeAttempt.avaliacao.tempo_limite * 60
         const restante = limiteSegundos - decorrido
 
-        console.log('⏱️ Cálculo de tempo:', {
-          inicioMs,
-          agoraMs,
-          decorrido,
-          limiteSegundos,
-          restante,
-        })
-
         if (restante > 0) {
-          console.log(`✅ Tempo restante: ${restante}s`)
           setTimeRemaining(restante)
         } else if (!hasAutoSubmitted) {
           // Tempo esgotado, submeter automaticamente
-          console.log('⏰ TENTATIVA RECUPERADA COM TEMPO ESGOTADO!')
           setHasAutoSubmitted(true)
           toast.warning(
             'Tempo esgotado! Submetendo respostas automaticamente...',
@@ -313,7 +264,6 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
   const handleStartTentativa = async () => {
     try {
       const result = await startAssessment.mutateAsync(avaliacao.codigo)
-      console.log('📝 Tentativa iniciada:', result)
       setAssessmentData(result)
       setTentativaStarted(true)
       setCurrentTab('questoes') // Mudar para aba de questões
@@ -323,7 +273,6 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
         setTimeRemaining(result.avaliacao.tempo_limite * 60) // converter para segundos
       }
     } catch (error: unknown) {
-      console.error('❌ Erro ao iniciar tentativa:', error)
       const err = error as {
         message?: string
         response?: {
@@ -365,14 +314,9 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
       setTimeRemaining(prev => {
         if (prev === null || prev <= 1) {
           clearInterval(interval)
-          console.log('⏰ TEMPO ESGOTADO! Tentando submeter...', {
-            hasAutoSubmitted,
-            isSubmitting,
-          })
 
           // Auto-submit quando tempo acabar
           if (!hasAutoSubmitted && !isSubmitting) {
-            console.log('🔄 Iniciando auto-submit...')
             setHasAutoSubmitted(true)
             toast.warning(
               'Tempo esgotado! Submetendo respostas automaticamente...',
@@ -382,11 +326,6 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
             setTimeout(() => {
               performAutoSubmit()
             }, 500)
-          } else {
-            console.warn('⚠️ Auto-submit bloqueado', {
-              hasAutoSubmitted,
-              isSubmitting,
-            })
           }
           return 0
         }
