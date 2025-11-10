@@ -4,7 +4,6 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
@@ -13,10 +12,15 @@ import CircularProgress from '@mui/material/CircularProgress'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded'
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import LockRoundedIcon from '@mui/icons-material/LockRounded'
-
 import type { Module } from '../../api/courses'
-import { useStartModule, useModulosComProgresso } from '../../api/progress'
 import { useModuloCompleto } from '../../api/courses'
+import { useModuleAssessment } from '@/api/assessments'
+import {
+  useStartModule,
+  useCompleteModule,
+  useModulosComProgresso,
+} from '../../api/progress'
+import AssessmentQuiz from './AssessmentQuiz'
 import ModuloPlayer from '../learning/ModuloPlayer'
 
 // Tipos baseados no backend (course-service)
@@ -30,10 +34,10 @@ interface CourseCurriculumProps {
 // Componente para um módulo individual
 function ModuleAccordion({
   module,
-  enrollmentId,
-  moduleProgress,
   expanded,
   onToggle,
+  enrollmentId,
+  moduleProgress,
 }: {
   module: Module
   expanded: boolean
@@ -43,24 +47,22 @@ function ModuleAccordion({
     modulo_id: string
     data_inicio?: string
     data_conclusao?: string
-    tempo_gasto?: number
     liberado: boolean
     concluido: boolean
   }>
 }) {
   const startModuleMutation = useStartModule()
+  const completeModuleMutation = useCompleteModule()
   const [isStarting, setIsStarting] = useState(false)
-
-  // Buscar dados completos do módulo quando expandido
-  const { data: moduloCompleto, isLoading: isLoadingModulo } =
-    useModuloCompleto(module.id)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   // Buscar progresso deste módulo no banco
   const moduleProgressData = moduleProgress?.find(
     p => p.modulo_id === module.id
   )
 
-  // Verificar se módulo está liberado (baseado no backend)
+  const { data: moduloCompleto } = useModuloCompleto(module.id)
+
   const isLiberado = moduleProgressData?.liberado ?? false
 
   // Determinar status do módulo baseado no progresso
@@ -74,24 +76,29 @@ function ModuleAccordion({
   const isInProgress = moduleStatus === 'in_progress'
   const isCompleted = moduleStatus === 'completed'
 
+  // Buscar avaliação do módulo se for tipo quiz
+  const { data: moduleAssessment } = useModuleAssessment(
+    module.id,
+    module.tipo_conteudo === 'quiz' && (isInProgress || isCompleted)
+  )
+
   const handleStartModule = async (e: React.MouseEvent) => {
     e.stopPropagation() // Previne expansão do accordion
 
-    // Se já está em progresso ou concluído, apenas expande o accordion
     if (isInProgress || isCompleted) {
       onToggle()
       return
     }
 
-    // Se está bloqueado, inicia o módulo e depois expande
     setIsStarting(true)
     try {
       await startModuleMutation.mutateAsync({
         enrollmentId,
         moduleId: module.id,
       })
-      // Após iniciar, expande o accordion
-      onToggle()
+      if (!expanded) {
+        onToggle()
+      }
     } catch (error) {
       console.error('Erro ao iniciar módulo:', error)
     } finally {
@@ -99,16 +106,26 @@ function ModuleAccordion({
     }
   }
 
-  const handleModuleComplete = () => {
-    // Fecha o accordion após completar
-    if (expanded) {
-      onToggle()
+  // Handler para concluir módulo
+  const handleCompleteModule = async () => {
+    if (isCompleted) return
+
+    setIsCompleting(true)
+    try {
+      await completeModuleMutation.mutateAsync({
+        enrollmentId,
+        moduleId: module.id,
+      })
+    } catch (error) {
+      console.error('Erro ao concluir módulo:', error)
+    } finally {
+      setIsCompleting(false)
     }
   }
 
   const getActionLabel = () => {
     if (isStarting) return 'Iniciando...'
-    if (isCompleted) return 'Revisar'
+    if (isCompleted) return 'Concluído'
     if (isInProgress) return 'Continuar'
     if (!isLiberado) return 'Bloqueado'
     return 'Iniciar'
@@ -236,59 +253,55 @@ function ModuleAccordion({
         </Stack>
       </AccordionSummary>
 
-      <AccordionDetails sx={{ px: 0, pb: 0, pt: 0 }}>
-        {/* Renderizar ModuloPlayer se módulo está iniciado ou concluído */}
-        {(isInProgress || isCompleted) && moduloCompleto ? (
-          <Box sx={{ p: 2 }}>
-            <ModuloPlayer
-              modulo={moduloCompleto}
-              inscricaoId={enrollmentId}
-              concluido={isCompleted}
-              onComplete={handleModuleComplete}
-              onBack={onToggle}
-            />
-          </Box>
-        ) : isLoadingModulo ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Box sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
-            <Divider sx={{ mb: 3 }} />
-
-            {/* Descrição do módulo */}
-            {module.conteudo && (
-              <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-                {module.conteudo}
-              </Typography>
-            )}
-
-            {/* Aviso de módulo bloqueado */}
-            {!isLiberado && (
-              <Box
-                sx={{
-                  p: 3,
-                  borderRadius: 2,
-                  bgcolor: 'rgba(255, 152, 0, 0.08)',
-                  border: '1px solid rgba(255, 152, 0, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
-              >
-                <LockRoundedIcon sx={{ color: 'warning.main', fontSize: 32 }} />
-                <Stack>
-                  <Typography variant='subtitle2' fontWeight={600}>
-                    Módulo Bloqueado
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    Clique em "Iniciar" para desbloquear e acessar o conteúdo
-                    deste módulo.
-                  </Typography>
-                </Stack>
+      <AccordionDetails>
+        {/* Conteúdo do módulo - só exibir se iniciado ou concluído */}
+        {(isInProgress || isCompleted) && moduloCompleto && (
+          <Stack>
+            {/* Materiais (Vídeo ou PDF) */}
+            {module.tipo_conteudo === 'material' && (
+              <Box>
+                <ModuloPlayer
+                  modulo={moduloCompleto}
+                  inscricaoId={enrollmentId}
+                />
               </Box>
             )}
-          </Box>
+
+            {/* Quiz */}
+            {module.tipo_conteudo === 'quiz' && moduleAssessment && (
+              <Box>
+                <AssessmentQuiz
+                  avaliacao={moduleAssessment}
+                  onComplete={handleCompleteModule}
+                />
+              </Box>
+            )}
+
+            {/* Botão de Concluir Módulo - não mostrar para quiz (conclusão automática) */}
+            {isInProgress &&
+              !isCompleted &&
+              module.tipo_conteudo !== 'quiz' && (
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                  <Button
+                    variant='contained'
+                    color='success'
+                    size='large'
+                    disabled={isCompleting}
+                    onClick={handleCompleteModule}
+                    startIcon={
+                      isCompleting ? (
+                        <CircularProgress size={20} color='inherit' />
+                      ) : (
+                        <CheckCircleRoundedIcon />
+                      )
+                    }
+                    sx={{ minWidth: 200 }}
+                  >
+                    {isCompleting ? 'Concluindo...' : 'Concluir Módulo'}
+                  </Button>
+                </Box>
+              )}
+          </Stack>
         )}
       </AccordionDetails>
     </Accordion>
@@ -305,10 +318,6 @@ export default function CourseCurriculum({
   const { data: moduleProgress = [], isLoading: progressLoading } =
     useModulosComProgresso(enrollmentId)
 
-  const handleToggle = (moduleId: string) => {
-    setExpandedModule(prev => (prev === moduleId ? false : moduleId))
-  }
-
   if (progressLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -323,10 +332,12 @@ export default function CourseCurriculum({
         <ModuleAccordion
           key={module.id}
           module={module}
+          expanded={expandedModule === module.id}
+          onToggle={() =>
+            setExpandedModule(expandedModule === module.id ? false : module.id)
+          }
           enrollmentId={enrollmentId}
           moduleProgress={moduleProgress}
-          expanded={expandedModule === module.id}
-          onToggle={() => handleToggle(module.id)}
         />
       ))}
     </Stack>

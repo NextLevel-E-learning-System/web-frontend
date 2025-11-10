@@ -1,74 +1,37 @@
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import {
   Box,
   Typography,
-  Button,
   Paper,
   Alert,
-  Stack,
   Grid,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
 } from '@mui/material'
-import {
-  CheckCircle,
-  PlayCircle,
-  Quiz,
-  Article,
-  PictureAsPdf,
-  ArrowBack,
-} from '@mui/icons-material'
+import { PlayCircle, Article, PictureAsPdf } from '@mui/icons-material'
 import VideoPlayer from '../learning/VideoPlayer'
-import QuizPlayer from '../learning/QuizPlayer'
 import type { ModuloCompleto } from '@/api/courses'
-import { useCompleteModule } from '@/api/progress'
 
 interface ModuloPlayerProps {
   modulo: ModuloCompleto
   inscricaoId: string
-  concluido: boolean
-  onComplete: () => void
-  onBack?: () => void
 }
 
 export default function ModuloPlayer({
   modulo,
   inscricaoId,
-  concluido,
-  onComplete,
-  onBack,
 }: ModuloPlayerProps) {
   const [currentStep, setCurrentStep] = useState(0)
 
-  const queryClient = useQueryClient()
-  const marcarConcluidoMutation = useCompleteModule()
-
-  // Construir steps (materiais + avaliação + conteúdo texto)
-  type StepData =
-    | {
-        type: 'material'
-        index: number
-        label: string
-        icon: JSX.Element
-        data: ModuloCompleto['materiais'][0]
-      }
-    | {
-        type: 'texto'
-        index: number
-        label: string
-        icon: JSX.Element
-        data: string
-      }
-    | {
-        type: 'quiz'
-        index: number
-        label: string
-        icon: JSX.Element
-        data: NonNullable<ModuloCompleto['avaliacao']>
-      }
+  type StepData = {
+    type: 'material'
+    index: number
+    label: string
+    icon: JSX.Element
+    data: ModuloCompleto['materiais'][0]
+  }
 
   const steps: StepData[] = []
 
@@ -88,109 +51,10 @@ export default function ModuloPlayer({
       data: material,
     })
   })
-
-  // Adicionar conteúdo texto se existir
-  if (modulo.conteudo && !modulo.materiais.length && !modulo.avaliacao) {
-    steps.push({
-      type: 'texto' as const,
-      index: 0,
-      label: 'Conteúdo',
-      icon: <Article />,
-      data: modulo.conteudo,
-    })
-  }
-
-  // Adicionar avaliação se existir
-  if (modulo.avaliacao) {
-    steps.push({
-      type: 'quiz' as const,
-      index: 0,
-      label: modulo.avaliacao.titulo,
-      icon: <Quiz />,
-      data: modulo.avaliacao,
-    })
-  }
-
   const currentStepData = steps[currentStep]
-
-  const handleCompleteModule = () => {
-    // Só marca como concluído se não for quiz (quiz completa automaticamente)
-    if (modulo.tipo_conteudo !== 'quiz') {
-      marcarConcluidoMutation.mutate(
-        {
-          enrollmentId: inscricaoId,
-          moduleId: modulo.modulo_id,
-        },
-        {
-          onSuccess: () => {
-            // Invalidar queries para atualizar dados
-            queryClient.invalidateQueries({
-              queryKey: ['progress', 'modulos-progresso', inscricaoId],
-            })
-            queryClient.invalidateQueries({
-              queryKey: ['progress', 'user'],
-            })
-            queryClient.invalidateQueries({
-              queryKey: ['users', 'dashboard'],
-            })
-            onComplete()
-          },
-        }
-      )
-    } else {
-      // Para quiz, apenas fecha (a conclusão é feita no QuizPlayer)
-      onComplete()
-    }
-  }
-
-  const handleBack = () => {
-    // Invalidar queries para atualizar dados ao voltar
-    queryClient.invalidateQueries({
-      queryKey: ['progress', 'modulos-progresso', inscricaoId],
-    })
-    queryClient.invalidateQueries({
-      queryKey: ['progress', 'user'],
-    })
-    onBack?.()
-  }
 
   return (
     <Box>
-      {/* Header com botões */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack
-          direction='row'
-          alignItems='center'
-          justifyContent='space-between'
-        >
-          <Stack direction='row' spacing={2}>
-            <Typography variant='h5' fontWeight={600}>
-              {modulo.titulo}
-            </Typography>
-            {concluido && (
-              <CheckCircle sx={{ color: 'success.main', fontSize: 28 }} />
-            )}
-          </Stack>
-
-          <Stack direction='row' spacing={2} alignItems='center'>
-            <Button
-              onClick={handleBack}
-              startIcon={<ArrowBack />}
-              variant='outlined'
-            >
-              Voltar
-            </Button>
-            <Button
-              variant='contained'
-              onClick={concluido ? onComplete : handleCompleteModule}
-              disabled={!concluido && marcarConcluidoMutation.isPending}
-            >
-              Próximo Módulo
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-
       {/* Layout: Sidebar + Conteúdo */}
       <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
         {/* Sidebar com lista de materiais */}
@@ -286,20 +150,6 @@ export default function ModuloPlayer({
                   )}
                 </Box>
               )}
-
-            {currentStepData?.type === 'quiz' && (
-              <QuizPlayer
-                avaliacaoId={currentStepData.data.codigo}
-                inscricaoId={inscricaoId}
-                moduloId={modulo.modulo_id}
-                onComplete={aprovado => {
-                  // Quiz já marca o módulo como concluído se aprovado
-                  if (aprovado) {
-                    onComplete()
-                  }
-                }}
-              />
-            )}
           </Paper>
         </Grid>
       </Grid>
