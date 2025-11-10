@@ -414,7 +414,7 @@ export default function Courses() {
       courseCode: course.codigo,
       xpOffered: course.xp_oferecido || 0,
       isActive: course.ativo,
-      instructorName: course.instrutor_nome || null,
+      instructorName: course.instrutor_nome,
       prerequisites: course.pre_requisitos || [],
       completionRate: course.taxa_conclusao || 0,
       totalEnrollments: course.total_inscricoes || 0,
