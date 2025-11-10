@@ -24,7 +24,7 @@ import {
 import VideoPlayer from '../learning/VideoPlayer'
 import QuizPlayer from '../learning/QuizPlayer'
 import type { ModuloCompleto } from '@/api/courses'
-import { useMarcarModuloConcluido } from '@/api/progress'
+import { useCompleteModule } from '@/api/progress'
 
 interface ModuloPlayerProps {
   modulo: ModuloCompleto
@@ -42,10 +42,9 @@ export default function ModuloPlayer({
   onBack,
 }: ModuloPlayerProps) {
   const [currentStep, setCurrentStep] = useState(0)
-  const [tempoInicio] = useState<number>(Date.now())
 
   const queryClient = useQueryClient()
-  const marcarConcluidoMutation = useMarcarModuloConcluido()
+  const marcarConcluidoMutation = useCompleteModule()
 
   // Construir steps (materiais + avaliação + conteúdo texto)
   type StepData =
@@ -115,27 +114,33 @@ export default function ModuloPlayer({
   const currentStepData = steps[currentStep]
 
   const handleCompleteModule = () => {
-    marcarConcluidoMutation.mutate(
-      {
-        inscricaoId,
-        moduloId: modulo.modulo_id,
-      },
-      {
-        onSuccess: () => {
-          // Invalidar queries para atualizar dados
-          queryClient.invalidateQueries({
-            queryKey: ['progress', 'modulos-progresso', inscricaoId],
-          })
-          queryClient.invalidateQueries({
-            queryKey: ['progress', 'user'],
-          })
-          queryClient.invalidateQueries({
-            queryKey: ['users', 'dashboard'],
-          })
-          onComplete()
+    // Só marca como concluído se não for quiz (quiz completa automaticamente)
+    if (modulo.tipo_conteudo !== 'quiz') {
+      marcarConcluidoMutation.mutate(
+        {
+          enrollmentId: inscricaoId,
+          moduleId: modulo.modulo_id,
         },
-      }
-    )
+        {
+          onSuccess: () => {
+            // Invalidar queries para atualizar dados
+            queryClient.invalidateQueries({
+              queryKey: ['progress', 'modulos-progresso', inscricaoId],
+            })
+            queryClient.invalidateQueries({
+              queryKey: ['progress', 'user'],
+            })
+            queryClient.invalidateQueries({
+              queryKey: ['users', 'dashboard'],
+            })
+            onComplete()
+          },
+        }
+      )
+    } else {
+      // Para quiz, apenas fecha (a conclusão é feita no QuizPlayer)
+      onComplete()
+    }
   }
 
   const handleBack = () => {
@@ -285,9 +290,12 @@ export default function ModuloPlayer({
             {currentStepData?.type === 'quiz' && (
               <QuizPlayer
                 avaliacaoId={currentStepData.data.codigo}
+                inscricaoId={inscricaoId}
+                moduloId={modulo.modulo_id}
                 onComplete={aprovado => {
+                  // Quiz já marca o módulo como concluído se aprovado
                   if (aprovado) {
-                    handleCompleteModule()
+                    onComplete()
                   }
                 }}
               />

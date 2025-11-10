@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Typography,
@@ -9,35 +9,21 @@ import {
   FormControl,
   Button,
   LinearProgress,
-  Alert,
   Stack,
   Chip,
   Divider,
   CircularProgress,
-  Grid,
-  List,
-  ListItemButton,
-  ListItemText,
-  ListItemIcon,
   TextField,
 } from '@mui/material'
-import {
-  Timer,
-  CheckCircle,
-  NavigateNext,
-  NavigateBefore,
-  PlayArrow,
-  PlayArrowRounded,
-  TimerRounded,
-} from '@mui/icons-material'
+import { Timer, NavigateNext, NavigateBefore } from '@mui/icons-material'
 import {
   useStartAssessment,
   useSubmitAssessment,
   useActiveAttempt,
-  useUserAttempts,
   type StartAssessmentResponse,
-  useAttemptForReview,
 } from '@/api/assessments'
+import { useCompleteModule } from '@/api/progress'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 
 interface AvaliacaoInfo {
@@ -52,40 +38,25 @@ interface AvaliacaoInfo {
 interface QuizPlayerProps {
   avaliacaoId: string
   avaliacaoInfo?: AvaliacaoInfo
+  inscricaoId?: string
+  moduloId?: string
   onComplete: (aprovado: boolean) => void
 }
 
 export default function QuizPlayer({
   avaliacaoId,
   avaliacaoInfo,
+  inscricaoId,
+  moduloId,
   onComplete,
 }: QuizPlayerProps) {
+  const queryClient = useQueryClient()
   const startAssessment = useStartAssessment()
   const submitAssessment = useSubmitAssessment()
+  const completeModule = useCompleteModule()
 
   // Buscar tentativa ativa ao montar o componente
   const { data: activeAttempt } = useActiveAttempt(avaliacaoId, true)
-
-  // Buscar histórico de tentativas
-  const { data: userAttempts = [] } = useUserAttempts(avaliacaoId, true)
-
-  const latestApprovedAttempt = useMemo(() => {
-    return (
-      userAttempts
-        .filter(attempt => attempt.status === 'APROVADO')
-        .sort(
-          (a, b) =>
-            new Date(b.criado_em).getTime() - new Date(a.criado_em).getTime()
-        )[0] || null
-    )
-  }, [userAttempts])
-
-  const reviewAttemptId = latestApprovedAttempt?.id ?? ''
-
-  const { data: reviewData } = useAttemptForReview(
-    reviewAttemptId,
-    !!reviewAttemptId
-  )
 
   const [assessmentData, setAssessmentData] =
     useState<StartAssessmentResponse | null>(null)
@@ -94,53 +65,6 @@ export default function QuizPlayer({
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tentativaStarted, setTentativaStarted] = useState(false)
-
-  // Calcular tempo gasto em minutos
-  const calculateTimeSpent = (dataInicio: string, dataFim: string | null) => {
-    if (!dataFim) return 'Em andamento'
-    const inicio = new Date(dataInicio).getTime()
-    const fim = new Date(dataFim).getTime()
-    const minutos = Math.floor((fim - inicio) / 60000)
-    return `${minutos} min`
-  }
-
-  // Verificar se deve mostrar o botão de iniciar
-  const shouldShowStartButton = () => {
-    // Se não há tentativas, pode iniciar
-    if (userAttempts.length === 0) return true
-
-    // Verificar se já foi aprovado
-    const hasApproved = userAttempts.some(
-      attempt => attempt.status === 'APROVADO'
-    )
-    if (hasApproved) return false
-
-    // Verificar se há tentativa pendente de revisão
-    const hasPendingReview = userAttempts.some(
-      attempt => attempt.status === 'AGUARDANDO_CORRECAO'
-    )
-    if (hasPendingReview) return false
-
-    // Verificar se ainda tem tentativas disponíveis
-    const tentativasUsadas = userAttempts.filter(
-      a => a.status !== 'EM_ANDAMENTO'
-    ).length
-    return tentativasUsadas < (avaliacaoInfo?.tentativas_permitidas || 0)
-  }
-
-  // Mapear status para exibição
-  const getStatusDisplay = (status: string) => {
-    const statusMap: Record<string, { label: string; color: string }> = {
-      APROVADO: { label: '✅ Aprovado', color: 'success.main' },
-      REPROVADO: { label: '❌ Reprovado', color: 'error.main' },
-      AGUARDANDO_CORRECAO: {
-        label: '⏳ Aguardando correção',
-        color: 'warning.main',
-      },
-      EM_ANDAMENTO: { label: '🔄 Em Andamento', color: 'info.main' },
-    }
-    return statusMap[status] || { label: status, color: 'text.secondary' }
-  }
 
   const handleSubmit = useCallback(async () => {
     if (!assessmentData) return
@@ -157,13 +81,37 @@ export default function QuizPlayer({
     setIsSubmitting(true)
 
     try {
-      await submitAssessment.mutateAsync({
+      const result = await submitAssessment.mutateAsync({
         tentativa_id: assessmentData.tentativa.id,
         respostas: Object.entries(respostas).map(([questao_id, resposta]) => ({
           questao_id,
           resposta_funcionario: resposta,
         })),
       })
+
+      // Se aprovado E temos inscrição + módulo, completar o módulo automaticamente
+      if (result.status === 'APROVADO' && inscricaoId && moduloId) {
+        await completeModule.mutateAsync({
+          enrollmentId: inscricaoId,
+          moduleId: moduloId,
+        })
+
+        // Invalidar cache relevante
+        queryClient.invalidateQueries({
+          queryKey: ['progress', 'modulos-progresso', inscricaoId],
+        })
+        queryClient.invalidateQueries({ queryKey: ['progress', 'user'] })
+        queryClient.invalidateQueries({ queryKey: ['users', 'dashboard'] })
+
+        toast.success('🎉 Quiz concluído e módulo marcado como completo!')
+        onComplete(true)
+      } else if (result.status === 'APROVADO') {
+        toast.success('🎉 Quiz concluído com sucesso!')
+        onComplete(true)
+      } else {
+        toast.info('Quiz enviado para correção')
+        onComplete(false)
+      }
 
       // Resetar estado
       setTentativaStarted(false)
@@ -177,7 +125,16 @@ export default function QuizPlayer({
     } finally {
       setIsSubmitting(false)
     }
-  }, [assessmentData, respostas, submitAssessment])
+  }, [
+    assessmentData,
+    respostas,
+    submitAssessment,
+    inscricaoId,
+    moduloId,
+    completeModule,
+    queryClient,
+    onComplete,
+  ])
 
   // Recuperar tentativa ativa se existir
   useEffect(() => {
@@ -288,177 +245,54 @@ export default function QuizPlayer({
   return (
     <Box>
       <Typography variant='h5' gutterBottom fontWeight={600}>
-        {avaliacaoInfo?.titulo || 'Informações da Avaliação'}
+        {avaliacaoInfo?.titulo || 'Avaliação'}
       </Typography>
 
       <Divider sx={{ my: 3 }} />
 
-      <Stack spacing={2}>
-        <Box>
-          <Typography variant='body1' color='text.secondary'>
-            <strong>⏱️ Tempo limite:</strong>{' '}
-            {avaliacaoInfo?.tempo_limite || 'N/A'} minutos
-          </Typography>
-        </Box>
-
-        <Box>
-          <Typography variant='body1' color='text.secondary'>
-            <strong>📊 Nota mínima para aprovação:</strong>{' '}
-            {avaliacaoInfo?.nota_minima || 'N/A'}
-          </Typography>
-        </Box>
-
-        <Box>
-          <Typography variant='body1' color='text.secondary'>
-            <strong>🔄 Tentativas permitidas:</strong>{' '}
-            {avaliacaoInfo?.tentativas_permitidas || 'Ilimitadas'}
-          </Typography>
-        </Box>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Alert severity='info'>
-          <Typography variant='body2'>
-            Certifique-se de revisar todo o conteúdo antes de iniciar a
-            avaliação. O tempo começará a contar assim que você clicar em
-            "Iniciar Avaliação".
-          </Typography>
-        </Alert>
-      </Stack>
-
-      {userAttempts.length > 0 && (
-        <Box sx={{ pt: 3 }}>
-          <Typography variant='h6' gutterBottom>
-            Histórico de Tentativas
-          </Typography>
-          <Stack gap={1.5}>
-            {userAttempts
-              .filter(a => a.status !== 'EM_ANDAMENTO')
-              .sort(
-                (a, b) =>
-                  new Date(b.criado_em).getTime() -
-                  new Date(a.criado_em).getTime()
-              )
-              .map((attempt, index) => {
-                const statusInfo = getStatusDisplay(attempt.status)
-                return (
-                  <Paper
-                    key={attempt.id}
-                    elevation={2}
-                    sx={{
-                      p: 2,
-                      borderLeft: theme =>
-                        `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`,
-                    }}
-                  >
-                    <Stack gap={1}>
-                      <Box
-                        display='flex'
-                        justifyContent='space-between'
-                        alignItems='center'
-                      >
-                        <Typography variant='subtitle2' fontWeight={600}>
-                          Tentativa {userAttempts.length - index}
-                        </Typography>
-                        <Chip
-                          label={statusInfo.label}
-                          size='small'
-                          sx={{
-                            bgcolor: statusInfo.color,
-                            color: 'white',
-                          }}
-                        />
-                      </Box>
-
-                      <Box
-                        display='flex'
-                        gap={3}
-                        flexWrap='wrap'
-                        sx={{ fontSize: '0.875rem' }}
-                      >
-                        {attempt.nota_obtida !== null && (
-                          <Box>
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              Nota Obtida
-                            </Typography>
-                            <Typography
-                              variant='body2'
-                              fontWeight={600}
-                              color={
-                                attempt.nota_obtida >= 70
-                                  ? 'success.main'
-                                  : 'error.main'
-                              }
-                            >
-                              {attempt.nota_obtida}
-                            </Typography>
-                          </Box>
-                        )}
-
-                        {attempt.data_fim && (
-                          <Box>
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              Tempo Gasto
-                            </Typography>
-                            <Typography variant='body2' fontWeight={600}>
-                              {calculateTimeSpent(
-                                attempt.data_inicio,
-                                attempt.data_fim
-                              )}
-                            </Typography>
-                          </Box>
-                        )}
-
-                        <Box>
-                          <Typography variant='caption' color='text.secondary'>
-                            Iniciada em:
-                          </Typography>
-                          <Typography variant='body2' fontWeight={600}>
-                            {new Date(attempt.criado_em).toLocaleDateString(
-                              'pt-BR',
-                              {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              }
-                            )}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Stack>
-                  </Paper>
-                )
-              })}
+      {/* Informações da avaliação */}
+      {avaliacaoInfo && !tentativaStarted && (
+        <Paper variant='outlined' sx={{ p: 3, mb: 3 }}>
+          <Stack spacing={2}>
+            <Typography variant='h6' fontWeight={600}>
+              Informações da Avaliação
+            </Typography>
+            <Stack direction='row' spacing={3} flexWrap='wrap'>
+              <Chip
+                label={`⏱️ ${avaliacaoInfo.tempo_limite || 'Sem limite'} min`}
+                color='primary'
+                variant='outlined'
+              />
+              <Chip
+                label={`📝 ${avaliacaoInfo.tentativas_permitidas || '∞'} tentativas`}
+                color='secondary'
+                variant='outlined'
+              />
+              <Chip
+                label={`✅ Nota mínima: ${avaliacaoInfo.nota_minima}%`}
+                color='success'
+                variant='outlined'
+              />
+            </Stack>
           </Stack>
-        </Box>
+        </Paper>
       )}
 
-      {/* Botão para iniciar */}
-      {!tentativaStarted && shouldShowStartButton() && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', pt: 1 }}>
+      {/* Botão de iniciar */}
+      {!tentativaStarted && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
           <Button
             variant='contained'
             size='large'
-            startIcon={
-              startAssessment.isPending ? (
-                <CircularProgress size={20} color='inherit' />
-              ) : (
-                <PlayArrowRounded />
-              )
-            }
-            disabled={startAssessment.isPending}
             onClick={handleStartTentativa}
+            disabled={startAssessment.isPending}
             sx={{ minWidth: 200 }}
           >
-            {startAssessment.isPending ? 'Iniciando...' : 'Iniciar Avaliação'}
+            {startAssessment.isPending ? (
+              <CircularProgress size={24} color='inherit' />
+            ) : (
+              'Iniciar Avaliação'
+            )}
           </Button>
         </Box>
       )}
@@ -502,157 +336,146 @@ function QuizContent({
   handleSubmit: () => void
 }) {
   const currentQuestion = assessmentData.questoes[currentQuestionIndex]
-  const progress =
-    ((currentQuestionIndex + 1) / assessmentData.questoes.length) * 100
+  const totalQuestions = assessmentData.questoes.length
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100
 
   return (
-    <Box>
-      {/* Header com informações */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack
-          direction='row'
-          justifyContent='space-between'
-          alignItems='center'
-        >
-          <Box>
-            <Typography variant='h6'>
-              {assessmentData.avaliacao.titulo}
+    <Stack spacing={3}>
+      {/* Header com timer e progresso */}
+      <Paper variant='outlined' sx={{ p: 2 }}>
+        <Stack spacing={2}>
+          <Stack
+            direction='row'
+            justifyContent='space-between'
+            alignItems='center'
+          >
+            <Typography variant='h6' fontWeight={600}>
+              Questão {currentQuestionIndex + 1} de {totalQuestions}
             </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Questão {currentQuestionIndex + 1} de{' '}
-              {assessmentData.questoes.length}
-            </Typography>
-          </Box>
-
-          <Stack direction='row' spacing={2} alignItems='center'>
             {timeRemaining !== null && (
               <Chip
                 icon={<Timer />}
                 label={formatTime(timeRemaining)}
-                color={timeRemaining < 300 ? 'error' : 'default'}
+                color={timeRemaining < 300 ? 'error' : 'primary'}
                 variant={timeRemaining < 300 ? 'filled' : 'outlined'}
               />
             )}
           </Stack>
+          <LinearProgress variant='determinate' value={progress} />
         </Stack>
-
-        <LinearProgress
-          variant='determinate'
-          value={
-            ((currentQuestionIndex + 1) / assessmentData.questoes.length) * 100
-          }
-          sx={{ mt: 2 }}
-        />
       </Paper>
 
       {/* Questão atual */}
-      <Grid size={9}>
-        <Paper
-          sx={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 500,
-            p: 4,
-          }}
-        >
-          <Stack spacing={3}>
-            <Box>
-              <Typography variant='body1' fontWeight={500}>
-                {currentQuestion.enunciado}
-              </Typography>
-              <Typography
-                variant='caption'
-                color='text.secondary'
-                sx={{ mt: 1 }}
-              >
-                Peso: {currentQuestion.peso}
-              </Typography>
-            </Box>
+      <Paper variant='outlined' sx={{ p: 3 }}>
+        <Stack spacing={3}>
+          <Box>
+            <Typography variant='h6' fontWeight={600} gutterBottom>
+              {currentQuestion.enunciado}
+            </Typography>
+            <Chip
+              label={`Peso: ${currentQuestion.peso}`}
+              size='small'
+              color='secondary'
+              variant='outlined'
+            />
+          </Box>
 
-            {/* Opções de resposta */}
-            {(currentQuestion.tipo === 'MULTIPLA_ESCOLHA' ||
-              currentQuestion.tipo === 'VERDADEIRO_FALSO') && (
-              <FormControl>
-                <RadioGroup
-                  value={respostas[currentQuestion.id] || ''}
-                  onChange={e =>
-                    handleAnswerChange(currentQuestion.id, e.target.value)
-                  }
-                >
-                  {currentQuestion.opcoes_resposta.map((opcao, idx) => (
-                    <FormControlLabel
-                      key={idx}
-                      value={opcao}
-                      control={<Radio />}
-                      label={
-                        <Typography variant='body2'>
-                          <strong>{String.fromCharCode(65 + idx)}.</strong>{' '}
-                          {opcao}
-                        </Typography>
-                      }
-                      sx={{
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                        px: 2,
-                        py: 1,
-                        mb: 1,
-                        '&:hover': {
-                          bgcolor: 'action.hover',
-                        },
-                      }}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            )}
-
-            {/* Questão dissertativa */}
-            {currentQuestion.tipo === 'DISSERTATIVA' && (
-              <TextField
-                multiline
-                rows={6}
-                fullWidth
-                placeholder='Digite sua resposta aqui...'
+          {/* Opções de resposta */}
+          {(currentQuestion.tipo === 'MULTIPLA_ESCOLHA' ||
+            currentQuestion.tipo === 'VERDADEIRO_FALSO') && (
+            <FormControl>
+              <RadioGroup
                 value={respostas[currentQuestion.id] || ''}
                 onChange={e =>
                   handleAnswerChange(currentQuestion.id, e.target.value)
                 }
-              />
-            )}
-          </Stack>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              mt: 3,
-              pt: 2,
-              borderTop: 1,
-              borderColor: 'divider',
-            }}
-          >
-            <Button
-              startIcon={<NavigateBefore />}
-              onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
-              disabled={currentQuestionIndex === 0}
-            >
-              Anterior
-            </Button>
+              >
+                {currentQuestion.opcoes_resposta.map((opcao, idx) => (
+                  <FormControlLabel
+                    key={idx}
+                    value={opcao}
+                    control={<Radio />}
+                    label={
+                      <Typography variant='body1'>
+                        <strong>{String.fromCharCode(65 + idx)}.</strong>{' '}
+                        {opcao}
+                      </Typography>
+                    }
+                    sx={{
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      px: 2,
+                      py: 1.5,
+                      mb: 1,
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                      },
+                    }}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+          )}
 
-            <Button
-              endIcon={<NavigateNext />}
-              onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
-              variant='contained'
-              disabled={
-                currentQuestionIndex === assessmentData.questoes.length - 1
+          {/* Questão dissertativa */}
+          {currentQuestion.tipo === 'DISSERTATIVA' && (
+            <TextField
+              multiline
+              rows={8}
+              fullWidth
+              placeholder='Digite sua resposta aqui...'
+              value={respostas[currentQuestion.id] || ''}
+              onChange={e =>
+                handleAnswerChange(currentQuestion.id, e.target.value)
               }
-            >
-              Próxima
-            </Button>
-          </Box>
-        </Paper>
-      </Grid>
-    </Box>
+              variant='outlined'
+            />
+          )}
+        </Stack>
+      </Paper>
+
+      {/* Navegação */}
+      <Stack
+        direction='row'
+        spacing={2}
+        justifyContent='space-between'
+        alignItems='center'
+      >
+        <Button
+          startIcon={<NavigateBefore />}
+          onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+          disabled={currentQuestionIndex === 0}
+          variant='outlined'
+        >
+          Anterior
+        </Button>
+
+        {currentQuestionIndex === totalQuestions - 1 ? (
+          <Button
+            variant='contained'
+            color='success'
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            size='large'
+            sx={{ minWidth: 200 }}
+          >
+            {isSubmitting ? (
+              <CircularProgress size={24} color='inherit' />
+            ) : (
+              'Finalizar Avaliação'
+            )}
+          </Button>
+        ) : (
+          <Button
+            endIcon={<NavigateNext />}
+            onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
+            variant='contained'
+          >
+            Próxima
+          </Button>
+        )}
+      </Stack>
+    </Stack>
   )
 }
