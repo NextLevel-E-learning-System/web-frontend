@@ -158,27 +158,7 @@ export default function ProgressPage() {
   return (
     <DashboardLayout items={navigationItems}>
       <Box sx={{ mb: 2 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: { xs: 'stretch', sm: 'center' },
-            justifyContent: 'space-between',
-            gap: 2,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Box>
-            <Typography variant='h5' fontWeight={800}>
-              Seu Progresso de Aprendizagem
-            </Typography>
-            <Typography color='text.secondary'>
-              Acompanhe sua jornada de estudos, conquistas e metas para se
-              manter motivado.
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box sx={{ mt: 4 }}>
+        <Box>
           <Typography variant='subtitle1' fontWeight={800} sx={{ mb: 2 }}>
             Visão Geral
           </Typography>
