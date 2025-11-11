@@ -3,7 +3,6 @@ import {
   Badge,
   IconButton,
   Menu,
-  MenuItem,
   Typography,
   Box,
   Button,
@@ -33,8 +32,7 @@ export default function NotificationDropdown() {
   const open = Boolean(anchorEl)
 
   // Hooks para dados
-  const { data: unreadData, isLoading: unreadLoading } =
-    useUnreadNotificationsCount()
+  const { data: unreadData } = useUnreadNotificationsCount()
   const { data: notificationsData, isLoading: notificationsLoading } =
     useNotifications({
       limit: 10,

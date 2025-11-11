@@ -100,7 +100,6 @@ export function useLogout() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const logoutAPI = useLogoutAPI()
-  const { logout: authLogout } = useAuth()
 
   return useMutation({
     mutationKey: ['auth', 'logout'],
@@ -118,9 +117,6 @@ export function useLogout() {
       // Limpar token e cache
       clearAccessToken()
       queryClient.clear()
-
-      // Atualizar contexto de autenticação
-      authLogout()
     },
     onSuccess: (result: any) => {
       // Usar apenas mensagem do backend
@@ -134,7 +130,6 @@ export function useLogout() {
       // Mesmo com erro, fazer logout local
       clearAccessToken()
       queryClient.clear()
-      authLogout()
       navigate('/login')
     },
   })

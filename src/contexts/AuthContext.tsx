@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useEffect,
@@ -25,9 +25,7 @@ export interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (token: string) => void
-  logout: () => void
   hasRole: (role: UserRole | UserRole[]) => boolean
-  hasAnyRole: (roles: UserRole[]) => boolean
 }
 
 // Estrutura esperada do JWT token
@@ -94,12 +92,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  // Função para fazer logout
-  const logout = () => {
-    setUser(null)
-    clearAccessToken()
-  }
-
   // Verificar se usuário tem role específica
   const hasRole = (role: UserRole | UserRole[]): boolean => {
     if (!user) return false
@@ -109,12 +101,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     return user.role === role
-  }
-
-  // Verificar se usuário tem qualquer uma das roles
-  const hasAnyRole = (roles: UserRole[]): boolean => {
-    if (!user) return false
-    return roles.includes(user.role)
   }
 
   // Verificar token ao inicializar
@@ -144,9 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: !!user,
     isLoading,
     login,
-    logout,
     hasRole,
-    hasAnyRole,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
@@ -159,45 +143,4 @@ export function useAuth(): AuthContextType {
     throw new Error('useAuth deve ser usado dentro de um AuthProvider')
   }
   return context
-}
-
-// HOC para componentes que requerem autenticação
-export function withAuth<P extends object>(Component: React.ComponentType<P>) {
-  return function AuthenticatedComponent(props: P) {
-    const { isAuthenticated, isLoading } = useAuth()
-
-    if (isLoading) {
-      return <div>Carregando...</div> // ou um componente de loading
-    }
-
-    if (!isAuthenticated) {
-      return <div>Não autorizado</div> // ou redirecionar para login
-    }
-
-    return <Component {...props} />
-  }
-}
-
-// HOC para componentes que requerem roles específicas
-export function withRole<P extends object>(
-  Component: React.ComponentType<P>,
-  requiredRoles: UserRole | UserRole[]
-) {
-  return function RoleBasedComponent(props: P) {
-    const { isAuthenticated, isLoading, hasRole } = useAuth()
-
-    if (isLoading) {
-      return <div>Carregando...</div> // ou um componente de loading
-    }
-
-    if (!isAuthenticated) {
-      return <div>Não autorizado</div> // ou redirecionar para login
-    }
-
-    if (!hasRole(requiredRoles)) {
-      return <div>Acesso negado - Role insuficiente</div>
-    }
-
-    return <Component {...props} />
-  }
 }
