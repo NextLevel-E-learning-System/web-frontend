@@ -58,6 +58,8 @@ export function useLogin() {
         role: (usuario.role as UserRole) || 'FUNCIONARIO',
         departamento_id: usuario.departamento,
         cargo_nome: usuario.cargo,
+        xp_total: usuario.xp,
+        nivel: usuario.nivel,
       })
 
       showSuccessToast(result)
@@ -90,7 +92,7 @@ export function useLogout() {
       } catch (error) {
         console.warn('[useLogout] Erro na API, mas limpando cache:', error)
       }
-      
+
       // Limpar contexto de autenticação (inclui localStorage)
       authLogout()
       queryClient.clear()
@@ -102,7 +104,7 @@ export function useLogout() {
     onError: (error: unknown) => {
       console.error('[useLogout] Erro:', error)
       showErrorToast(error)
-      
+
       // Limpar mesmo em caso de erro
       authLogout()
       queryClient.clear()

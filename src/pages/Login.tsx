@@ -33,7 +33,7 @@ export default function Login() {
           const senha = String(data.get('senha') || '')
 
           try {
-            await login.mutateAsync({ email, senha, rememberMe })
+            await login.mutateAsync({ email, senha })
             // Redirecionamento automático é feito pelo hook useLogin
           } catch (err) {
             console.error('[Login] Erro:', err)
@@ -83,7 +83,7 @@ export default function Login() {
           }}
         />
 
-        {/* Checkbox "Manter-me conectado" */}
+        {/*        
         <FormControlLabel
           control={
             <Checkbox
@@ -94,7 +94,8 @@ export default function Login() {
           }
           label='Manter-me conectado'
           sx={{ mt: 1, mb: 1 }}
-        />
+        /> 
+        */}
 
         <Button component={RouterLink} to='/recover' variant='text'>
           Esqueci minha senha
