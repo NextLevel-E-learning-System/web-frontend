@@ -5,8 +5,6 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { getAccessToken, clearAccessToken } from '@/api/http'
-import { jwtDecode } from 'jwt-decode'
 
 // Types
 export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE'
@@ -24,21 +22,9 @@ export interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (token: string) => void
+  login: (userId: string) => void
+  logout: () => void
   hasRole: (role: UserRole | UserRole[]) => boolean
-}
-
-// Estrutura esperada do JWT token
-interface JWTPayload {
-  sub: string // user id
-  email: string
-  nome?: string
-  roles: UserRole | UserRole[] // Pode ser string ou array
-  departamento_id?: string
-  cargo_nome?: string
-  ativo: boolean
-  exp: number
-  iat: number
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -51,45 +37,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Função para decodificar token e extrair dados do usuário
-  const decodeToken = (token: string): User | null => {
-    try {
-      const decoded = jwtDecode<JWTPayload>(token)
-
-      // Verificar se token não está expirado
-      const currentTime = Date.now() / 1000
-      if (decoded.exp < currentTime) {
-        console.warn('[AuthProvider] Token expirado')
-        clearAccessToken()
-        return null
-      }
-
-      // Extrair role (pode ser string ou array)
-      const userRole = Array.isArray(decoded.roles)
-        ? decoded.roles[0]
-        : decoded.roles
-
-      return {
-        id: decoded.sub,
-        email: decoded.email,
-        nome: decoded.nome || decoded.email, // Fallback se não tiver nome
-        role: userRole,
-        departamento_id: decoded.departamento_id,
-        cargo_nome: decoded.cargo_nome,
-      }
-    } catch (error) {
-      console.error('[AuthProvider] Erro ao decodificar token:', error)
-      clearAccessToken()
-      return null
-    }
+  // Função para fazer login
+  const login = (userId: string) => {
+    // Usuário será carregado posteriormente via API
+    // Por enquanto, apenas marca como autenticado
+    setUser({ id: userId } as User)
   }
 
-  // Função para fazer login
-  const login = (token: string) => {
-    const userData = decodeToken(token)
-    if (userData) {
-      setUser(userData)
-    }
+  // Função para logout
+  const logout = () => {
+    setUser(null)
   }
 
   // Verificar se usuário tem role específica
@@ -103,26 +60,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return user.role === role
   }
 
-  // Verificar token ao inicializar
+  // Verificar autenticação ao inicializar
+  // Como os cookies são HTTP-only, precisamos fazer uma requisição ao backend
   useEffect(() => {
-    const initializeAuth = () => {
+    const checkAuth = async () => {
       try {
-        const token = getAccessToken()
-        if (token) {
-          const userData = decodeToken(token)
-          if (userData) {
-            setUser(userData)
-          }
+        // Fazer requisição para verificar se está autenticado
+        // O cookie será enviado automaticamente
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+        const response = await fetch(`${baseUrl}/auth/v1/me`, {
+          credentials: 'include',
+        })
+
+        if (response.ok) {
+          const userData = await response.json()
+          setUser(userData)
         }
       } catch (error) {
-        console.error('[AuthProvider] Erro na inicialização:', error)
-        clearAccessToken()
+        console.error('[AuthProvider] Erro ao verificar autenticação:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    initializeAuth()
+    checkAuth()
   }, [])
 
   const value: AuthContextType = {
@@ -130,6 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: !!user,
     isLoading,
     login,
+    logout,
     hasRole,
   }
 
