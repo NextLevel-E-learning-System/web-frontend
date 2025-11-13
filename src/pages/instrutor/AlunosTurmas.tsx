@@ -33,17 +33,19 @@ import { useNavigation } from '@/hooks/useNavigation'
 import { useCourseEnrollments } from '@/api/progress'
 import { useCourseCatalog, useCourses } from '@/api/courses'
 import MetricCard from '@/components/common/StatCard'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function AlunosTurmas() {
-  const { navigationItems, perfil } = useNavigation()
+  const { navigationItems } = useNavigation()
+  const { user } = useAuth()
 
   // Verificar se é ADMIN ou INSTRUTOR
-  const isAdmin = perfil?.role === 'ADMIN'
-  const isInstrutor = perfil?.role === 'INSTRUTOR'
+  const isAdmin = user?.role === 'ADMIN'
+  const isInstrutor = user?.role === 'INSTRUTOR'
 
   // Hook para buscar cursos do instrutor (filtrando por instrutor_id)
   const { data: instructorCoursesData } = useCourses(
-    isInstrutor ? { instrutor: perfil?.id, ativo: true } : {}
+    isInstrutor ? { instrutor: user?.id, ativo: true } : {}
   )
 
   // Hook para buscar todos os cursos (ADMIN)

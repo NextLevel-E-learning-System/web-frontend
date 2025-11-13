@@ -26,8 +26,8 @@ import {
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import MetricCard from '@/components/common/StatCard'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboard, type DashboardInstrutor } from '@/api/users'
 import { useNavigate } from 'react-router-dom'
+import { useDashboard, type DashboardInstrutor } from '@/api/users'
 
 export default function InstrutorDashboard() {
   const { navigationItems } = useDashboardLayout()

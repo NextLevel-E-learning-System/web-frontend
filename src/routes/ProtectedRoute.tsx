@@ -9,7 +9,17 @@ interface ProtectedRouteProps {
   fallback?: React.ReactNode
 }
 
-// Componente avançado com validação de roles
+// Mapa de redirecionamento por role
+const ROLE_REDIRECTS: Record<string, string> = {
+  FUNCIONARIO: '/dashboard/funcionario',
+  INSTRUTOR: '/dashboard/instrutor',
+  ADMIN: '/dashboard/admin',
+  GERENTE: '/dashboard/admin',
+}
+
+const getRedirectByRole = (role: string) =>
+  ROLE_REDIRECTS[role] || '/dashboard/funcionario'
+
 export function ProtectedRoute({
   children,
   allowedRoles = [],
@@ -17,17 +27,14 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth()
 
-  // Mostrar loading enquanto carrega dados
   if (isLoading) {
     return (
       fallback || (
         <Box
           display='flex'
-          flexDirection='column'
           alignItems='center'
           justifyContent='center'
           minHeight='100vh'
-          gap={2}
         >
           <CircularProgress size={48} />
         </Box>
@@ -35,46 +42,26 @@ export function ProtectedRoute({
     )
   }
 
-  // Se não está autenticado, redirecionar para login
   if (!isAuthenticated || !user) {
-    console.log(
-      '[ProtectedRoute] Usuário não autenticado, redirecionando para login'
-    )
+    console.log('[ProtectedRoute] Não autenticado, redirecionando para login')
     return <Navigate to='/login' replace />
   }
 
-  // Se não há roles específicos definidos, permitir acesso
+  // Sem restrição de roles, permitir acesso
   if (allowedRoles.length === 0) {
     return <>{children}</>
   }
 
-  // Pegar role do usuário autenticado
-  const userRole = user.role
-
-  // Verificar se o usuário tem uma das roles permitidas
-  const hasPermission = allowedRoles.includes(userRole)
+  // Verificar permissão
+  const hasPermission = allowedRoles.includes(user.role)
 
   if (!hasPermission) {
+    const redirect = getRedirectByRole(user.role)
     console.log(
-      `[ProtectedRoute] Usuário ${userRole} não tem permissão para acessar. Roles permitidas:`,
-      allowedRoles
+      `[ProtectedRoute] ${user.role} sem permissão, redirecionando para ${redirect}`
     )
-
-    // Redirecionar para dashboard apropriado baseado na role do usuário
-    switch (userRole) {
-      case 'FUNCIONARIO':
-        return <Navigate to='/dashboard/funcionario' replace />
-      case 'INSTRUTOR':
-        return <Navigate to='/dashboard/instrutor' replace />
-      case 'ADMIN':
-      case 'GERENTE':
-        return <Navigate to='/dashboard/admin' replace />
-      default:
-        return <Navigate to='/login' replace />
-    }
+    return <Navigate to={redirect} replace />
   }
 
-  // Role permitido, mostrar conteúdo
-  console.log(`[ProtectedRoute] Acesso permitido para ${userRole}`)
   return <>{children}</>
 }

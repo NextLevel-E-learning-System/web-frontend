@@ -43,6 +43,7 @@ import {
   type Funcionario,
 } from '@/api/users'
 import { useRegister } from '@/hooks/auth'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface UserForm {
   nome: string
@@ -55,7 +56,9 @@ interface UserForm {
 }
 
 export default function AdminUsers() {
-  const { navigationItems, perfil, isGerente } = useNavigation()
+  const { navigationItems } = useNavigation()
+  const { user } = useAuth()
+  const isGerente = user?.role === 'GERENTE'
   const {
     data: usuariosResponse,
     isLoading: loadingUsers,
@@ -275,12 +278,12 @@ export default function AdminUsers() {
   const allUsers = useMemo(() => {
     if (!usuarios) return []
 
-    if (isGerente && perfil?.departamento) {
-      return usuarios.filter(u => u.departamento_id === perfil.departamento)
+    if (isGerente && user?.departamento_id) {
+      return usuarios.filter(u => u.departamento_id === user.departamento_id)
     }
 
     return usuarios
-  }, [usuarios, isGerente, perfil?.departamento])
+  }, [usuarios, isGerente, user?.departamento_id])
 
   // Filtrar usuários por departamento e status
   const filtered = useMemo(() => {

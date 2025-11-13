@@ -21,7 +21,7 @@ import {
   Collapse,
   Link,
 } from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
+import HomeIcon from '@mui/icons-material/Home'
 import LogoutIcon from '@mui/icons-material/Logout'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -29,7 +29,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
 
 import { useLogout } from '@/hooks/auth'
-import { useDashboardCompleto } from '@/api/users'
+import { useAuth } from '@/contexts/AuthContext'
 
 export type NavItem = {
   label: string
@@ -47,15 +47,15 @@ export default function DashboardLayout({
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
   const location = useLocation()
   const { mutate } = useLogout()
+  const { user } = useAuth()
   const currentPath = typeof location !== 'undefined' ? location.pathname : ''
-  const { perfil } = useDashboardCompleto()
 
   const avatarText = useMemo(() => {
-    if (!perfil?.nome) return ''
-    const partes = perfil.nome.trim().split(' ')
+    if (!user?.nome) return ''
+    const partes = user.nome.trim().split(' ')
     if (partes.length === 1) return partes[0][0].toUpperCase()
     return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase()
-  }, [perfil?.nome])
+  }, [user?.nome])
 
   const toggleSection = (key: string) => {
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
@@ -199,7 +199,7 @@ export default function DashboardLayout({
               onClick={() => setMobileOpen(true)}
               sx={{ display: { xs: 'flex', md: 'none' } }}
             >
-              <MenuIcon />
+              <HomeIcon />
             </IconButton>
           </Box>
         </Toolbar>

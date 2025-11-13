@@ -9,7 +9,6 @@ import {
 } from '@mui/material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboard } from '@/api/users'
 import { useGlobalRanking, useMonthlyRanking } from '@/api/gamification'
 import LeaderboardTop from '@/components/common/LeaderboardTop'
 import RankingTable, { type RankItem } from '@/components/common/RankingTable'
@@ -18,9 +17,6 @@ import { useState, useMemo } from 'react'
 export default function RankingPage() {
   const [tab, setTab] = useState(0)
   const { navigationItems } = useDashboardLayout()
-  const { data: dashboardResponse, isLoading: dashboardLoading } =
-    useDashboard()
-  const perfil = dashboardResponse?.usuario
 
   // Buscar rankings da API
   const {
@@ -34,8 +30,7 @@ export default function RankingPage() {
     error: monthlyError,
   } = useMonthlyRanking()
 
-  const isLoading =
-    dashboardLoading || (tab === 0 ? globalLoading : monthlyLoading)
+  const isLoading = tab === 0 ? globalLoading : monthlyLoading
   const error = tab === 0 ? globalError : monthlyError
 
   // Transformar dados da API para o formato do componente
@@ -117,7 +112,7 @@ export default function RankingPage() {
     )
   }
 
-  if (error || !perfil) {
+  if (error) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error'>Erro ao carregar dados. Tente novamente.</Alert>

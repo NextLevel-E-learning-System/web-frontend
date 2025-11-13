@@ -16,6 +16,8 @@ export interface User {
   role: UserRole
   departamento_id?: string
   cargo_nome?: string
+  xp_total?: number
+  nivel?: string
 }
 
 export interface AuthContextType {
@@ -37,34 +39,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Função para fazer login
-  const login = (userData: User) => {
-    setUser(userData)
-  }
+  const login = (userData: User) => setUser(userData)
+  const logout = () => setUser(null)
 
-  // Função para logout
-  const logout = () => {
-    setUser(null)
-  }
-
-  // Verificar se usuário tem role específica
   const hasRole = (role: UserRole | UserRole[]): boolean => {
     if (!user) return false
-
-    if (Array.isArray(role)) {
-      return role.includes(user.role)
-    }
-
-    return user.role === role
+    return Array.isArray(role) ? role.includes(user.role) : user.role === role
   }
 
-  // Verificar autenticação ao inicializar
-  // Como os cookies são HTTP-only, precisamos fazer uma requisição ao backend
+  // Verificar autenticação ao carregar (cookie HTTP-only)
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Fazer requisição para verificar se está autenticado
-        // O cookie será enviado automaticamente
         const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
         const response = await fetch(`${baseUrl}/users/v1/funcionarios/me`, {
           credentials: 'include',

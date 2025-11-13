@@ -41,6 +41,7 @@ import {
 } from '@/api/courses'
 import { useFuncionarios } from '@/api/users'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Filtros {
   categoria: string
@@ -50,7 +51,9 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
-  const { navigationItems, isInstrutor, perfil } = useNavigation()
+  const { navigationItems } = useNavigation()
+  const { user } = useAuth()
+  const isInstrutor = user?.role === 'INSTRUTOR'
 
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
@@ -82,12 +85,12 @@ export default function AdminCourses() {
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
 
     // Se o usuário for INSTRUTOR, filtrar apenas seus cursos
-    if (isInstrutor && perfil?.id) {
-      filters.instrutor = perfil.id
+    if (isInstrutor && user?.id) {
+      filters.instrutor = user.id
     }
 
     return filters
-  }, [filtros, isInstrutor, perfil?.id])
+  }, [filtros, isInstrutor, user?.id])
 
   const {
     data: cursosResponse,

@@ -10,9 +10,7 @@ import { MenuBook, StarRate, EmojiEvents } from '@mui/icons-material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
 import DashboardLayout from '@/components/layout/DashboardLayout'
-import { useDashboard } from '@/api/users'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboardCompleto } from '@/api/users'
 import { useUserEnrollments, getEnrollmentStats } from '@/api/progress'
 import { useCategoryColors } from '@/hooks/useCategoryColors'
 import { useCourseCatalog } from '@/api/courses'
@@ -21,6 +19,7 @@ import CourseProgressCard from '@/components/employee/CourseProgressCard'
 import AchievementCard from '@/components/employee/AchievementCard'
 import MetricCard from '@/components/common/StatCard'
 import { useMyGamificationProfile } from '@/api/gamification'
+import { useAuth } from '@/contexts/AuthContext'
 
 /* Lines 30-39 omitted */
 
@@ -77,10 +76,8 @@ function CourseProgressItem({
 }
 
 export default function ProgressPage() {
-  const { isLoading, error } = useDashboardCompleto()
   const { navigationItems } = useDashboardLayout()
-  const { data: dashboardResponse } = useDashboard()
-  const perfil = dashboardResponse?.usuario
+  const { user } = useAuth()
   const navigate = useNavigate()
 
   // Buscar badges do gamification
@@ -93,7 +90,7 @@ export default function ProgressPage() {
     data: userEnrollmentsResponse,
     isLoading: enrollmentsLoading,
     error: enrollmentsError,
-  } = useUserEnrollments(perfil?.id || '')
+  } = useUserEnrollments(user?.id || '')
 
   // Buscar catálogo de cursos para obter dados completos
   const { data: courses } = useCourseCatalog({})
@@ -132,7 +129,7 @@ export default function ProgressPage() {
     return courses.find(course => course.codigo === enrollment.curso_id)
   }
 
-  if (isLoading) {
+  if (enrollmentsLoading) {
     return (
       <DashboardLayout items={navigationItems}>
         <Box
@@ -147,7 +144,7 @@ export default function ProgressPage() {
     )
   }
 
-  if (error || !perfil) {
+  if (enrollmentsError || !user) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error'>Erro ao carregar dados. Tente novamente.</Alert>
@@ -199,9 +196,7 @@ export default function ProgressPage() {
                 icon={<StarRate sx={{ fontSize: 26 }} color='success' />}
                 label='XP Total'
                 value={
-                  enrollmentsLoading
-                    ? '...'
-                    : perfil?.xp_total?.toString() || '0'
+                  enrollmentsLoading ? '...' : user?.xp_total?.toString() || '0'
                 }
               />
             </Grid>

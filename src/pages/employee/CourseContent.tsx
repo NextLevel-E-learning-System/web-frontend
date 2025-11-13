@@ -23,9 +23,9 @@ import {
   useCourseCatalog,
 } from '../../api/courses'
 import { useUserEnrollments } from '../../api/progress'
-import { useDashboardCompleto } from '../../api/users'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 import CertificateView from '@/components/employee/CertificateView'
+import { useAuth } from '@/contexts/AuthContext'
 
 const TAB_INDEX = {
   curriculum: 0,
@@ -40,8 +40,8 @@ export default function CourseContent() {
   const { codigo } = useParams<{ codigo: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { perfil } = useDashboardCompleto()
   const { navigationItems } = useNavigation()
+  const { user } = useAuth()
 
   // Dados passados via state (quando vem da ProgressPage)
   const passedCourseData = location.state?.courseData
@@ -58,7 +58,7 @@ export default function CourseContent() {
 
   // SEMPRE buscar dados atualizados das inscrições (não usar passedEnrollment)
   const { data: userEnrollmentsResponse } = useUserEnrollments(
-    perfil?.id || '',
+    user?.id || '',
     {
       refetchOnMount: 'always', // Força refetch ao montar
     }
