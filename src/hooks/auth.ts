@@ -12,7 +12,7 @@ import {
   type ResetPasswordInput,
 } from '@/api/users'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, type UserRole } from '@/contexts/AuthContext'
 
 // Types específicos para hooks (estendendo os da API)
 export interface LoginCredentials extends LoginRequest {
@@ -44,8 +44,15 @@ export function useLogin() {
       // Usar apenas mensagem do backend
       showSuccessToast(result)
 
-      // Atualizar contexto de autenticação (usando dados do usuário retornados)
-      authLogin(result.usuario.id)
+      // Atualizar contexto de autenticação com dados completos do usuário
+      authLogin({
+        id: result.usuario.id,
+        email: result.usuario.email,
+        nome: result.usuario.nome,
+        role: (result.usuario.role as UserRole) || 'FUNCIONARIO',
+        departamento_id: result.usuario.departamento,
+        cargo_nome: result.usuario.cargo,
+      })
 
       // Invalidar cache para forçar nova busca dos dados
       queryClient.invalidateQueries({ queryKey: ['users'] })

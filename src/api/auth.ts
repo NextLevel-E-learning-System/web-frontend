@@ -14,6 +14,10 @@ export interface LoginResponse {
     email: string
     nome: string
     role: string
+    departamento?: string
+    cargo?: string
+    xp?: number
+    nivel?: number
   }
   mensagem: string
 }

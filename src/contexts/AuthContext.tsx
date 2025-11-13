@@ -22,7 +22,7 @@ export interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (userId: string) => void
+  login: (userData: User) => void
   logout: () => void
   hasRole: (role: UserRole | UserRole[]) => boolean
 }
@@ -38,10 +38,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   // Função para fazer login
-  const login = (userId: string) => {
-    // Usuário será carregado posteriormente via API
-    // Por enquanto, apenas marca como autenticado
-    setUser({ id: userId } as User)
+  const login = (userData: User) => {
+    setUser(userData)
   }
 
   // Função para logout
@@ -68,7 +66,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Fazer requisição para verificar se está autenticado
         // O cookie será enviado automaticamente
         const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
-        const response = await fetch(`${baseUrl}/auth/v1/me`, {
+        const response = await fetch(`${baseUrl}/users/v1/funcionarios/me`, {
           credentials: 'include',
         })
 
