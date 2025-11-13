@@ -39,36 +39,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const login = (userData: User) => setUser(userData)
-  const logout = () => setUser(null)
+  const login = (userData: User) => {
+    setUser(userData)
+    // Salvar dados do usuário no localStorage (não o token!)
+    localStorage.setItem('user', JSON.stringify(userData))
+  }
+
+  const logout = () => {
+    setUser(null)
+    localStorage.removeItem('user')
+  }
 
   const hasRole = (role: UserRole | UserRole[]): boolean => {
     if (!user) return false
     return Array.isArray(role) ? role.includes(user.role) : user.role === role
   }
 
-  // Verificar autenticação ao carregar (cookie HTTP-only)
+  // Restaurar usuário do localStorage ao carregar
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
-        const response = await fetch(`${baseUrl}/users/v1/funcionarios/me`, {
-          credentials: 'include',
-        })
-
-        if (response.ok) {
-          const userData = await response.json()
-          setUser(userData)
-        }
-      } catch (error) {
-        console.error('[AuthProvider] Erro ao verificar autenticação:', error)
-      } finally {
-        setIsLoading(false)
+    try {
+      const savedUser = localStorage.getItem('user')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser) as User
+        setUser(userData)
       }
+    } catch (error) {
+      console.error('[AuthProvider] Erro ao restaurar usuário:', error)
+      localStorage.removeItem('user')
+    } finally {
+      setIsLoading(false)
     }
-
-    checkAuth()
-  }, [])
+  }, []) // Executa apenas uma vez ao montar
 
   const value: AuthContextType = {
     user,

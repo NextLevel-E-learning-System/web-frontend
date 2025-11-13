@@ -80,6 +80,7 @@ export function useLogout() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const logoutAPI = useLogoutAPI()
+  const { logout: authLogout } = useAuth()
 
   return useMutation({
     mutationKey: ['auth', 'logout'],
@@ -89,6 +90,9 @@ export function useLogout() {
       } catch (error) {
         console.warn('[useLogout] Erro na API, mas limpando cache:', error)
       }
+      
+      // Limpar contexto de autenticação (inclui localStorage)
+      authLogout()
       queryClient.clear()
     },
     onSuccess: result => {
@@ -98,6 +102,9 @@ export function useLogout() {
     onError: (error: unknown) => {
       console.error('[useLogout] Erro:', error)
       showErrorToast(error)
+      
+      // Limpar mesmo em caso de erro
+      authLogout()
       queryClient.clear()
       navigate('/login')
     },
