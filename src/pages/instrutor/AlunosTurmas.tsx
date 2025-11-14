@@ -30,7 +30,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import DataTable, { type Column } from '@/components/common/DataTable'
 import { useNavigation } from '@/hooks/useNavigation'
-import { useCourseEnrollments } from '@/api/progress'
+import { useCourseEnrollments, type CourseEnrollment } from '@/api/progress'
 import { useCourseCatalog, useCourses } from '@/api/courses'
 import MetricCard from '@/components/common/StatCard'
 import { useAuth } from '@/contexts/AuthContext'
@@ -81,7 +81,47 @@ export default function AlunosTurmas() {
     error: enrollmentsError,
   } = useCourseEnrollments(cursoSelecionado)
 
-  const enrollments = useMemo(() => enrollmentsData || [], [enrollmentsData])
+  const enrollments = useMemo(
+    () => enrollmentsData?.data || [],
+    [enrollmentsData]
+  )
+
+  // Estatísticas das turmas
+  const turmasStats = useMemo(() => {
+    if (!enrollments.length) {
+      return {
+        total: 0,
+        concluidos: 0,
+        emAndamento: 0,
+        mediaProgresso: 0,
+      }
+    }
+
+    const concluidos = enrollments.filter(e => e.status === 'CONCLUIDO').length
+    const emAndamento = enrollments.filter(
+      e => e.status === 'EM_ANDAMENTO'
+    ).length
+    const somaProgresso = enrollments.reduce(
+      (acc, e) => acc + (e.progresso || 0),
+      0
+    )
+    const mediaProgresso = Math.round(somaProgresso / enrollments.length)
+
+    return {
+      total: enrollments.length,
+      concluidos,
+      emAndamento,
+      mediaProgresso,
+    }
+  }, [enrollments])
+
+  // Filtragem das inscrições
+  const filteredEnrollments = useMemo(() => {
+    if (turmasTab === 'all') return enrollments
+    if (turmasTab === 'active')
+      return enrollments.filter(e => e.status !== 'CONCLUIDO')
+    return enrollments.filter(e => e.status === 'CONCLUIDO')
+  }, [enrollments, turmasTab])
 
   const getStatusColor = (
     status: string
@@ -132,50 +172,23 @@ export default function AlunosTurmas() {
     console.log('Exportar Excel')
   }
 
-  // Filtros
-  const filteredEnrollments = useMemo(() => {
-    if (!enrollments.length) return []
-    if (turmasTab === 'all') return enrollments
-    if (turmasTab === 'active')
-      return enrollments.filter(e => e.status !== 'CONCLUIDO')
-    return enrollments.filter(e => e.status === 'CONCLUIDO')
-  }, [enrollments, turmasTab])
-
-  // Estatísticas das turmas
-  const turmasStats = useMemo(() => {
-    const total = enrollments.length
-    const concluidos = enrollments.filter(e => e.status === 'CONCLUIDO').length
-    const emAndamento = enrollments.filter(
-      e => e.status === 'EM_ANDAMENTO'
-    ).length
-    const mediaProgresso =
-      total > 0
-        ? enrollments.reduce(
-            (acc, e) => acc + (e.progresso_percentual || 0),
-            0
-          ) / total
-        : 0
-
-    return { total, concluidos, emAndamento, mediaProgresso }
-  }, [enrollments])
-
   // Colunas da tabela de turmas
   const turmasColumns: Column[] = useMemo(
     () => [
       {
         id: 'funcionario_nome',
         label: 'Funcionário',
-        render: (value: string, row: (typeof enrollments)[0]) => (
+        render: (_value: string, row: CourseEnrollment) => (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
               <PersonIcon fontSize='small' />
             </Avatar>
             <Box>
               <Typography variant='body2' fontWeight={500}>
-                {value}
+                {row.funcionario.nome}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
-                {row.funcionario_email}
+                {row.funcionario.email}
               </Typography>
             </Box>
           </Box>
@@ -184,8 +197,10 @@ export default function AlunosTurmas() {
       {
         id: 'funcionario_departamento',
         label: 'Departamento',
-        render: (value: string) => (
-          <Typography variant='body2'>{value}</Typography>
+        render: (_value: string, row: CourseEnrollment) => (
+          <Typography variant='body2'>
+            {row.funcionario.departamento}
+          </Typography>
         ),
       },
       {
@@ -206,16 +221,20 @@ export default function AlunosTurmas() {
         id: 'progresso_percentual',
         label: 'Progresso',
         align: 'center',
-        render: (value: number) => (
+        render: (_value: number, row: CourseEnrollment) => (
           <Box sx={{ width: '100%' }}>
             <Typography variant='body2' fontWeight={500}>
-              {value || 0}%
+              {row.progresso || 0}%
             </Typography>
             <LinearProgress
               variant='determinate'
-              value={value || 0}
+              value={row.progresso || 0}
               color={
-                value >= 100 ? 'success' : value >= 50 ? 'warning' : 'error'
+                row.progresso >= 100
+                  ? 'success'
+                  : row.progresso >= 50
+                    ? 'warning'
+                    : 'error'
               }
               sx={{ mt: 0.5 }}
             />
@@ -226,9 +245,9 @@ export default function AlunosTurmas() {
         id: 'modulos_concluidos',
         label: 'Módulos',
         align: 'center' as const,
-        render: (value: number, row: (typeof enrollments)[0]) => (
+        render: (_value: number, row: CourseEnrollment) => (
           <Typography variant='body2' fontWeight={500}>
-            {value || 0}/{row.total_modulos || 0}
+            {row.modulos_completos || 0}/{row.total_modulos || 0}
           </Typography>
         ),
       },

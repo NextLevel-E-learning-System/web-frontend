@@ -206,15 +206,6 @@ export function useCategories() {
   })
 }
 
-export function useCategory(codigo: string) {
-  return useQuery<Category>({
-    queryKey: ['courses', 'categories', codigo],
-    queryFn: () =>
-      authGet<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`),
-    enabled: !!codigo,
-  })
-}
-
 export function useCreateCategory() {
   const queryClient = useQueryClient()
 
@@ -480,30 +471,6 @@ export function useCourses(filters: CatalogFilters = {}) {
   })
 }
 
-// Hook para buscar cursos por categoria
-export function useCoursesByCategory(categoriaId: string) {
-  return useQuery<CoursesResponse>({
-    queryKey: ['courses', 'by-category', categoriaId],
-    queryFn: () =>
-      authGet<CoursesResponse>(
-        `${API_ENDPOINTS.COURSES}/categoria/${categoriaId}`
-      ),
-    enabled: !!categoriaId,
-  })
-}
-
-// Hook para buscar cursos por departamento
-export function useCoursesByDepartment(departmentCode: string) {
-  return useQuery<CoursesResponse>({
-    queryKey: ['courses', 'by-department', departmentCode],
-    queryFn: () =>
-      authGet<CoursesResponse>(
-        `${API_ENDPOINTS.COURSES}/departamento/${departmentCode}`
-      ),
-    enabled: !!departmentCode,
-  })
-}
-
 // Helper para conversão de arquivo para Base64
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -525,46 +492,22 @@ export function usePrerequisitesTitles(
 ) {
   const { data: coursesResponse, isLoading } = useCourses()
 
-  // Debug: log dos dados recebidos
-  console.log('[usePrerequisitesTitles] Input:', {
-    prerequisiteCodes,
-    coursesResponse,
-    isLoading,
-  })
-
-  if (!prerequisiteCodes || prerequisiteCodes.length === 0) {
-    console.log('[usePrerequisitesTitles] Sem pré-requisitos')
-    return []
-  }
-
   if (!coursesResponse || !coursesResponse.items) {
-    console.log(
-      '[usePrerequisitesTitles] Cursos ainda não carregados, retornando códigos'
-    )
     return prerequisiteCodes // Retorna só os códigos se ainda não carregou
   }
 
   const allCourses = coursesResponse.items
 
-  console.log(
-    `[usePrerequisitesTitles] Total de cursos carregados: ${allCourses.length}`
-  )
-
   // Mapear códigos para títulos
-  const titles = prerequisiteCodes.map(code => {
+  const titles = prerequisiteCodes?.map(code => {
     const course = allCourses.find(c => c.codigo === code)
     if (course) {
-      console.log(
-        `[usePrerequisitesTitles] Encontrado: ${code} -> ${course.titulo}`
-      )
       return course.titulo
     } else {
-      console.warn(`[usePrerequisitesTitles] Curso não encontrado: ${code}`)
       return code
     }
   })
 
-  console.log('[usePrerequisitesTitles] Resultado final:', titles)
   return titles
 }
 

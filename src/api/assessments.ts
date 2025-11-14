@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { authGet, authPost, authPatch, authPut, authDelete } from './http'
+import { authGet, authPost, authPut, authDelete } from './http'
 import { API_ENDPOINTS } from './config'
 
 // Types alinhados com schema do banco
@@ -132,16 +132,6 @@ export interface ReviewInput {
   }>
 }
 
-// Hooks para Avaliações
-export function useAssessment(codigo: string) {
-  return useQuery<Assessment>({
-    queryKey: ['assessments', 'detail', codigo],
-    queryFn: () =>
-      authGet<Assessment>(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`),
-    enabled: !!codigo,
-  })
-}
-
 export function useCreateAssessment() {
   const queryClient = useQueryClient()
 
@@ -203,22 +193,6 @@ export function useDeleteAssessment() {
       authDelete(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
-    },
-  })
-}
-
-export function useSubmitAssessmentOld(codigo: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'submit', codigo],
-    mutationFn: (input: SubmitAnswersInput) =>
-      authPost<SubmissionResult>(
-        `${API_ENDPOINTS.ASSESSMENTS}/${codigo}`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
     },
   })
 }
@@ -285,84 +259,6 @@ export function useDeleteQuestion(codigo: string) {
   })
 }
 
-// Hooks para Alternativas
-export function useQuestionAlternatives(questaoId: string) {
-  return useQuery<Alternative[]>({
-    queryKey: ['assessments', 'alternatives', questaoId],
-    queryFn: () =>
-      authGet<Alternative[]>(
-        `${API_ENDPOINTS.ASSESSMENTS}/questions/${questaoId}/alternatives`
-      ),
-    enabled: !!questaoId,
-  })
-}
-
-export function useCreateAlternative(questaoId: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'alternatives', 'create', questaoId],
-    mutationFn: (input: CreateAlternativeInput) =>
-      authPost<Alternative>(
-        `${API_ENDPOINTS.ASSESSMENTS}/questions/${questaoId}/alternatives`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['assessments', 'alternatives', questaoId],
-      })
-    },
-  })
-}
-
-// Hooks para Tentativas
-export function useStartAttempt(codigo: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'attempts', 'start', codigo],
-    mutationFn: (input: StartAttemptInput) =>
-      authPost<Attempt>(
-        `${API_ENDPOINTS.ASSESSMENTS}/${codigo}/attempts/start`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
-    },
-  })
-}
-
-// Hooks para Revisão de Questões Dissertativas
-export function useDissertativeResponses(attemptId: string) {
-  return useQuery<DissertativeResponse[]>({
-    queryKey: ['assessments', 'dissertative', attemptId],
-    queryFn: () =>
-      authGet<DissertativeResponse[]>(
-        `${API_ENDPOINTS.ASSESSMENTS}/attempts/${attemptId}/dissertative`
-      ),
-    enabled: !!attemptId,
-  })
-}
-
-export function useReviewAttempt(attemptId: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'review', attemptId],
-    mutationFn: (input: ReviewInput) =>
-      authPatch(
-        `${API_ENDPOINTS.ASSESSMENTS}/attempts/${attemptId}/review`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['assessments', 'dissertative', attemptId],
-      })
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
-    },
-  })
-}
-
 // ===== NOVOS HOOKS PARA FLUXO DO ALUNO =====
 
 // Buscar avaliação de um módulo para o aluno
@@ -386,26 +282,6 @@ export function useModuleAssessment(moduloId: string, enabled = true) {
       return response.data
     },
     enabled: enabled && !!moduloId,
-  })
-}
-
-// Buscar questões da avaliação (sem resposta correta) - para preview
-export function useAssessmentQuestionsForStudent(
-  avaliacaoCodigo: string,
-  enabled = true
-) {
-  return useQuery({
-    queryKey: ['assessments', avaliacaoCodigo, 'questions-preview'],
-    queryFn: async () => {
-      const response = await authGet<{
-        success: boolean
-        data: QuestionForStudent[]
-      }>(
-        `${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/questions/for-student`
-      )
-      return response.data
-    },
-    enabled: enabled && !!avaliacaoCodigo,
   })
 }
 
