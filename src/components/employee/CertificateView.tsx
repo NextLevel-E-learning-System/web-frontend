@@ -69,12 +69,7 @@ export default function CertificateView({
   const handleDownloadPdf = async () => {
     try {
       const response = await generatePdfMutation.mutateAsync(enrollmentId)
-
-      if (certificate?.storage_key) {
-        window.open(response.downloadUrl, '_blank')
-      } else {
-        showToast.success('Certificado gerado com sucesso!')
-      }
+      window.open(response.downloadUrl, '_blank')
     } catch (error) {
       console.error('Erro ao gerar PDF:', error)
       showToast.error('Erro ao gerar PDF do certificado. Tente novamente.')
