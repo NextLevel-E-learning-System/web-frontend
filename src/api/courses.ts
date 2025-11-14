@@ -490,7 +490,7 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
 export function usePrerequisitesTitles(
   prerequisiteCodes: string[] | undefined
 ) {
-  const { data: coursesResponse, isLoading } = useCourses()
+  const { data: coursesResponse } = useCourses()
 
   if (!coursesResponse || !coursesResponse.items) {
     return prerequisiteCodes // Retorna só os códigos se ainda não carregou

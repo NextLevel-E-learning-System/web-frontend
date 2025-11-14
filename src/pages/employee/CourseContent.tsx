@@ -57,12 +57,9 @@ export default function CourseContent() {
   )
 
   // SEMPRE buscar dados atualizados das inscrições (não usar passedEnrollment)
-  const { data: userEnrollmentsResponse } = useUserEnrollments(
-    user?.id || '',
-    {
-      refetchOnMount: 'always', // Força refetch ao montar
-    }
-  )
+  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '', {
+    refetchOnMount: 'always', // Força refetch ao montar
+  })
 
   // Buscar todos os cursos como backup para garantir dados completos
   const { data: allCourses } = useCourseCatalog({})

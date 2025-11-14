@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authGet, authPost, authPatch } from './http'
 import { API_ENDPOINTS } from './config'
 
-// Types
 export interface Enrollment {
   id: string
   funcionario_id: string
@@ -62,9 +61,6 @@ export interface ModuleProgress {
   atualizado_em: string
 }
 
-// Hooks para Inscrições - REMOVIDO: useEnrollment individual
-// Use useUserEnrollments para buscar inscrições de um usuário
-
 export function useCreateEnrollment() {
   const queryClient = useQueryClient()
 
@@ -81,7 +77,6 @@ export function useCreateEnrollment() {
   })
 }
 
-// Hooks para Progresso do Usuário
 export function useUserEnrollments(
   userId: string,
   options?: {
@@ -99,37 +94,6 @@ export function useUserEnrollments(
   })
 }
 
-export function useUpdateProgress(enrollmentId: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['progress', 'update', enrollmentId],
-    mutationFn: (input: UpdateProgressInput) =>
-      authPatch<Enrollment>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/progresso`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'enrollment', enrollmentId],
-      })
-      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
-      // Invalidate user enrollments as well
-      const enrollment = queryClient.getQueryData([
-        'progress',
-        'enrollment',
-        enrollmentId,
-      ]) as Enrollment | undefined
-      if (enrollment) {
-        queryClient.invalidateQueries({
-          queryKey: ['progress', 'user', enrollment.funcionario_id],
-        })
-      }
-    },
-  })
-}
-
-// Hook para iniciar módulo
 export function useStartModule() {
   const queryClient = useQueryClient()
 
@@ -178,7 +142,6 @@ export function useStartModule() {
   })
 }
 
-// Hook para concluir módulo (novo endpoint)
 export function useCompleteModule() {
   const queryClient = useQueryClient()
 
@@ -250,7 +213,6 @@ export function useCompleteModule() {
   })
 }
 
-// Hook para listar todas as inscrições (admin/instrutor)
 export interface EnrollmentsFilters {
   status?: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
   curso_id?: string
@@ -259,7 +221,6 @@ export interface EnrollmentsFilters {
   limit?: number
 }
 
-// Novo: Interface para inscrição com dados do aluno
 export interface CourseEnrollment {
   id: string
   funcionario: {
@@ -284,7 +245,6 @@ export interface CourseEnrollmentsResponse {
   mensagem: string
 }
 
-// Novo: Hook para buscar inscrições de um curso específico (para instrutor)
 export function useCourseEnrollments(cursoId: string, enabled = true) {
   return useQuery<CourseEnrollmentsResponse>({
     queryKey: ['progress', 'course', cursoId, 'enrollments'],
@@ -296,87 +256,6 @@ export function useCourseEnrollments(cursoId: string, enabled = true) {
   })
 }
 
-export function useAllEnrollments(filters: EnrollmentsFilters = {}) {
-  const searchParams = new URLSearchParams()
-
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      searchParams.append(key, value.toString())
-    }
-  })
-
-  const queryString = searchParams.toString()
-  const url = `${API_ENDPOINTS.PROGRESS}/inscricoes${queryString ? `?${queryString}` : ''}`
-
-  return useQuery<Enrollment[]>({
-    queryKey: ['progress', 'enrollments', filters],
-    queryFn: () => authGet<Enrollment[]>(url),
-  })
-}
-
-// Hook para cancelar inscrição
-export function useCancelEnrollment() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['progress', 'cancel'],
-    mutationFn: (enrollmentId: string) =>
-      authPatch<Enrollment>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}`,
-        {
-          status: 'CANCELADO',
-        }
-      ),
-    onSuccess: data => {
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'enrollment', data.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'user', data.funcionario_id],
-      })
-      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
-    },
-  })
-}
-
-// Hook para reativar inscrição
-export function useReactivateEnrollment() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['progress', 'reactivate'],
-    mutationFn: (enrollmentId: string) =>
-      authPatch<Enrollment>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}`,
-        {
-          status: 'EM_ANDAMENTO',
-        }
-      ),
-    onSuccess: data => {
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'enrollment', data.id],
-      })
-      queryClient.invalidateQueries({
-        queryKey: ['progress', 'user', data.funcionario_id],
-      })
-      queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
-    },
-  })
-}
-
-// Hook para buscar progresso dos módulos de uma inscrição
-export function useEnrollmentModuleProgress(enrollmentId: string) {
-  return useQuery<ModuleProgress[]>({
-    queryKey: ['progress', 'enrollment', enrollmentId, 'modules'],
-    queryFn: () =>
-      authGet<ModuleProgress[]>(
-        `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos`
-      ),
-    enabled: !!enrollmentId,
-  })
-}
-
-// Utility functions para filtragem no frontend
 export const filterEnrollmentsByStatus = (
   enrollments: UserEnrollment[],
   status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
@@ -400,7 +279,6 @@ export const getEnrollmentStats = (enrollments: UserEnrollment[]) => {
   }
 }
 
-// Types para Certificados
 export interface Certificate {
   id: number
   funcionario_id: string
@@ -440,7 +318,6 @@ export function useUserCertificates(userId: string) {
   })
 }
 
-// Hook para emitir/recuperar certificado de uma inscrição
 export function useIssueCertificate() {
   const queryClient = useQueryClient()
 
@@ -464,7 +341,6 @@ export function useIssueCertificate() {
   })
 }
 
-// Hook para gerar/baixar PDF do certificado
 export function useGenerateCertificatePdf() {
   return useMutation({
     mutationKey: ['progress', 'certificate', 'pdf'],
@@ -474,10 +350,6 @@ export function useGenerateCertificatePdf() {
       ),
   })
 }
-
-// ===============================================
-// MÓDULOS COMPOSTOS - PROGRESSO
-// ===============================================
 
 export interface ProgressoModulo {
   modulo_id: string
@@ -532,7 +404,6 @@ export interface ModuloComProgresso {
   total_materiais: number
 }
 
-// Hook para listar módulos com progresso
 export function useModulosComProgresso(inscricaoId: string) {
   return useQuery<ModuloComProgresso[]>({
     queryKey: ['progress', 'modulos-progresso', inscricaoId],
