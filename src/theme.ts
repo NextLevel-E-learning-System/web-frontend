@@ -49,7 +49,7 @@ const theme = createTheme({
     h3: { fontWeight: 700 },
     button: { textTransform: 'none', fontWeight: 600 },
   },
-  shape: { borderRadius: 12 },
+  shape: { borderRadius: 6 },
   components: {
     MuiButton: {
       defaultProps: { disableElevation: true },
@@ -66,9 +66,6 @@ const theme = createTheme({
       styleOverrides: {
         root: { borderRadius: 10, fontWeight: 600 },
       },
-    },
-    MuiCard: {
-      styleOverrides: { root: { borderRadius: 16 } },
     },
     MuiAppBar: {
       styleOverrides: {

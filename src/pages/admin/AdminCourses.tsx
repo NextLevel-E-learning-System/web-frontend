@@ -165,7 +165,7 @@ export default function AdminCourses() {
     try {
       await toggleStatusMutation.mutateAsync({
         codigo: curso.codigo,
-        active: !curso.ativo,
+        active: curso.ativo ? false : true,
       })
       setAnchorEl(null)
     } catch (error) {

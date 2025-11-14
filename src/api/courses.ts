@@ -54,6 +54,7 @@ export interface Course {
   modulos?: Module[]
   // Campos legados (manter por compatibilidade)
   avaliacao_media?: number
+  pendentes_correcao?: number
   total_avaliacoes?: number
   total_concluidos?: number
   total_inscritos?: number
@@ -305,15 +306,15 @@ export function useDuplicateCourse() {
   })
 }
 
-export function useToggleCourseStatus(codigo: string) {
+export function useToggleCourseStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['courses', 'toggle-status', codigo],
-    mutationFn: (active: boolean) =>
+    mutationKey: ['courses', 'toggle-status'],
+    mutationFn: ({ codigo, active }: { codigo: string; active: boolean }) =>
       authPatch(`${API_ENDPOINTS.COURSES}/${codigo}/active`, { active }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses', 'detail', codigo] })
+      queryClient.invalidateQueries({ queryKey: ['courses', 'detail'] })
       queryClient.invalidateQueries({ queryKey: ['courses'] })
     },
   })

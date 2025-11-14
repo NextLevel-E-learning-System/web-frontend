@@ -123,7 +123,7 @@ export default function AdminDashboard() {
               <Paper
                 sx={{
                   p: 3,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   overflow: 'auto',
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
               <Paper
                 sx={{
                   p: 3,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   overflow: 'auto',
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
               <Paper
                 sx={{
                   p: 3,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   overflow: 'auto',
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
                 <Paper
                   sx={{
                     p: 3,
-                    borderRadius: 3,
+                    borderRadius: 2,
                     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                     maxWidth: '100%',
                     overflow: 'auto',

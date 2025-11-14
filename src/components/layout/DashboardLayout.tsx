@@ -142,7 +142,7 @@ export default function DashboardLayout({
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               justifyContent: 'center',
-              flex: 1,
+              flex: '8',
               gap: 3,
             }}
           >

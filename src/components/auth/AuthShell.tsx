@@ -1,10 +1,12 @@
-import { PropsWithChildren } from 'react'
 import { Box, Container, Paper, Typography } from '@mui/material'
 
 export default function AuthShell({
   title,
   children,
-}: PropsWithChildren<{ title: string }>) {
+}: {
+  title: string
+  children: React.ReactNode
+}) {
   return (
     <Box
       minHeight='100vh'
