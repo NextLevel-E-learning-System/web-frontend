@@ -282,10 +282,10 @@ export default function Courses() {
             gradientTo: '#374151',
           }
 
+      // Conta cursos TOTAIS da categoria (sem filtros aplicados)
       const courseCount =
-        filteredCourses?.filter(
-          course => course.categoria_id === category.codigo
-        ).length || 0
+        courses?.filter(course => course.categoria_id === category.codigo)
+          .length || 0
 
       return {
         label: category.codigo,
@@ -295,7 +295,7 @@ export default function Courses() {
         count: courseCount,
       }
     })
-  }, [categories, filteredCourses])
+  }, [categories, courses])
 
   const paginatedCourses = useMemo(() => {
     const startIndex = (currentPage - 1) * coursesPerPage

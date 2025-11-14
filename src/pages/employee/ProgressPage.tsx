@@ -214,12 +214,6 @@ export default function ProgressPage() {
               <Grid size={{ xs: 12 }}>
                 <Typography>Carregando...</Typography>
               </Grid>
-            ) : enrollmentsError ? (
-              <Grid size={{ xs: 12 }}>
-                <Typography color='error'>
-                  Erro ao carregar cursos: {enrollmentsError.message}
-                </Typography>
-              </Grid>
             ) : enrollments.length === 0 ? (
               <Grid size={{ xs: 12 }}>
                 <Typography color='text.secondary'>
@@ -269,7 +263,7 @@ export default function ProgressPage() {
             {badges.length === 0 ? (
               <Grid size={{ xs: 12 }}>
                 <Typography color='text.secondary'>
-                  Você ainda não conquistou nenhuma badge. Continue estudando!
+                  Você ainda não conquistou nenhuma badge.
                 </Typography>
               </Grid>
             ) : (

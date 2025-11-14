@@ -17,7 +17,7 @@ export interface LoginResponse {
     departamento?: string
     cargo?: string
     xp?: number
-    nivel?: number
+    nivel?: string
   }
   mensagem: string
 }
