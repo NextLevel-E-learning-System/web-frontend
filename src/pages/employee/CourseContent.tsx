@@ -22,7 +22,7 @@ import {
   useCourseModules,
   useCourseCatalog,
 } from '../../api/courses'
-import { useUserEnrollments } from '../../api/progress'
+import { useUserEnrollments, useUserCertificates } from '../../api/progress'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 import CertificateView from '@/components/employee/CertificateView'
 import { useAuth } from '@/contexts/AuthContext'
@@ -60,6 +60,9 @@ export default function CourseContent() {
   const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '', {
     refetchOnMount: 'always', // Força refetch ao montar
   })
+
+  // Buscar certificados do usuário para verificar se já existe certificado
+  const { data: userCertificatesResponse } = useUserCertificates(user?.id || '')
 
   // Buscar todos os cursos como backup para garantir dados completos
   const { data: allCourses } = useCourseCatalog({})
@@ -154,6 +157,11 @@ export default function CourseContent() {
               enrollmentId={enrollment.id}
               cursoTitulo={completesCourse.titulo}
               dataConclusao={enrollment.data_conclusao}
+              initialCertificate={
+                userCertificatesResponse?.items?.find(
+                  cert => cert.curso_id === codigo
+                ) || null
+              }
             />
           )}
 
