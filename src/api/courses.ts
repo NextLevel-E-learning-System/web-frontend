@@ -13,11 +13,6 @@ export interface Category {
   atualizado_em: string
 }
 
-export interface CategoriesListResponse {
-  items: Category[]
-  mensagem: string
-}
-
 export interface CreateCategoryInput {
   codigo: string
   nome: string
@@ -106,15 +101,6 @@ export interface MaterialModulo {
   criado_em: string
 }
 
-export interface AvaliacaoModulo {
-  codigo: string
-  titulo: string
-  tempo_limite?: number
-  tentativas_permitidas?: number
-  nota_minima?: number
-  ativo: boolean
-}
-
 export interface ModuloCompleto {
   modulo_id: string
   curso_id: string
@@ -127,14 +113,16 @@ export interface ModuloCompleto {
   criado_em: string
   atualizado_em: string
   materiais: MaterialModulo[]
-  avaliacao?: AvaliacaoModulo | null
+  avaliacao?: {
+    codigo: string
+    titulo: string
+    tempo_limite?: number
+    tentativas_permitidas?: number
+    nota_minima?: number
+    ativo: boolean
+  } | null
   total_materiais: number
   tem_avaliacao: boolean
-}
-
-export interface ModuleResponse {
-  items: Module[]
-  mensagem: string
 }
 export interface CreateModuleInput {
   titulo: string
@@ -170,13 +158,6 @@ export interface UploadMaterialInput {
   base64: string
 }
 
-export interface UploadMaterialResponse {
-  created: boolean
-  storage_key: string
-  tamanho: number
-  tipo_arquivo: string
-}
-
 export interface CatalogFilters {
   q?: string // Busca por título/descrição
   categoria?: string
@@ -198,9 +179,10 @@ export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ['courses', 'categories'],
     queryFn: async () => {
-      const response = await authGet<CategoriesListResponse>(
-        `${API_ENDPOINTS.COURSES}/categorias`
-      )
+      const response = await authGet<{
+        items: Category[]
+        mensagem: string
+      }>(`${API_ENDPOINTS.COURSES}/categorias`)
       return response.items || []
     },
   })
@@ -316,12 +298,14 @@ export function useCourseModules(codigo: string) {
   return useQuery<Module[]>({
     queryKey: ['courses', 'modules', codigo],
     queryFn: async () => {
-      const raw = await authGet<ModuleResponse | Module[]>(
-        `${API_ENDPOINTS.COURSES}/${codigo}/modulos`
-      )
-      const list: Module[] = Array.isArray(raw)
-        ? raw
-        : (raw as ModuleResponse).items || []
+      const raw = await authGet<
+        | Module[]
+        | {
+            items: Module[]
+            mensagem: string
+          }
+      >(`${API_ENDPOINTS.COURSES}/${codigo}/modulos`)
+      const list: Module[] = Array.isArray(raw) ? raw : raw.items || []
       return list.map(m => ({
         ...m,
       }))
@@ -403,10 +387,12 @@ export function useUploadMaterial(moduloId: string) {
   return useMutation({
     mutationKey: ['courses', 'materials', 'upload', moduloId],
     mutationFn: (input: UploadMaterialInput) =>
-      authPost<UploadMaterialResponse>(
-        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/materiais`,
-        input
-      ),
+      authPost<{
+        created: boolean
+        storage_key: string
+        tamanho: number
+        tipo_arquivo: string
+      }>(`${API_ENDPOINTS.COURSES}/modulos/${moduloId}/materiais`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['courses', 'materials', moduloId],
