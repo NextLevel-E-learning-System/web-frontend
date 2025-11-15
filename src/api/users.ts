@@ -35,15 +35,6 @@ export interface Cargo {
   atualizado_em: string
 }
 
-export interface CargoCreate {
-  codigo: string // Requer codigo como PK
-  nome: string
-}
-
-export interface CargoUpdate {
-  nome?: string
-}
-
 export interface Funcionario {
   id: string
   cpf: string
@@ -67,10 +58,6 @@ export interface FuncionarioRegister {
   departamento_id?: string | null
   cargo_nome?: string | null // Corrigido para cargo_nome
   role?: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'FUNCIONARIO' // Role opcional (default: FUNCIONARIO)
-}
-
-export interface UpdateRoleInput {
-  role: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'FUNCIONARIO' // Atualizado
 }
 
 export interface UpdateFuncionarioInput {
@@ -166,7 +153,7 @@ export interface DashboardAdmin {
     xp_medio: number
     funcionarios_ativos: number
   }[]
-  cursos_populares: any[]
+  cursos_populares: unknown[]
 }
 
 export type DashboardData =
@@ -186,34 +173,11 @@ export interface DashboardResponse {
     role: string
   }
   notificacoes_nao_lidas: number
-  notificacoes: any[]
+  notificacoes: unknown[]
   dashboard: DashboardData
 }
 
 export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE'
-
-export interface UsuarioResumo {
-  id: string
-  nome: string
-  email: string
-  departamento_id?: string
-  cargo_nome?: string
-  ativo: boolean
-  xp_total?: number
-  nivel?: string
-}
-
-export interface PerfilUsuario extends UsuarioResumo {
-  auth_user_id?: string
-  cpf?: string
-  inactivated_at?: string | null
-  criado_em?: string
-  atualizado_em?: string
-  tipo_usuario?: UserRole
-  cargo_nome?: string
-  xp_total?: number
-  nivel?: string
-}
 
 // Hooks para Departamentos
 export function useListarDepartamentos() {

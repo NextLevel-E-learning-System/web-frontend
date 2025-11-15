@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authGet, authPost, authPatch } from './http'
 import { API_ENDPOINTS } from './config'
 
-export interface Enrollment {
+type Enrollment = {
   id: string
   funcionario_id: string
   curso_id: string
@@ -13,44 +13,12 @@ export interface Enrollment {
   progresso_percentual: number
 }
 
-export interface CreateEnrollmentInput {
+type CreateEnrollmentInput = {
   funcionario_id: string
   curso_id: string
 }
 
-export interface UpdateProgressInput {
-  progresso_percentual: number
-}
-
-export interface CompleteModuleResponse {
-  enrollmentId: string
-  moduleId: string
-  courseId: string
-  userId: string
-  progressPercent: number
-  completedCourse: boolean
-}
-
-export interface UserEnrollment {
-  id: string
-  funcionario_id: string
-  curso_id: string
-  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
-  progresso_percentual: number
-  data_inscricao: string
-  data_inicio?: string
-  data_conclusao?: string
-  criado_em: string
-  atualizado_em: string
-}
-
-export interface UserEnrollmentsResponse {
-  items: UserEnrollment[]
-  total: number
-  mensagem: string
-}
-
-export interface ModuleProgress {
+type ModuleProgress = {
   id: string
   inscricao_id: string
   modulo_id: string
@@ -59,6 +27,44 @@ export interface ModuleProgress {
   tempo_gasto?: number
   criado_em: string
   atualizado_em: string
+}
+
+export type UserEnrollment = {
+  id: string
+  funcionario_id: string
+  curso_id: string
+  status: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
+  progresso_percentual: number
+  data_inscricao: string
+  data_inicio?: string
+  data_conclusao?: string
+  criado_em: string
+  atualizado_em: string
+}
+
+type UserEnrollmentsResponse = {
+  items: UserEnrollment[]
+  total: number
+  mensagem: string
+}
+
+type ModuleStartResponse = {
+  progresso_modulo: ModuleProgress
+  mensagem: string
+}
+
+type ModuleCompletionResult = {
+  inscricao_id: string
+  modulo_id: string
+  progresso_percentual: number
+  curso_concluido: boolean
+  funcionario_id: string
+  curso_id: string
+}
+
+type ModuleCompletionResponse = {
+  resultado: ModuleCompletionResult
+  mensagem: string
 }
 
 export function useCreateEnrollment() {
@@ -106,7 +112,7 @@ export function useStartModule() {
       enrollmentId: string
       moduleId: string
     }) =>
-      authPost<{ progresso_modulo: ModuleProgress; mensagem: string }>(
+      authPost<ModuleStartResponse>(
         `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/iniciar`,
         {}
       ),
@@ -154,17 +160,7 @@ export function useCompleteModule() {
       enrollmentId: string
       moduleId: string
     }) =>
-      authPatch<{
-        resultado: {
-          inscricao_id: string
-          modulo_id: string
-          progresso_percentual: number
-          curso_concluido: boolean
-          funcionario_id: string
-          curso_id: string
-        }
-        mensagem: string
-      }>(
+      authPatch<ModuleCompletionResponse>(
         `${API_ENDPOINTS.PROGRESS}/inscricoes/${enrollmentId}/modulos/${moduleId}/concluir`,
         {}
       ),
@@ -213,15 +209,7 @@ export function useCompleteModule() {
   })
 }
 
-export interface EnrollmentsFilters {
-  status?: 'EM_ANDAMENTO' | 'CONCLUIDO' | 'CANCELADO'
-  curso_id?: string
-  funcionario_id?: string
-  page?: number
-  limit?: number
-}
-
-export interface CourseEnrollment {
+export type CourseEnrollment = {
   id: string
   funcionario: {
     id: string
@@ -238,7 +226,7 @@ export interface CourseEnrollment {
   nota_media?: number | null
 }
 
-export interface CourseEnrollmentsResponse {
+type CourseEnrollmentsResponse = {
   success: boolean
   data: CourseEnrollment[]
   total: number
@@ -279,7 +267,7 @@ export const getEnrollmentStats = (enrollments: UserEnrollment[]) => {
   }
 }
 
-export interface Certificate {
+export type Certificate = {
   id: number
   funcionario_id: string
   curso_id: string
@@ -289,17 +277,17 @@ export interface Certificate {
   storage_key?: string | null
 }
 
-export interface UserCertificatesResponse {
+type UserCertificatesResponse = {
   items: Certificate[]
   mensagem: string
 }
 
-export interface IssueCertificateResponse {
+type IssueCertificateResponse = {
   certificado: Certificate
   mensagem: string
 }
 
-export interface CertificatePdfResponse {
+type CertificatePdfResponse = {
   downloadUrl: string
   key: string
   codigo: string
@@ -351,44 +339,7 @@ export function useGenerateCertificatePdf() {
   })
 }
 
-export interface ProgressoModulo {
-  modulo_id: string
-  modulo_titulo: string
-  modulo_ordem: number
-  modulo_obrigatorio: boolean
-  data_inicio?: string | null
-  data_conclusao?: string | null
-  tempo_gasto?: number | null
-  concluido: boolean
-}
-
-export interface ProgressoDetalhado {
-  inscricao_id: string
-  funcionario_id: string
-  curso_id: string
-  status_curso: string
-  progresso_percentual: number
-  data_inscricao: string
-  data_conclusao?: string | null
-  funcionario_nome: string
-  funcionario_email: string
-  curso_titulo: string
-  modulos_progresso: ProgressoModulo[]
-  total_modulos: number
-  modulos_concluidos: number
-  modulos_obrigatorios: number
-  modulos_obrigatorios_concluidos: number
-}
-
-export interface ProximoModulo {
-  modulo_id: string
-  titulo: string
-  ordem: number
-  tipo_conteudo?: string | null
-  tem_avaliacao: boolean
-}
-
-export interface ModuloComProgresso {
+export type ModuloComProgresso = {
   modulo_id: string
   titulo: string
   ordem: number
