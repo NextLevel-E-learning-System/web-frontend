@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authGet, authPut } from './http'
 import { API_ENDPOINTS } from './config'
 
-export interface Notification {
+export type Notification = {
   id: number
   funcionario_id: string
   titulo: string
@@ -13,7 +13,7 @@ export interface Notification {
   canal: string | null
 }
 
-export interface NotificationsPagination {
+type NotificationsPagination = {
   notifications: Notification[]
   pagination: {
     page: number
@@ -22,16 +22,16 @@ export interface NotificationsPagination {
   }
 }
 
-export interface UnreadCountResponse {
+type UnreadCountResponse = {
   unreadCount: number
 }
 
-export interface MarkAllAsReadResponse {
+type MarkAllAsReadResponse = {
   message: string
   markedCount: number
 }
 
-export interface NotificationsParams {
+type NotificationsParams = {
   page?: number
   limit?: number
   unread?: boolean
