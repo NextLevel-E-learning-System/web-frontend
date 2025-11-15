@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { authGet } from './http'
 import { API_ENDPOINTS } from './config'
 
-export interface Badge {
+type Badge = {
   codigo: string
   nome: string
   descricao?: string
@@ -13,22 +13,27 @@ export interface Badge {
   data_conquista?: string
 }
 
-export interface MyGamificationProfile {
+type MyGamificationProfile = {
   badges: Badge[]
 }
 
-export interface GlobalRankingEntry {
+type GlobalRankingEntry = {
   user_id: string
   nome: string
   xp: number
   posicao: number | null
 }
 
-export interface MonthlyRankingEntry {
+type MonthlyRankingEntry = {
   posicao: number
   userId: string
   nome: string
   xpMes: number
+}
+
+type MonthlyRankingFilters = {
+  mes?: string
+  departamento?: string
 }
 
 export function useMyGamificationProfile() {
@@ -47,11 +52,6 @@ export function useGlobalRanking() {
         `${API_ENDPOINTS.GAMIFICATION}/ranking/global`
       ),
   })
-}
-
-export interface MonthlyRankingFilters {
-  mes?: string
-  departamento?: string
 }
 
 export function useMonthlyRanking(filters: MonthlyRankingFilters = {}) {
