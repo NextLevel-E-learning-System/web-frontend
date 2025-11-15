@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authGet, authPost, authPut, authDelete } from './http'
 import { API_ENDPOINTS } from './config'
 
-// Types alinhados com o schema do banco de dados
 export interface Departamento {
   codigo: string
   nome: string
@@ -45,7 +44,6 @@ export interface CargoUpdate {
   nome?: string
 }
 
-// Schema do banco: funcionarios com role simplificado
 export interface Funcionario {
   id: string
   cpf: string
@@ -92,7 +90,6 @@ export interface ResetPasswordResponse {
   sucesso: boolean
 }
 
-// Instructor Types
 export interface Instructor {
   id: string
   funcionario_id: string
@@ -177,7 +174,6 @@ export type DashboardData =
   | DashboardGerente
   | DashboardAdmin
 
-// Estrutura de resposta completa do endpoint /funcionarios/dashboard
 export interface DashboardResponse {
   usuario: {
     id: string
@@ -194,7 +190,6 @@ export interface DashboardResponse {
   dashboard: DashboardData
 }
 
-// Tipos adicionais para compatibilidade
 export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE'
 
 export interface UsuarioResumo {
@@ -234,15 +229,6 @@ export function useListarDepartamentosAdmin() {
     queryKey: ['users', 'departamentos', 'admin'],
     queryFn: () =>
       authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos/admin`),
-  })
-}
-
-export function useBuscarDepartamento(codigo: string) {
-  return useQuery<Departamento>({
-    queryKey: ['users', 'departamentos', codigo],
-    queryFn: () =>
-      authGet<Departamento>(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`),
-    enabled: !!codigo,
   })
 }
 
@@ -296,46 +282,6 @@ export function useListarCargos() {
   })
 }
 
-export function useCriarCargo() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['users', 'cargos', 'create'],
-    mutationFn: (input: CargoCreate) =>
-      authPost<Cargo>(`${API_ENDPOINTS.USERS}/cargos`, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'cargos'] })
-    },
-  })
-}
-
-export function useAtualizarCargo(codigo: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['users', 'cargos', 'update', codigo],
-    mutationFn: (input: CargoUpdate) =>
-      authPut<Cargo>(`${API_ENDPOINTS.USERS}/cargos/${codigo}`, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'cargos'] })
-    },
-  })
-}
-
-export function useExcluirCargo() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['users', 'cargos', 'delete'],
-    mutationFn: (codigo: string) =>
-      authDelete(`${API_ENDPOINTS.USERS}/cargos/${codigo}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'cargos'] })
-    },
-  })
-}
-
-// Resposta paginada para funcionários
 export interface FuncionariosResponse {
   items: Funcionario[]
   mensagem: string
@@ -392,7 +338,6 @@ export function useResetPassword() {
   })
 }
 
-// Hook para Dashboard
 export function useDashboard() {
   return useQuery<DashboardResponse>({
     queryKey: ['users', 'dashboard'],
@@ -403,41 +348,6 @@ export function useDashboard() {
   })
 }
 
-// Hook combinado para dashboard + perfil do usuário
-export function useDashboardCompleto() {
-  const dashboard = useDashboard()
-
-  return {
-    dashboard: dashboard.data?.dashboard,
-    perfil: dashboard.data?.usuario,
-    notificacoes: dashboard.data?.notificacoes,
-    notificacoes_nao_lidas: dashboard.data?.notificacoes_nao_lidas,
-    isLoading: dashboard.isLoading,
-    error: dashboard.error,
-    refetch: () => {
-      dashboard.refetch()
-    },
-  }
-}
-
-// Hook para excluir funcionário
-export function useExcluirFuncionario() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationKey: ['users', 'funcionarios', 'delete'],
-    mutationFn: (funcionarioId: string) =>
-      authDelete(`${API_ENDPOINTS.USERS}/funcionarios/${funcionarioId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
-    },
-  })
-}
-
-// ===============================================
-// INSTRUCTORS API HOOKS
-// ===============================================
-
-// Hook para listar instrutores
 export function useInstrutores() {
   return useQuery<Instructor[]>({
     queryKey: ['users', 'instrutores'],
@@ -448,19 +358,6 @@ export function useInstrutores() {
   })
 }
 
-// Hook para buscar instrutor específico
-export function useInstrutor(id: string) {
-  return useQuery<Instructor>({
-    queryKey: ['users', 'instrutores', id],
-    queryFn: () =>
-      authGet<{ instrutor: Instructor }>(
-        `${API_ENDPOINTS.USERS}/instrutores/${id}`
-      ).then(response => response.instrutor),
-    enabled: !!id,
-  })
-}
-
-// Hook para criar instrutor
 export function useCreateInstrutor() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -477,7 +374,6 @@ export function useCreateInstrutor() {
   })
 }
 
-// Hook para atualizar instrutor
 export function useUpdateInstrutor() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -496,7 +392,6 @@ export function useUpdateInstrutor() {
   })
 }
 
-// Hook para remover instrutor
 export function useDeleteInstrutor() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -508,22 +403,6 @@ export function useDeleteInstrutor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
-    },
-  })
-}
-
-// Hook para ativar/desativar instrutor
-export function useToggleInstructorStatus() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationKey: ['users', 'instrutores', 'toggle-status'],
-    mutationFn: (id: string) =>
-      authPut<{ ativo: boolean; mensagem: string }>(
-        `${API_ENDPOINTS.USERS}/instrutores/${id}/toggle-status`,
-        {}
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
     },
   })
 }
