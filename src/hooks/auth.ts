@@ -135,7 +135,6 @@ export function useResetPassword() {
   return useMutation({
     mutationKey: ['auth', 'reset-password'],
     mutationFn: (data: ResetPasswordInput) => resetAPI.mutateAsync(data),
-    onSuccess: result => showSuccessToast(result),
     onError: (error: unknown) => {
       console.error('[useResetPassword] Erro:', error)
       showErrorToast(error)
