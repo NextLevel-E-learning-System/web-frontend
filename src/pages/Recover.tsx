@@ -7,13 +7,14 @@ import {
 } from '@mui/material'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import { Send } from '@mui/icons-material'
-import { Link as RouterLink } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useResetPassword } from '@/hooks/auth'
 import { showToast } from '@/utils/toast'
 
 export default function Recover() {
   const reset = useResetPassword()
+  const navigate = useNavigate()
   return (
     <AuthShell title='Redefinir senha'>
       <Box
@@ -25,6 +26,7 @@ export default function Recover() {
           try {
             await reset.mutateAsync({ email })
             showToast.success('Uma nova senha foi enviada.')
+            navigate('/login')
           } catch (err) {
             console.error(err)
           }

@@ -11,7 +11,6 @@ import {
   ListItem,
   ListItemText,
   Divider,
-  Chip,
 } from '@mui/material'
 import {
   NotificationsOutlined as NotificationIcon,
@@ -95,7 +94,6 @@ export default function NotificationDropdown() {
           sx: {
             width: 380,
             maxHeight: 480,
-            mt: 1.5,
           },
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -232,14 +230,6 @@ export default function NotificationDropdown() {
                           <Typography variant='caption' color='text.secondary'>
                             {formatNotificationTime(notification.data_criacao)}
                           </Typography>
-                          {notification.tipo && (
-                            <Chip
-                              label={notification.tipo}
-                              size='small'
-                              variant='outlined'
-                              sx={{ height: 20, fontSize: '0.6875rem' }}
-                            />
-                          )}
                         </Box>
                       </Box>
                     }
@@ -249,23 +239,6 @@ export default function NotificationDropdown() {
               </React.Fragment>
             ))}
           </List>
-        )}
-
-        {/* Footer */}
-        {notifications.length > 0 && (
-          <>
-            <Divider />
-            <Box sx={{ p: 1 }}>
-              <Button
-                fullWidth
-                size='small'
-                onClick={handleClose}
-                sx={{ textTransform: 'none' }}
-              >
-                Ver todas as notificações
-              </Button>
-            </Box>
-          </>
         )}
       </Menu>
     </>
