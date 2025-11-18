@@ -101,7 +101,7 @@ export default function CourseModulesSection({
             const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = [
               'info',
             ]
-            if (m.tipo_conteudo && ['video', 'pdf'].includes(m.tipo_conteudo))
+            if (m.tipo_conteudo && ['material'].includes(m.tipo_conteudo))
               allowedTabs.push('materiais')
             if (m.tipo_conteudo === 'quiz') allowedTabs.push('avaliacoes')
             const stored = moduleTab[m.id]

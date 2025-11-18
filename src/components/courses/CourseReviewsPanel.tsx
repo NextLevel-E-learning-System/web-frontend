@@ -210,7 +210,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Aluno</TableCell>
+                <TableCell>Funcionário</TableCell>
                 <TableCell>Avaliação</TableCell>
                 <TableCell align='center'>Questões Dissertativas</TableCell>
                 <TableCell align='center'>Data de Submissão</TableCell>
@@ -302,7 +302,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
               {/* Info da Tentativa */}
               <Alert severity='info' icon={<InfoIcon />}>
                 <Typography variant='caption'>
-                  Aluno: {attemptDetails.funcionario.nome} • Submetido em:{' '}
+                  Funcionário: {attemptDetails.funcionario.nome} • Submetido em:{' '}
                   {new Date(attemptDetails.tentativa.data_fim).toLocaleString(
                     'pt-BR',
                     {
@@ -374,7 +374,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                       color='text.secondary'
                       gutterBottom
                     >
-                      Resposta do Aluno:
+                      Resposta do Funcionário:
                     </Typography>
                     <Paper sx={{ p: 1.5, bgcolor: 'grey.50', mt: 1 }}>
                       <Typography

@@ -13,11 +13,6 @@ export interface Category {
   atualizado_em: string
 }
 
-export interface CategoriesListResponse {
-  items: Category[]
-  mensagem: string
-}
-
 export interface CreateCategoryInput {
   codigo: string
   nome: string
@@ -54,6 +49,7 @@ export interface Course {
   modulos?: Module[]
   // Campos legados (manter por compatibilidade)
   avaliacao_media?: number
+  pendentes_correcao?: number
   total_avaliacoes?: number
   total_concluidos?: number
   total_inscritos?: number
@@ -95,9 +91,38 @@ export interface Module {
   atualizado_em?: string
 }
 
-export interface ModuleResponse {
-  items: Module[]
-  mensagem: string
+export interface MaterialModulo {
+  id: string
+  nome_arquivo: string
+  tipo_arquivo: string
+  tamanho: number
+  storage_key: string
+  url_download?: string // Presigned URL do S3
+  criado_em: string
+}
+
+export interface ModuloCompleto {
+  modulo_id: string
+  curso_id: string
+  ordem: number
+  titulo: string
+  conteudo?: string | null
+  tipo_conteudo?: string | null
+  obrigatorio: boolean
+  xp_modulo: number
+  criado_em: string
+  atualizado_em: string
+  materiais: MaterialModulo[]
+  avaliacao?: {
+    codigo: string
+    titulo: string
+    tempo_limite?: number
+    tentativas_permitidas?: number
+    nota_minima?: number
+    ativo: boolean
+  } | null
+  total_materiais: number
+  tem_avaliacao: boolean
 }
 export interface CreateModuleInput {
   titulo: string
@@ -133,13 +158,6 @@ export interface UploadMaterialInput {
   base64: string
 }
 
-export interface UploadMaterialResponse {
-  created: boolean
-  storage_key: string
-  tamanho: number
-  tipo_arquivo: string
-}
-
 export interface CatalogFilters {
   q?: string // Busca por título/descrição
   categoria?: string
@@ -161,20 +179,12 @@ export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ['courses', 'categories'],
     queryFn: async () => {
-      const response = await authGet<CategoriesListResponse>(
-        `${API_ENDPOINTS.COURSES}/categorias`
-      )
+      const response = await authGet<{
+        items: Category[]
+        mensagem: string
+      }>(`${API_ENDPOINTS.COURSES}/categorias`)
       return response.items || []
     },
-  })
-}
-
-export function useCategory(codigo: string) {
-  return useQuery<Category>({
-    queryKey: ['courses', 'categories', codigo],
-    queryFn: () =>
-      authGet<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`),
-    enabled: !!codigo,
   })
 }
 
@@ -269,15 +279,15 @@ export function useDuplicateCourse() {
   })
 }
 
-export function useToggleCourseStatus(codigo: string) {
+export function useToggleCourseStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationKey: ['courses', 'toggle-status', codigo],
-    mutationFn: (active: boolean) =>
+    mutationKey: ['courses', 'toggle-status'],
+    mutationFn: ({ codigo, active }: { codigo: string; active: boolean }) =>
       authPatch(`${API_ENDPOINTS.COURSES}/${codigo}/active`, { active }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses', 'detail', codigo] })
+      queryClient.invalidateQueries({ queryKey: ['courses', 'detail'] })
       queryClient.invalidateQueries({ queryKey: ['courses'] })
     },
   })
@@ -288,12 +298,14 @@ export function useCourseModules(codigo: string) {
   return useQuery<Module[]>({
     queryKey: ['courses', 'modules', codigo],
     queryFn: async () => {
-      const raw = await authGet<ModuleResponse | Module[]>(
-        `${API_ENDPOINTS.COURSES}/${codigo}/modulos`
-      )
-      const list: Module[] = Array.isArray(raw)
-        ? raw
-        : (raw as ModuleResponse).items || []
+      const raw = await authGet<
+        | Module[]
+        | {
+            items: Module[]
+            mensagem: string
+          }
+      >(`${API_ENDPOINTS.COURSES}/${codigo}/modulos`)
+      const list: Module[] = Array.isArray(raw) ? raw : raw.items || []
       return list.map(m => ({
         ...m,
       }))
@@ -375,10 +387,12 @@ export function useUploadMaterial(moduloId: string) {
   return useMutation({
     mutationKey: ['courses', 'materials', 'upload', moduloId],
     mutationFn: (input: UploadMaterialInput) =>
-      authPost<UploadMaterialResponse>(
-        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/materiais`,
-        input
-      ),
+      authPost<{
+        created: boolean
+        storage_key: string
+        tamanho: number
+        tipo_arquivo: string
+      }>(`${API_ENDPOINTS.COURSES}/modulos/${moduloId}/materiais`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['courses', 'materials', moduloId],
@@ -443,69 +457,6 @@ export function useCourses(filters: CatalogFilters = {}) {
   })
 }
 
-// Hook para buscar cursos por categoria
-export function useCoursesByCategory(categoriaId: string) {
-  return useQuery<CoursesResponse>({
-    queryKey: ['courses', 'by-category', categoriaId],
-    queryFn: () =>
-      authGet<CoursesResponse>(
-        `${API_ENDPOINTS.COURSES}/categoria/${categoriaId}`
-      ),
-    enabled: !!categoriaId,
-  })
-}
-
-// Hook para buscar cursos por departamento
-export function useCoursesByDepartment(departmentCode: string) {
-  return useQuery<CoursesResponse>({
-    queryKey: ['courses', 'by-department', departmentCode],
-    queryFn: () =>
-      authGet<CoursesResponse>(
-        `${API_ENDPOINTS.COURSES}/departamento/${departmentCode}`
-      ),
-    enabled: !!departmentCode,
-  })
-}
-
-// Hooks para Instrutor
-export interface InstructorCoursesFilters {
-  status?: 'ATIVOS' | 'INATIVOS'
-}
-
-export function useInstructorCourses(filters: InstructorCoursesFilters = {}) {
-  const searchParams = new URLSearchParams()
-
-  if (filters.status) {
-    searchParams.append('status', filters.status)
-  }
-
-  const queryString = searchParams.toString()
-  const url = `${API_ENDPOINTS.COURSES}/me/cursos${queryString ? `?${queryString}` : ''}`
-
-  return useQuery<CoursesResponse>({
-    queryKey: ['courses', 'instructor', filters],
-    queryFn: () => authGet<CoursesResponse>(url),
-  })
-}
-
-export interface ReactivateCoursesInput {
-  codigos?: string[]
-}
-
-export function useReactivateCourses() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['courses', 'reactivate'],
-    mutationFn: (input: ReactivateCoursesInput = {}) =>
-      authPatch(`${API_ENDPOINTS.COURSES}/me/cursos/reativar`, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['courses', 'instructor'] })
-      queryClient.invalidateQueries({ queryKey: ['courses'] })
-    },
-  })
-}
-
 // Helper para conversão de arquivo para Base64
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -518,5 +469,44 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
     }
     reader.onerror = reject
     reader.readAsDataURL(file)
+  })
+}
+
+// Hook customizado para resolver títulos de pré-requisitos
+export function usePrerequisitesTitles(
+  prerequisiteCodes: string[] | undefined
+) {
+  const { data: coursesResponse } = useCourses()
+
+  if (!coursesResponse || !coursesResponse.items) {
+    return prerequisiteCodes // Retorna só os códigos se ainda não carregou
+  }
+
+  const allCourses = coursesResponse.items
+
+  // Mapear códigos para títulos
+  const titles = prerequisiteCodes?.map(code => {
+    const course = allCourses.find(c => c.codigo === code)
+    if (course) {
+      return course.titulo
+    } else {
+      return code
+    }
+  })
+
+  return titles
+}
+
+// Hook para buscar um módulo completo específico
+export function useModuloCompleto(moduloId: string) {
+  return useQuery<ModuloCompleto>({
+    queryKey: ['courses', 'modulo-completo', moduloId],
+    queryFn: async () => {
+      const response = await authGet<{ data: ModuloCompleto }>(
+        `${API_ENDPOINTS.COURSES}/modulos/${moduloId}/completo`
+      )
+      return response.data
+    },
+    enabled: !!moduloId,
   })
 }

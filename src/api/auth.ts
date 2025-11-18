@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiPost, authPost, setAccessToken, clearAccessToken } from './http'
+import { apiPost } from './http'
 import { API_ENDPOINTS } from './config'
 
 // Types
@@ -9,10 +9,16 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  accessToken: string
-  refreshToken?: string
-  tokenType: string
-  expiresInHours: number
+  usuario: {
+    id: string
+    email: string
+    nome: string
+    role: string
+    departamento?: string
+    cargo?: string
+    xp?: number
+    nivel?: string
+  }
   mensagem: string
 }
 
@@ -21,7 +27,6 @@ export interface LogoutResponse {
 }
 
 export interface RefreshResponse {
-  accessToken: string
   mensagem: string
 }
 
@@ -31,10 +36,6 @@ export function useLogin() {
     mutationKey: ['auth', 'login'],
     mutationFn: (credentials: LoginRequest) =>
       apiPost<LoginResponse>(`${API_ENDPOINTS.AUTH}/login`, credentials),
-    onSuccess: (data: LoginResponse) => {
-      // Store token using http utility
-      setAccessToken(data.accessToken)
-    },
   })
 }
 
@@ -44,10 +45,9 @@ export function useLogout() {
   return useMutation({
     mutationKey: ['auth', 'logout'],
     mutationFn: () =>
-      authPost<LogoutResponse>(`${API_ENDPOINTS.AUTH}/logout`, {}),
+      apiPost<LogoutResponse>(`${API_ENDPOINTS.AUTH}/logout`, {}),
     onSuccess: () => {
-      // Clear token and invalidate all queries
-      clearAccessToken()
+      // Invalidar todas as queries
       queryClient.clear()
     },
   })
@@ -58,9 +58,5 @@ export function useRefreshToken() {
     mutationKey: ['auth', 'refresh'],
     mutationFn: () =>
       apiPost<RefreshResponse>(`${API_ENDPOINTS.AUTH}/refresh`, {}),
-    onSuccess: (data: RefreshResponse) => {
-      // Update token using http utility
-      setAccessToken(data.accessToken)
-    },
   })
 }

@@ -9,118 +9,35 @@ export type HttpOptions = AxiosRequestConfig & {
   credentials?: RequestCredentials
 }
 
-const ACCESS_TOKEN_KEY = 'access_token'
+// ⚠️ AUTENTICAÇÃO VIA HTTP-ONLY COOKIES
+// Tokens são armazenados em cookies seguros pelo backend
+// Não há mais localStorage/sessionStorage
 
-export function setAccessToken(
-  token: string | null,
-  persistent: boolean = true
-) {
-  try {
-    if (token) {
-      if (persistent) {
-        // Salvar no localStorage (persiste ao fechar navegador)
-        localStorage.setItem(ACCESS_TOKEN_KEY, token)
-        sessionStorage.removeItem(ACCESS_TOKEN_KEY) // Limpar sessionStorage se existir
-      } else {
-        // Salvar no sessionStorage (não persiste ao fechar navegador)
-        sessionStorage.setItem(ACCESS_TOKEN_KEY, token)
-        localStorage.removeItem(ACCESS_TOKEN_KEY) // Limpar localStorage se existir
-      }
-    } else {
-      // Limpar ambos
-      localStorage.removeItem(ACCESS_TOKEN_KEY)
-      sessionStorage.removeItem(ACCESS_TOKEN_KEY)
-    }
-  } catch {}
-}
-
-export function getAccessToken(): string | null {
-  try {
-    // Tentar localStorage primeiro (persistente), depois sessionStorage
-    return (
-      localStorage.getItem(ACCESS_TOKEN_KEY) ||
-      sessionStorage.getItem(ACCESS_TOKEN_KEY)
-    )
-  } catch {
-    return null
-  }
-}
-
-export function clearAccessToken() {
-  setAccessToken(null)
-}
-
-export function isTokenPersistent(): boolean {
-  try {
-    return !!localStorage.getItem(ACCESS_TOKEN_KEY)
-  } catch {
-    return false
-  }
-}
-
-const api: AxiosInstance = axios.create({ baseURL: API_BASE_URL })
+const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true, // ✅ Sempre enviar cookies
+})
 
 function mapOptions(opts: HttpOptions = {}): AxiosRequestConfig {
-  const { credentials, ...rest } = opts
+  const { ...rest } = opts
   return {
     ...rest,
-    withCredentials: credentials === 'include' ? true : rest.withCredentials,
+    withCredentials: true, // ✅ Sempre incluir cookies
   }
 }
 
-// Refresh via cookie HttpOnly + access token atual
-async function doRefresh(): Promise<string> {
-  const currentToken = getAccessToken() // Pega token atual (mesmo expirado)
-
+// Refresh via cookie HttpOnly
+async function doRefresh(): Promise<void> {
   const refreshClient = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true, // Para enviar refresh token via cookie
   })
 
-  // Configurar headers com access token atual (mesmo se expirado)
-  const headers: any = {}
-  if (currentToken) {
-    headers['Authorization'] = `Bearer ${currentToken}`
-  }
-
-  const { data } = await refreshClient.post<{ accessToken: string }>(
-    '/auth/v1/refresh',
-    {}, // Corpo vazio, refresh token vai via cookie
-    { headers }
-  )
-
-  setAccessToken(data.accessToken)
-  return data.accessToken
+  await refreshClient.post('/auth/v1/refresh', {})
+  // Cookie accessToken será atualizado automaticamente pelo backend
 }
 
-// Interceptor: injeta Bearer e faz auto-refresh
-api.interceptors.request.use(config => {
-  const token = getAccessToken()
-  if (token) {
-    const headers = (config.headers ?? {}) as any
-
-    // Adicionar Authorization Bearer
-    if (typeof headers.set === 'function')
-      headers.set('Authorization', `Bearer ${token}`)
-    else headers['Authorization'] = `Bearer ${token}`
-
-    // Decodificar token para extrair user_id e adicionar header x-user-id
-    try {
-      const decoded = JSON.parse(atob(token.split('.')[1])) as { sub: string }
-      if (decoded.sub) {
-        if (typeof headers.set === 'function')
-          headers.set('x-user-id', decoded.sub)
-        else headers['x-user-id'] = decoded.sub
-      }
-    } catch (e) {
-      console.warn('[HTTP] Falha ao decodificar token para extrair user_id:', e)
-    }
-
-    config.headers = headers
-  }
-  return config
-})
-
+// Interceptor: auto-refresh em caso de 401
 api.interceptors.response.use(
   res => res,
   async (error: AxiosError) => {
@@ -133,22 +50,16 @@ api.interceptors.response.use(
     if (status === 401 && original && !original._retry) {
       try {
         console.log('[HTTP] Tentando refresh automático...')
-        const newToken = await doRefresh()
+        await doRefresh()
         console.log(
           '[HTTP] Refresh bem-sucedido, repetindo requisição original'
         )
 
         original._retry = true
-        const hdrs = (original.headers ?? {}) as any
-        if (typeof hdrs.set === 'function')
-          hdrs.set('Authorization', `Bearer ${newToken}`)
-        else hdrs['Authorization'] = `Bearer ${newToken}`
-        original.headers = hdrs
-
         return api.request(original)
       } catch (refreshError) {
         console.error('[HTTP] Falha no refresh automático:', refreshError)
-        clearAccessToken()
+        // Redirecionar para login será feito pelo contexto de auth
       }
     }
 

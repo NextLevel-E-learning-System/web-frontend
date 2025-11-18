@@ -1,9 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { authGet, authPost, authPut } from './http'
+import { authGet, authPut } from './http'
 import { API_ENDPOINTS } from './config'
 
-// Types
-export interface Notification {
+export type Notification = {
   id: number
   funcionario_id: string
   titulo: string
@@ -14,7 +13,7 @@ export interface Notification {
   canal: string | null
 }
 
-export interface NotificationsPagination {
+type NotificationsPagination = {
   notifications: Notification[]
   pagination: {
     page: number
@@ -23,71 +22,16 @@ export interface NotificationsPagination {
   }
 }
 
-export interface CreateNotificationInput {
-  funcionario_id: string
-  titulo: string
-  mensagem: string
-  tipo?: string
-  canal?: string
-}
-
-export interface UnreadCountResponse {
+type UnreadCountResponse = {
   unreadCount: number
 }
 
-export interface MarkAllAsReadResponse {
+type MarkAllAsReadResponse = {
   message: string
   markedCount: number
 }
 
-// Hooks para Templates
-export function useTemplates() {
-  return useQuery({
-    queryKey: ['notifications', 'templates'],
-    queryFn: () => authGet(`${API_ENDPOINTS.NOTIFICATIONS}/templates`),
-  })
-}
-
-export function useCreateTemplate() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['notifications', 'templates', 'create'],
-    mutationFn: (input: { nome: string; assunto: string; corpo: string }) =>
-      authPost(`${API_ENDPOINTS.NOTIFICATIONS}/templates`, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['notifications', 'templates'],
-      })
-    },
-  })
-}
-
-// Hooks para Fila de Emails
-export function useEmailQueue() {
-  return useQuery({
-    queryKey: ['notifications', 'email-queue'],
-    queryFn: () => authGet(`${API_ENDPOINTS.NOTIFICATIONS}/filas`),
-  })
-}
-
-export function useRetryEmail() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['notifications', 'email', 'retry'],
-    mutationFn: (emailId: string) =>
-      authPost(`${API_ENDPOINTS.NOTIFICATIONS}/filas/${emailId}/retry`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['notifications', 'email-queue'],
-      })
-    },
-  })
-}
-
-// Hooks para Notificações
-export interface NotificationsParams {
+type NotificationsParams = {
   page?: number
   limit?: number
   unread?: boolean
@@ -116,22 +60,6 @@ export function useUnreadNotificationsCount() {
     queryFn: () =>
       authGet<UnreadCountResponse>(`${API_ENDPOINTS.NOTIFICATIONS}/count`),
     refetchInterval: 30000, // Refetch every 30 seconds
-  })
-}
-
-export function useCreateNotification() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['notifications', 'create'],
-    mutationFn: (input: CreateNotificationInput) =>
-      authPost<Notification>(`${API_ENDPOINTS.NOTIFICATIONS}`, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
-      queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count'],
-      })
-    },
   })
 }
 

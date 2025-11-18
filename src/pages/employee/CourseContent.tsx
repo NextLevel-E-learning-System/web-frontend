@@ -23,9 +23,9 @@ import {
   useCourseCatalog,
 } from '../../api/courses'
 import { useUserEnrollments, useUserCertificates } from '../../api/progress'
-import { useDashboardCompleto } from '../../api/users'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
 import CertificateView from '@/components/employee/CertificateView'
+import { useAuth } from '@/contexts/AuthContext'
 
 const TAB_INDEX = {
   curriculum: 0,
@@ -40,8 +40,8 @@ export default function CourseContent() {
   const { codigo } = useParams<{ codigo: string }>()
   const navigate = useNavigate()
   const location = useLocation()
-  const { perfil } = useDashboardCompleto()
   const { navigationItems } = useNavigation()
+  const { user } = useAuth()
 
   // Dados passados via state (quando vem da ProgressPage)
   const passedCourseData = location.state?.courseData
@@ -57,15 +57,12 @@ export default function CourseContent() {
   )
 
   // SEMPRE buscar dados atualizados das inscrições (não usar passedEnrollment)
-  const { data: userEnrollmentsResponse } = useUserEnrollments(
-    perfil?.id || '',
-    {
-      refetchOnMount: 'always', // Força refetch ao montar
-    }
-  )
+  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '', {
+    refetchOnMount: 'always', // Força refetch ao montar
+  })
 
-  // Buscar certificados do usuário
-  const { data: certificatesResponse } = useUserCertificates(perfil?.id || '')
+  // Buscar certificados do usuário para verificar se já existe certificado
+  const { data: userCertificatesResponse } = useUserCertificates(user?.id || '')
 
   // Buscar todos os cursos como backup para garantir dados completos
   const { data: allCourses } = useCourseCatalog({})
@@ -79,11 +76,6 @@ export default function CourseContent() {
   const isCourseCompleted =
     enrollment?.status === 'CONCLUIDO' &&
     enrollment?.progresso_percentual === 100
-
-  // Buscar certificado existente para este curso
-  const existingCertificate = certificatesResponse?.items.find(
-    cert => cert.curso_id === codigo
-  )
 
   // Usar dados passados via state quando disponíveis, senão buscar no backend
   const completesCourse =
@@ -165,7 +157,11 @@ export default function CourseContent() {
               enrollmentId={enrollment.id}
               cursoTitulo={completesCourse.titulo}
               dataConclusao={enrollment.data_conclusao}
-              existingCertificate={existingCertificate || null}
+              initialCertificate={
+                userCertificatesResponse?.items?.find(
+                  cert => cert.curso_id === codigo
+                ) || null
+              }
             />
           )}
 

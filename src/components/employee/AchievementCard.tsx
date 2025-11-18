@@ -25,11 +25,11 @@ export default function AchievementCard({
       elevation={0}
       sx={{
         p: 2,
-        borderRadius: 3,
+        borderRadius: 1,
         color: '#0f172a',
         background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
         height: '100%',
-        minHeight: 140,
+        minHeight: 100,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -39,7 +39,7 @@ export default function AchievementCard({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 5,
+          mb: 3,
         }}
       >
         {icon}

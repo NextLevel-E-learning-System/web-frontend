@@ -10,6 +10,7 @@ import {
   Box,
   Typography,
 } from '@mui/material'
+import { InboxOutlined } from '@mui/icons-material'
 import React, { useMemo, type ReactNode } from 'react'
 
 export interface Column {
@@ -23,7 +24,6 @@ export interface Column {
 interface DataTableProps<T extends Record<string, any> = Record<string, any>> {
   columns: Column[]
   data: T[]
-  loading?: boolean
   size?: 'small'
   onRowClick?: (row: T, index: number) => void
   getRowId?: (row: T, index: number) => string | number
@@ -32,7 +32,6 @@ interface DataTableProps<T extends Record<string, any> = Record<string, any>> {
 function DataTableInner<T extends Record<string, any>>({
   columns,
   data,
-  loading = false,
   size = 'small',
   onRowClick,
   getRowId = (_, index) => index,
@@ -47,14 +46,6 @@ function DataTableInner<T extends Record<string, any>>({
   ) => {
     setRowsPerPage(+event.target.value)
     setPage(0)
-  }
-
-  if (loading) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography>Carregando...</Typography>
-      </Box>
-    )
   }
 
   const pageData = useMemo(
@@ -80,32 +71,61 @@ function DataTableInner<T extends Record<string, any>>({
             </TableRow>
           </TableHead>
           <TableBody>
-            {pageData.map((row, index) => {
-              const actualIndex = page * rowsPerPage + index
-              const rowId = getRowId(row, actualIndex)
-              return (
-                <TableRow
-                  hover
-                  tabIndex={-1}
-                  key={rowId}
-                  onClick={
-                    onRowClick ? () => onRowClick(row, actualIndex) : undefined
-                  }
-                  sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
-                >
-                  {columns.map(column => {
-                    const value = (row as any)[column.id]
-                    return (
-                      <TableCell key={column.id} align={column.align || 'left'}>
-                        {column.render
-                          ? column.render(value, row, actualIndex)
-                          : value}
-                      </TableCell>
-                    )
-                  })}
-                </TableRow>
-              )
-            })}
+            {pageData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} sx={{ border: 'none' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      py: 8,
+                      gap: 2,
+                    }}
+                  >
+                    <InboxOutlined
+                      sx={{ fontSize: 64, color: 'text.disabled' }}
+                    />
+                    <Typography variant='body1' color='text.secondary'>
+                      Nenhum registro encontrado
+                    </Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ) : (
+              pageData.map((row, index) => {
+                const actualIndex = page * rowsPerPage + index
+                const rowId = getRowId(row, actualIndex)
+                return (
+                  <TableRow
+                    hover
+                    tabIndex={-1}
+                    key={rowId}
+                    onClick={
+                      onRowClick
+                        ? () => onRowClick(row, actualIndex)
+                        : undefined
+                    }
+                    sx={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                  >
+                    {columns.map(column => {
+                      const value = (row as any)[column.id]
+                      return (
+                        <TableCell
+                          key={column.id}
+                          align={column.align || 'left'}
+                        >
+                          {column.render
+                            ? column.render(value, row, actualIndex)
+                            : value}
+                        </TableCell>
+                      )
+                    })}
+                  </TableRow>
+                )
+              })
+            )}
           </TableBody>
         </Table>
       </TableContainer>

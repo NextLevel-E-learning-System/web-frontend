@@ -36,7 +36,6 @@ import { useCategoryColors } from '@/hooks/useCategoryColors'
 import CourseContentHeader from '@/components/employee/CourseContentHeader'
 import CourseStudentsPanel from '@/components/courses/CourseStudentsPanel'
 import CourseReviewsPanel from '@/components/courses/CourseReviewsPanel'
-import CourseForumPanel from '@/components/admin/CourseForumPanel'
 
 interface TabDefinition {
   id: string
@@ -45,9 +44,8 @@ interface TabDefinition {
 
 const INFO_TAB: TabDefinition = { id: 'info', label: 'Curso' }
 const MODULES_TAB: TabDefinition = { id: 'modules', label: 'Módulos' }
-const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Alunos' }
+const STUDENTS_TAB: TabDefinition = { id: 'students', label: 'Inscritos' }
 const REVIEWS_TAB: TabDefinition = { id: 'reviews', label: 'Correções' }
-const FORUM_TAB: TabDefinition = { id: 'forum', label: 'Fórum' }
 
 interface LocationState {
   nextTab?: string
@@ -538,16 +536,6 @@ export default function CourseEditorPage() {
               )}
             </Stack>
           )}
-          {isViewOnly && (
-            <Stack direction='row' gap={1} justifyContent='flex-end'>
-              <Button
-                variant='contained'
-                onClick={() => navigate('/gerenciar/cursos')}
-              >
-                Voltar
-              </Button>
-            </Stack>
-          )}
         </Stack>
       )
     }
@@ -565,7 +553,6 @@ export default function CourseEditorPage() {
       return <CourseStudentsPanel cursoCodigo={codigo!} />
     if (tab === REVIEWS_TAB.id)
       return <CourseReviewsPanel cursoCodigo={codigo!} />
-    if (tab === FORUM_TAB.id) return <CourseForumPanel cursoCodigo={codigo!} />
     return null
   }
 
@@ -597,9 +584,8 @@ export default function CourseEditorPage() {
         >
           <Tab label='Visão Geral' value={INFO_TAB.id} />
           {isEdit && <Tab label='Conteúdo' value={MODULES_TAB.id} />}
-          {isEdit && <Tab label='Alunos' value={STUDENTS_TAB.id} />}
+          {isEdit && <Tab label='Inscritos' value={STUDENTS_TAB.id} />}
           {isEdit && <Tab label='Correções' value={REVIEWS_TAB.id} />}
-          {isEdit && <Tab label='Fórum' value={FORUM_TAB.id} />}
         </Tabs>
         <Divider />
         <Box sx={{ p: { xs: 2, md: 3 } }}>

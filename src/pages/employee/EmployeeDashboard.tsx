@@ -3,9 +3,9 @@ import { MenuBookSharp, TimelineOutlined } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import EmployeeHeader from '@/components/employee/EmployeeHeader'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useDashboard } from '@/api/users'
 import QuickActionCard from '@/components/common/QuickActionCard'
 import { VideogameAsset } from '@mui/icons-material'
+import { useAuth } from '@/contexts/AuthContext'
 
 function obterProximoNivel(nivelAtual: string): string {
   if (nivelAtual === 'Iniciante') return 'Intermediário'
@@ -31,10 +31,8 @@ function calcularProgressoNivel(xpTotal: number): number {
 }
 
 export default function EmployeeDashboard() {
-  const { data: dashboardResponse, isLoading, error } = useDashboard()
+  const { user, isLoading } = useAuth()
   const { navigationItems } = useDashboardLayout()
-
-  const usuario = dashboardResponse?.usuario
 
   if (isLoading) {
     return (
@@ -51,7 +49,7 @@ export default function EmployeeDashboard() {
     )
   }
 
-  if (error || !usuario) {
+  if (!user) {
     return (
       <DashboardLayout items={navigationItems}>
         <Alert severity='error'>
@@ -61,8 +59,8 @@ export default function EmployeeDashboard() {
     )
   }
 
-  const xpTotal = usuario.xp_total || 0
-  const nivelAtual = usuario.nivel || 'Iniciante'
+  const xpTotal = user.xp_total || 0
+  const nivelAtual = user.nivel || 'Iniciante'
   const proximoNivel = obterProximoNivel(nivelAtual)
   const xpProximoNivel = calcularXpProximoNivel(xpTotal)
   const progressoNivel = calcularProgressoNivel(xpTotal)

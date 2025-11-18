@@ -20,7 +20,11 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import React from 'react'
-import { useCourseModules, type Module } from '@/api/courses'
+import {
+  useCourseModules,
+  usePrerequisitesTitles,
+  type Module,
+} from '@/api/courses'
 import { Card, Paper } from '@mui/material'
 
 export interface CourseData {
@@ -41,7 +45,7 @@ export interface CourseData {
   xpOffered?: number
   isActive?: boolean
   // Novas propriedades
-  instructorName?: string
+  instructorName?: string | null
   prerequisites?: string[]
   completionRate?: number
   totalEnrollments?: number
@@ -145,6 +149,9 @@ export default function CourseDialog({
   // Usar módulos já disponíveis ou os buscados via API
   const modules = course?.modules || fetchedModules
 
+  // Resolver títulos dos pré-requisitos
+  const prerequisitesTitles = usePrerequisitesTitles(course?.prerequisites)
+
   if (!course) return null
 
   return (
@@ -178,12 +185,15 @@ export default function CourseDialog({
             flexWrap: 'wrap',
           }}
         >
-          <Typography variant='body2'>Nível: {course.level}</Typography>
-          {course.prerequisites && course.prerequisites.length > 0 && (
+          <Typography variant='body2'>
+            <strong>Nível:</strong> {course.level}
+          </Typography>
+          {prerequisitesTitles && prerequisitesTitles.length > 0 && (
             <>
               <Typography variant='body2'>•</Typography>
               <Typography variant='body2'>
-                Pré-requisitos: {course.prerequisites.join(', ')}
+                <strong>Pré-requisitos:</strong>{' '}
+                {prerequisitesTitles.join(', ')}
               </Typography>
             </>
           )}

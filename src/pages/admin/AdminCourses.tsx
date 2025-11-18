@@ -11,8 +11,9 @@ import {
   LinearProgress,
   IconButton,
   Menu,
-  FormControlLabel,
   Switch,
+  Badge,
+  Tooltip,
 } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
@@ -22,6 +23,7 @@ import {
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
   Visibility as VisibilityIcon,
+  RateReview,
 } from '@mui/icons-material'
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -39,6 +41,7 @@ import {
 } from '@/api/courses'
 import { useFuncionarios } from '@/api/users'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Filtros {
   categoria: string
@@ -48,7 +51,9 @@ interface Filtros {
 }
 
 export default function AdminCourses() {
-  const { navigationItems, isInstrutor, perfil } = useNavigation()
+  const { navigationItems } = useNavigation()
+  const { user } = useAuth()
+  const isInstrutor = user?.role === 'INSTRUTOR'
 
   // Estados
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
@@ -66,7 +71,6 @@ export default function AdminCourses() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedCourseForMenu, setSelectedCourseForMenu] =
     useState<Curso | null>(null)
-  const [courseToToggle, setCourseToToggle] = useState<string>('')
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
     action: 'duplicate' | 'toggle' | null
@@ -75,18 +79,18 @@ export default function AdminCourses() {
 
   // Hooks de dados
   const coursesFilters = useMemo(() => {
-    const filters: any = {}
+    const filters: Record<string, string | boolean> = {}
     if (filtros.categoria !== 'all') filters.categoria = filtros.categoria
     if (filtros.instrutor !== 'all') filters.instrutor = filtros.instrutor
     if (filtros.nivel !== 'all') filters.nivel = filtros.nivel
 
     // Se o usuário for INSTRUTOR, filtrar apenas seus cursos
-    if (isInstrutor && perfil?.id) {
-      filters.instrutor = perfil.id
+    if (isInstrutor && user?.id) {
+      filters.instrutor = user.id
     }
 
     return filters
-  }, [filtros, isInstrutor, perfil?.id])
+  }, [filtros, isInstrutor, user?.id])
 
   const {
     data: cursosResponse,
@@ -102,18 +106,23 @@ export default function AdminCourses() {
     }
     // Sempre faz refetch ao montar
     refetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.key])
   const { data: categorias = [], isLoading: loadingCategorias } =
     useCategories()
   const { data: funcionariosResponse, isLoading: loadingFuncionarios } =
     useFuncionarios()
-  const cursos = cursosResponse?.items || []
+
+  const cursos = useMemo(
+    () => cursosResponse?.items || [],
+    [cursosResponse?.items]
+  )
   const funcionarios = funcionariosResponse?.items || []
 
   // Mutations
   // Criação/Edição agora ocorrem em CourseEditorPage
   const duplicateCourseMutation = useDuplicateCourse()
-  const toggleStatusMutation = useToggleCourseStatus(courseToToggle)
+  const toggleStatusMutation = useToggleCourseStatus()
 
   // Contadores para as tabs (baseados nos cursos já filtrados pela API, mas sem filtro de status)
   const cursosAtivos = cursos.filter(c => c.ativo === true).length
@@ -127,7 +136,13 @@ export default function AdminCourses() {
   }
 
   const handleViewCourse = (curso: Curso) => {
-    navigate(`/gerenciar/cursos/${curso.codigo}`, { state: { viewOnly: true } })
+    const hasPendentes = (curso.pendentes_correcao || 0) > 0
+    navigate(`/gerenciar/cursos/${curso.codigo}`, {
+      state: {
+        viewOnly: true,
+        ...(hasPendentes && { nextTab: 'reviews' }),
+      },
+    })
   }
 
   const canEditCourse = (curso: Curso) => {
@@ -141,15 +156,17 @@ export default function AdminCourses() {
     try {
       await duplicateCourseMutation.mutateAsync(curso.codigo)
       setAnchorEl(null)
-    } catch (error) {
+    } catch {
       // erro ao duplicar curso
     }
   }
 
   const handleToggleStatus = async (curso: Curso) => {
     try {
-      setCourseToToggle(curso.codigo)
-      await toggleStatusMutation.mutateAsync(!curso.ativo)
+      await toggleStatusMutation.mutateAsync({
+        codigo: curso.codigo,
+        active: curso.ativo ? false : true,
+      })
       setAnchorEl(null)
     } catch (error) {
       console.error('Erro ao alterar status do curso:', error)
@@ -181,7 +198,16 @@ export default function AdminCourses() {
 
   const getRowId = useCallback((curso: Curso) => curso.codigo, [])
 
-  const getNivelColor = (nivel: string) => {
+  const getNivelColor = (
+    nivel?: string
+  ):
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'error'
+    | 'info'
+    | 'success'
+    | 'warning' => {
     switch (nivel) {
       case 'Iniciante':
         return 'success'
@@ -195,7 +221,7 @@ export default function AdminCourses() {
   }
 
   // Definição das colunas para o DataTable
-  const courseColumns: Column[] = [
+  const allColumns: (Column | null)[] = [
     {
       id: 'titulo',
       label: 'Curso',
@@ -247,51 +273,66 @@ export default function AdminCourses() {
         )
       },
     },
-    {
-      id: 'instrutor',
-      label: 'Instrutor',
-      align: 'center',
-      render: (_, curso) => {
-        const instrutor = funcionarios.find(f => f.id === curso.instrutor_id)
-        return (
-          <Typography variant='body2'>
-            {instrutor?.nome
-              ? (() => {
-                  const nome = instrutor.nome.trim().split(' ')
-                  return `${nome[0]}`
-                })()
-              : '-'}
-          </Typography>
-        )
-      },
-    },
+    !isInstrutor
+      ? {
+          id: 'instrutor_nome',
+          label: 'Instrutor',
+          align: 'center' as const,
+          render: (value: string | null) => (
+            <Typography variant='body2'>{value || '-'}</Typography>
+          ),
+        }
+      : null,
     {
       id: 'nivel',
-      label: 'Nível',
-      align: 'center',
-      render: (_, curso) => (
-        <Chip
-          size='small'
-          label={curso.nivel_dificuldade}
-          color={getNivelColor(curso.nivel_dificuldade) as any}
-        />
+      label: 'Dificuldade',
+      align: 'center' as const,
+      render: (_value: unknown, curso: Curso) => (
+        <Box>
+          <Chip
+            size='small'
+            label={curso.nivel_dificuldade || '-'}
+            color={getNivelColor(curso.nivel_dificuldade)}
+          />
+        </Box>
       ),
     },
     {
       id: 'inscritos',
-      label: 'Inscritos',
+      label: 'Inscrições',
       align: 'center',
       render: (_, curso) => (
         <Box>
           <Typography variant='body2' fontWeight={500}>
-            {curso.total_inscricoes || 0}
+            {curso.total_inscricoes || 0} inscrições
           </Typography>
           <Typography variant='caption' color='success.main'>
-            {curso.total_conclusoes || 0} concluídos
+            {curso.total_conclusoes || 0} conclusões
           </Typography>
         </Box>
       ),
     },
+    // Coluna de correções pendentes (apenas para INSTRUTOR)
+    isInstrutor
+      ? {
+          id: 'pendentes_correcao',
+          label: 'Correções Pendentes',
+          align: 'center' as const,
+          render: (_value: unknown, curso: Curso) => (
+            <Typography
+              variant='body2'
+              fontWeight={500}
+              color={
+                curso.pendentes_correcao && curso.pendentes_correcao > 0
+                  ? 'warning.main'
+                  : 'text.secondary'
+              }
+            >
+              {curso.pendentes_correcao || 0}
+            </Typography>
+          ),
+        }
+      : null,
     {
       id: 'taxa_conclusao',
       label: 'Taxa Conclusão',
@@ -321,40 +362,64 @@ export default function AdminCourses() {
       label: 'Status',
       align: 'center',
       render: (_, curso) => (
-        <FormControlLabel
-          control={
-            <Switch
-              checked={curso.ativo}
-              onChange={async e => {
-                e.stopPropagation()
-                await handleToggleStatus(curso)
-              }}
-              onClick={e => e.stopPropagation()}
-              color='primary'
-              disabled={!canEditCourse(curso)}
-            />
-          }
-          label={curso.ativo ? 'Ativo' : 'Inativo'}
-        />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 0.5,
+          }}
+        >
+          <Switch
+            size='small'
+            checked={curso.ativo}
+            onChange={async e => {
+              e.stopPropagation()
+              await handleToggleStatus(curso)
+            }}
+            onClick={e => e.stopPropagation()}
+            color='primary'
+            disabled={!canEditCourse(curso)}
+          />
+          <Typography variant='caption' color='text.secondary'>
+            {curso.ativo ? 'Ativo' : 'Inativo'}
+          </Typography>
+        </Box>
       ),
     },
     {
       id: 'acoes',
       label: 'Ações',
       align: 'center',
-      render: (_, curso) => (
-        <IconButton
-          size='small'
-          onClick={e => {
-            e.stopPropagation()
-            handleOpenMenu(e, curso)
-          }}
-        >
-          <MoreVertIcon />
-        </IconButton>
-      ),
+      render: (_, curso) => {
+        const hasPendentes = isInstrutor && (curso.pendentes_correcao || 0) > 0
+        return (
+          <Tooltip
+            title={hasPendentes ? 'Correções pendentes!' : 'Mais opções'}
+          >
+            <IconButton
+              size='small'
+              onClick={e => {
+                e.stopPropagation()
+                handleOpenMenu(e, curso)
+              }}
+            >
+              <Badge
+                badgeContent={hasPendentes ? curso.pendentes_correcao : 0}
+                color='warning'
+              >
+                <MoreVertIcon />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+        )
+      },
     },
   ]
+
+  const courseColumns: Column[] = allColumns.filter(
+    (col): col is Column => col !== null
+  )
 
   if (loadingCursos || loadingCategorias || loadingFuncionarios) {
     return (
@@ -463,7 +528,6 @@ export default function AdminCourses() {
         <DataTable
           data={filtered}
           columns={courseColumns}
-          loading={loadingCursos || loadingCategorias || loadingFuncionarios}
           getRowId={getRowId}
         />
         {/* Menu de ações */}
@@ -472,7 +536,31 @@ export default function AdminCourses() {
           open={Boolean(anchorEl)}
           onClose={handleCloseMenu}
         >
-          {/* Ação de Avaliações removida: agora ficará dentro da gestão de módulos do curso */}
+          {/* Opção especial para correções pendentes (apenas para INSTRUTOR) */}
+          {isInstrutor &&
+            selectedCourseForMenu &&
+            (selectedCourseForMenu.pendentes_correcao || 0) > 0 && (
+              <MenuItem
+                onClick={() => {
+                  handleCloseMenu()
+                  if (selectedCourseForMenu) {
+                    navigate(
+                      `/gerenciar/cursos/${selectedCourseForMenu.codigo}`,
+                      {
+                        state: { viewOnly: true, nextTab: 'reviews' },
+                      }
+                    )
+                  }
+                }}
+                sx={{
+                  color: 'warning.main',
+                  fontWeight: 500,
+                }}
+              >
+                <RateReview sx={{ mr: 1 }} fontSize='small' />
+                Ver Correções ({selectedCourseForMenu.pendentes_correcao})
+              </MenuItem>
+            )}
           <MenuItem
             onClick={() => {
               handleCloseMenu()

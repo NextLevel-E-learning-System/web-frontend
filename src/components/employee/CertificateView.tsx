@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Paper,
@@ -8,7 +8,6 @@ import {
   CircularProgress,
   Alert,
   Divider,
-  Chip,
   Card,
   CardContent,
 } from '@mui/material'
@@ -24,26 +23,33 @@ import {
   type Certificate,
 } from '@/api/progress'
 import { showToast } from '@/utils/toast'
-import { toast } from 'react-toastify'
 
 interface CertificateViewProps {
   enrollmentId: string
   cursoTitulo: string
   dataConclusao?: string
-  existingCertificate?: Certificate | null
   onCertificateIssued?: (certificate: Certificate) => void
+  // Se já existir um certificado no banco, podemos passá-lo para
+  // exibir o botão de download imediatamente.
+  initialCertificate?: Certificate | null
 }
 
 export default function CertificateView({
   enrollmentId,
   cursoTitulo,
   dataConclusao,
-  existingCertificate,
   onCertificateIssued,
+  initialCertificate = null,
 }: CertificateViewProps) {
   const [certificate, setCertificate] = useState<Certificate | null>(
-    existingCertificate || null
+    initialCertificate
   )
+
+  // Atualiza se a prop inicial mudar (por exemplo, após o fetch em CourseContent)
+  // Isso garante que o componente reflita certificados carregados posteriormente.
+  useEffect(() => {
+    setCertificate(initialCertificate)
+  }, [initialCertificate])
 
   const issueMutation = useIssueCertificate()
   const generatePdfMutation = useGenerateCertificatePdf()
@@ -63,9 +69,7 @@ export default function CertificateView({
   const handleDownloadPdf = async () => {
     try {
       const response = await generatePdfMutation.mutateAsync(enrollmentId)
-      // Abrir PDF em nova aba
       window.open(response.downloadUrl, '_blank')
-      showToast.success('PDF do certificado gerado com sucesso!')
     } catch (error) {
       console.error('Erro ao gerar PDF:', error)
       showToast.error('Erro ao gerar PDF do certificado. Tente novamente.')
@@ -148,7 +152,7 @@ export default function CertificateView({
                 },
               }}
             >
-              {isLoading ? 'Emitindo...' : 'Emitir Certificado'}
+              Emitir Certificado
             </Button>
 
             {dataConclusao && (
@@ -175,11 +179,8 @@ export default function CertificateView({
         icon={<CheckIcon />}
         sx={{ mb: 3, borderRadius: 2 }}
       >
-        <Typography variant='body1' fontWeight={600}>
-          Certificado emitido com sucesso!
-        </Typography>
         <Typography variant='body2' color='text.secondary'>
-          Seu certificado foi gerado e está disponível para download.
+          Seu certificado está disponível para download.
         </Typography>
       </Alert>
 
@@ -315,24 +316,9 @@ export default function CertificateView({
                   },
                 }}
               >
-                {generatePdfMutation.isPending
-                  ? 'Gerando PDF...'
-                  : 'Baixar Certificado'}
+                Baixar Certificado
               </Button>
             </Stack>
-
-            <Typography
-              variant='caption'
-              sx={{
-                textAlign: 'center',
-                opacity: 0.7,
-                display: 'block',
-                mt: 2,
-              }}
-            >
-              Este certificado comprova a conclusão bem-sucedida do curso e pode
-              ser validado através do código fornecido.
-            </Typography>
           </Stack>
         </CardContent>
       </Card>

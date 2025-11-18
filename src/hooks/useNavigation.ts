@@ -1,161 +1,82 @@
-import { useDashboardCompleto } from '@/api/users'
+import { useAuth } from '@/contexts/AuthContext'
 import type { NavItem } from '@/components/layout/DashboardLayout'
 
+const NAV_FUNCIONARIO: NavItem[] = [
+  { label: 'Dashboard', href: '/dashboard/funcionario' },
+  { label: 'Cursos', href: '/cursos' },
+  { label: 'Progresso', href: '/meu-progresso' },
+  { label: 'Ranking', href: '/ranking' },
+]
+
+const NAV_INSTRUTOR: NavItem[] = [
+  { label: 'Dashboard', href: '/dashboard/instrutor' },
+  {
+    label: 'Cursos',
+    children: [
+      { label: 'Catálogo de Cursos', href: '/cursos' },
+      { label: 'Gerenciar Cursos', href: '/gerenciar/cursos' },
+    ],
+  },
+  { label: 'Turmas', href: '/turmas' },
+]
+
+const NAV_GERENTE: NavItem[] = [
+  { label: 'Dashboard', href: '/dashboard/admin' },
+  {
+    label: 'Cursos',
+    children: [
+      { label: 'Catálogo de Cursos', href: '/cursos' },
+      { label: 'Gerenciar Cursos', href: '/gerenciar/cursos' },
+    ],
+  },
+  {
+    label: 'Usuários',
+    children: [
+      { label: 'Funcionários', href: '/gerenciar/funcionarios' },
+      { label: 'Instrutores', href: '/gerenciar/instrutores' },
+    ],
+  },
+  { label: 'Turmas', href: '/turmas' },
+]
+
+const NAV_ADMIN: NavItem[] = [
+  { label: 'Dashboard', href: '/dashboard/admin' },
+  { label: 'Departamentos', href: '/gerenciar/departamentos' },
+  { label: 'Categorias', href: '/gerenciar/categorias' },
+  { label: 'Cursos', href: '/gerenciar/cursos' },
+  {
+    label: 'Usuários',
+    children: [
+      { label: 'Funcionários', href: '/gerenciar/funcionarios' },
+      { label: 'Instrutores', href: '/gerenciar/instrutores' },
+    ],
+  },
+  { label: 'Turmas', href: '/turmas' },
+]
+
+const NAV_BY_ROLE: Record<string, NavItem[]> = {
+  FUNCIONARIO: NAV_FUNCIONARIO,
+  INSTRUTOR: NAV_INSTRUTOR,
+  GERENTE: NAV_GERENTE,
+  ADMIN: NAV_ADMIN,
+}
+
 export function useNavigation() {
-  const { perfil } = useDashboardCompleto()
+  const { user } = useAuth()
+  const userRole = user?.role || 'FUNCIONARIO'
 
-  // Cada usuário tem apenas 1 role - simples assim
-  const userRole = perfil?.roles?.[0]
-  const isAluno = userRole === 'ALUNO'
-  const isInstrutor = userRole === 'INSTRUTOR'
-  const isAdmin = userRole === 'ADMIN'
-  const isGerente = userRole === 'GERENTE'
-  const getNavigationItems = (): NavItem[] => {
-    // ALUNO - Acesso básico aos cursos e gamificação
-    if (isAluno) {
-      return [
-        {
-          label: 'Dashboard',
-          href: '/dashboard/funcionario', // Rota correta para ALUNO
-        },
-        {
-          label: 'Cursos',
-          href: '/cursos',
-        },
-        {
-          label: 'Progresso',
-          href: '/meu-progresso',
-        },
-        {
-          label: 'Ranking',
-          href: '/ranking',
-        },
-      ]
-    }
-
-    // INSTRUTOR - Gerencia próprios cursos e turmas
-    if (isInstrutor) {
-      return [
-        {
-          label: 'Dashboard',
-          href: '/dashboard/instrutor',
-        },
-        {
-          label: 'Cursos',
-          children: [
-            {
-              label: 'Catálogo de Cursos',
-              href: '/cursos',
-            },
-            {
-              label: 'Gerenciar Cursos',
-              href: '/gerenciar/cursos',
-            },
-            {
-              label: 'Avaliações',
-              href: '/instrutor/avaliacoes',
-            },
-          ],
-        },
-        {
-          label: 'Configurações',
-          href: '/instrutor/configuracoes',
-        },
-      ]
-    }
-
-    // GERENTE - Acesso ao departamento e relatórios (mesmo dashboard que ADMIN)
-    if (isGerente) {
-      return [
-        {
-          label: 'Dashboard',
-          href: '/dashboard/admin', // Mesmo dashboard que ADMIN
-        },
-        {
-          label: 'Cursos',
-          children: [
-            {
-              label: 'Catálogo de Cursos',
-              href: '/cursos',
-            },
-            {
-              label: 'Gerenciar Cursos',
-              href: '/gerenciar/cursos', // Filtrado por departamento
-            },
-          ],
-        },
-        {
-          label: 'Usuários',
-          children: [
-            {
-              label: 'Alunos',
-              href: '/admin/users', // Mesma página, mas filtrada
-            },
-            {
-              label: 'Instrutores',
-              href: '/admin/instructors',
-            },
-          ],
-        },
-        {
-          label: 'Relatórios',
-          href: '/admin/relatorios', // Mesma página, mas filtrada
-        },
-      ]
-    }
-
-    // ADMIN - Acesso total ao sistema
-    if (isAdmin) {
-      return [
-        {
-          label: 'Dashboard',
-          href: '/dashboard/admin',
-        },
-        {
-          label: 'Departamentos',
-          href: '/admin/departments',
-        },
-        {
-          label: 'Categorias',
-          href: '/admin/categorias',
-        },
-        {
-          label: 'Cursos',
-          href: '/gerenciar/cursos',
-        },
-        {
-          label: 'Usuários',
-          children: [
-            {
-              label: 'Funcionários',
-              href: '/admin/users',
-            },
-            {
-              label: 'Instrutores',
-              href: '/admin/instructors',
-            },
-          ],
-        },
-        {
-          label: 'Relatórios',
-          href: '/admin/relatorios',
-        },
-      ]
-    }
-
-    return []
-  }
+  const navigationItems = NAV_BY_ROLE[userRole] || NAV_FUNCIONARIO
 
   return {
-    navigationItems: getNavigationItems(),
-    perfil,
-    isAluno,
-    isInstrutor,
-    isAdmin,
-    isGerente,
-    canManageCourses: isInstrutor || isAdmin,
-    canManageDepartment: isGerente || isAdmin,
-    canViewReports: isGerente || isAdmin,
+    navigationItems,
+    user,
+    isAluno: userRole === 'FUNCIONARIO',
+    isInstrutor: userRole === 'INSTRUTOR',
+    isAdmin: userRole === 'ADMIN',
+    isGerente: userRole === 'GERENTE',
+    canManageCourses: ['INSTRUTOR', 'ADMIN'].includes(userRole),
+    canManageDepartment: ['GERENTE', 'ADMIN'].includes(userRole),
+    canViewReports: ['GERENTE', 'ADMIN'].includes(userRole),
   }
 }
 

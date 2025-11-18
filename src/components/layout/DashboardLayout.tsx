@@ -1,27 +1,22 @@
-import { PropsWithChildren, useMemo, useState } from 'react'
+import { useMemo, useState, type PropsWithChildren } from 'react'
 import {
   AppBar,
   Avatar,
   Box,
-  Button,
-  CssBaseline,
   IconButton,
   Menu,
   MenuItem,
   Toolbar,
   Typography,
-  useMediaQuery,
-  useTheme,
   Drawer,
   List,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
   Divider,
   Collapse,
   Link,
 } from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
+import { Menu as MenuIcon } from '@mui/icons-material'
 import LogoutIcon from '@mui/icons-material/Logout'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -29,7 +24,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom'
 import logoIcon from '@/assets/logo-icon.png'
 
 import { useLogout } from '@/hooks/auth'
-import { useDashboardCompleto } from '@/api/users'
+import { useAuth } from '@/contexts/AuthContext'
 
 export type NavItem = {
   label: string
@@ -41,21 +36,19 @@ export default function DashboardLayout({
   items,
   children,
 }: PropsWithChildren<{ items: NavItem[] }>) {
-  const theme = useTheme()
-  const isMdUp = useMediaQuery(theme.breakpoints.up('md'))
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
   const location = useLocation()
   const { mutate } = useLogout()
+  const { user } = useAuth()
   const currentPath = typeof location !== 'undefined' ? location.pathname : ''
-  const { perfil } = useDashboardCompleto()
 
   const avatarText = useMemo(() => {
-    if (!perfil?.nome) return ''
-    const partes = perfil.nome.trim().split(' ')
+    if (!user?.nome) return ''
+    const partes = user.nome.trim().split(' ')
     if (partes.length === 1) return partes[0][0].toUpperCase()
     return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase()
-  }, [perfil?.nome])
+  }, [user?.nome])
 
   const toggleSection = (key: string) => {
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
@@ -76,7 +69,7 @@ export default function DashboardLayout({
             <ListItemButton
               component={item.href ? RouterLink : 'div'}
               to={item.href || ''}
-              onClick={e => {
+              onClick={(e: { preventDefault: () => void }) => {
                 if (hasChildren) {
                   e.preventDefault()
                   toggleSection(key)
@@ -122,11 +115,19 @@ export default function DashboardLayout({
         }}
       >
         <Toolbar disableGutters sx={{ gap: 3, px: 2 }}>
+          {/* Mobile menu button - Left side */}
+          <IconButton
+            color='inherit'
+            onClick={() => setMobileOpen(true)}
+            sx={{ display: { xs: 'flex', md: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+
+          {/* Logo - Hidden on mobile */}
           <Box
-            component={RouterLink}
-            to='/'
             sx={{
-              display: 'flex',
+              display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               textDecoration: 'none',
             }}
@@ -141,7 +142,7 @@ export default function DashboardLayout({
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
               justifyContent: 'center',
-              flex: 1,
+              flex: '8',
               gap: 3,
             }}
           >
@@ -183,8 +184,16 @@ export default function DashboardLayout({
             })}
           </Box>
 
-          {/* Right side - User and Mobile Menu */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Right side - User and Logout */}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              justifyContent: 'end',
+              flex: 2,
+            }}
+          >
             <Avatar sx={{ width: 32, height: 32 }}>{avatarText}</Avatar>
 
             <IconButton
@@ -193,15 +202,6 @@ export default function DashboardLayout({
               size='small'
             >
               <LogoutIcon />
-            </IconButton>
-
-            {/* Mobile menu button */}
-            <IconButton
-              color='inherit'
-              onClick={() => setMobileOpen(true)}
-              sx={{ display: { xs: 'flex', md: 'none' } }}
-            >
-              <MenuIcon />
             </IconButton>
           </Box>
         </Toolbar>
@@ -235,7 +235,7 @@ export default function DashboardLayout({
         sx={{
           flexGrow: 1,
           bgcolor: '#F5F7FB',
-          minHeight: 'calc(100vh - 64px)',
+          minHeight: { xs: 'calc(100vh + 235px)', md: 'calc(100vh - 74px)' },
         }}
       >
         <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box>

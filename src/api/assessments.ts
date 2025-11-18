@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { authGet, authPost, authPatch, authPut, authDelete } from './http'
+import { authGet, authPost, authPut, authDelete } from './http'
 import { API_ENDPOINTS } from './config'
 
 // Types alinhados com schema do banco
@@ -61,85 +61,6 @@ export interface UpdateQuestionInput {
   opcoes_resposta?: string[]
   resposta_correta?: string
   peso?: number
-}
-
-export interface Alternative {
-  id: string
-  texto: string
-  correta: boolean
-}
-
-export interface CreateAlternativeInput {
-  texto: string
-  correta: boolean
-}
-
-export interface Attempt {
-  id: string
-  funcionario_id: string // REFERENCES funcionarios(id)
-  avaliacao_id: string // REFERENCES avaliacoes(codigo)
-  data_inicio: string
-  data_fim?: string
-  nota_obtida?: number
-  status: string // 'EM_ANDAMENTO' | 'CONCLUIDA' | 'EXPIRADA'
-  criado_em: string
-}
-
-export interface StartAttemptInput {
-  avaliacao_id: string
-}
-
-export interface Answer {
-  id: string
-  tentativa_id: string // REFERENCES tentativas(id)
-  questao_id: string // REFERENCES questoes(id)
-  resposta_funcionario?: string
-  pontuacao?: number
-  criado_em: string
-}
-
-export interface SubmitAnswersInput {
-  tentativa_id: string
-  respostas: Array<{
-    questao_id: string
-    resposta: string
-  }>
-}
-
-export interface SubmissionResult {
-  nota: number
-  passou: boolean
-  respostas_corretas: number
-  total_questoes: number
-  tempo_gasto?: number
-}
-
-export interface DissertativeResponse {
-  id: string
-  questao_id: string
-  resposta: string
-  questao: {
-    enunciado: string
-    peso: number
-  }
-}
-
-export interface ReviewInput {
-  notaMinima?: number
-  scores: Array<{
-    respostaId: string
-    pontuacao: number
-  }>
-}
-
-// Hooks para Avaliações
-export function useAssessment(codigo: string) {
-  return useQuery<Assessment>({
-    queryKey: ['assessments', 'detail', codigo],
-    queryFn: () =>
-      authGet<Assessment>(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`),
-    enabled: !!codigo,
-  })
 }
 
 export function useCreateAssessment() {
@@ -207,22 +128,6 @@ export function useDeleteAssessment() {
   })
 }
 
-export function useSubmitAssessmentOld(codigo: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'submit', codigo],
-    mutationFn: (input: SubmitAnswersInput) =>
-      authPost<SubmissionResult>(
-        `${API_ENDPOINTS.ASSESSMENTS}/${codigo}`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
-    },
-  })
-}
-
 // Hooks para Questões
 export function useAssessmentQuestions(
   codigo: string,
@@ -285,84 +190,6 @@ export function useDeleteQuestion(codigo: string) {
   })
 }
 
-// Hooks para Alternativas
-export function useQuestionAlternatives(questaoId: string) {
-  return useQuery<Alternative[]>({
-    queryKey: ['assessments', 'alternatives', questaoId],
-    queryFn: () =>
-      authGet<Alternative[]>(
-        `${API_ENDPOINTS.ASSESSMENTS}/questions/${questaoId}/alternatives`
-      ),
-    enabled: !!questaoId,
-  })
-}
-
-export function useCreateAlternative(questaoId: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'alternatives', 'create', questaoId],
-    mutationFn: (input: CreateAlternativeInput) =>
-      authPost<Alternative>(
-        `${API_ENDPOINTS.ASSESSMENTS}/questions/${questaoId}/alternatives`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['assessments', 'alternatives', questaoId],
-      })
-    },
-  })
-}
-
-// Hooks para Tentativas
-export function useStartAttempt(codigo: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'attempts', 'start', codigo],
-    mutationFn: (input: StartAttemptInput) =>
-      authPost<Attempt>(
-        `${API_ENDPOINTS.ASSESSMENTS}/${codigo}/attempts/start`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
-    },
-  })
-}
-
-// Hooks para Revisão de Questões Dissertativas
-export function useDissertativeResponses(attemptId: string) {
-  return useQuery<DissertativeResponse[]>({
-    queryKey: ['assessments', 'dissertative', attemptId],
-    queryFn: () =>
-      authGet<DissertativeResponse[]>(
-        `${API_ENDPOINTS.ASSESSMENTS}/attempts/${attemptId}/dissertative`
-      ),
-    enabled: !!attemptId,
-  })
-}
-
-export function useReviewAttempt(attemptId: string) {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationKey: ['assessments', 'review', attemptId],
-    mutationFn: (input: ReviewInput) =>
-      authPatch(
-        `${API_ENDPOINTS.ASSESSMENTS}/attempts/${attemptId}/review`,
-        input
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['assessments', 'dissertative', attemptId],
-      })
-      queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
-    },
-  })
-}
-
 // ===== NOVOS HOOKS PARA FLUXO DO ALUNO =====
 
 // Buscar avaliação de um módulo para o aluno
@@ -386,26 +213,6 @@ export function useModuleAssessment(moduloId: string, enabled = true) {
       return response.data
     },
     enabled: enabled && !!moduloId,
-  })
-}
-
-// Buscar questões da avaliação (sem resposta correta) - para preview
-export function useAssessmentQuestionsForStudent(
-  avaliacaoCodigo: string,
-  enabled = true
-) {
-  return useQuery({
-    queryKey: ['assessments', avaliacaoCodigo, 'questions-preview'],
-    queryFn: async () => {
-      const response = await authGet<{
-        success: boolean
-        data: QuestionForStudent[]
-      }>(
-        `${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/questions/for-student`
-      )
-      return response.data
-    },
-    enabled: enabled && !!avaliacaoCodigo,
   })
 }
 
@@ -474,7 +281,7 @@ export interface SubmitAssessmentInput {
   tentativa_id: string
   respostas: Array<{
     questao_id: string
-    resposta_funcionario: string
+    resposta_funcionario: string | null
   }>
 }
 

@@ -71,30 +71,24 @@ export default function AdminDashboard() {
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                label='Total de Funcionários'
-                trendLabel='Funcionários ativos'
+                label='Funcionários Ativos'
                 value={
                   (
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
                   )?.funcionarios_ativos?.toString() || '0'
                 }
-                icon={<People />}
-                trendDirection='neutral'
-                iconColor='#1976d2'
+                icon={<People color='info' />}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                icon={<School />}
+                icon={<School color='info' />}
                 value={
                   (
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
                   )?.alunos_ativos?.toString() || '0'
                 }
-                label='Total de Alunos'
-                trendLabel='Alunos ativos'
-                trendDirection='up'
-                iconColor='#0288d1'
+                label='Total de Funcionários'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -104,35 +98,18 @@ export default function AdminDashboard() {
                     adminData?.metricas_gerais || gerenteData?.metricas_gerais
                   )?.total_cursos?.toString() || '0'
                 }
-                icon={<School />}
+                icon={<School color='info' />}
                 label='Total de Cursos'
-                trendLabel='Cursos criados'
-                trendDirection='up'
-                iconColor='#1976d2'
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 label='Taxa de Conclusão'
-                trendLabel='Performance geral'
-                value={`${((adminData?.metricas_gerais || gerenteData?.metricas_gerais)?.taxa_conclusao_media || 0).toFixed(1)}%`}
-                trendDirection={
-                  ((adminData?.metricas_gerais || gerenteData?.metricas_gerais)
-                    ?.taxa_conclusao_media || 0) >= 75
-                    ? 'up'
-                    : ((
-                          adminData?.metricas_gerais ||
-                          gerenteData?.metricas_gerais
-                        )?.taxa_conclusao_media || 0) >= 50
-                      ? 'neutral'
-                      : 'down'
-                }
-                icon={<CheckCircle />}
-                iconColor='#2e7d32'
+                value={`${(adminData?.metricas_gerais || gerenteData?.metricas_gerais)?.taxa_conclusao_media || 0}%`}
+                icon={<CheckCircle color='success' />}
               />
             </Grid>
           </Grid>
-
           {/* Alert para Gerente */}
           {gerenteData && (
             <Alert severity='info' sx={{ mb: 3 }}>
@@ -146,14 +123,14 @@ export default function AdminDashboard() {
               <Paper
                 sx={{
                   p: 3,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   overflow: 'auto',
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  Alunos Ativos por Departamento
+                  Funcionários Ativos por Departamento
                 </Typography>
                 <DepartmentBarChart
                   data={
@@ -177,7 +154,7 @@ export default function AdminDashboard() {
               <Paper
                 sx={{
                   p: 3,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   overflow: 'auto',
@@ -219,7 +196,7 @@ export default function AdminDashboard() {
               <Paper
                 sx={{
                   p: 3,
-                  borderRadius: 3,
+                  borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
                   overflow: 'auto',
@@ -234,7 +211,7 @@ export default function AdminDashboard() {
                       <TableRow>
                         <TableCell>Departamento</TableCell>
                         <TableCell align='right'>Total Funcionários</TableCell>
-                        <TableCell align='right'>Alunos Ativos</TableCell>
+                        <TableCell align='right'>Funcionários Ativos</TableCell>
                         <TableCell align='right'>XP Médio</TableCell>
                       </TableRow>
                     </TableHead>
@@ -294,7 +271,7 @@ export default function AdminDashboard() {
                 <Paper
                   sx={{
                     p: 3,
-                    borderRadius: 3,
+                    borderRadius: 2,
                     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                     maxWidth: '100%',
                     overflow: 'auto',

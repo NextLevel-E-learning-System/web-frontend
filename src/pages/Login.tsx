@@ -10,13 +10,11 @@ import {
   Typography,
   Alert,
 } from '@mui/material'
-import Visibility from '@mui/icons-material/Visibility'
-import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
-import SendIcon from '@mui/icons-material/Send'
+import { Send, Visibility, VisibilityOff } from '@mui/icons-material'
 import { useLogin } from '@/hooks/auth'
 
 export default function Login() {
@@ -35,7 +33,7 @@ export default function Login() {
           const senha = String(data.get('senha') || '')
 
           try {
-            await login.mutateAsync({ email, senha, rememberMe })
+            await login.mutateAsync({ email, senha })
             // Redirecionamento automático é feito pelo hook useLogin
           } catch (err) {
             console.error('[Login] Erro:', err)
@@ -85,7 +83,7 @@ export default function Login() {
           }}
         />
 
-        {/* Checkbox "Manter-me conectado" */}
+        {/*        
         <FormControlLabel
           control={
             <Checkbox
@@ -96,7 +94,8 @@ export default function Login() {
           }
           label='Manter-me conectado'
           sx={{ mt: 1, mb: 1 }}
-        />
+        /> 
+        */}
 
         <Button component={RouterLink} to='/recover' variant='text'>
           Esqueci minha senha
@@ -115,7 +114,7 @@ export default function Login() {
           variant='contained'
           size='large'
           sx={{ mt: 2, borderRadius: 8 }}
-          endIcon={<SendIcon />}
+          endIcon={<Send />}
           disabled={login.isPending}
         >
           {login.isPending ? 'Entrando...' : 'Entrar'}

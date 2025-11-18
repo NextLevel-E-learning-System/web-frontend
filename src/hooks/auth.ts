@@ -11,14 +11,11 @@ import {
   useResetPassword as useResetPasswordAPI,
   type ResetPasswordInput,
 } from '@/api/users'
-import { setAccessToken, clearAccessToken, isTokenPersistent } from '@/api/http'
 import { showSuccessToast, showErrorToast } from '@/utils/toast'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, type UserRole } from '@/contexts/AuthContext'
 
-// Types específicos para hooks (estendendo os da API)
-export interface LoginCredentials extends LoginRequest {
-  rememberMe?: boolean
-}
+// Types
+type LoginCredentials = LoginRequest
 
 export interface RegisterData {
   cpf?: string
@@ -27,6 +24,17 @@ export interface RegisterData {
   departamento_id?: string | null
   cargo_nome?: string | null
 }
+
+// Mapeamento de roles para rotas
+const ROLE_ROUTES: Record<string, string> = {
+  ADMIN: '/dashboard/admin',
+  GERENTE: '/dashboard/admin',
+  INSTRUTOR: '/dashboard/instrutor',
+  FUNCIONARIO: '/dashboard/funcionario',
+}
+
+const getRouteByRole = (role: string): string =>
+  ROLE_ROUTES[role] || '/dashboard/funcionario'
 
 // Hook para login
 export function useLogin() {
@@ -37,58 +45,32 @@ export function useLogin() {
 
   return useMutation({
     mutationKey: ['auth', 'login'],
-    mutationFn: async (credentials: LoginCredentials) => {
-      const { rememberMe = true, ...loginData } = credentials
-      const result = await loginAPI.mutateAsync(loginData)
-
-      // Armazenar token baseado na preferência do usuário
-      setAccessToken(result.accessToken, rememberMe)
-
-      // Atualizar contexto de autenticação
-      authLogin(result.accessToken)
-
-      return result
-    },
+    mutationFn: (credentials: LoginCredentials) =>
+      loginAPI.mutateAsync(credentials),
     onSuccess: result => {
-      // Usar apenas mensagem do backend
-      showSuccessToast(result)
+      const { usuario } = result
 
-      // Invalidar cache para forçar nova busca dos dados
+      // Atualizar contexto com dados do usuário
+      authLogin({
+        id: usuario.id,
+        email: usuario.email,
+        nome: usuario.nome,
+        role: (usuario.role as UserRole) || 'FUNCIONARIO',
+        departamento_id: usuario.departamento,
+        cargo_nome: usuario.cargo,
+        xp_total: usuario.xp,
+        nivel: usuario.nivel,
+      })
+
+      showSuccessToast(result)
       queryClient.invalidateQueries({ queryKey: ['users'] })
 
-      // Extrair role do token JWT para redirecionamento correto
-      try {
-        const tokenPayload = JSON.parse(atob(result.accessToken.split('.')[1]))
-        // Tratar tanto string quanto array para roles
-        const userRole = Array.isArray(tokenPayload.roles)
-          ? tokenPayload.roles[0]
-          : tokenPayload.roles || 'ALUNO'
-
-        console.log('[useLogin] User role from token:', userRole)
-
-        // Redirecionar baseado na role
-        switch (userRole) {
-          case 'ADMIN':
-          case 'GERENTE':
-            console.log('[useLogin] Redirecting to /dashboard/admin')
-            navigate('/dashboard/admin')
-            break
-          case 'INSTRUTOR':
-            console.log('[useLogin] Redirecting to /dashboard/instrutor')
-            navigate('/dashboard/instrutor')
-            break
-          default: // ALUNO ou qualquer outra
-            console.log('[useLogin] Redirecting to /dashboard/funcionario')
-            navigate('/dashboard/funcionario')
-            break
-        }
-      } catch (error) {
-        console.error('[useLogin] Erro ao extrair role do token:', error)
-        // Fallback para dashboard padrão
-        navigate('/dashboard/funcionario')
-      }
+      // Redirecionar baseado na role
+      const route = getRouteByRole(usuario.role)
+      console.log(`[useLogin] Redirecting ${usuario.role} to ${route}`)
+      navigate(route)
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('[useLogin] Erro:', error)
       showErrorToast(error)
     },
@@ -108,33 +90,24 @@ export function useLogout() {
       try {
         await logoutAPI.mutateAsync()
       } catch (error) {
-        // Mesmo se der erro na API, limpar dados locais
-        console.warn(
-          '[useLogout] Erro na API, mas limpando dados locais:',
-          error
-        )
+        console.warn('[useLogout] Erro na API, mas limpando cache:', error)
       }
 
-      // Limpar token e cache
-      clearAccessToken()
-      queryClient.clear()
-
-      // Atualizar contexto de autenticação
+      // Limpar contexto de autenticação (inclui localStorage)
       authLogout()
+      queryClient.clear()
     },
-    onSuccess: (result: any) => {
-      // Usar apenas mensagem do backend
+    onSuccess: result => {
       showSuccessToast(result)
       navigate('/login')
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('[useLogout] Erro:', error)
       showErrorToast(error)
 
-      // Mesmo com erro, fazer logout local
-      clearAccessToken()
-      queryClient.clear()
+      // Limpar mesmo em caso de erro
       authLogout()
+      queryClient.clear()
       navigate('/login')
     },
   })
@@ -146,14 +119,9 @@ export function useRegister() {
 
   return useMutation({
     mutationKey: ['auth', 'register'],
-    mutationFn: async (data: RegisterData) => {
-      return await registerAPI.mutateAsync(data)
-    },
-    onSuccess: (result: any) => {
-      // Usar apenas mensagem do backend
-      showSuccessToast(result)
-    },
-    onError: (error: any) => {
+    mutationFn: (data: RegisterData) => registerAPI.mutateAsync(data),
+    onSuccess: result => showSuccessToast(result),
+    onError: (error: unknown) => {
       console.error('[useRegister] Erro:', error)
       showErrorToast(error)
     },
@@ -166,14 +134,8 @@ export function useResetPassword() {
 
   return useMutation({
     mutationKey: ['auth', 'reset-password'],
-    mutationFn: async (data: ResetPasswordInput) => {
-      return await resetAPI.mutateAsync(data)
-    },
-    onSuccess: (result: any) => {
-      // Usar apenas mensagem do backend
-      showSuccessToast(result)
-    },
-    onError: (error: any) => {
+    mutationFn: (data: ResetPasswordInput) => resetAPI.mutateAsync(data),
+    onError: (error: unknown) => {
       console.error('[useResetPassword] Erro:', error)
       showErrorToast(error)
     },
@@ -186,18 +148,9 @@ export function useRefreshToken() {
 
   return useMutation({
     mutationKey: ['auth', 'refresh'],
-    mutationFn: async () => {
-      const result = await refreshAPI.mutateAsync()
-
-      // Manter preferência de persistência
-      const persistent = isTokenPersistent()
-      setAccessToken(result.accessToken, persistent)
-
-      return result
-    },
-    onError: (error: any) => {
+    mutationFn: () => refreshAPI.mutateAsync(),
+    onError: (error: unknown) => {
       console.error('[useRefreshToken] Erro:', error)
-      clearAccessToken()
     },
   })
 }

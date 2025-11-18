@@ -12,16 +12,27 @@ import {
   Table,
   Paper,
   TableHead,
+  IconButton,
+  Tooltip,
 } from '@mui/material'
-import { School, People, CheckCircle, Assignment } from '@mui/icons-material'
+import {
+  School,
+  People,
+  CheckCircle,
+  Assignment,
+  Visibility,
+  RateReview,
+} from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import MetricCard from '@/components/common/StatCard'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
+import { useNavigate } from 'react-router-dom'
 import { useDashboard, type DashboardInstrutor } from '@/api/users'
 
 export default function InstrutorDashboard() {
   const { navigationItems } = useDashboardLayout()
   const { data: dashboardData, isLoading, error } = useDashboard()
+  const navigate = useNavigate()
 
   const instrutorData =
     dashboardData?.dashboard?.tipo_dashboard === 'instrutor'
@@ -53,7 +64,21 @@ export default function InstrutorDashboard() {
     )
   }
 
-  const { metricas, cursos } = instrutorData || { metricas: {}, cursos: [] }
+  const { metricas } = instrutorData || { metricas: {} }
+
+  const handleViewCourse = (cursoCodigo: string, hasPendentes: boolean) => {
+    if (hasPendentes) {
+      // Se tem pendentes, vai direto para aba de correções
+      navigate(`/gerenciar/cursos/${cursoCodigo}`, {
+        state: { viewOnly: true, nextTab: 'reviews' },
+      })
+    } else {
+      // Senão, vai para visualização normal
+      navigate(`/gerenciar/cursos/${cursoCodigo}`, {
+        state: { viewOnly: true },
+      })
+    }
+  }
 
   return (
     <DashboardLayout items={navigationItems}>
@@ -67,54 +92,30 @@ export default function InstrutorDashboard() {
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
-              icon={<School />}
+              icon={<School color='info' />}
               value={metricas.total_cursos?.toString() || '0'}
               label='Total de Cursos'
-              trendLabel='Cursos criados'
-              trendDirection='neutral'
-              iconColor='#1976d2'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
-              icon={<People />}
+              icon={<People color='info' />}
               value={metricas.total_alunos?.toString() || '0'}
-              label='Total de Alunos'
-              trendLabel='Alunos inscritos'
-              trendDirection='up'
-              iconColor='#0288d1'
+              label='Total de Funcionários'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
-              icon={<CheckCircle />}
+              icon={<CheckCircle color='success' />}
               value={`${metricas.taxa_conclusao_geral?.toFixed(1) || '0'}%`}
-              label='Taxa de Conclusão'
-              trendLabel='Performance geral'
-              trendDirection={
-                (metricas.taxa_conclusao_geral || 0) >= 75
-                  ? 'up'
-                  : (metricas.taxa_conclusao_geral || 0) >= 50
-                    ? 'neutral'
-                    : 'down'
-              }
-              iconColor='#2e7d32'
+              label='Taxa de Conclusão Geral'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
-              icon={<Assignment />}
+              icon={<Assignment color='warning' />}
               value={metricas.pendentes_correcao?.toString() || '0'}
-              label='Avaliações Pendentes'
-              trendLabel='Pendentes de correção'
-              trendDirection={
-                (metricas.pendentes_correcao || 0) === 0
-                  ? 'up'
-                  : (metricas.pendentes_correcao || 0) <= 5
-                    ? 'neutral'
-                    : 'down'
-              }
-              iconColor='#ed6c02'
+              label='Correções Pendentes'
             />
           </Grid>
         </Grid>
@@ -125,23 +126,25 @@ export default function InstrutorDashboard() {
             <Paper
               sx={{
                 p: 3,
-                borderRadius: 3,
+                borderRadius: 1,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                 maxWidth: '100%',
                 overflow: 'auto',
               }}
             >
-              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                Meus Cursos ({cursos.length})
-              </Typography>
-              {cursos.length > 0 ? (
+              {/*               {cursos.length > 0 ? (
                 <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Table>
                     <TableHead>
                       <TableRow>
                         <TableCell>Curso</TableCell>
-                        <TableCell align='right'>Inscrições</TableCell>
-                        <TableCell align='right'>Taxa Conclusão</TableCell>
+                        <TableCell align='center'>Inscritos</TableCell>
+                        <TableCell align='center'>Concluidos</TableCell>
+                        <TableCell align='center'>Taxa Conclusão</TableCell>
+                        <TableCell align='center'>
+                          Correções Pendentes
+                        </TableCell>
+                        <TableCell align='center'>Ações</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -158,12 +161,17 @@ export default function InstrutorDashboard() {
                               {curso.codigo}
                             </Typography>
                           </TableCell>
-                          <TableCell align='right'>
+                          <TableCell align='center'>
                             <Typography variant='body2'>
                               {curso.inscritos}
                             </Typography>
                           </TableCell>
-                          <TableCell align='right'>
+                          <TableCell align='center'>
+                            <Typography variant='body2'>
+                              {curso.concluidos}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='center'>
                             <Chip
                               label={`${curso.taxa_conclusao || 0}%`}
                               size='small'
@@ -176,6 +184,41 @@ export default function InstrutorDashboard() {
                               }
                               variant='filled'
                             />
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Typography variant='body2'>
+                              {curso.pendentes_correcao}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align='center'>
+                            <Tooltip
+                              title={
+                                curso.pendentes_correcao > 0
+                                  ? 'Ver correções pendentes'
+                                  : 'Visualizar curso'
+                              }
+                            >
+                              <IconButton
+                                size='small'
+                                color={
+                                  curso.pendentes_correcao > 0
+                                    ? 'warning'
+                                    : 'primary'
+                                }
+                                onClick={() =>
+                                  handleViewCourse(
+                                    curso.codigo,
+                                    curso.pendentes_correcao > 0
+                                  )
+                                }
+                              >
+                                {curso.pendentes_correcao > 0 ? (
+                                  <RateReview />
+                                ) : (
+                                  <Visibility />
+                                )}
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -190,7 +233,7 @@ export default function InstrutorDashboard() {
                 >
                   Nenhum curso encontrado
                 </Typography>
-              )}
+              )} */}
             </Paper>
           </Grid>
         </Grid>

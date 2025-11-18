@@ -42,7 +42,7 @@ export default function LeaderboardTop({ top3 }: Props) {
         </Avatar>
         <Typography fontWeight={800}>{p.name}</Typography>
         <Typography variant='body2' color='text.secondary'>
-          {p.points.toLocaleString()} pts
+          {p.points.toLocaleString()} xp
         </Typography>
         <Box
           sx={{

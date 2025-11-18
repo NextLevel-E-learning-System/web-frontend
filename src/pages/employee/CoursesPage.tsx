@@ -41,7 +41,7 @@ import {
   Storefront,
   TrendingUp,
 } from '@mui/icons-material'
-import { useDashboard } from '@/api/users'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface TileCategory {
   label: string
@@ -170,7 +170,6 @@ function CourseItem({
           gradientTo={gradientTo}
           onViewCourse={() => handleViewCourse(course)}
           completionRate={course.taxa_conclusao}
-          totalEnrollments={course.total_inscricoes}
           instructorName={course.instrutor_nome}
           xpOffered={course.xp_oferecido}
           level={course.nivel_dificuldade}
@@ -183,8 +182,7 @@ function CourseItem({
 export default function Courses() {
   const { navigationItems } = useNavigation()
   const navigate = useNavigate()
-  const { data: dashboardResponse } = useDashboard()
-  const perfil = dashboardResponse?.usuario
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedLevel, setSelectedLevel] = useState<string>('all')
@@ -234,7 +232,7 @@ export default function Courses() {
   const { mutate: createEnrollment, isPending: isEnrolling } =
     useCreateEnrollment()
 
-  const { data: userEnrollmentsResponse } = useUserEnrollments(perfil?.id || '')
+  const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '')
   const userEnrollments = userEnrollmentsResponse?.items || []
 
   // Função para converter hex para rgb (necessária para processedCategories)
@@ -284,10 +282,10 @@ export default function Courses() {
             gradientTo: '#374151',
           }
 
+      // Conta cursos TOTAIS da categoria (sem filtros aplicados)
       const courseCount =
-        filteredCourses?.filter(
-          course => course.categoria_id === category.codigo
-        ).length || 0
+        courses?.filter(course => course.categoria_id === category.codigo)
+          .length || 0
 
       return {
         label: category.codigo,
@@ -297,7 +295,7 @@ export default function Courses() {
         count: courseCount,
       }
     })
-  }, [categories, filteredCourses])
+  }, [categories, courses])
 
   const paginatedCourses = useMemo(() => {
     const startIndex = (currentPage - 1) * coursesPerPage
@@ -425,14 +423,14 @@ export default function Courses() {
   }
 
   const handleEnrollCourse = (courseCode: string) => {
-    if (!perfil?.id) {
+    if (!user?.id) {
       console.error('Usuário não encontrado')
       return
     }
 
     createEnrollment(
       {
-        funcionario_id: perfil.id,
+        funcionario_id: user.id,
         curso_id: courseCode,
       },
       {

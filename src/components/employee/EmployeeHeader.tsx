@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { Box, Card, Chip, LinearProgress, Typography } from '@mui/material'
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents'
-import { useDashboardCompleto } from '@/api/users'
+import { useMyGamificationProfile } from '@/api/gamification'
 import NotificationDropdown from '@/components/notifications/NotificationDropdown'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface EmployeeHeaderProps {
   dashboardData: {
@@ -18,21 +19,24 @@ interface EmployeeHeaderProps {
 }
 
 export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
+  const { user } = useAuth()
   const nivelAtual = dashboardData?.nivel_atual || 'Iniciante'
   const xpAtual = dashboardData?.xp_atual || 0
   const xpProximoNivel = dashboardData?.xp_proximo_nivel || 1000
   const progressoNivel = dashboardData?.progresso_nivel || 0
-  const badges = dashboardData?.badges_conquistados || []
-  const { perfil } = useDashboardCompleto()
+
+  // Buscar badges do gamification service
+  const { data: gamificationProfile } = useMyGamificationProfile()
+  const badges = gamificationProfile?.badges || []
 
   // Calcular quantos XP faltam para o próximo nível
   const xpFaltante = xpProximoNivel - xpAtual
 
   const name = useMemo(() => {
-    if (!perfil?.nome) return ''
-    const partes = perfil.nome.trim().split(' ')
+    if (!user?.nome) return ''
+    const partes = user.nome.trim().split(' ')
     return `${partes[0]}`.toUpperCase()
-  }, [perfil?.nome])
+  }, [user?.nome])
 
   return (
     <Card

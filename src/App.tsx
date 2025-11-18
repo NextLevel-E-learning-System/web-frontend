@@ -28,8 +28,9 @@ import theme from './theme'
 import ProgressPage from './pages/employee/ProgressPage'
 import RankingPage from './pages/employee/RankingPage'
 import { AuthProvider } from './contexts/AuthContext'
+import ProgressoAlunos from './pages/instrutor/AlunosTurmas'
 
-const App = () => (
+export const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -43,7 +44,7 @@ const App = () => (
             <Route
               path='/dashboard/funcionario'
               element={
-                <ProtectedRoute allowedRoles={['ALUNO']}>
+                <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
                   <EmployeeDashboard />
                 </ProtectedRoute>
               }
@@ -57,7 +58,7 @@ const App = () => (
               }
             />
             <Route
-              path='/admin/departments'
+              path='/gerenciar/departamentos'
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminDepartments />
@@ -65,7 +66,7 @@ const App = () => (
               }
             />
             <Route
-              path='/admin/categorias'
+              path='/gerenciar/categorias'
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminCategories />
@@ -73,7 +74,7 @@ const App = () => (
               }
             />
             <Route
-              path='/admin/users'
+              path='/gerenciar/funcionarios'
               element={
                 <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
                   <AdminUsers />
@@ -81,7 +82,7 @@ const App = () => (
               }
             />
             <Route
-              path='/admin/instructors'
+              path='/gerenciar/instrutores'
               element={
                 <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminInstructors />
@@ -127,6 +128,16 @@ const App = () => (
               }
             />
             <Route
+              path='/turmas'
+              element={
+                <ProtectedRoute
+                  allowedRoles={['INSTRUTOR', 'ADMIN', 'GERENTE']}
+                >
+                  <ProgressoAlunos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path='/cursos'
               element={
                 <ProtectedRoute>
@@ -137,7 +148,7 @@ const App = () => (
             <Route
               path='/cursos/:codigo'
               element={
-                <ProtectedRoute allowedRoles={['ALUNO']}>
+                <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
                   <CourseContent />
                 </ProtectedRoute>
               }
@@ -145,7 +156,7 @@ const App = () => (
             <Route
               path='/meu-progresso'
               element={
-                <ProtectedRoute allowedRoles={['ALUNO']}>
+                <ProtectedRoute allowedRoles={['FUNCIONARIO']}>
                   <ProgressPage />
                 </ProtectedRoute>
               }

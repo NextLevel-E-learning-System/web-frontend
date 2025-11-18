@@ -16,33 +16,34 @@ import {
   FormControl,
   InputLabel,
   Skeleton,
+  Autocomplete,
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Person as PersonIcon,
   Badge as BadgeIcon,
   AdminPanelSettings as AdminIcon,
 } from '@mui/icons-material'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import StatusFilterTabs from '@/components/common/StatusFilterTabs'
 import DataTable, { type Column } from '@/components/common/DataTable'
+import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import { useNavigation } from '@/hooks/useNavigation'
 import {
   useListarDepartamentosAdmin,
   useListarCargos,
   useFuncionarios,
-  useRegisterFuncionario,
-  useUpdateFuncionarioRole,
-  useExcluirFuncionario,
+  useUpdateFuncionario,
   type FuncionarioRegister,
-  type UpdateRoleInput,
+  type UpdateFuncionarioInput,
   type UserRole,
   type Funcionario,
 } from '@/api/users'
+import { useRegister } from '@/hooks/auth'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface UserForm {
   nome: string
@@ -50,44 +51,137 @@ interface UserForm {
   email: string
   departamento_id: string
   cargo_nome: string
-  role: UserRole
-  ativo: boolean
-  biografia: string
+  role?: UserRole
+  ativo?: boolean
 }
 
 export default function AdminUsers() {
-  const { navigationItems, user, isGerente } = useNavigation()
+  const { navigationItems } = useNavigation()
+  const { user } = useAuth()
+  const isGerente = user?.role === 'GERENTE'
   const {
     data: usuariosResponse,
     isLoading: loadingUsers,
     refetch: refetchUsers,
   } = useFuncionarios()
-  const usuarios = usuariosResponse?.items || []
+
+  const usuarios = useMemo(
+    () => usuariosResponse?.items || [],
+    [usuariosResponse]
+  )
 
   const { data: departamentosResponse, isLoading: loadingDepartments } =
     useListarDepartamentosAdmin()
-  const departamentos =
-    (departamentosResponse as any)?.items || departamentosResponse || []
+  const departamentos = useMemo(
+    () => (departamentosResponse as any)?.items || departamentosResponse || [],
+    [departamentosResponse]
+  )
 
+  const [selectedDept, setSelectedDept] = useState<string>('all')
   const { data: cargosResponse, isLoading: loadingCargos } = useListarCargos()
-  const cargos = (cargosResponse as any)?.items || cargosResponse || []
-  const criarUsuario = useRegisterFuncionario()
-  const [editingUser, setEditingUser] = useState<Funcionario | null>(null)
-  const excluirUsuario = useExcluirFuncionario()
-  const atualizarUsuario = useUpdateFuncionarioRole(editingUser?.id || '0')
+  const cargos = useMemo(
+    () => (cargosResponse as any)?.items || cargosResponse || [],
+    [cargosResponse]
+  )
+  const criarUsuario = useRegister()
+  const [editingUser, setEditingUser] = useState<string>('')
+  const atualizarUsuario = useUpdateFuncionario(editingUser)
+  const [userToToggle, setUserToToggle] = useState<string>('')
+  const toggleUsuario = useUpdateFuncionario(userToToggle)
 
   const [tab, setTab] = useState<'active' | 'disabled' | 'all'>('all')
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [toggleDialog, setToggleDialog] = useState<{
+    open: boolean
+    user: Funcionario | null
+    newStatus: boolean
+  }>({
+    open: false,
+    user: null,
+    newStatus: false,
+  })
   const [form, setForm] = useState<UserForm>({
     nome: '',
     cpf: '',
     email: '',
     departamento_id: '',
     cargo_nome: '',
-    role: 'ALUNO',
-    ativo: true,
-    biografia: '',
   })
+
+  // Funções auxiliares para as colunas
+  const getDepartmentName = useCallback(
+    (id: string) => {
+      return (
+        departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome ||
+        id
+      )
+    },
+    [departamentos]
+  )
+
+  const getCargoName = useCallback(
+    (codigo: string) => {
+      return (
+        cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome ||
+        codigo
+      )
+    },
+    [cargos]
+  )
+
+  const maskCPF = (cpf: string) => {
+    if (!cpf) return ''
+    // Remove formatação
+    const numbers = cpf.replace(/\D/g, '')
+    // Formato: 123.***.***-45 (mostra primeiros 3 e últimos 2)
+    if (numbers.length === 11) {
+      return `${numbers.slice(0, 3)}.***.***-${numbers.slice(-2)}`
+    }
+    return cpf
+  }
+
+  const handleEdit = useCallback((user: Funcionario) => {
+    setEditingUser(user.id)
+    // Manter o código do departamento (não converter para nome)
+    setForm({
+      nome: user.nome,
+      cpf: user.cpf,
+      email: user.email,
+      departamento_id: user.departamento_id || '',
+      cargo_nome: user.cargo_nome || '',
+      role: user.role,
+      ativo: user.ativo,
+    })
+  }, [])
+
+  const handleToggleAtivo = useCallback((user: Funcionario) => {
+    setUserToToggle(user.id)
+    setToggleDialog({
+      open: true,
+      user,
+      newStatus: !user.ativo,
+    })
+  }, [])
+
+  const confirmToggleAtivo = async () => {
+    if (!toggleDialog.user) return
+
+    try {
+      await toggleUsuario.mutateAsync({
+        ativo: toggleDialog.newStatus,
+      })
+
+      const acao = toggleDialog.newStatus ? 'ativado' : 'desativado'
+      toast.success(`Usuário ${acao} com sucesso!`)
+
+      setToggleDialog({ open: false, user: null, newStatus: false })
+      refetchUsers()
+    } catch (error) {
+      const acao = toggleDialog.newStatus ? 'ativar' : 'desativar'
+      toast.error(`Erro ao ${acao} usuário`)
+      console.error(error)
+    }
+  }
 
   // Configuração das colunas da tabela
   const columns: Column[] = useMemo(
@@ -95,7 +189,6 @@ export default function AdminUsers() {
       {
         id: 'nome',
         label: 'Nome',
-        minWidth: 200,
         render: (value: string) => (
           <Typography fontWeight={500}>{value}</Typography>
         ),
@@ -103,36 +196,22 @@ export default function AdminUsers() {
       {
         id: 'email',
         label: 'Email',
-        minWidth: 200,
-        render: (value: string) => (
-          <Typography
-            component='span'
-            sx={{
-              fontFamily:
-                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-            }}
-          >
-            {value}
-          </Typography>
-        ),
+        render: (value: string) => <Typography>{value}</Typography>,
       },
       {
         id: 'departamento_id',
         label: 'Departamento',
-        minWidth: 150,
         render: (value: string | null) =>
           value ? getDepartmentName(value) : '—',
       },
       {
         id: 'cargo_nome',
         label: 'Cargo',
-        minWidth: 150,
         render: (value: string | null) => (value ? getCargoName(value) : '—'),
       },
       {
         id: 'role',
         label: 'Tipo',
-        minWidth: 120,
         render: (value: string) => (
           <Chip
             icon={getUserTypeIcon(value)}
@@ -146,39 +225,36 @@ export default function AdminUsers() {
       {
         id: 'ativo',
         label: 'Status',
-        minWidth: 120,
+        align: 'center' as const,
         render: (value: boolean, row: any) => (
           <Box
             sx={{
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 1,
+              gap: 0.5,
             }}
           >
             <Switch
               checked={value}
               onChange={e => {
                 e.stopPropagation()
-                handleToggleAtivo(row.id, row.nome, row.ativo)
+                handleToggleAtivo(row)
               }}
               size='small'
+              color='primary'
               onClick={e => e.stopPropagation()}
             />
-            <Typography
-              variant='body2'
-              color={value ? 'success.main' : 'text.disabled'}
-              fontWeight={500}
-            >
-              {value ? 'ATIVO' : 'INATIVO'}
+            <Typography variant='caption' color='text.secondary'>
+              {value ? 'Ativo' : 'Inativo'}
             </Typography>
           </Box>
         ),
       },
       {
         id: 'actions',
-        label: 'Ações',
-        align: 'right' as const,
-        minWidth: 100,
+        label: '',
+        align: 'center' as const,
         render: (_, row: any) => (
           <Box sx={{ display: 'flex', gap: 0.5 }}>
             <IconButton
@@ -191,22 +267,11 @@ export default function AdminUsers() {
             >
               <EditIcon />
             </IconButton>
-            <IconButton
-              size='small'
-              onClick={e => {
-                e.stopPropagation()
-                handleDelete(row.id, row.nome)
-              }}
-              aria-label='excluir'
-              color='error'
-            >
-              <DeleteIcon />
-            </IconButton>
           </Box>
         ),
       },
     ],
-    [departamentos, cargos]
+    [getDepartmentName, getCargoName, handleEdit, handleToggleAtivo]
   )
 
   // Filtrar usuários: GERENTE vê apenas do seu departamento, ADMIN vê todos
@@ -220,12 +285,24 @@ export default function AdminUsers() {
     return usuarios
   }, [usuarios, isGerente, user?.departamento_id])
 
-  // Filtrar usuários por status
-  const filtered = allUsers.filter(user => {
-    if (tab === 'all') return true
-    if (tab === 'active') return user.ativo === true
-    return user.ativo === false
-  })
+  // Filtrar usuários por departamento e status
+  const filtered = useMemo(() => {
+    let result = allUsers
+
+    // Filtrar por departamento
+    if (selectedDept !== 'all') {
+      result = result.filter(user => user.departamento_id === selectedDept)
+    }
+
+    // Filtrar por status
+    if (tab === 'active') {
+      result = result.filter(user => user.ativo === true)
+    } else if (tab === 'disabled') {
+      result = result.filter(user => user.ativo === false)
+    }
+
+    return result
+  }, [allUsers, selectedDept, tab])
 
   const resetForm = () => {
     setForm({
@@ -234,15 +311,14 @@ export default function AdminUsers() {
       email: '',
       departamento_id: '',
       cargo_nome: '',
-      role: 'ALUNO',
+      role: 'FUNCIONARIO',
       ativo: true,
-      biografia: '',
     })
   }
 
   const openAdd = () => {
     resetForm()
-    setEditingUser(null)
+    setEditingUser('')
     setIsAddOpen(true)
   }
 
@@ -251,19 +327,27 @@ export default function AdminUsers() {
       !form.nome.trim() ||
       !form.cpf.trim() ||
       !form.email.trim() ||
-      !form.departamento_id.trim()
+      !form.departamento_id.trim() ||
+      !form.cargo_nome.trim()
     ) {
-      toast.error('Nome, CPF, Email e Departamento são obrigatórios')
+      toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
+
+    // Validar CPF
+    const cpfLimpo = form.cpf.replace(/\D/g, '')
+    if (cpfLimpo.length !== 11) {
+      toast.error('CPF deve conter exatamente 11 dígitos')
       return
     }
 
     try {
       const input: FuncionarioRegister = {
         nome: form.nome.trim(),
-        cpf: form.cpf.trim(),
+        cpf: cpfLimpo,
         email: form.email.trim(),
         departamento_id: form.departamento_id.trim(),
-        cargo_nome: form.cargo_nome.trim() || undefined,
+        cargo_nome: form.cargo_nome.trim(),
       }
 
       await criarUsuario.mutateAsync(input)
@@ -278,91 +362,29 @@ export default function AdminUsers() {
     }
   }
 
-  const handleEdit = (user: Funcionario) => {
-    setEditingUser(user)
-    setForm({
-      nome: user.nome,
-      cpf: '', // CPF não é retornado na listagem por segurança
-      email: user.email,
-      departamento_id: user.departamento_id || '',
-      cargo_nome: user.cargo_nome || '',
-      role: user.role || 'ALUNO',
-      ativo: user.ativo,
-      biografia: '',
-    })
-  }
-
   const handleUpdate = async () => {
-    if (!form.nome.trim() || !form.email.trim()) {
-      toast.error('Nome e Email são obrigatórios')
-      return
-    }
-
     if (!editingUser) return
 
     try {
-      // Para atualizar role, usamos API específica de role
-      const input: UpdateRoleInput = {
+      const input: UpdateFuncionarioInput = {
+        nome: form.nome.trim(),
+        email: form.email.trim(),
+        departamento_id: form.departamento_id || undefined,
+        cargo_nome: form.cargo_nome || undefined,
         role: form.role,
+        ativo: form.ativo,
       }
 
       await atualizarUsuario.mutateAsync(input)
 
-      toast.success('Role do funcionário atualizada com sucesso!')
-      setEditingUser(null)
+      toast.success('Funcionário atualizado com sucesso!')
+      setEditingUser('')
       resetForm()
       refetchUsers()
     } catch (error) {
       toast.error('Erro ao atualizar funcionário')
       console.error(error)
     }
-  }
-
-  const handleDelete = async (id: string, nome: string) => {
-    if (confirm(`Tem certeza que deseja excluir o usuário "${nome}"?`)) {
-      try {
-        await excluirUsuario.mutateAsync(id)
-        toast.success('Usuário excluído com sucesso!')
-        refetchUsers()
-      } catch (error) {
-        toast.error('Erro ao excluir usuário')
-        console.error(error)
-      }
-    }
-  }
-
-  const handleToggleAtivo = async (
-    _id: string,
-    nome: string,
-    ativo: boolean
-  ) => {
-    const acao = ativo ? 'desativar' : 'ativar'
-    if (confirm(`Tem certeza que deseja ${acao} o usuário "${nome}"?`)) {
-      try {
-        // Aqui você precisa implementar a API para ativar/desativar usuário
-        // Por enquanto, só mostro o toast de sucesso
-        toast.success(
-          `Usuário ${acao === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`
-        )
-        refetchUsers()
-      } catch (error) {
-        toast.error(`Erro ao ${acao} usuário`)
-        console.error(error)
-      }
-    }
-  }
-
-  const getDepartmentName = (id: string) => {
-    return (
-      departamentos.find((d: { codigo: string }) => d.codigo === id)?.nome || id
-    )
-  }
-
-  const getCargoName = (codigo: string) => {
-    return (
-      cargos.find((c: { codigo: string }) => c.codigo === codigo)?.nome ||
-      codigo
-    )
   }
 
   const getUserTypeIcon = (tipo: string) => {
@@ -405,16 +427,29 @@ export default function AdminUsers() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            mb: 3,
+            gap: 2,
+            flexWrap: 'wrap',
           }}
         >
-          <StatusFilterTabs
-            value={tab}
-            onChange={setTab}
-            activeCount={allUsers.filter(u => u.ativo === true).length}
-            inactiveCount={allUsers.filter(u => u.ativo === false).length}
-            activeLabel='Usuários Ativos'
-            inactiveLabel='Usuários Inativos'
-          />
+          <FormControl>
+            <InputLabel>Departamento</InputLabel>
+            <Select
+              value={selectedDept}
+              onChange={e => setSelectedDept(e.target.value)}
+              label='Departamento'
+            >
+              <MenuItem key='all' value='all'>
+                <em>Todos os Departamentos</em>
+              </MenuItem>
+              {departamentos.map((dept: { codigo: string; nome: string }) => (
+                <MenuItem key={dept.codigo} value={dept.codigo}>
+                  {dept.codigo} - {dept.nome}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
           <Button
             onClick={openAdd}
             startIcon={<AddIcon />}
@@ -425,12 +460,16 @@ export default function AdminUsers() {
           </Button>
         </Box>
 
-        <DataTable
-          columns={columns}
-          data={filtered}
-          loading={loadingUsers}
-          getRowId={row => row.id}
+        <StatusFilterTabs
+          value={tab}
+          onChange={setTab}
+          activeCount={allUsers.filter(u => u.ativo === true).length}
+          inactiveCount={allUsers.filter(u => u.ativo === false).length}
+          activeLabel='Usuários Ativos'
+          inactiveLabel='Usuários Inativos'
         />
+
+        <DataTable columns={columns} data={filtered} getRowId={row => row.id} />
 
         {/* Dialog Adicionar Usuário */}
         <Dialog
@@ -445,8 +484,8 @@ export default function AdminUsers() {
               Novo Usuário
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Nome completo'
@@ -460,8 +499,12 @@ export default function AdminUsers() {
                 <TextField
                   label='CPF'
                   value={form.cpf}
-                  onChange={e => setForm({ ...form, cpf: e.target.value })}
-                  placeholder='000.000.000-00'
+                  onChange={e => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 11)
+                    setForm({ ...form, cpf: value })
+                  }}
+                  placeholder='00000000000'
+                  inputMode='numeric'
                   fullWidth
                   required
                 />
@@ -477,100 +520,57 @@ export default function AdminUsers() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
-                    </MenuItem>
-                    {departamentos.map(
-                      (dept: { codigo: string; nome: string }) => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={departamentos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    departamentos.find(
+                      (d: any) => d.codigo === form.departamento_id
+                    ) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({
+                      ...form,
+                      departamento_id: newValue?.codigo || '',
+                    })
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label='Departamento'
+                      required
+                      placeholder='Departamento'
+                    />
+                  )}
+                  noOptionsText='Nenhum departamento encontrado'
+                  fullWidth
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select
-                    value={form.cargo_nome}
-                    onChange={e =>
-                      setForm({ ...form, cargo_nome: e.target.value })
-                    }
-                    label='Cargo'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                    {cargos.map((cargo: { codigo: string; nome: string }) => (
-                      <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                        {cargo.nome}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={cargos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    cargos.find((c: any) => c.nome === form.cargo_nome) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({ ...form, cargo_nome: newValue?.nome || '' })
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label='Cargo'
+                      required
+                      placeholder='Cargo'
+                    />
+                  )}
+                  noOptionsText='Nenhum cargo encontrado'
+                  fullWidth
+                />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tipo de Usuário</InputLabel>
-                  <Select
-                    value={form.role}
-                    onChange={e =>
-                      setForm({ ...form, role: e.target.value as UserRole })
-                    }
-                    label='Tipo de Usuário'
-                  >
-                    <MenuItem value='ALUNO'>Aluno</MenuItem>
-                    <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                    <MenuItem value='GERENTE'>Gerente</MenuItem>
-                    <MenuItem value='ADMIN'>Administrador</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={form.ativo ? 'ATIVO' : 'INATIVO'}
-                    onChange={e =>
-                      setForm({ ...form, ativo: e.target.value === 'ATIVO' })
-                    }
-                    label='Status'
-                  >
-                    <MenuItem value='ATIVO'>Ativo</MenuItem>
-                    <MenuItem value='INATIVO'>Inativo</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              {form.role === 'INSTRUTOR' && (
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    label='Biografia (Instrutor)'
-                    value={form.biografia}
-                    onChange={e =>
-                      setForm({ ...form, biografia: e.target.value })
-                    }
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    maxRows={5}
-                    placeholder='Descreva a experiência e qualificações do instrutor...'
-                  />
-                </Grid>
-              )}
             </Grid>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
               onClick={() => setIsAddOpen(false)}
@@ -591,8 +591,8 @@ export default function AdminUsers() {
         {/* Dialog Editar Usuário */}
         <Dialog
           open={!!editingUser}
-          onClose={() => setEditingUser(null)}
-          maxWidth='md'
+          onClose={() => setEditingUser('')}
+          maxWidth='sm'
           fullWidth
         >
           <DialogTitle>
@@ -601,8 +601,8 @@ export default function AdminUsers() {
               Editar Usuário
             </Box>
           </DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 0.5 }}>
+          <DialogContent sx={{ py: 0 }}>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12 }}>
                 <TextField
                   label='Nome completo'
@@ -612,7 +612,16 @@ export default function AdminUsers() {
                   required
                 />
               </Grid>
-              <Grid size={{ xs: 12 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  label='CPF'
+                  value={maskCPF(form.cpf)}
+                  onChange={e => setForm({ ...form, cpf: e.target.value })}
+                  fullWidth
+                  disabled
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label='Email'
                   type='email'
@@ -623,48 +632,47 @@ export default function AdminUsers() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Departamento</InputLabel>
-                  <Select
-                    value={form.departamento_id}
-                    onChange={e =>
-                      setForm({ ...form, departamento_id: e.target.value })
-                    }
-                    label='Departamento'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o departamento —</em>
-                    </MenuItem>
-                    {departamentos.map(
-                      (dept: { codigo: string; nome: string }) => (
-                        <MenuItem key={dept.codigo} value={dept.codigo}>
-                          {dept.nome}
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={departamentos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    departamentos.find(
+                      (d: any) => d.codigo === form.departamento_id
+                    ) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({
+                      ...form,
+                      departamento_id: newValue?.codigo || '',
+                    })
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label='Departamento'
+                      placeholder='Departamento'
+                    />
+                  )}
+                  noOptionsText='Nenhum departamento encontrado'
+                  fullWidth
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Cargo</InputLabel>
-                  <Select
-                    value={form.cargo_nome}
-                    onChange={e =>
-                      setForm({ ...form, cargo_nome: e.target.value })
-                    }
-                    label='Cargo'
-                  >
-                    <MenuItem value=''>
-                      <em>— Selecione o cargo —</em>
-                    </MenuItem>
-                    {cargos.map((cargo: { codigo: string; nome: string }) => (
-                      <MenuItem key={cargo.codigo} value={cargo.codigo}>
-                        {cargo.nome}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Autocomplete
+                  options={cargos}
+                  getOptionLabel={(option: any) => option.nome || ''}
+                  value={
+                    cargos.find((c: any) => c.nome === form.cargo_nome) || null
+                  }
+                  onChange={(_, newValue: any) => {
+                    setForm({ ...form, cargo_nome: newValue?.nome || '' })
+                  }}
+                  renderInput={params => (
+                    <TextField {...params} label='Cargo' placeholder='Cargo' />
+                  )}
+                  noOptionsText='Nenhum cargo encontrado'
+                  fullWidth
+                />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth required>
@@ -676,10 +684,10 @@ export default function AdminUsers() {
                     }
                     label='Tipo de Usuário'
                   >
-                    <MenuItem value='ALUNO'>Aluno</MenuItem>
+                    <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
-                    <MenuItem value='GERENTE'>Gerente</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
+                    <MenuItem value='GERENTE'>Gestor</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -698,28 +706,12 @@ export default function AdminUsers() {
                   </Select>
                 </FormControl>
               </Grid>
-              {form.role === 'INSTRUTOR' && (
-                <Grid size={{ xs: 12 }}>
-                  <TextField
-                    label='Biografia (Instrutor)'
-                    value={form.biografia}
-                    onChange={e =>
-                      setForm({ ...form, biografia: e.target.value })
-                    }
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    maxRows={5}
-                    placeholder='Descreva a experiência e qualificações do instrutor...'
-                  />
-                </Grid>
-              )}
             </Grid>
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ p: 3 }}>
             <Button
               variant='outlined'
-              onClick={() => setEditingUser(null)}
+              onClick={() => setEditingUser('')}
               disabled={atualizarUsuario.isPending}
             >
               Cancelar
@@ -733,6 +725,27 @@ export default function AdminUsers() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Dialog Confirmação Toggle Status */}
+        <ConfirmationDialog
+          open={toggleDialog.open}
+          onClose={() =>
+            setToggleDialog({ open: false, user: null, newStatus: false })
+          }
+          onConfirm={confirmToggleAtivo}
+          title={
+            toggleDialog.newStatus ? 'Ativar Usuário' : 'Desativar Usuário'
+          }
+          message={
+            toggleDialog.newStatus
+              ? `Tem certeza que deseja ativar o usuário "${toggleDialog.user?.nome}"? O usuário poderá fazer login novamente.`
+              : `Tem certeza que deseja desativar o usuário "${toggleDialog.user?.nome}"? O usuário será deslogado imediatamente e não poderá mais fazer login.`
+          }
+          confirmText={toggleDialog.newStatus ? 'Ativar' : 'Desativar'}
+          cancelText='Cancelar'
+          severity={toggleDialog.newStatus ? 'info' : 'warning'}
+          isLoading={toggleUsuario.isPending}
+        />
       </Box>
     </DashboardLayout>
   )

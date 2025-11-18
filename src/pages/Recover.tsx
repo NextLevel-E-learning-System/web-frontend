@@ -6,15 +6,15 @@ import {
   Typography,
 } from '@mui/material'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
-import SendIcon from '@mui/icons-material/Send'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import { Link as RouterLink } from 'react-router-dom'
+import { Send } from '@mui/icons-material'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useResetPassword } from '@/hooks/auth'
 import { showToast } from '@/utils/toast'
 
 export default function Recover() {
   const reset = useResetPassword()
+  const navigate = useNavigate()
   return (
     <AuthShell title='Redefinir senha'>
       <Box
@@ -25,10 +25,10 @@ export default function Recover() {
           const email = String(data.get('email') || '')
           try {
             await reset.mutateAsync({ email })
-            showToast.success('Se o email existir, uma nova senha foi enviada.')
+            showToast.success('Uma nova senha foi enviada.')
+            navigate('/login')
           } catch (err) {
             console.error(err)
-            showToast.error('Não foi possível processar o pedido agora.')
           }
         }}
       >
@@ -56,7 +56,7 @@ export default function Recover() {
             variant='contained'
             size='large'
             sx={{ borderRadius: 8 }}
-            endIcon={<SendIcon />}
+            endIcon={<Send />}
             disabled={reset.isPending}
           >
             {reset.isPending ? 'Enviando...' : 'Enviar'}

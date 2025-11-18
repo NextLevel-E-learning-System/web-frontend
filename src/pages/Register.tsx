@@ -10,13 +10,13 @@ import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined'
 import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined'
+import { PersonOutlineOutlined } from '@mui/icons-material'
 import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { useRegister } from '@/hooks/auth'
 import { useNavigate } from 'react-router-dom'
 import { useListarDepartamentos, useListarCargos } from '@/api/users'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { showToast } from '@/utils/toast'
 
 const Register = () => {
@@ -26,8 +26,15 @@ const Register = () => {
     useListarDepartamentos()
   const { data: cargos = [], isLoading: loadingCargos } = useListarCargos()
 
-  const departamentosArray = Array.isArray(departamentos) ? departamentos : []
-  const cargosArray = Array.isArray(cargos) ? cargos : []
+  const departamentosArray = useMemo(() => {
+    const items = (departamentos as any)?.items || departamentos || []
+    return items
+  }, [departamentos])
+
+  const cargosArray = useMemo(() => {
+    const items = (cargos as any)?.items || cargos || []
+    return items
+  }, [cargos])
 
   const [formData, setFormData] = useState({
     cpf: '',
@@ -43,6 +50,13 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Validar CPF
+    const cpfLimpo = formData.cpf.replace(/\D/g, '')
+    if (cpfLimpo.length !== 11) {
+      showToast.error('CPF deve conter exatamente 11 dígitos')
+      return
+    }
+
     // Validar se departamento e cargo foram selecionados
     if (!selectedDepartamento || !selectedCargo) {
       showToast.error('Selecione um departamento e cargo válidos.')
@@ -51,6 +65,7 @@ const Register = () => {
 
     const submitData = {
       ...formData,
+      cpf: cpfLimpo, // Enviar apenas números
       departamento_id: selectedDepartamento.codigo,
       cargo_nome: selectedCargo.nome,
     }
@@ -61,9 +76,16 @@ const Register = () => {
 
   const handleChange =
     (field: string) => (e: React.ChangeEvent<HTMLInputElement> | any) => {
+      let value = e.target.value as string
+
+      // Se for CPF, aceitar apenas números
+      if (field === 'cpf') {
+        value = value.replace(/\D/g, '').slice(0, 11) // Remove não-números e limita a 11
+      }
+
       setFormData(prev => ({
         ...prev,
-        [field]: e.target.value as string,
+        [field]: value,
       }))
     }
   return (
@@ -78,6 +100,7 @@ const Register = () => {
           onChange={handleChange('cpf')}
           required
           inputMode='numeric'
+          placeholder='00000000000'
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
@@ -98,7 +121,7 @@ const Register = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <PersonOutlineOutlinedIcon color='disabled' />
+                <PersonOutlineOutlined color='disabled' />
               </InputAdornment>
             ),
           }}
