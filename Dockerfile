@@ -1,0 +1,20 @@
+FROM node:22-alpine3.20 AS build
+WORKDIR /usr/src/app
+
+# Copiar apenas arquivos de dependências primeiro (melhor cache)
+COPY package*.json yarn.lock ./
+
+# Instalar as dependências
+RUN npm install --frozen-lockfile
+
+# Copiar o código fonte (isso invalida o cache quando há mudanças)
+COPY ./ ./
+
+# Build para ambiente de dev
+RUN npm run build
+
+FROM nginx:1.28.0-alpine-slim
+COPY --from=build /usr/src/app/nginx /etc/nginx/conf.d
+COPY --from=build /usr/src/app/dist /usr/share/nginx/html
+
+EXPOSE 9090

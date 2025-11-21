@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "vite --host --open",
     "build": "vite build",
+    "build:dev": "tsc && vite build --mode development",
+    "build:prd": "tsc && vite build --mode production",
     "start": "vite preview --port 3000",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
