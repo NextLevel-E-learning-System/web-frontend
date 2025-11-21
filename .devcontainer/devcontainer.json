@@ -12,7 +12,8 @@
         "ms-azuretools.vscode-docker",
         "bradlc.vscode-tailwindcss",
         "ms-vscode.vscode-typescript-next",
-        "dsznajder.es7-react-js-snippets"
+        "dsznajder.es7-react-js-snippets",
+        "ms-vscode-remote.remote-containers"
       ],
       "settings": {
         "editor.formatOnSave": true,
@@ -23,7 +24,7 @@
       }
     }
   },
-  "forwardPorts": [5173],
+  "forwardPorts": [3000],
   "postCreateCommand": "npm install",
   "remoteEnv": {
     "VITE_API_BASE_URL": "https://nextlevel-api-gateway-production.up.railway.app"
