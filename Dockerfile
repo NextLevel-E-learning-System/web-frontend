@@ -17,4 +17,6 @@ FROM nginx:1.28.0-alpine-slim
 COPY --from=build /usr/src/app/nginx /etc/nginx/conf.d
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
 
-EXPOSE 9090
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
