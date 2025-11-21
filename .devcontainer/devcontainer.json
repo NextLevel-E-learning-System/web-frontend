@@ -1,7 +1,7 @@
 {
   "name": "Web Frontend",
   "build": {
-    "dockerfile": "../Dockerfile.dev",
+    "dockerfile": "Dockerfile.dev",
     "context": ".."
   },
   "customizations": {
