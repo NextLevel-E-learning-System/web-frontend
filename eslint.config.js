@@ -18,10 +18,21 @@ export default defineConfig([
     ],
     plugins: {
       '@stylistic': stylistic,
+      'unused-imports': tseslint.plugins['unused-imports'],
     },
     rules: {
-      // Apenas identação conforme pedido (2 espaços + SwitchCase indentado)
       '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'warn',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
     languageOptions: {
       ecmaVersion: 2020,
