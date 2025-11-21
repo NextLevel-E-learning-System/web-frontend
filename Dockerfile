@@ -1,33 +1,19 @@
-FROM node:22-alpine3.20 AS dev
-WORKDIR /usr/src/app
-
-# Instalar bash e git (necessários para devcontainer features)
-RUN apk add --no-cache bash git
+FROM node:22-alpine3.20 AS build
+WORKDIR /app
 
 # Copiar apenas arquivos de dependências primeiro (melhor cache)
 COPY package*.json ./
 
 # Instalar as dependências
-RUN npm ci
+RUN npm install --frozen-lockfile
 
-# Stage de build para produção
-FROM node:22-alpine3.20 AS build
-WORKDIR /usr/src/app
-
-# Copiar dependências já instaladas
-COPY --from=dev /usr/src/app/node_modules ./node_modules
-COPY package*.json ./
-
-# Copiar o código fonte
-COPY ./ ./
-
-# Build para produção
-RUN npm run build
+# Copiar o código fonte (isso invalida o cache quando há mudanças)
+COPY . .
 
 FROM nginx:1.28.0-alpine-slim
-COPY --from=build /usr/src/app/nginx /etc/nginx/conf.d
-COPY --from=build /usr/src/app/dist /usr/share/nginx/html
+COPY --from=build /app/nginx /etc/nginx/conf.d
+COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 5173
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;", "npm", "run", "dev"]

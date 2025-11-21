@@ -2,8 +2,7 @@
   "name": "Web Frontend",
   "build": {
     "dockerfile": "../Dockerfile",
-    "context": "..",
-    "target": "dev"
+    "context": ".."
   },
   "customizations": {
     "vscode": {
@@ -24,20 +23,9 @@
       }
     }
   },
-  "forwardPorts": [3000, 5173],
-  "portsAttributes": {
-    "3000": {
-      "label": "Frontend (Preview)",
-      "onAutoForward": "openBrowser"
-    },
-    "5173": {
-      "label": "Vite Dev Server",
-      "onAutoForward": "openBrowser"
-    }
-  },
-  "postCreateCommand": "",
+  "forwardPorts": [5173],
+  "postCreateCommand": "npm install",
   "remoteEnv": {
     "VITE_API_BASE_URL": "https://nextlevel-api-gateway-production.up.railway.app"
-  },
-  "workspaceFolder": "/usr/src/app"
+  }
 }
