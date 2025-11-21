@@ -1,6 +1,9 @@
 FROM node:22-alpine3.20 AS dev
 WORKDIR /usr/src/app
 
+# Instalar bash e git (necessários para devcontainer features)
+RUN apk add --no-cache bash git
+
 # Copiar apenas arquivos de dependências primeiro (melhor cache)
 COPY package*.json ./
 
