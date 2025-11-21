@@ -3,7 +3,7 @@
   "build": {
     "dockerfile": "../Dockerfile",
     "context": "..",
-    "target": "build"
+    "target": "dev"
   },
   "features": {
     "ghcr.io/devcontainers/features/git:1": {}

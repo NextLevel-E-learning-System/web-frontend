@@ -1,4 +1,4 @@
-FROM node:22-alpine3.20 AS build
+FROM node:22-alpine3.20 AS dev
 WORKDIR /usr/src/app
 
 # Copiar apenas arquivos de dependências primeiro (melhor cache)
@@ -7,7 +7,15 @@ COPY package*.json ./
 # Instalar as dependências
 RUN npm ci
 
-# Copiar o código fonte (isso invalida o cache quando há mudanças)
+# Stage de build para produção
+FROM node:22-alpine3.20 AS build
+WORKDIR /usr/src/app
+
+# Copiar dependências já instaladas
+COPY --from=dev /usr/src/app/node_modules ./node_modules
+COPY package*.json ./
+
+# Copiar o código fonte
 COPY ./ ./
 
 # Build para produção
