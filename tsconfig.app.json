@@ -5,11 +5,8 @@
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
+    "types": ["vite/client"],
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -18,6 +15,12 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+
+    /* Path Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
 
     /* Linting */
     "strict": true,

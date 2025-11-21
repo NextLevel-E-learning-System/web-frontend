@@ -3,51 +3,29 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import prettier from 'eslint-plugin-prettier'
-import prettierConfig from 'eslint-config-prettier'
-import unusedImports from 'eslint-plugin-unused-imports'
+import stylistic from '@stylistic/eslint-plugin'
+import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default tseslint.config(
-  { ignores: ['dist'] },
+export default defineConfig([
+  globalIgnores(['dist']),
   {
+    files: ['**/*.{ts,tsx,js,jsx}'],
     extends: [
       js.configs.recommended,
-      ...tseslint.configs.recommended,
-      prettierConfig,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
     ],
-    files: ['**/*.{ts,tsx}'],
+    plugins: {
+      '@stylistic': stylistic,
+    },
+    rules: {
+      // Apenas identação conforme pedido (2 espaços + SwitchCase indentado)
+      '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-      prettier: prettier,
-      'unused-imports': unusedImports,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
-      '@typescript-eslint/no-unused-vars': 'off',
-      'unused-imports/no-unused-imports': 'off',
-      'unused-imports/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          args: 'after-used',
-          argsIgnorePattern: '^_',
-        },
-      ],
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'no-prototype-builtins': 'warn',
-      'react-hooks/rules-of-hooks': 'warn',
-      '@typescript-eslint/no-unused-expressions': 'warn',
-      'prettier/prettier': 'error',
-    },
-  }
-)
+  },
+])

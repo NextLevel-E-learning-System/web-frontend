@@ -1,7 +1,3 @@
-import './global.css'
-import 'react-toastify/dist/ReactToastify.css'
-
-import { createRoot } from 'react-dom/client'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
@@ -188,5 +184,3 @@ export const App = () => (
     </ThemeProvider>
   </QueryClientProvider>
 )
-
-createRoot(document.getElementById('root')!).render(<App />)

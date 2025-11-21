@@ -6,7 +6,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths(), basicSsl()],
-  base: '/',
+  base: '/NextLevel-E-learning-System/',
   publicDir: './public',
   resolve: {
     alias: {
