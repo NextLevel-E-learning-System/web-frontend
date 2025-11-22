@@ -4,24 +4,31 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import stylistic from '@stylistic/eslint-plugin'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import unusedImports from 'eslint-plugin-unused-imports'
 
-export default defineConfig([
-  globalIgnores(['dist']),
+export default tseslint.config(
+  { ignores: ['dist', 'node_modules'] },
   {
-    files: ['**/*.{ts,tsx,js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-    ],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
     plugins: {
       '@stylistic': stylistic,
-      'unused-imports': tseslint.plugins['unused-imports'],
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+      'unused-imports': unusedImports,
     },
     rules: {
+      ...reactHooks.configs.recommended.rules,
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
       '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       'unused-imports/no-unused-imports': 'warn',
       'unused-imports/no-unused-vars': [
@@ -34,9 +41,5 @@ export default defineConfig([
         },
       ],
     },
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-  },
-])
+  }
+)
