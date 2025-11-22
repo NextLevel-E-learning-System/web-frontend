@@ -341,7 +341,6 @@ export default function AdminDepartments() {
         <DataTable
           data={departamentosFiltrados}
           columns={departmentColumns}
-          loading={isLoading}
           getRowId={dept => dept.codigo}
         />
 

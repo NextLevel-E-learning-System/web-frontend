@@ -1,38 +1,24 @@
 import {
   Grid,
-  Typography,
   Box,
   CircularProgress,
   Alert,
-  Chip,
-  TableContainer,
-  TableCell,
-  TableRow,
-  TableBody,
-  Table,
   Paper,
-  TableHead,
-  IconButton,
-  Tooltip,
 } from '@mui/material'
 import {
   School,
   People,
   CheckCircle,
   Assignment,
-  Visibility,
-  RateReview,
 } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import MetricCard from '@/components/common/StatCard'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
-import { useNavigate } from 'react-router-dom'
 import { useDashboard, type DashboardInstrutor } from '@/api/users'
 
 export default function InstrutorDashboard() {
   const { navigationItems } = useDashboardLayout()
   const { data: dashboardData, isLoading, error } = useDashboard()
-  const navigate = useNavigate()
 
   const instrutorData =
     dashboardData?.dashboard?.tipo_dashboard === 'instrutor'
@@ -65,20 +51,6 @@ export default function InstrutorDashboard() {
   }
 
   const { metricas } = instrutorData || { metricas: {} }
-
-  const handleViewCourse = (cursoCodigo: string, hasPendentes: boolean) => {
-    if (hasPendentes) {
-      // Se tem pendentes, vai direto para aba de correções
-      navigate(`/gerenciar/cursos/${cursoCodigo}`, {
-        state: { viewOnly: true, nextTab: 'reviews' },
-      })
-    } else {
-      // Senão, vai para visualização normal
-      navigate(`/gerenciar/cursos/${cursoCodigo}`, {
-        state: { viewOnly: true },
-      })
-    }
-  }
 
   return (
     <DashboardLayout items={navigationItems}>

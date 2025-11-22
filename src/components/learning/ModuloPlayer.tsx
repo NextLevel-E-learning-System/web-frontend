@@ -21,7 +21,7 @@ interface ModuloPlayerProps {
 
 export default function ModuloPlayer({
   modulo,
-  inscricaoId,
+  inscricaoId: _inscricaoId,
 }: ModuloPlayerProps) {
   const [currentStep, setCurrentStep] = useState(0)
 
@@ -29,7 +29,7 @@ export default function ModuloPlayer({
     type: 'material'
     index: number
     label: string
-    icon: JSX.Element
+    icon: React.ReactElement
     data: ModuloCompleto['materiais'][0]
   }
 

@@ -24,7 +24,7 @@ interface Props {
 export default function CourseStudentsPanel({ cursoCodigo }: Props) {
   const { data: enrollmentsData, isLoading: loadingEnrollments } =
     useCourseEnrollments(cursoCodigo)
-  const enrollments = enrollmentsData || []
+  const enrollments = Array.isArray(enrollmentsData) ? enrollmentsData : []
 
   const getStatusColor = (status: string) => {
     switch (status) {

@@ -2,24 +2,20 @@ import { useState } from 'react'
 import {
   Box,
   Button,
-  Checkbox,
-  FormControlLabel,
   IconButton,
   InputAdornment,
   TextField,
   Typography,
-  Alert,
 } from '@mui/material'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
-import { Link as RouterLink } from 'react-router-dom'
 import AuthShell from '@/components/auth/AuthShell'
 import { Send, Visibility, VisibilityOff } from '@mui/icons-material'
 import { useLogin } from '@/hooks/auth'
+import { Link as RouterLink } from 'react-router-dom'
 
 export default function Login() {
   const [showPass, setShowPass] = useState(false)
-  const [rememberMe, setRememberMe] = useState(true) // ← Padrão: sempre lembrar
   const login = useLogin()
 
   return (
@@ -83,30 +79,10 @@ export default function Login() {
           }}
         />
 
-        {/*        
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={rememberMe}
-              onChange={e => setRememberMe(e.target.checked)}
-              color='primary'
-            />
-          }
-          label='Manter-me conectado'
-          sx={{ mt: 1, mb: 1 }}
-        /> 
-        */}
 
         <Button component={RouterLink} to='/recover' variant='text'>
           Esqueci minha senha
         </Button>
-
-        {/* Mostrar erro se houver */}
-        {login.error && (
-          <Alert severity='error' sx={{ mt: 2 }}>
-            Erro ao fazer login. Verifique suas credenciais.
-          </Alert>
-        )}
 
         <Button
           type='submit'
@@ -119,9 +95,9 @@ export default function Login() {
         >
           {login.isPending ? 'Entrando...' : 'Entrar'}
         </Button>
-
+     
         <Typography variant='body2' sx={{ mt: 2, textAlign: 'center' }}>
-          Não tem conta?{' '}
+        Não tem conta?{' '}
           <Button
             component={RouterLink}
             to='/register'

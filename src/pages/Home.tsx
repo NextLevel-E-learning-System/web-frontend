@@ -1,4 +1,4 @@
-import { Box, Button, Chip, Container, Grid, Typography } from '@mui/material'
+import { Box, Button, Container, Grid, Typography } from '@mui/material'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import BrandAppBar from '@/components/auth/BrandAppBar'
 import { Link as RouterLink } from 'react-router-dom'
