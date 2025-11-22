@@ -1,7 +1,7 @@
 {
   "name": "Web Frontend",
   "build": {
-    "dockerfile": "Dockerfile.dev",
+    "dockerfile": "../Dockerfile.dev",
     "context": ".."
   },
   "customizations": {
@@ -34,8 +34,5 @@
     }
   },
   "forwardPorts": [3000],
-  "postCreateCommand": "npm install",
-  "remoteEnv": {
-    "VITE_API_BASE_URL": "https://nextlevel-api-gateway-production.up.railway.app"
-  }
+  "postCreateCommand": "npm install"
 }
