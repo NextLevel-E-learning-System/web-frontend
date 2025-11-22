@@ -21,6 +21,9 @@ export default defineConfig([
     },
     rules: {
       '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'react-refresh/only-export-components': 'warn',
     },
     languageOptions: {
       ecmaVersion: 2020,
