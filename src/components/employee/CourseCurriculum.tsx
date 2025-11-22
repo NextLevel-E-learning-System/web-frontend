@@ -283,26 +283,26 @@ function ModuleAccordion({
             {isInProgress &&
               !isCompleted &&
               module.tipo_conteudo !== 'quiz' && (
-                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-                  <Button
-                    variant='contained'
-                    color='success'
-                    size='large'
-                    disabled={isCompleting}
-                    onClick={handleCompleteModule}
-                    startIcon={
-                      isCompleting ? (
-                        <CircularProgress size={20} color='inherit' />
-                      ) : (
-                        <CheckCircleRoundedIcon />
-                      )
-                    }
-                    sx={{ minWidth: 200 }}
-                  >
-                    {isCompleting ? 'Concluindo...' : 'Concluir Módulo'}
-                  </Button>
-                </Box>
-              )}
+              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+                <Button
+                  variant='contained'
+                  color='success'
+                  size='large'
+                  disabled={isCompleting}
+                  onClick={handleCompleteModule}
+                  startIcon={
+                    isCompleting ? (
+                      <CircularProgress size={20} color='inherit' />
+                    ) : (
+                      <CheckCircleRoundedIcon />
+                    )
+                  }
+                  sx={{ minWidth: 200 }}
+                >
+                  {isCompleting ? 'Concluindo...' : 'Concluir Módulo'}
+                </Button>
+              </Box>
+            )}
           </Stack>
         )}
       </AccordionDetails>

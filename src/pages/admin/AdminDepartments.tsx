@@ -256,38 +256,38 @@ export default function AdminDepartments() {
     ...(isMobile
       ? []
       : ([
-          {
-            id: 'descricao',
-            label: 'Descrição',
-            align: 'left',
-            minWidth: 200,
-            render: (_, dept) => (
-              <Typography
-                variant='body2'
-                color='text.secondary'
-                sx={{
-                  maxWidth: 300,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {dept.descricao || '—'}
-              </Typography>
-            ),
-          },
-          {
-            id: 'gestor',
-            label: 'Gestor',
-            align: 'left',
-            minWidth: 150,
-            render: (_, dept) => (
-              <Typography variant='body2' color='text.secondary'>
-                {getGestorNome(dept.gestor_funcionario_id) || '—'}
-              </Typography>
-            ),
-          },
-        ] as Column[])),
+        {
+          id: 'descricao',
+          label: 'Descrição',
+          align: 'left',
+          minWidth: 200,
+          render: (_, dept) => (
+            <Typography
+              variant='body2'
+              color='text.secondary'
+              sx={{
+                maxWidth: 300,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {dept.descricao || '—'}
+            </Typography>
+          ),
+        },
+        {
+          id: 'gestor',
+          label: 'Gestor',
+          align: 'left',
+          minWidth: 150,
+          render: (_, dept) => (
+            <Typography variant='body2' color='text.secondary'>
+              {getGestorNome(dept.gestor_funcionario_id) || '—'}
+            </Typography>
+          ),
+        },
+      ] as Column[])),
     {
       id: 'acoes',
       label: 'Ações',

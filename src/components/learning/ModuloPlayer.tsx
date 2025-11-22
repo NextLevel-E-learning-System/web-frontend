@@ -123,33 +123,33 @@ export default function ModuloPlayer({
           >
             {currentStepData?.type === 'material' &&
               currentStepData.data.tipo_arquivo?.includes('video') && (
-                <VideoPlayer material={currentStepData.data} />
-              )}
+              <VideoPlayer material={currentStepData.data} />
+            )}
 
             {currentStepData?.type === 'material' &&
               currentStepData.data.tipo_arquivo?.includes('pdf') && (
-                <Box>
-                  <Typography variant='h6' gutterBottom>
-                    {currentStepData.data.nome_arquivo}
-                  </Typography>
-                  {currentStepData.data.url_download ? (
-                    <iframe
-                      src={currentStepData.data.url_download}
-                      style={{
-                        width: '100%',
-                        height: '80vh',
-                        border: 'none',
-                      }}
-                      title={currentStepData.data.nome_arquivo}
-                    />
-                  ) : (
-                    <Alert severity='error'>
+              <Box>
+                <Typography variant='h6' gutterBottom>
+                  {currentStepData.data.nome_arquivo}
+                </Typography>
+                {currentStepData.data.url_download ? (
+                  <iframe
+                    src={currentStepData.data.url_download}
+                    style={{
+                      width: '100%',
+                      height: '80vh',
+                      border: 'none',
+                    }}
+                    title={currentStepData.data.nome_arquivo}
+                  />
+                ) : (
+                  <Alert severity='error'>
                       URL do material não disponível. Por favor, recarregue a
                       página.
-                    </Alert>
-                  )}
-                </Box>
-              )}
+                  </Alert>
+                )}
+              </Box>
+            )}
           </Paper>
         </Grid>
       </Grid>

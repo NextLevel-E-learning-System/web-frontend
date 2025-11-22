@@ -275,13 +275,13 @@ export default function AdminCourses() {
     },
     !isInstrutor
       ? {
-          id: 'instrutor_nome',
-          label: 'Instrutor',
-          align: 'center' as const,
-          render: (value: string | null) => (
-            <Typography variant='body2'>{value || '-'}</Typography>
-          ),
-        }
+        id: 'instrutor_nome',
+        label: 'Instrutor',
+        align: 'center' as const,
+        render: (value: string | null) => (
+          <Typography variant='body2'>{value || '-'}</Typography>
+        ),
+      }
       : null,
     {
       id: 'nivel',
@@ -315,23 +315,23 @@ export default function AdminCourses() {
     // Coluna de correções pendentes (apenas para INSTRUTOR)
     isInstrutor
       ? {
-          id: 'pendentes_correcao',
-          label: 'Correções Pendentes',
-          align: 'center' as const,
-          render: (_value: unknown, curso: Curso) => (
-            <Typography
-              variant='body2'
-              fontWeight={500}
-              color={
-                curso.pendentes_correcao && curso.pendentes_correcao > 0
-                  ? 'warning.main'
-                  : 'text.secondary'
-              }
-            >
-              {curso.pendentes_correcao || 0}
-            </Typography>
-          ),
-        }
+        id: 'pendentes_correcao',
+        label: 'Correções Pendentes',
+        align: 'center' as const,
+        render: (_value: unknown, curso: Curso) => (
+          <Typography
+            variant='body2'
+            fontWeight={500}
+            color={
+              curso.pendentes_correcao && curso.pendentes_correcao > 0
+                ? 'warning.main'
+                : 'text.secondary'
+            }
+          >
+            {curso.pendentes_correcao || 0}
+          </Typography>
+        ),
+      }
       : null,
     {
       id: 'taxa_conclusao',
@@ -540,27 +540,27 @@ export default function AdminCourses() {
           {isInstrutor &&
             selectedCourseForMenu &&
             (selectedCourseForMenu.pendentes_correcao || 0) > 0 && (
-              <MenuItem
-                onClick={() => {
-                  handleCloseMenu()
-                  if (selectedCourseForMenu) {
-                    navigate(
-                      `/gerenciar/cursos/${selectedCourseForMenu.codigo}`,
-                      {
-                        state: { viewOnly: true, nextTab: 'reviews' },
-                      }
-                    )
-                  }
-                }}
-                sx={{
-                  color: 'warning.main',
-                  fontWeight: 500,
-                }}
-              >
-                <RateReview sx={{ mr: 1 }} fontSize='small' />
+            <MenuItem
+              onClick={() => {
+                handleCloseMenu()
+                if (selectedCourseForMenu) {
+                  navigate(
+                    `/gerenciar/cursos/${selectedCourseForMenu.codigo}`,
+                    {
+                      state: { viewOnly: true, nextTab: 'reviews' },
+                    }
+                  )
+                }
+              }}
+              sx={{
+                color: 'warning.main',
+                fontWeight: 500,
+              }}
+            >
+              <RateReview sx={{ mr: 1 }} fontSize='small' />
                 Ver Correções ({selectedCourseForMenu.pendentes_correcao})
-              </MenuItem>
-            )}
+            </MenuItem>
+          )}
           <MenuItem
             onClick={() => {
               handleCloseMenu()

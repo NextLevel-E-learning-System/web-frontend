@@ -301,9 +301,9 @@ export function useCourseModules(codigo: string) {
       const raw = await authGet<
         | Module[]
         | {
-            items: Module[]
-            mensagem: string
-          }
+          items: Module[]
+          mensagem: string
+        }
       >(`${API_ENDPOINTS.COURSES}/${codigo}/modulos`)
       const list: Module[] = Array.isArray(raw) ? raw : raw.items || []
       return list.map(m => ({

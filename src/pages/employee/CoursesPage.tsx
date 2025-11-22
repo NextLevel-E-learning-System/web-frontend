@@ -240,10 +240,10 @@ export default function Courses() {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
     return result
       ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
       : null
   }
 
@@ -274,13 +274,13 @@ export default function Courses() {
       const rgb = hexToRgb(category.cor_hex)
       const gradientColors = rgb
         ? {
-            gradientFrom: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
-            gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
-          }
+          gradientFrom: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
+          gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
+        }
         : {
-            gradientFrom: '#6b7280',
-            gradientTo: '#374151',
-          }
+          gradientFrom: '#6b7280',
+          gradientTo: '#374151',
+        }
 
       // Conta cursos TOTAIS da categoria (sem filtros aplicados)
       const courseCount =
@@ -564,10 +564,10 @@ export default function Courses() {
                   userProgress={
                     userProgress
                       ? {
-                          progresso_percentual:
+                        progresso_percentual:
                             userProgress.progresso_percentual,
-                          status: userProgress.status,
-                        }
+                        status: userProgress.status,
+                      }
                       : undefined
                   }
                   calculateTimeLeft={calculateTimeLeft}

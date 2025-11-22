@@ -12,19 +12,19 @@ interface LiquidFillGaugeSeries {
   data: (
     | number
     | {
-        name?: string
-        value: number
-        direction?: 'left' | 'right'
+      name?: string
+      value: number
+      direction?: 'left' | 'right'
+      itemStyle?: {
+        color?: string
+        opacity?: number
+      }
+      emphasis?: {
         itemStyle?: {
-          color?: string
           opacity?: number
         }
-        emphasis?: {
-          itemStyle?: {
-            opacity?: number
-          }
-        }
       }
+    }
   )[]
   silent?: boolean
 

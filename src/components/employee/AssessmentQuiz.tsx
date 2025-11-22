@@ -553,18 +553,18 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
           currentTab === 'questoes' &&
           tentativaStarted &&
           assessmentData && (
-            <QuizContent
-              assessmentData={assessmentData}
-              currentQuestionIndex={currentQuestionIndex}
-              setCurrentQuestionIndex={setCurrentQuestionIndex}
-              respostas={respostas}
-              handleAnswerChange={handleAnswerChange}
-              timeRemaining={timeRemaining}
-              formatTime={formatTime}
-              isSubmitting={isSubmitting}
-              handleSubmit={handleSubmit}
-            />
-          )}
+          <QuizContent
+            assessmentData={assessmentData}
+            currentQuestionIndex={currentQuestionIndex}
+            setCurrentQuestionIndex={setCurrentQuestionIndex}
+            respostas={respostas}
+            handleAnswerChange={handleAnswerChange}
+            timeRemaining={timeRemaining}
+            formatTime={formatTime}
+            isSubmitting={isSubmitting}
+            handleSubmit={handleSubmit}
+          />
+        )}
 
         {/* Aba de Revisão */}
         {showReviewTab &&

@@ -124,10 +124,10 @@ export function useStartModule() {
           return old.map(modulo =>
             modulo.modulo_id === variables.moduleId
               ? {
-                  ...modulo,
-                  data_inicio: data.progresso_modulo.criado_em,
-                  liberado: true,
-                }
+                ...modulo,
+                data_inicio: data.progresso_modulo.criado_em,
+                liberado: true,
+              }
               : modulo
           )
         }
@@ -172,10 +172,10 @@ export function useCompleteModule() {
           return old.map(modulo =>
             modulo.modulo_id === variables.moduleId
               ? {
-                  ...modulo,
-                  concluido: true,
-                  data_conclusao: new Date().toISOString(),
-                }
+                ...modulo,
+                concluido: true,
+                data_conclusao: new Date().toISOString(),
+              }
               : modulo
           )
         }

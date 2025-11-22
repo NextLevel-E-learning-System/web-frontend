@@ -378,96 +378,96 @@ export default function ModuleAssessmentsPanel({
                                   {/* Mostrar opções de resposta para múltipla escolha */}
                                   {q.tipo === 'MULTIPLA_ESCOLHA' &&
                                     q.opcoes_resposta && (
-                                      <Box sx={{ mt: 1 }}>
-                                        <Typography
-                                          variant='caption'
-                                          color='text.secondary'
-                                          sx={{ display: 'block', mb: 0.5 }}
-                                        >
+                                    <Box sx={{ mt: 1 }}>
+                                      <Typography
+                                        variant='caption'
+                                        color='text.secondary'
+                                        sx={{ display: 'block', mb: 0.5 }}
+                                      >
                                           Opções:
-                                        </Typography>
-                                        <Stack gap={0.5}>
-                                          {q.opcoes_resposta.map(
-                                            (opcao: string, idx: number) => (
-                                              <Box
-                                                key={idx}
+                                      </Typography>
+                                      <Stack gap={0.5}>
+                                        {q.opcoes_resposta.map(
+                                          (opcao: string, idx: number) => (
+                                            <Box
+                                              key={idx}
+                                              sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                              }}
+                                            >
+                                              <Chip
+                                                size='small'
+                                                label={String.fromCharCode(
+                                                  65 + idx
+                                                )} // A, B, C, D...
+                                                variant={
+                                                  opcao === q.resposta_correta
+                                                    ? 'filled'
+                                                    : 'outlined'
+                                                }
+                                                color={
+                                                  opcao === q.resposta_correta
+                                                    ? 'success'
+                                                    : 'default'
+                                                }
                                                 sx={{
-                                                  display: 'flex',
-                                                  alignItems: 'center',
-                                                  gap: 1,
+                                                  minWidth: 32,
+                                                  fontSize: '0.7rem',
                                                 }}
-                                              >
-                                                <Chip
-                                                  size='small'
-                                                  label={String.fromCharCode(
-                                                    65 + idx
-                                                  )} // A, B, C, D...
-                                                  variant={
-                                                    opcao === q.resposta_correta
-                                                      ? 'filled'
-                                                      : 'outlined'
-                                                  }
-                                                  color={
-                                                    opcao === q.resposta_correta
-                                                      ? 'success'
-                                                      : 'default'
-                                                  }
-                                                  sx={{
-                                                    minWidth: 32,
-                                                    fontSize: '0.7rem',
-                                                  }}
-                                                />
-                                                <Typography
-                                                  variant='caption'
-                                                  sx={{
-                                                    fontWeight:
+                                              />
+                                              <Typography
+                                                variant='caption'
+                                                sx={{
+                                                  fontWeight:
                                                       opcao ===
                                                       q.resposta_correta
                                                         ? 600
                                                         : 400,
-                                                    color:
+                                                  color:
                                                       opcao ===
                                                       q.resposta_correta
                                                         ? 'success.main'
                                                         : 'text.secondary',
-                                                  }}
-                                                >
-                                                  {opcao}
-                                                </Typography>
-                                              </Box>
-                                            )
-                                          )}
-                                        </Stack>
-                                      </Box>
-                                    )}
+                                                }}
+                                              >
+                                                {opcao}
+                                              </Typography>
+                                            </Box>
+                                          )
+                                        )}
+                                      </Stack>
+                                    </Box>
+                                  )}
 
                                   {/* Mostrar resposta para Verdadeiro/Falso */}
                                   {q.tipo === 'VERDADEIRO_FALSO' &&
                                     q.resposta_correta && (
-                                      <Box sx={{ mt: 1 }}>
-                                        <Typography
-                                          variant='caption'
-                                          color='text.secondary'
-                                          sx={{ display: 'block', mb: 0.5 }}
-                                        >
+                                    <Box sx={{ mt: 1 }}>
+                                      <Typography
+                                        variant='caption'
+                                        color='text.secondary'
+                                        sx={{ display: 'block', mb: 0.5 }}
+                                      >
                                           Resposta correta:
-                                        </Typography>
-                                        <Chip
-                                          size='small'
-                                          label={q.resposta_correta}
-                                          color={
-                                            q.resposta_correta === 'Verdadeiro'
-                                              ? 'success'
-                                              : 'error'
-                                          }
-                                          variant='filled'
-                                          sx={{
-                                            fontWeight: 600,
-                                            fontSize: '0.75rem',
-                                          }}
-                                        />
-                                      </Box>
-                                    )}
+                                      </Typography>
+                                      <Chip
+                                        size='small'
+                                        label={q.resposta_correta}
+                                        color={
+                                          q.resposta_correta === 'Verdadeiro'
+                                            ? 'success'
+                                            : 'error'
+                                        }
+                                        variant='filled'
+                                        sx={{
+                                          fontWeight: 600,
+                                          fontSize: '0.75rem',
+                                        }}
+                                      />
+                                    </Box>
+                                  )}
 
                                   {/* Para dissertativa */}
                                   {q.tipo === 'DISSERTATIVA' && (

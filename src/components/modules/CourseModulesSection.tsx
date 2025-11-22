@@ -256,19 +256,19 @@ export default function CourseModulesSection({
                   )}
                   {currentTab === 'materiais' &&
                     allowedTabs.includes('materiais') && (
-                      <ModuleMaterialsPanel
-                        moduloId={m.id}
-                        isViewOnly={isViewOnly}
-                      />
-                    )}
+                    <ModuleMaterialsPanel
+                      moduloId={m.id}
+                      isViewOnly={isViewOnly}
+                    />
+                  )}
                   {currentTab === 'avaliacoes' &&
                     allowedTabs.includes('avaliacoes') && (
-                      <ModuleAssessmentsPanel
-                        cursoCodigo={cursoCodigo}
-                        moduloId={m.id}
-                        isViewOnly={isViewOnly}
-                      />
-                    )}
+                    <ModuleAssessmentsPanel
+                      cursoCodigo={cursoCodigo}
+                      moduloId={m.id}
+                      isViewOnly={isViewOnly}
+                    />
+                  )}
                 </AccordionDetails>
               </Accordion>
             )

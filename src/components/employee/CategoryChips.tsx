@@ -68,9 +68,9 @@ export default function CategoryChips({
                 : '2px solid transparent',
               '&:hover': onCategorySelect
                 ? {
-                    transform: 'scale(1.02)',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                  }
+                  transform: 'scale(1.02)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                }
                 : {},
             }}
           >
