@@ -2,12 +2,10 @@
   "name": "web-frontend",
   "private": true,
   "type": "module",
+  "version": "0.1.0",
   "scripts": {
-    "dev": "vite --host --open",
-    "build": "vite build",
-    "build:dev": "tsc && vite build --mode development",
-    "build:prd": "tsc && vite build --mode production",
-    "start": "vite preview --port 3000",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
