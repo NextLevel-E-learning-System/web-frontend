@@ -140,31 +140,22 @@ export default function AdminDashboard() {
                               </Typography>
                             </TableCell>
                             <TableCell align='center'>
-                              <Chip
-                                label={dept.total_categorias.toString()}
-                                size='small'
-                                color='default'
-                                variant='outlined'
-                                icon={<Category fontSize='small' />}
-                              />
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                <Category fontSize='small' color='action' />
+                                <Typography variant='body2'>{dept.total_categorias}</Typography>
+                              </Box>
                             </TableCell>
                             <TableCell align='center'>
-                              <Chip
-                                label={dept.funcionarios_ativos.toString()}
-                                size='small'
-                                color={dept.funcionarios_ativos > 0 ? 'success' : 'default'}
-                                variant='outlined'
-                                icon={<People fontSize='small' />}
-                              />
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                <People fontSize='small' color='success' />
+                                <Typography variant='body2'>{dept.funcionarios_ativos}</Typography>
+                              </Box>
                             </TableCell>
                             <TableCell align='center'>
-                              <Chip
-                                label={dept.total_cursos.toString()}
-                                size='small'
-                                color={dept.total_cursos > 0 ? 'primary' : 'default'}
-                                variant='outlined'
-                                icon={<MenuBook fontSize='small' />}
-                              />
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                <MenuBook fontSize='small' color='primary' />
+                                <Typography variant='body2'>{dept.total_cursos}</Typography>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         )
