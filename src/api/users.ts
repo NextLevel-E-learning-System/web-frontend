@@ -107,13 +107,33 @@ export interface InstructorUpdate {
 
 export interface DashboardInstrutor {
   tipo_dashboard: 'instrutor'
-  metricas: {
+  metricas_gerais: {
     total_cursos: number
     total_alunos: number
     total_inscricoes: number
     total_conclusoes: number
     taxa_conclusao_geral: number
   }
+  metricas_departamento: {
+    departamento_codigo: string
+    departamento_nome: string
+    total_cursos: number
+    total_categorias: number
+    categorias: {
+      categoria_id: string
+      categoria_nome: string
+      total_cursos: number
+      cursos: {
+        codigo: string
+        titulo: string
+        descricao: string | null
+        total_inscricoes: number
+        total_conclusoes: number
+        total_alunos: number
+        taxa_conclusao: number
+      }[]
+    }[]
+  }[]
 }
 
 export interface DashboardAdmin {
@@ -123,41 +143,33 @@ export interface DashboardAdmin {
     total_cursos: number
     total_instrutores: number
   }
-  cursos_por_departamento: {
+  metricas_departamento: {
     departamento_codigo: string
     departamento_nome: string
-    total_cursos: number
-  }[]
-  engajamento_departamentos: {
-    codigo: string
-    nome: string
     funcionarios_ativos: number
-  }[]
-  cursos_populares: {
-    codigo: string
-    titulo: string
-    total_inscricoes: number
-    total_conclusoes: number
-    taxa_conclusao: number
+    total_cursos: number
+    total_categorias: number
+    categorias: {
+      categoria_id: string
+      categoria_nome: string
+      total_cursos: number
+      cursos: {
+        codigo: string
+        titulo: string
+        instrutor_nome: string | null
+        total_inscricoes: number
+        total_conclusoes: number
+        taxa_conclusao: number
+      }[]
+    }[]
   }[]
 }
 
 export type DashboardData = DashboardInstrutor | DashboardAdmin
 
 export interface DashboardResponse {
-  usuario: {
-    id: string
-    nome: string
-    email: string
-    departamento?: string
-    cargo?: string
-    nivel: string
-    xp_total: number
-    role: string
-  }
-  notificacoes_nao_lidas: number
-  notificacoes: unknown[]
   dashboard: DashboardData
+  mensagem: string
 }
 
 export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' 

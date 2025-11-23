@@ -48,6 +48,12 @@ export default function AdminDashboard() {
     )
   }
 
+  // Calcular cursos populares a partir dos dados hierárquicos
+  const cursosPopulares = adminData?.metricas_departamento
+    .flatMap(dept => dept.categorias.flatMap(cat => cat.cursos))
+    .sort((a, b) => b.total_inscricoes - a.total_inscricoes)
+    .slice(0, 5) || []
+
   return (
     <DashboardLayout items={navigationItems}>
       {/* Renderizar dashboard de ADMIN */}
@@ -114,7 +120,7 @@ export default function AdminDashboard() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {(adminData?.cursos_por_departamento || []).map(
+                      {(adminData?.metricas_departamento || []).map(
                         dept => (
                           <TableRow key={dept.departamento_codigo} hover>
                             <TableCell>
@@ -167,13 +173,13 @@ export default function AdminDashboard() {
                 </Typography>
                 <DepartmentBarChart
                   data={
-                    (adminData?.engajamento_departamentos || []).map(
+                    (adminData?.metricas_departamento || []).map(
                       d => d.funcionarios_ativos
                     ) || []
                   }
                   labels={
-                    (adminData?.engajamento_departamentos || []).map(
-                      d => d.codigo
+                    (adminData?.metricas_departamento || []).map(
+                      d => d.departamento_codigo
                     ) || []
                   }
                 />
@@ -194,18 +200,18 @@ export default function AdminDashboard() {
                 </Typography>
                 <DepartmentPieChart
                   data={
-                    (adminData?.engajamento_departamentos || []).map(
+                    (adminData?.metricas_departamento || []).map(
                       d => d.funcionarios_ativos
                     ) || []
                   }
                   labels={
-                    (adminData?.engajamento_departamentos || []).map(
-                      d => d.codigo
+                    (adminData?.metricas_departamento || []).map(
+                      d => d.departamento_codigo
                     ) || []
                   }
                   departmentNames={
-                    (adminData?.engajamento_departamentos || []).map(
-                      d => d.nome
+                    (adminData?.metricas_departamento || []).map(
+                      d => d.departamento_nome
                     ) || []
                   }
                 />
@@ -237,18 +243,18 @@ export default function AdminDashboard() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {(adminData?.engajamento_departamentos || []).map(
+                      {(adminData?.metricas_departamento || []).map(
                         dept => (
-                          <TableRow key={dept.codigo} hover>
+                          <TableRow key={dept.departamento_codigo} hover>
                             <TableCell>
                               <Typography variant='body2' fontWeight={500}>
-                                {dept.nome}
+                                {dept.departamento_nome}
                               </Typography>
                               <Typography
                                 variant='caption'
                                 color='text.secondary'
                               >
-                                {dept.codigo}
+                                {dept.departamento_codigo}
                               </Typography>
                             </TableCell>
 
@@ -275,7 +281,7 @@ export default function AdminDashboard() {
           </Grid>
 
           {/* Cursos Populares - Apenas para ADMIN */}
-          {adminData?.cursos_populares && (
+          {cursosPopulares && (
             <Grid container spacing={3}>
               <Grid size={{ xs: 12 }}>
                 <Paper
@@ -294,7 +300,7 @@ export default function AdminDashboard() {
                   >
                     Cursos Populares
                   </Typography>
-                  {adminData.cursos_populares.length > 0 ? (
+                  {cursosPopulares.length > 0 ? (
                     <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                       <Table>
                         <TableHead>
@@ -305,7 +311,7 @@ export default function AdminDashboard() {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {adminData.cursos_populares.map(
+                          {cursosPopulares.map(
                             (curso: any, index: number) => (
                               <TableRow key={curso.codigo || index} hover>
                                 <TableCell>
