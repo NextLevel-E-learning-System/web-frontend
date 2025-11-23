@@ -121,9 +121,13 @@ export interface DashboardAdmin {
   metricas_gerais: {
     funcionarios_ativos: number
     total_cursos: number
-    taxa_conclusao_media: number
-    total_inscricoes: number
+    total_instrutores: number
   }
+  cursos_por_departamento: {
+    departamento_codigo: string
+    departamento_nome: string
+    total_cursos: number
+  }[]
   engajamento_departamentos: {
     codigo: string
     nome: string

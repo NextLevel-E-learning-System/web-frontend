@@ -12,7 +12,7 @@ import {
   Chip,
   CircularProgress
 } from '@mui/material'
-import { People, School, CheckCircle } from '@mui/icons-material'
+import { People, School, Person } from '@mui/icons-material'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import { useDashboard, type DashboardAdmin } from '@/api/users'
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
         >
           {/* Métricas Principais - ADMIN */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <MetricCard
                 label='Funcionários Ativos'
                 value={
@@ -70,33 +70,86 @@ export default function AdminDashboard() {
                 icon={<People color='info' />}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <MetricCard
+                label='Total de Cursos'
                 value={
                   adminData?.metricas_gerais?.total_cursos?.toString() || '0'
                 }
                 icon={<School color='info' />}
-                label='Total de Cursos'
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
               <MetricCard
-                label='Taxa de Conclusão'
-                value={`${adminData?.metricas_gerais?.taxa_conclusao_media || 0}%`}
-                icon={<CheckCircle color='success' />}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <MetricCard
-                label='Total de Inscrições'
+                label='Total de Instrutores'
                 value={
-                  adminData?.metricas_gerais?.total_inscricoes?.toString() ||
-                  '0'
+                  adminData?.metricas_gerais?.total_instrutores?.toString() || '0'
                 }
-                icon={<School color='primary' />}
+                icon={<Person color='success' />}
               />
             </Grid>
           </Grid>
+
+          {/* Cursos por Departamento */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12 }}>
+              <Paper
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  maxWidth: '100%',
+                  overflow: 'auto'
+                }}
+              >
+                <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  Cursos por Departamento
+                </Typography>
+                <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
+                  <Table size='small'>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Departamento</TableCell>
+                        <TableCell align='right'>Total de Cursos</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {(adminData?.cursos_por_departamento || []).map(
+                        dept => (
+                          <TableRow key={dept.departamento_codigo} hover>
+                            <TableCell>
+                              <Typography variant='body2' fontWeight={500}>
+                                {dept.departamento_nome}
+                              </Typography>
+                              <Typography
+                                variant='caption'
+                                color='text.secondary'
+                              >
+                                {dept.departamento_codigo}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align='right'>
+                              <Chip
+                                label={dept.total_cursos.toString()}
+                                size='small'
+                                color={
+                                  dept.total_cursos > 0
+                                    ? 'primary'
+                                    : 'default'
+                                }
+                                variant='outlined'
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            </Grid>
+          </Grid>
+
           {/* Gráficos */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, lg: 6 }}>
