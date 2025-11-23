@@ -11,11 +11,10 @@ import {
   TableRow,
   Chip,
   CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
+  Collapse,
+  IconButton
 } from '@mui/material'
-import { People, School, Person, ExpandMore, Category, MenuBook } from '@mui/icons-material'
+import { People, School, Person, KeyboardArrowDown, KeyboardArrowRight, Category, MenuBook } from '@mui/icons-material'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import { useDashboard, type DashboardAdmin } from '@/api/users'
@@ -28,6 +27,7 @@ export default function AdminDashboard() {
   const { navigationItems } = useDashboardLayout()
   const { data: dashboardResponse, isLoading } = useDashboard()
   const [expandedDept, setExpandedDept] = useState<string | false>(false)
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
 
   // Extrair dashboard dos dados da resposta
   const dashboard = dashboardResponse?.dashboard
@@ -53,8 +53,16 @@ export default function AdminDashboard() {
     )
   }
 
-  const handleAccordionChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
-    setExpandedDept(isExpanded ? panel : false)
+  const toggleDepartment = (deptCode: string) => {
+    setExpandedDept(expandedDept === deptCode ? false : deptCode)
+  }
+
+  const toggleCategory = (deptCode: string, catId: string) => {
+    const key = `${deptCode}_${catId}`
+    setExpandedCategories(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }))
   }
 
   return (
@@ -187,117 +195,184 @@ export default function AdminDashboard() {
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   Categorias e Cursos por Departamento
                 </Typography>
-                {(adminData?.metricas_departamento || []).map(dept => (
-                  <Accordion
-                    key={dept.departamento_codigo}
-                    expanded={expandedDept === dept.departamento_codigo}
-                    onChange={handleAccordionChange(dept.departamento_codigo)}
-                    sx={{ mb: 2 }}
-                  >
-                    <AccordionSummary
-                      expandIcon={<ExpandMore />}
-                      sx={{
-                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                        '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                        <Typography variant='subtitle1' fontWeight={600}>
-                          {dept.departamento_nome}
-                        </Typography>
-                        <Chip label={`${dept.total_categorias} categorias`} size='small' />
-                        <Chip label={`${dept.total_cursos} cursos`} size='small' color='primary' />
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      {dept.categorias.map(cat => (
-                        <Box key={cat.categoria_id} sx={{ mb: 3 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                            <Category color='action' />
-                            <Typography variant='subtitle2' fontWeight={600}>
-                              {cat.categoria_nome}
-                            </Typography>
-                            <Chip label={`${cat.total_cursos} cursos`} size='small' variant='outlined' />
-                          </Box>
+                <TableContainer>
+                  <Table size='small'>
+                    <TableHead>
+                      <TableRow>
 
-                          {cat.cursos.length > 0 ? (
-                            <TableContainer>
-                              <Table size='small'>
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell>Curso</TableCell>
-                                    <TableCell align='center'>Instrutor</TableCell>
-                                    <TableCell align='center'>Inscrições</TableCell>
-                                    <TableCell align='center'>Conclusões</TableCell>
-                                    <TableCell align='center'>Taxa</TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {cat.cursos.map(curso => (
-                                    <TableRow key={curso.codigo} hover>
-                                      <TableCell>
-                                        <Typography variant='body2' fontWeight={500}>
-                                          {curso.titulo}
-                                        </Typography>
-                                        <Typography variant='caption' color='text.secondary'>
-                                          {curso.codigo}
-                                        </Typography>
-                                      </TableCell>
-                                      <TableCell align='center'>
-                                        <Typography variant='body2'>
-                                          {curso.instrutor_nome || '-'}
-                                        </Typography>
-                                      </TableCell>
-                                      <TableCell align='center'>
-                                        <Chip
-                                          label={curso.total_inscricoes}
-                                          size='small'
-                                          variant='outlined'
-                                        />
-                                      </TableCell>
-                                      <TableCell align='center'>
-                                        <Chip
-                                          label={curso.total_conclusoes}
-                                          size='small'
-                                          variant='outlined'
-                                          color='success'
-                                        />
-                                      </TableCell>
-                                      <TableCell align='center'>
-                                        <Chip
-                                          label={`${curso.taxa_conclusao.toFixed(1)}%`}
-                                          size='small'
-                                          color={
-                                            curso.taxa_conclusao >= 70
-                                              ? 'success'
-                                              : curso.taxa_conclusao >= 40
-                                                ? 'warning'
-                                                : 'error'
-                                          }
-                                          variant='filled'
-                                        />
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                              </Table>
-                            </TableContainer>
-                          ) : (
-                            <Typography variant='body2' color='text.secondary' sx={{ ml: 4, fontStyle: 'italic' }}>
-                              Nenhum curso nesta categoria
-                            </Typography>
-                          )}
-                        </Box>
+                        <TableCell>Departamento</TableCell>
+                        <TableCell align='center'>Categorias</TableCell>
+                        <TableCell align='center'>Cursos</TableCell>
+                        <TableCell width={50}></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {(adminData?.metricas_departamento || []).map(dept => (
+                        <>
+                          {/* Linha do Departamento */}
+                          <TableRow 
+                            key={dept.departamento_codigo}
+                            hover
+                            sx={{ cursor: 'pointer', '& > *': { borderBottom: 'unset' } }}
+                            onClick={() => toggleDepartment(dept.departamento_codigo)}
+                          >
+                           
+                            <TableCell>
+                              <Typography variant='body2' fontWeight={600}>
+                                {dept.departamento_nome}
+                              </Typography>
+                              <Typography variant='caption' color='text.secondary'>
+                                {dept.departamento_codigo}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                <Category fontSize='small' color='action' />
+                                <Typography variant='body2'>{dept.total_categorias}</Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                <MenuBook fontSize='small' color='primary' />
+                                <Typography variant='body2'>{dept.total_cursos}</Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <IconButton size='small'>
+                                {expandedDept === dept.departamento_codigo ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+
+                          {/* Expansão: Categorias */}
+                          <TableRow>
+                            <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={4}>
+                              <Collapse in={expandedDept === dept.departamento_codigo} timeout='auto' unmountOnExit>
+                                <Box sx={{ margin: 2 }}>
+                                  <Table size='small'>
+                                    <TableHead>
+                                      <TableRow>
+                                        <TableCell>Categoria</TableCell>
+                                        <TableCell align='center'>Cursos</TableCell>
+                                        <TableCell width={50}></TableCell>
+                                      </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                      {dept.categorias.map(cat => (
+                                        <>
+                                          {/* Linha da Categoria */}
+                                          <TableRow
+                                            key={cat.categoria_id}
+                                            hover
+                                            sx={{ cursor: 'pointer', '& > *': { borderBottom: 'unset' } }}
+                                            onClick={() => toggleCategory(dept.departamento_codigo, cat.categoria_id)}
+                                          >
+                                            <TableCell>
+                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Category fontSize='small' color='action' />
+                                                <Typography variant='body2' fontWeight={500}>
+                                                  {cat.categoria_nome}
+                                                </Typography>
+                                              </Box>
+                                            </TableCell>
+                                            <TableCell align='center'>
+                                              <Typography variant='body2'>{cat.total_cursos}</Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                              <IconButton size='small'>
+                                                {expandedCategories[`${dept.departamento_codigo}_${cat.categoria_id}`] ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
+                                              </IconButton>
+                                            </TableCell>
+                                          </TableRow>
+
+                                          {/* Expansão: Cursos */}
+                                          <TableRow>
+                                            <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={3}>
+                                              <Collapse in={expandedCategories[`${dept.departamento_codigo}_${cat.categoria_id}`]} timeout='auto' unmountOnExit>
+                                                <Box sx={{ margin: 2 }}>
+                                                  {cat.cursos.length > 0 ? (
+                                                    <Table size='small'>
+                                                      <TableHead>
+                                                        <TableRow>
+                                                          <TableCell>Curso</TableCell>
+                                                          <TableCell align='center'>Instrutor</TableCell>
+                                                          <TableCell align='center'>Inscrições</TableCell>
+                                                          <TableCell align='center'>Conclusões</TableCell>
+                                                          <TableCell align='center'>Taxa de Conclusão</TableCell>
+                                                        </TableRow>
+                                                      </TableHead>
+                                                      <TableBody>
+                                                        {cat.cursos.map(curso => (
+                                                          <TableRow key={curso.codigo} hover>
+                                                            <TableCell>
+                                                              <Typography variant='body2' fontWeight={500}>
+                                                                {curso.titulo}
+                                                              </Typography>
+                                                              <Typography variant='caption' color='text.secondary'>
+                                                                {curso.codigo}
+                                                              </Typography>
+                                                            </TableCell>
+                                                            <TableCell align='center'>
+                                                              <Typography variant='body2'>
+                                                                {curso.instrutor_nome || '-'}
+                                                              </Typography>
+                                                            </TableCell>
+                                                            <TableCell align='center'>
+                                                              <Typography variant='body2'>{curso.total_inscricoes}</Typography>
+                                                            </TableCell>
+                                                            <TableCell align='center'>
+                                                              <Typography variant='body2'>{curso.total_conclusoes}</Typography>
+                                                            </TableCell>
+                                                            <TableCell align='center'>
+                                                              <Chip
+                                                                label={`${curso.taxa_conclusao.toFixed(1)}%`}
+                                                                size='small'
+                                                                color={
+                                                                  curso.taxa_conclusao >= 70
+                                                                    ? 'success'
+                                                                    : curso.taxa_conclusao >= 40
+                                                                      ? 'warning'
+                                                                      : 'error'
+                                                                }
+                                                                variant='filled'
+                                                              />
+                                                            </TableCell>
+                                                          </TableRow>
+                                                        ))}
+                                                      </TableBody>
+                                                    </Table>
+                                                  ) : (
+                                                    <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic', py: 1 }}>
+                                                      Nenhum curso nesta categoria
+                                                    </Typography>
+                                                  )}
+                                                </Box>
+                                              </Collapse>
+                                            </TableCell>
+                                          </TableRow>
+                                        </>
+                                      ))}
+
+                                      {dept.categorias.length === 0 && (
+                                        <TableRow>
+                                          <TableCell colSpan={3}>
+                                            <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic', py: 1 }}>
+                                              Nenhuma categoria neste departamento
+                                            </Typography>
+                                          </TableCell>
+                                        </TableRow>
+                                      )}
+                                    </TableBody>
+                                  </Table>
+                                </Box>
+                              </Collapse>
+                            </TableCell>
+                          </TableRow>
+                        </>
                       ))}
-
-                      {dept.categorias.length === 0 && (
-                        <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic' }}>
-                          Nenhuma categoria neste departamento
-                        </Typography>
-                      )}
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </Paper>
             </Grid>
           </Grid>
