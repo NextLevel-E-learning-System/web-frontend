@@ -165,7 +165,7 @@ export interface CatalogFilters {
   instrutor?: string
   nivel?: string
   duracaoMax?: number
-  departamento?: string // Para GERENTE filtrar por departamento
+  departamento?: string 
   ativo?: boolean // Para INSTRUTOR filtrar por status
 }
 

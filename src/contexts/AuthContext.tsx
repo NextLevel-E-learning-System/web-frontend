@@ -7,7 +7,7 @@ import {
 } from 'react'
 
 // Types
-export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE'
+export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN'
 
 export interface User {
   id: string

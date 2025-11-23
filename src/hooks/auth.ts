@@ -28,7 +28,6 @@ export interface RegisterData {
 // Mapeamento de roles para rotas
 const ROLE_ROUTES: Record<string, string> = {
   ADMIN: '/dashboard/admin',
-  GERENTE: '/dashboard/admin',
   INSTRUTOR: '/dashboard/instrutor',
   FUNCIONARIO: '/dashboard/funcionario'
 }

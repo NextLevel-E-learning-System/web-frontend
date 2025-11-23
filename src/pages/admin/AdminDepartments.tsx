@@ -91,9 +91,8 @@ export default function AdminDepartments() {
     return gestor ? gestor.nome : `ID: ${gestorId}`
   }
 
-  // Filtrar apenas funcionários que podem ser gestores (GERENTE, ADMIN)
   const funcionariosGestores = funcionarios.filter(
-    f => f.role === 'GERENTE' || f.role === 'ADMIN'
+    f =>  f.role === 'ADMIN'
   )
 
   // Filtrar departamentos por status

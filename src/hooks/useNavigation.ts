@@ -20,25 +20,6 @@ const NAV_INSTRUTOR: NavItem[] = [
   { label: 'Turmas', href: '/turmas' }
 ]
 
-const NAV_GERENTE: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard/admin' },
-  {
-    label: 'Cursos',
-    children: [
-      { label: 'Catálogo de Cursos', href: '/cursos' },
-      { label: 'Gerenciar Cursos', href: '/gerenciar/cursos' }
-    ]
-  },
-  {
-    label: 'Usuários',
-    children: [
-      { label: 'Funcionários', href: '/gerenciar/funcionarios' },
-      { label: 'Instrutores', href: '/gerenciar/instrutores' }
-    ]
-  },
-  { label: 'Turmas', href: '/turmas' }
-]
-
 const NAV_ADMIN: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard/admin' },
   { label: 'Departamentos', href: '/gerenciar/departamentos' },
@@ -57,7 +38,6 @@ const NAV_ADMIN: NavItem[] = [
 const NAV_BY_ROLE: Record<string, NavItem[]> = {
   FUNCIONARIO: NAV_FUNCIONARIO,
   INSTRUTOR: NAV_INSTRUTOR,
-  GERENTE: NAV_GERENTE,
   ADMIN: NAV_ADMIN
 }
 
@@ -73,10 +53,9 @@ export function useNavigation() {
     isAluno: userRole === 'FUNCIONARIO',
     isInstrutor: userRole === 'INSTRUTOR',
     isAdmin: userRole === 'ADMIN',
-    isGerente: userRole === 'GERENTE',
     canManageCourses: ['INSTRUTOR', 'ADMIN'].includes(userRole),
-    canManageDepartment: ['GERENTE', 'ADMIN'].includes(userRole),
-    canViewReports: ['GERENTE', 'ADMIN'].includes(userRole)
+    canManageDepartment: ['ADMIN'].includes(userRole),
+    canViewReports: ['ADMIN'].includes(userRole)
   }
 }
 

@@ -13,8 +13,7 @@ interface ProtectedRouteProps {
 const ROLE_REDIRECTS: Record<string, string> = {
   FUNCIONARIO: '/dashboard/funcionario',
   INSTRUTOR: '/dashboard/instrutor',
-  ADMIN: '/dashboard/admin',
-  GERENTE: '/dashboard/admin'
+  ADMIN: '/dashboard/admin'
 }
 
 const getRedirectByRole = (role: string) =>

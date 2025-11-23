@@ -48,7 +48,7 @@ export const App = () => (
             <Route
               path='/dashboard/admin'
               element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+                <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminDashboard />
                 </ProtectedRoute>
               }
@@ -72,7 +72,7 @@ export const App = () => (
             <Route
               path='/gerenciar/funcionarios'
               element={
-                <ProtectedRoute allowedRoles={['ADMIN', 'GERENTE']}>
+                <ProtectedRoute allowedRoles={['ADMIN']}>
                   <AdminUsers />
                 </ProtectedRoute>
               }
@@ -89,7 +89,7 @@ export const App = () => (
               path='/gerenciar/cursos'
               element={
                 <ProtectedRoute
-                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
+                  allowedRoles={['ADMIN', 'INSTRUTOR']}
                 >
                   <AdminCourses />
                 </ProtectedRoute>
@@ -99,7 +99,7 @@ export const App = () => (
               path='/gerenciar/cursos/novo-curso'
               element={
                 <ProtectedRoute
-                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
+                  allowedRoles={['ADMIN', 'INSTRUTOR']}
                 >
                   <CourseEditorPage />
                 </ProtectedRoute>
@@ -109,7 +109,7 @@ export const App = () => (
               path='/gerenciar/cursos/:codigo'
               element={
                 <ProtectedRoute
-                  allowedRoles={['ADMIN', 'GERENTE', 'INSTRUTOR']}
+                  allowedRoles={['ADMIN', 'INSTRUTOR']}
                 >
                   <CourseEditorPage />
                 </ProtectedRoute>
@@ -127,7 +127,7 @@ export const App = () => (
               path='/turmas'
               element={
                 <ProtectedRoute
-                  allowedRoles={['INSTRUTOR', 'ADMIN', 'GERENTE']}
+                  allowedRoles={['INSTRUTOR', 'ADMIN' ]}
                 >
                   <ProgressoAlunos />
                 </ProtectedRoute>

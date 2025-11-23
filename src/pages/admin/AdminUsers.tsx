@@ -58,7 +58,6 @@ interface UserForm {
 export default function AdminUsers() {
   const { navigationItems } = useNavigation()
   const { user } = useAuth()
-  const isGerente = user?.role === 'GERENTE'
   const {
     data: usuariosResponse,
     isLoading: loadingUsers,
@@ -274,16 +273,12 @@ export default function AdminUsers() {
     [getDepartmentName, getCargoName, handleEdit, handleToggleAtivo]
   )
 
-  // Filtrar usuários: GERENTE vê apenas do seu departamento, ADMIN vê todos
   const allUsers = useMemo(() => {
     if (!usuarios) return []
 
-    if (isGerente && user?.departamento_id) {
-      return usuarios.filter(u => u.departamento_id === user.departamento_id)
-    }
 
     return usuarios
-  }, [usuarios, isGerente, user?.departamento_id])
+  }, [usuarios, user?.departamento_id])
 
   // Filtrar usuários por departamento e status
   const filtered = useMemo(() => {
@@ -687,7 +682,6 @@ export default function AdminUsers() {
                     <MenuItem value='FUNCIONARIO'>Funcionário</MenuItem>
                     <MenuItem value='INSTRUTOR'>Instrutor</MenuItem>
                     <MenuItem value='ADMIN'>Administrador</MenuItem>
-                    <MenuItem value='GERENTE'>Gestor</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>

@@ -42,7 +42,7 @@ export interface Funcionario {
   email: string
   departamento_id?: string | null // references departamentos(codigo)
   cargo_nome?: string | null // references cargos(nome) - não cargo_id!
-  role: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'FUNCIONARIO' // Role simplificado
+  role: 'ADMIN' | 'INSTRUTOR' | 'FUNCIONARIO' // Role simplificado
   xp_total: number
   nivel: string
   ativo: boolean
@@ -57,7 +57,7 @@ export interface FuncionarioRegister {
   email: string
   departamento_id?: string | null
   cargo_nome?: string | null // Corrigido para cargo_nome
-  role?: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'FUNCIONARIO' // Role opcional (default: FUNCIONARIO)
+  role?: 'ADMIN' | 'INSTRUTOR' | 'FUNCIONARIO' // Role opcional (default: FUNCIONARIO)
 }
 
 export interface UpdateFuncionarioInput {
@@ -65,7 +65,7 @@ export interface UpdateFuncionarioInput {
   email?: string
   departamento_id?: string
   cargo_nome?: string
-  role?: 'ADMIN' | 'INSTRUTOR' | 'GERENTE' | 'FUNCIONARIO'
+  role?: 'ADMIN' | 'INSTRUTOR' | 'FUNCIONARIO'
   ativo?: boolean
 }
 
@@ -110,56 +110,35 @@ export interface DashboardInstrutor {
   metricas: {
     total_cursos: number
     total_alunos: number
+    total_inscricoes: number
+    total_conclusoes: number
     taxa_conclusao_geral: number
-    avaliacao_media_geral: number
-    pendentes_correcao: number
   }
-}
-
-export interface DashboardGerente {
-  tipo_dashboard: 'gerente'
-  metricas_gerais: {
-    total_funcionarios: number
-    funcionarios_ativos: number
-    alunos_ativos?: number
-    total_cursos: number
-    taxa_conclusao_media: number
-    inscricoes_30d?: number
-  }
-  engajamento_departamentos: {
-    codigo: string
-    nome: string
-    total_funcionarios: number
-    xp_medio: number
-    funcionarios_ativos: number
-  }[]
 }
 
 export interface DashboardAdmin {
   tipo_dashboard: 'administrador'
   metricas_gerais: {
-    total_funcionarios: number
     funcionarios_ativos: number
-    alunos_ativos: number
-    total_instrutores: number
     total_cursos: number
     taxa_conclusao_media: number
-    inscricoes_30d: number
+    total_inscricoes: number
   }
   engajamento_departamentos: {
     codigo: string
     nome: string
-    total_funcionarios: number
-    xp_medio: number
     funcionarios_ativos: number
   }[]
-  cursos_populares: unknown[]
+  cursos_populares: {
+    codigo: string
+    titulo: string
+    total_inscricoes: number
+    total_conclusoes: number
+    taxa_conclusao: number
+  }[]
 }
 
-export type DashboardData =
-  | DashboardInstrutor
-  | DashboardGerente
-  | DashboardAdmin
+export type DashboardData = DashboardInstrutor | DashboardAdmin
 
 export interface DashboardResponse {
   usuario: {
@@ -177,7 +156,7 @@ export interface DashboardResponse {
   dashboard: DashboardData
 }
 
-export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' | 'GERENTE'
+export type UserRole = 'FUNCIONARIO' | 'INSTRUTOR' | 'ADMIN' 
 
 // Hooks para Departamentos
 export function useListarDepartamentos() {

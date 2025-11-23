@@ -16,11 +16,7 @@ import {
 import { People, School, CheckCircle } from '@mui/icons-material'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
-import {
-  useDashboard,
-  type DashboardAdmin,
-  type DashboardGerente
-} from '@/api/users'
+import { useDashboard, type DashboardAdmin } from '@/api/users'
 import MetricCard from '@/components/common/StatCard'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useDashboardLayout from '@/hooks/useDashboardLayout'
@@ -32,14 +28,10 @@ export default function AdminDashboard() {
   // Extrair dashboard dos dados da resposta
   const dashboard = dashboardResponse?.dashboard
 
-  // Type guards para diferentes tipos de dashboard
+  // Type guard para dashboard de admin
   const adminData =
     dashboard?.tipo_dashboard === 'administrador'
       ? (dashboard as DashboardAdmin)
-      : null
-  const gerenteData =
-    dashboard?.tipo_dashboard === 'gerente'
-      ? (dashboard as DashboardGerente)
       : null
 
   if (isLoading) {
@@ -59,44 +51,30 @@ export default function AdminDashboard() {
 
   return (
     <DashboardLayout items={navigationItems}>
-      {/* Renderizar dashboard de ADMIN ou GERENTE */}
-      {(adminData || gerenteData) && (
+      {/* Renderizar dashboard de ADMIN */}
+      {adminData && (
         <Box
           sx={{
             maxWidth: '100%',
             overflow: 'hidden'
           }}
         >
-          {/* Métricas Principais - ADMIN/GERENTE */}
+          {/* Métricas Principais - ADMIN */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 label='Funcionários Ativos'
                 value={
-                  (
-                    adminData?.metricas_gerais || gerenteData?.metricas_gerais
-                  )?.funcionarios_ativos?.toString() || '0'
+                  adminData?.metricas_gerais?.funcionarios_ativos?.toString() ||
+                  '0'
                 }
                 icon={<People color='info' />}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
-                icon={<School color='info' />}
                 value={
-                  (
-                    adminData?.metricas_gerais || gerenteData?.metricas_gerais
-                  )?.alunos_ativos?.toString() || '0'
-                }
-                label='Total de Funcionários'
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <MetricCard
-                value={
-                  (
-                    adminData?.metricas_gerais || gerenteData?.metricas_gerais
-                  )?.total_cursos?.toString() || '0'
+                  adminData?.metricas_gerais?.total_cursos?.toString() || '0'
                 }
                 icon={<School color='info' />}
                 label='Total de Cursos'
@@ -105,18 +83,21 @@ export default function AdminDashboard() {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <MetricCard
                 label='Taxa de Conclusão'
-                value={`${(adminData?.metricas_gerais || gerenteData?.metricas_gerais)?.taxa_conclusao_media || 0}%`}
+                value={`${adminData?.metricas_gerais?.taxa_conclusao_media || 0}%`}
                 icon={<CheckCircle color='success' />}
               />
             </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <MetricCard
+                label='Total de Inscrições'
+                value={
+                  adminData?.metricas_gerais?.total_inscricoes?.toString() ||
+                  '0'
+                }
+                icon={<School color='primary' />}
+              />
+            </Grid>
           </Grid>
-          {/* Alert para Gerente */}
-          {gerenteData && (
-            <Alert severity='info' sx={{ mb: 3 }}>
-              Visualizando dados filtrados do seu departamento
-            </Alert>
-          )}
-
           {/* Gráficos */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12, lg: 6 }}>
@@ -134,18 +115,14 @@ export default function AdminDashboard() {
                 </Typography>
                 <DepartmentBarChart
                   data={
-                    (
-                      adminData?.engajamento_departamentos ||
-                      gerenteData?.engajamento_departamentos ||
-                      []
-                    ).map(d => d.funcionarios_ativos) || []
+                    (adminData?.engajamento_departamentos || []).map(
+                      d => d.funcionarios_ativos
+                    ) || []
                   }
                   labels={
-                    (
-                      adminData?.engajamento_departamentos ||
-                      gerenteData?.engajamento_departamentos ||
-                      []
-                    ).map(d => d.codigo) || []
+                    (adminData?.engajamento_departamentos || []).map(
+                      d => d.codigo
+                    ) || []
                   }
                 />
               </Paper>
@@ -161,29 +138,23 @@ export default function AdminDashboard() {
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  XP Médio por Departamento
+                  Distribuição de Funcionários Ativos
                 </Typography>
                 <DepartmentPieChart
                   data={
-                    (
-                      adminData?.engajamento_departamentos ||
-                      gerenteData?.engajamento_departamentos ||
-                      []
-                    ).map(d => d.xp_medio) || []
+                    (adminData?.engajamento_departamentos || []).map(
+                      d => d.funcionarios_ativos
+                    ) || []
                   }
                   labels={
-                    (
-                      adminData?.engajamento_departamentos ||
-                      gerenteData?.engajamento_departamentos ||
-                      []
-                    ).map(d => d.codigo) || []
+                    (adminData?.engajamento_departamentos || []).map(
+                      d => d.codigo
+                    ) || []
                   }
                   departmentNames={
-                    (
-                      adminData?.engajamento_departamentos ||
-                      gerenteData?.engajamento_departamentos ||
-                      []
-                    ).map(d => d.nome) || []
+                    (adminData?.engajamento_departamentos || []).map(
+                      d => d.nome
+                    ) || []
                   }
                 />
               </Paper>
@@ -210,17 +181,12 @@ export default function AdminDashboard() {
                     <TableHead>
                       <TableRow>
                         <TableCell>Departamento</TableCell>
-                        <TableCell align='right'>Total Funcionários</TableCell>
                         <TableCell align='right'>Funcionários Ativos</TableCell>
-                        <TableCell align='right'>XP Médio</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {(
-                        adminData?.engajamento_departamentos ||
-                        gerenteData?.engajamento_departamentos ||
-                        []
-                      ).map(dept => (
+                      {(adminData?.engajamento_departamentos || []).map(
+                        dept => (
                         <TableRow key={dept.codigo} hover>
                           <TableCell>
                             <Typography variant='body2' fontWeight={500}>
@@ -233,11 +199,7 @@ export default function AdminDashboard() {
                               {dept.codigo}
                             </Typography>
                           </TableCell>
-                          <TableCell align='right'>
-                            <Typography variant='body2'>
-                              {dept.total_funcionarios}
-                            </Typography>
-                          </TableCell>
+
                           <TableCell align='right'>
                             <Chip
                               label={dept.funcionarios_ativos.toString()}
@@ -250,11 +212,7 @@ export default function AdminDashboard() {
                               variant='outlined'
                             />
                           </TableCell>
-                          <TableCell align='right'>
-                            <Typography variant='body2' color='primary'>
-                              {dept.xp_medio} XP
-                            </Typography>
-                          </TableCell>
+
                         </TableRow>
                       ))}
                     </TableBody>
@@ -355,7 +313,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Fallback se não houver dados */}
-      {!adminData && !gerenteData && (
+      {!adminData && (
         <Box sx={{ p: 3, textAlign: 'center' }}>
           <Typography color='text.secondary'>
             Nenhum dado de dashboard disponível

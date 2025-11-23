@@ -73,21 +73,21 @@ export default function InstrutorDashboard() {
             <MetricCard
               icon={<People color='info' />}
               value={metricas.total_alunos?.toString() || '0'}
-              label='Total de Funcionários'
+              label='Total de Alunos'
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <MetricCard
+              icon={<Assignment color='primary' />}
+              value={metricas.total_inscricoes?.toString() || '0'}
+              label='Total de Inscrições'
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <MetricCard
               icon={<CheckCircle color='success' />}
               value={`${metricas.taxa_conclusao_geral?.toFixed(1) || '0'}%`}
-              label='Taxa de Conclusão Geral'
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <MetricCard
-              icon={<Assignment color='warning' />}
-              value={metricas.pendentes_correcao?.toString() || '0'}
-              label='Correções Pendentes'
+              label='Taxa de Conclusão'
             />
           </Grid>
         </Grid>
