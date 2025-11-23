@@ -8,7 +8,7 @@ export default function Home() {
     <Box
       sx={{
         minHeight: '100vh',
-        width: '100%',
+        width: '100%'
       }}
     >
       <BrandAppBar />
@@ -17,7 +17,7 @@ export default function Home() {
         sx={{
           background:
             'linear-gradient(180deg, rgba(99,102,241,0.10), rgba(59,130,246,0.05), transparent)',
-          py: { xs: 8, md: 14 },
+          py: { xs: 8, md: 14 }
         }}
       >
         <Container maxWidth='lg'>
@@ -31,7 +31,7 @@ export default function Home() {
                     background:
                       'linear-gradient(90deg,#4F46E5,#0EA5E9,#10B981)',
                     WebkitBackgroundClip: 'text',
-                    color: 'transparent',
+                    color: 'transparent'
                   }}
                 >
                   NextLevel
@@ -46,7 +46,7 @@ export default function Home() {
                 sx={{
                   display: 'flex',
                   gap: 2,
-                  flexDirection: { xs: 'column', sm: 'row' },
+                  flexDirection: { xs: 'column', sm: 'row' }
                 }}
               >
                 <Button

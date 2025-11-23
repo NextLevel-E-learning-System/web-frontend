@@ -16,13 +16,13 @@ import {
   Select,
   useMediaQuery,
   useTheme,
-  Stack,
+  Stack
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Business as BusinessIcon,
+  Business as BusinessIcon
 } from '@mui/icons-material'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
@@ -35,7 +35,7 @@ import {
   useCriarDepartamento,
   useAtualizarDepartamento,
   useDeleteDepartamento,
-  type Departamento,
+  type Departamento
 } from '@/api/users'
 import DataTable, { type Column } from '@/components/common/DataTable'
 
@@ -53,7 +53,7 @@ export default function AdminDepartments() {
   const {
     data: departamentosResponse,
     isLoading,
-    refetch,
+    refetch
   } = useListarDepartamentosAdmin()
   // A resposta da API vem como { items: [...] }
   const departamentos =
@@ -75,13 +75,13 @@ export default function AdminDepartments() {
     confirmText: 'Confirmar',
     isLoading: false,
     severity: 'warning' as 'error' | 'warning' | 'info',
-    onConfirm: () => {},
+    onConfirm: () => {}
   })
   const [form, setForm] = useState<DepartmentForm>({
     codigo: '',
     nome: '',
     descricao: '',
-    gestor_id: '',
+    gestor_id: ''
   })
 
   // Função para buscar o nome do gestor
@@ -105,7 +105,7 @@ export default function AdminDepartments() {
       codigo: '',
       nome: '',
       descricao: '',
-      gestor_id: '',
+      gestor_id: ''
     })
   }
 
@@ -126,7 +126,7 @@ export default function AdminDepartments() {
         codigo: form.codigo.trim().toUpperCase(),
         nome: form.nome.trim(),
         descricao: form.descricao.trim() || undefined,
-        gestor_funcionario_id: form.gestor_id.trim() || undefined,
+        gestor_funcionario_id: form.gestor_id.trim() || undefined
       })
 
       toast.success('Departamento criado com sucesso!')
@@ -145,7 +145,7 @@ export default function AdminDepartments() {
       codigo: dept.codigo,
       nome: dept.nome,
       descricao: dept.descricao || '',
-      gestor_id: dept.gestor_funcionario_id || '',
+      gestor_id: dept.gestor_funcionario_id || ''
     })
   }
 
@@ -161,7 +161,7 @@ export default function AdminDepartments() {
       await atualizarDepartamento.mutateAsync({
         nome: form.nome.trim(),
         descricao: form.descricao.trim() || undefined,
-        gestor_funcionario_id: form.gestor_id.trim() || undefined,
+        gestor_funcionario_id: form.gestor_id.trim() || undefined
       })
 
       toast.success('Departamento atualizado com sucesso!')
@@ -191,7 +191,7 @@ export default function AdminDepartments() {
             ...confirmDialog,
             open: false,
             isLoading: false,
-            severity: 'warning',
+            severity: 'warning'
           })
           refetch()
         } catch (error: any) {
@@ -201,7 +201,7 @@ export default function AdminDepartments() {
           console.error(error)
           setConfirmDialog(prev => ({ ...prev, isLoading: false }))
         }
-      },
+      }
     })
   }
 
@@ -224,7 +224,7 @@ export default function AdminDepartments() {
       minWidth: 80,
       render: (_, dept) => (
         <Typography fontWeight={500}>{dept.codigo}</Typography>
-      ),
+      )
     },
     {
       id: 'nome',
@@ -236,7 +236,7 @@ export default function AdminDepartments() {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            gap: 0.5,
+            gap: 0.5
           }}
         >
           <Typography fontWeight={500}>{dept.nome}</Typography>
@@ -251,7 +251,7 @@ export default function AdminDepartments() {
             </Typography>
           )}
         </Box>
-      ),
+      )
     },
     ...(isMobile
       ? []
@@ -269,12 +269,12 @@ export default function AdminDepartments() {
                 maxWidth: 300,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                whiteSpace: 'nowrap'
               }}
             >
               {dept.descricao || '—'}
             </Typography>
-          ),
+          )
         },
         {
           id: 'gestor',
@@ -285,8 +285,8 @@ export default function AdminDepartments() {
             <Typography variant='body2' color='text.secondary'>
               {getGestorNome(dept.gestor_funcionario_id) || '—'}
             </Typography>
-          ),
-        },
+          )
+        }
       ] as Column[])),
     {
       id: 'acoes',
@@ -313,8 +313,8 @@ export default function AdminDepartments() {
             <DeleteIcon />
           </IconButton>
         </Stack>
-      ),
-    },
+      )
+    }
   ]
 
   return (
@@ -325,7 +325,7 @@ export default function AdminDepartments() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'end',
-            mb: 3,
+            mb: 3
           }}
         >
           <Button

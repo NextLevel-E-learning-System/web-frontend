@@ -4,7 +4,7 @@ import {
   InputAdornment,
   TextField,
   Typography,
-  Autocomplete,
+  Autocomplete
 } from '@mui/material'
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined'
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined'
@@ -41,7 +41,7 @@ const Register = () => {
     nome: '',
     email: '',
     departamento_id: '',
-    cargo_nome: '',
+    cargo_nome: ''
   })
 
   const [selectedDepartamento, setSelectedDepartamento] = useState<any>(null)
@@ -67,7 +67,7 @@ const Register = () => {
       ...formData,
       cpf: cpfLimpo, // Enviar apenas números
       departamento_id: selectedDepartamento.codigo,
-      cargo_nome: selectedCargo.nome,
+      cargo_nome: selectedCargo.nome
     }
 
     await register.mutateAsync(submitData as any)
@@ -85,7 +85,7 @@ const Register = () => {
 
       setFormData(prev => ({
         ...prev,
-        [field]: value,
+        [field]: value
       }))
     }
   return (
@@ -106,7 +106,7 @@ const Register = () => {
               <InputAdornment position='start'>
                 <FingerprintOutlinedIcon color='disabled' />
               </InputAdornment>
-            ),
+            )
           }}
         />
 
@@ -123,7 +123,7 @@ const Register = () => {
               <InputAdornment position='start'>
                 <PersonOutlineOutlined color='disabled' />
               </InputAdornment>
-            ),
+            )
           }}
         />
 
@@ -154,7 +154,7 @@ const Register = () => {
                     </InputAdornment>
                     {params.InputProps.startAdornment}
                   </>
-                ),
+                )
               }}
             />
           )}
@@ -189,7 +189,7 @@ const Register = () => {
                     </InputAdornment>
                     {params.InputProps.startAdornment}
                   </>
-                ),
+                )
               }}
             />
           )}
@@ -211,7 +211,7 @@ const Register = () => {
               <InputAdornment position='start'>
                 <MailOutlineIcon color='disabled' />
               </InputAdornment>
-            ),
+            )
           }}
         />
 

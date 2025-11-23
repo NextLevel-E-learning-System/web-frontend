@@ -184,7 +184,7 @@ export function useListarDepartamentos() {
   return useQuery<Departamento[]>({
     queryKey: ['users', 'departamentos'],
     queryFn: () =>
-      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos`),
+      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos`)
   })
 }
 
@@ -192,7 +192,7 @@ export function useListarDepartamentosAdmin() {
   return useQuery<Departamento[]>({
     queryKey: ['users', 'departamentos', 'admin'],
     queryFn: () =>
-      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos/admin`),
+      authGet<Departamento[]>(`${API_ENDPOINTS.USERS}/departamentos/admin`)
   })
 }
 
@@ -205,7 +205,7 @@ export function useCriarDepartamento() {
       authPost<Departamento>(`${API_ENDPOINTS.USERS}/departamentos`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'departamentos'] })
-    },
+    }
   })
 }
 
@@ -221,7 +221,7 @@ export function useAtualizarDepartamento(codigo: string) {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'departamentos'] })
-    },
+    }
   })
 }
 
@@ -234,7 +234,7 @@ export function useDeleteDepartamento() {
       authDelete(`${API_ENDPOINTS.USERS}/departamentos/${codigo}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'departamentos'] })
-    },
+    }
   })
 }
 
@@ -242,7 +242,7 @@ export function useDeleteDepartamento() {
 export function useListarCargos() {
   return useQuery<Cargo[]>({
     queryKey: ['users', 'cargos'],
-    queryFn: () => authGet<Cargo[]>(`${API_ENDPOINTS.USERS}/cargos`),
+    queryFn: () => authGet<Cargo[]>(`${API_ENDPOINTS.USERS}/cargos`)
   })
 }
 
@@ -256,7 +256,7 @@ export function useRegisterFuncionario() {
   return useMutation({
     mutationKey: ['users', 'funcionarios', 'register'],
     mutationFn: (input: FuncionarioRegister) =>
-      authPost<Funcionario>(`${API_ENDPOINTS.USERS}/register`, input),
+      authPost<Funcionario>(`${API_ENDPOINTS.USERS}/register`, input)
   })
 }
 
@@ -264,7 +264,7 @@ export function useFuncionarios() {
   return useQuery<FuncionariosResponse>({
     queryKey: ['users', 'funcionarios'],
     queryFn: () =>
-      authGet<FuncionariosResponse>(`${API_ENDPOINTS.USERS}/funcionarios`),
+      authGet<FuncionariosResponse>(`${API_ENDPOINTS.USERS}/funcionarios`)
   })
 }
 
@@ -277,7 +277,7 @@ export function useUpdateFuncionario(funcionarioId: string) {
       'funcionarios',
       'instrutores',
       'update',
-      funcionarioId,
+      funcionarioId
     ],
     mutationFn: (input: UpdateFuncionarioInput) =>
       authPut<Funcionario>(
@@ -287,7 +287,7 @@ export function useUpdateFuncionario(funcionarioId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
-    },
+    }
   })
 }
 
@@ -298,7 +298,7 @@ export function useResetPassword() {
       authPost<ResetPasswordResponse>(
         `${API_ENDPOINTS.USERS}/reset-password`,
         input
-      ),
+      )
   })
 }
 
@@ -308,7 +308,7 @@ export function useDashboard() {
     queryFn: () =>
       authGet<DashboardResponse>(
         `${API_ENDPOINTS.USERS}/funcionarios/dashboard`
-      ),
+      )
   })
 }
 
@@ -318,7 +318,7 @@ export function useInstrutores() {
     queryFn: () =>
       authGet<{ items: Instructor[] }>(
         `${API_ENDPOINTS.USERS}/instrutores`
-      ).then(response => response.items),
+      ).then(response => response.items)
   })
 }
 
@@ -334,7 +334,7 @@ export function useCreateInstrutor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
-    },
+    }
   })
 }
 
@@ -350,9 +350,9 @@ export function useUpdateInstrutor() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
       queryClient.invalidateQueries({
-        queryKey: ['users', 'instrutores', variables.id],
+        queryKey: ['users', 'instrutores', variables.id]
       })
-    },
+    }
   })
 }
 
@@ -367,6 +367,6 @@ export function useDeleteInstrutor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users', 'instrutores'] })
       queryClient.invalidateQueries({ queryKey: ['users', 'funcionarios'] })
-    },
+    }
   })
 }

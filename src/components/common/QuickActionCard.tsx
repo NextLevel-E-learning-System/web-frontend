@@ -18,7 +18,7 @@ export default function QuickActionCard({
   description,
   to,
   button,
-  icon,
+  icon
 }: Props) {
   return (
     <Card variant='outlined' sx={{ height: '100%' }}>

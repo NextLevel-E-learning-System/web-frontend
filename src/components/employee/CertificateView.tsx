@@ -9,18 +9,18 @@ import {
   Alert,
   Divider,
   Card,
-  CardContent,
+  CardContent
 } from '@mui/material'
 import {
   WorkspacePremium as CertificateIcon,
   Download as DownloadIcon,
   CheckCircle as CheckIcon,
-  Verified as VerifiedIcon,
+  Verified as VerifiedIcon
 } from '@mui/icons-material'
 import {
   useIssueCertificate,
   useGenerateCertificatePdf,
-  type Certificate,
+  type Certificate
 } from '@/api/progress'
 import { showToast } from '@/utils/toast'
 
@@ -39,7 +39,7 @@ export default function CertificateView({
   cursoTitulo,
   dataConclusao,
   onCertificateIssued,
-  initialCertificate = null,
+  initialCertificate = null
 }: CertificateViewProps) {
   const [certificate, setCertificate] = useState<Certificate | null>(
     initialCertificate
@@ -91,7 +91,7 @@ export default function CertificateView({
             borderColor: 'success.light',
             color: 'primary',
             position: 'relative',
-            overflow: 'hidden',
+            overflow: 'hidden'
           }}
         >
           {/* Background decoration */}
@@ -103,7 +103,7 @@ export default function CertificateView({
               width: 200,
               height: 200,
               borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.1)',
+              background: 'rgba(255, 255, 255, 0.1)'
             }}
           />
           <Box
@@ -114,7 +114,7 @@ export default function CertificateView({
               width: 150,
               height: 150,
               borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.1)',
+              background: 'rgba(255, 255, 255, 0.1)'
             }}
           />
 
@@ -148,8 +148,8 @@ export default function CertificateView({
                 px: 4,
                 py: 1.5,
                 '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.9)',
-                },
+                  bgcolor: 'rgba(255, 255, 255, 0.9)'
+                }
               }}
             >
               Emitir Certificado
@@ -161,7 +161,7 @@ export default function CertificateView({
                 {new Date(dataConclusao).toLocaleDateString('pt-BR', {
                   day: '2-digit',
                   month: 'long',
-                  year: 'numeric',
+                  year: 'numeric'
                 })}
               </Typography>
             )}
@@ -191,7 +191,7 @@ export default function CertificateView({
           borderColor: 'success.light',
           color: 'primary',
           position: 'relative',
-          overflow: 'hidden',
+          overflow: 'hidden'
         }}
       >
         {/* Background decoration */}
@@ -203,7 +203,7 @@ export default function CertificateView({
             width: 300,
             height: 300,
             borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.1)'
           }}
         />
         <Box
@@ -214,7 +214,7 @@ export default function CertificateView({
             width: 200,
             height: 200,
             borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'rgba(255, 255, 255, 0.1)'
           }}
         />
 
@@ -260,7 +260,7 @@ export default function CertificateView({
                     {
                       day: '2-digit',
                       month: 'long',
-                      year: 'numeric',
+                      year: 'numeric'
                     }
                   )}
                 </Typography>
@@ -278,7 +278,7 @@ export default function CertificateView({
                   sx={{
                     fontFamily: 'monospace',
                     opacity: 0.9,
-                    wordBreak: 'break-all',
+                    wordBreak: 'break-all'
                   }}
                 >
                   {certificate.hash_validacao.slice(0, 32)}...
@@ -312,8 +312,8 @@ export default function CertificateView({
                   fontWeight: 600,
                   px: 4,
                   '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.9)',
-                  },
+                    bgcolor: 'rgba(255, 255, 255, 0.9)'
+                  }
                 }}
               >
                 Baixar Certificado

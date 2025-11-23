@@ -13,7 +13,7 @@ import {
   Tab,
   IconButton,
   Tooltip,
-  Divider,
+  Divider
 } from '@mui/material'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMore'
 import AddIcon from '@mui/icons-material/Add'
@@ -21,7 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import {
   useCourseModules,
   useCreateModule,
-  useDeleteModule,
+  useDeleteModule
 } from '@/api/courses'
 import { toast } from 'react-toastify'
 import ModuleInfoForm from './ModuleInfoForm'
@@ -39,12 +39,12 @@ interface Props {
 export default function CourseModulesSection({
   cursoCodigo,
   onTotalXpChange,
-  isViewOnly = false,
+  isViewOnly = false
 }: Props) {
   const {
     data: modulos = [],
     isLoading,
-    refetch: refetchModules,
+    refetch: refetchModules
   } = useCourseModules(cursoCodigo)
   const createModule = useCreateModule(cursoCodigo)
   const deleteModule = useDeleteModule()
@@ -52,7 +52,7 @@ export default function CourseModulesSection({
   const [expanded, setExpanded] = useState<string | false>(false)
   const [moduleTab, setModuleTab] = useState<Record<string, string>>({})
   const [confirm, setConfirm] = useState<{ open: boolean; moduloId?: string }>({
-    open: false,
+    open: false
   })
 
   // Módulos ordenados memoizados (evita recriação constante de objetos)
@@ -99,7 +99,7 @@ export default function CourseModulesSection({
         <Stack spacing={2}>
           {orderedModules.map(m => {
             const allowedTabs: Array<'info' | 'materiais' | 'avaliacoes'> = [
-              'info',
+              'info'
             ]
             if (m.tipo_conteudo && ['material'].includes(m.tipo_conteudo))
               allowedTabs.push('materiais')
@@ -127,8 +127,8 @@ export default function CourseModulesSection({
                   boxShadow: 'none',
                   overflow: 'hidden',
                   '&:before': {
-                    display: 'none',
-                  },
+                    display: 'none'
+                  }
                 }}
               >
                 <AccordionSummary
@@ -140,8 +140,8 @@ export default function CourseModulesSection({
                       : 'background.paper',
                     transition: 'background-color 0.2s ease',
                     '& .MuiAccordionSummary-content': {
-                      my: 1.5,
-                    },
+                      my: 1.5
+                    }
                   }}
                 >
                   <Stack
@@ -162,7 +162,7 @@ export default function CourseModulesSection({
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: 14,
-                        fontWeight: 700,
+                        fontWeight: 700
                       }}
                     >
                       {m.ordem}
@@ -181,7 +181,7 @@ export default function CourseModulesSection({
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
+                            overflow: 'hidden'
                           }}
                         >
                           {m.conteudo}
@@ -227,7 +227,7 @@ export default function CourseModulesSection({
                     sx={{
                       mb: 2,
                       borderBottom: theme =>
-                        `1px solid ${theme.palette.divider}`,
+                        `1px solid ${theme.palette.divider}`
                     }}
                   >
                     <Tabs
@@ -280,7 +280,7 @@ export default function CourseModulesSection({
         title='Excluir módulo'
         message={
           confirm.moduloId
-            ? `Tem certeza que deseja excluir este módulo? Esta ação não pode ser desfeita.`
+            ? 'Tem certeza que deseja excluir este módulo? Esta ação não pode ser desfeita.'
             : 'Selecione um módulo para excluir.'
         }
         onConfirm={async () => {

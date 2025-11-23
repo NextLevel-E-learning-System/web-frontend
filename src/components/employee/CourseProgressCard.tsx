@@ -29,7 +29,7 @@ export default function CourseProgressCard({
   gradientTo,
   courseCode,
   status = 'EM_ANDAMENTO',
-  onContinueLearning,
+  onContinueLearning
 }: Props) {
   const isCompleted = status === 'CONCLUIDO' || progress === 100
 
@@ -38,13 +38,13 @@ export default function CourseProgressCard({
       return {
         label: 'Concluído',
         bgcolor: '#10b981',
-        color: '#fff',
+        color: '#fff'
       }
     }
     return {
       label: 'Em Andamento',
       bgcolor: '#eab308',
-      color: '#111827',
+      color: '#111827'
     }
   }
 
@@ -56,7 +56,7 @@ export default function CourseProgressCard({
         overflow: 'hidden',
         height: 340,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column'
       }}
     >
       <Box
@@ -68,7 +68,7 @@ export default function CourseProgressCard({
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'flex-end',
-          p: 1,
+          p: 1
         }}
       >
         <Chip
@@ -80,7 +80,7 @@ export default function CourseProgressCard({
             right: 10,
             bgcolor: statusConfig.bgcolor,
             color: statusConfig.color,
-            fontWeight: 600,
+            fontWeight: 600
           }}
         />
       </Box>
@@ -92,7 +92,7 @@ export default function CourseProgressCard({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            mb: 1,
+            mb: 1
           }}
         >
           <Chip
@@ -102,7 +102,7 @@ export default function CourseProgressCard({
               background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
               color: '#fff',
               padding: '6px 8px',
-              borderRadius: '16px',
+              borderRadius: '16px'
             }}
           />
         </Box>
@@ -117,7 +117,7 @@ export default function CourseProgressCard({
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             lineHeight: 1.3,
-            minHeight: '1.6em',
+            minHeight: '1.6em'
           }}
         >
           {title}
@@ -135,7 +135,7 @@ export default function CourseProgressCard({
             WebkitBoxOrient: 'vertical',
             lineHeight: 1.4,
             height: '2.8em',
-            flexGrow: 1,
+            flexGrow: 1
           }}
         >
           {description}
@@ -148,7 +148,7 @@ export default function CourseProgressCard({
           value={progress}
           sx={{
             height: 8,
-            borderRadius: 6,
+            borderRadius: 6
           }}
         />
         <Box
@@ -156,7 +156,7 @@ export default function CourseProgressCard({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            mt: 2,
+            mt: 2
           }}
         >
           {!isCompleted && (

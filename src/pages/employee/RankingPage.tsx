@@ -5,7 +5,7 @@ import {
   CircularProgress,
   Typography,
   Tabs,
-  Tab,
+  Tab
 } from '@mui/material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import { useDashboardLayout } from '@/hooks/useDashboardLayout'
@@ -22,12 +22,12 @@ export default function RankingPage() {
   const {
     data: globalRankingData,
     isLoading: globalLoading,
-    error: globalError,
+    error: globalError
   } = useGlobalRanking()
   const {
     data: monthlyRankingData,
     isLoading: monthlyLoading,
-    error: monthlyError,
+    error: monthlyError
   } = useMonthlyRanking()
 
   const isLoading = tab === 0 ? globalLoading : monthlyLoading
@@ -41,7 +41,7 @@ export default function RankingPage() {
       name: entry.nome,
       points: entry.xp,
       change: 0, // TODO: calcular mudança de posição comparando com ranking anterior
-      avatarColor: getAvatarColor(index),
+      avatarColor: getAvatarColor(index)
     }))
   }, [globalRankingData])
 
@@ -52,7 +52,7 @@ export default function RankingPage() {
       name: entry.nome,
       points: entry.xpMes,
       change: 0, // TODO: calcular mudança de posição comparando com mês anterior
-      avatarColor: getAvatarColor(index),
+      avatarColor: getAvatarColor(index)
     }))
   }, [monthlyRankingData])
 
@@ -63,22 +63,22 @@ export default function RankingPage() {
       name: '-',
       points: 0,
       change: 0,
-      avatarColor: '#60a5fa',
+      avatarColor: '#60a5fa'
     },
     ranking[1] || {
       rank: 2,
       name: '-',
       points: 0,
       change: 0,
-      avatarColor: '#f472b6',
+      avatarColor: '#f472b6'
     },
     ranking[2] || {
       rank: 3,
       name: '-',
       points: 0,
       change: 0,
-      avatarColor: '#34d399',
-    },
+      avatarColor: '#34d399'
+    }
   ]
 
   function getAvatarColor(index: number): string {
@@ -92,7 +92,7 @@ export default function RankingPage() {
       '#86efac',
       '#fca5a5',
       '#fde68a',
-      '#93c5fd',
+      '#93c5fd'
     ]
     return colors[index % colors.length]
   }
@@ -129,7 +129,7 @@ export default function RankingPage() {
             alignItems: { xs: 'stretch', sm: 'center' },
             justifyContent: 'space-between',
             gap: 2,
-            flexWrap: 'wrap',
+            flexWrap: 'wrap'
           }}
         >
           <Box>

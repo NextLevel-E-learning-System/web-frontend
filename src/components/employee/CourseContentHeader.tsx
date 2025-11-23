@@ -29,7 +29,7 @@ export default function CourseContentHeader({
   showProgress = true,
   level,
   prerequisites,
-  backPath,
+  backPath
 }: CourseContentHeaderProps) {
   const navigate = useNavigate()
   const prerequisitesTitles = usePrerequisitesTitles(prerequisites)
@@ -58,7 +58,7 @@ export default function CourseContentHeader({
             background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
             color: '#fff',
             position: 'relative',
-            height: 150,
+            height: 150
           }}
         >
           <Button
@@ -72,8 +72,8 @@ export default function CourseContentHeader({
               color: 'common.white',
               backdropFilter: 'blur(10px)',
               '&:hover': {
-                bgcolor: 'rgba(255, 255, 255, 0.2)',
-              },
+                bgcolor: 'rgba(255, 255, 255, 0.2)'
+              }
             }}
           >
             Voltar
@@ -86,7 +86,7 @@ export default function CourseContentHeader({
               sx={{
                 bgcolor: 'rgba(255,255,255,0.25)',
                 color: '#fff',
-                fontWeight: 700,
+                fontWeight: 700
               }}
             />
           )}
@@ -99,7 +99,7 @@ export default function CourseContentHeader({
               gap: 2,
               alignItems: 'center',
               mt: 1,
-              flexWrap: 'wrap',
+              flexWrap: 'wrap'
             }}
           >
             {level && (
@@ -143,8 +143,8 @@ export default function CourseContentHeader({
                 borderRadius: 999,
                 backgroundColor: 'grey.200',
                 '& .MuiLinearProgress-bar': {
-                  borderRadius: 999,
-                },
+                  borderRadius: 999
+                }
               }}
             />
           </Box>

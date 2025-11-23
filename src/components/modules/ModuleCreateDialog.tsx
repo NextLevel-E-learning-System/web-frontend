@@ -12,7 +12,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
+  MenuItem
 } from '@mui/material'
 import { type CreateModuleInput } from '@/api/courses'
 
@@ -29,7 +29,7 @@ export default function ModuleCreateDialog({
   onClose,
   onCreate,
   nextOrder,
-  loading = false,
+  loading = false
 }: Props) {
   const [titulo, setTitulo] = useState('')
   const [ordem, setOrdem] = useState<number>(nextOrder)
@@ -58,7 +58,7 @@ export default function ModuleCreateDialog({
       xp,
       obrigatorio,
       tipo_conteudo: tipoConteudo,
-      conteudo: conteudo.trim() || undefined,
+      conteudo: conteudo.trim() || undefined
     }
 
     await onCreate({ module: moduleData })

@@ -3,7 +3,7 @@ import {
   Button,
   InputAdornment,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import { Send } from '@mui/icons-material'
@@ -47,7 +47,7 @@ export default function Recover() {
               <InputAdornment position='start'>
                 <MailOutlineIcon color='disabled' />
               </InputAdornment>
-            ),
+            )
           }}
         />
         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 2 }}>

@@ -9,7 +9,7 @@ import {
   CircularProgress,
   Dialog,
   DialogTitle,
-  DialogContent,
+  DialogContent
 } from '@mui/material'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -18,12 +18,12 @@ import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
 import {
   OpenInNew,
   PictureAsPdfRounded,
-  PlayCircleFilled,
+  PlayCircleFilled
 } from '@mui/icons-material'
 import {
   useModuleMaterials,
   useUploadMaterial,
-  useDeleteMaterial,
+  useDeleteMaterial
 } from '@/api/courses'
 import { convertFileToBase64 } from '@/api/courses'
 import ConfirmationDialog from '../common/ConfirmationDialog'
@@ -35,7 +35,7 @@ interface Props {
 
 export default function ModuleMaterialsPanel({
   moduloId,
-  isViewOnly = false,
+  isViewOnly = false
 }: Props) {
   const { data: materialsRaw, isLoading } = useModuleMaterials(moduloId)
   const materials = Array.isArray(materialsRaw)
@@ -150,8 +150,8 @@ export default function ModuleMaterialsPanel({
                 transition: 'all 0.2s',
                 '&:hover': {
                   bgcolor: 'rgba(59,130,246,0.12)',
-                  transform: 'translateY(-2px)',
-                },
+                  transform: 'translateY(-2px)'
+                }
               }}
             >
               {iconFor(m.tipo_arquivo)}
@@ -217,8 +217,8 @@ export default function ModuleMaterialsPanel({
         PaperProps={{
           sx: {
             height: '90vh',
-            maxHeight: '90vh',
-          },
+            maxHeight: '90vh'
+          }
         }}
       >
         <DialogTitle
@@ -227,7 +227,7 @@ export default function ModuleMaterialsPanel({
             justifyContent: 'space-between',
             alignItems: 'center',
             borderBottom: '1px solid',
-            borderColor: 'divider',
+            borderColor: 'divider'
           }}
         >
           <Typography variant='h6' fontWeight={600}>
@@ -261,7 +261,7 @@ export default function ModuleMaterialsPanel({
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'contain',
+                    objectFit: 'contain'
                   }}
                   src={mediaDialog.url}
                 >

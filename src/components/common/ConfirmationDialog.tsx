@@ -6,12 +6,12 @@ import {
   Typography,
   Button,
   Box,
-  CircularProgress,
+  CircularProgress
 } from '@mui/material'
 import {
   Warning as WarningIcon,
   Info as InfoIcon,
-  Error as ErrorIcon,
+  Error as ErrorIcon
 } from '@mui/icons-material'
 
 interface ConfirmationDialogProps {
@@ -35,7 +35,7 @@ export default function ConfirmationDialog({
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
   isLoading = false,
-  severity = 'warning',
+  severity = 'warning'
 }: ConfirmationDialogProps) {
   const getIcon = () => {
     switch (severity) {
@@ -84,8 +84,8 @@ export default function ConfirmationDialog({
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 2,
-        },
+          borderRadius: 2
+        }
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>

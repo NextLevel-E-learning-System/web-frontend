@@ -50,7 +50,7 @@ export function useNotifications(params: NotificationsParams = {}) {
 
   return useQuery<NotificationsPagination>({
     queryKey: ['notifications', 'list', params],
-    queryFn: () => authGet<NotificationsPagination>(url),
+    queryFn: () => authGet<NotificationsPagination>(url)
   })
 }
 
@@ -59,7 +59,7 @@ export function useUnreadNotificationsCount() {
     queryKey: ['notifications', 'unread-count'],
     queryFn: () =>
       authGet<UnreadCountResponse>(`${API_ENDPOINTS.NOTIFICATIONS}/count`),
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000 // Refetch every 30 seconds
   })
 }
 
@@ -73,9 +73,9 @@ export function useMarkNotificationAsRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
       queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count'],
+        queryKey: ['notifications', 'unread-count']
       })
-    },
+    }
   })
 }
 
@@ -89,8 +89,8 @@ export function useMarkAllNotificationsAsRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'list'] })
       queryClient.invalidateQueries({
-        queryKey: ['notifications', 'unread-count'],
+        queryKey: ['notifications', 'unread-count']
       })
-    },
+    }
   })
 }

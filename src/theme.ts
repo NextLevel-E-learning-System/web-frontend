@@ -5,13 +5,13 @@ export const brand = {
     main: '#2563eb', // blue-600
     light: '#3b82f6', // blue-500
     dark: '#1e40af', // blue-800
-    contrastText: '#ffffff',
+    contrastText: '#ffffff'
   },
   secondary: {
     main: '#8b5cf6', // violet-500
     light: '#a78bfa',
     dark: '#6d28d9',
-    contrastText: '#ffffff',
+    contrastText: '#ffffff'
   },
   grey: {
     50: '#f8fafc',
@@ -23,8 +23,8 @@ export const brand = {
     600: '#475569',
     700: '#334155',
     800: '#1f2937',
-    900: '#0f172a',
-  },
+    900: '#0f172a'
+  }
 }
 
 const theme = createTheme({
@@ -34,12 +34,12 @@ const theme = createTheme({
     secondary: brand.secondary,
     background: {
       default: '#ffffff',
-      paper: '#ffffff',
+      paper: '#ffffff'
     },
     text: {
       primary: '#0f172a',
-      secondary: '#475569',
-    },
+      secondary: '#475569'
+    }
   },
   typography: {
     fontFamily:
@@ -47,7 +47,7 @@ const theme = createTheme({
     h1: { fontWeight: 800 },
     h2: { fontWeight: 800 },
     h3: { fontWeight: 700 },
-    button: { textTransform: 'none', fontWeight: 600 },
+    button: { textTransform: 'none', fontWeight: 600 }
   },
   shape: { borderRadius: 6 },
   components: {
@@ -55,24 +55,24 @@ const theme = createTheme({
       defaultProps: { disableElevation: true },
       styleOverrides: {
         root: {
-          borderRadius: 12,
+          borderRadius: 12
         },
         containedPrimary: {
-          background: 'linear-gradient(90deg, #2563eb, #8b5cf6)',
-        },
-      },
+          background: 'linear-gradient(90deg, #2563eb, #8b5cf6)'
+        }
+      }
     },
     MuiChip: {
       styleOverrides: {
-        root: { borderRadius: 10, fontWeight: 600 },
-      },
+        root: { borderRadius: 10, fontWeight: 600 }
+      }
     },
     MuiAppBar: {
       styleOverrides: {
-        root: { backgroundColor: '#ffffff', color: '#0f172a' },
-      },
-    },
-  },
+        root: { backgroundColor: '#ffffff', color: '#0f172a' }
+      }
+    }
+  }
 })
 
 export default theme

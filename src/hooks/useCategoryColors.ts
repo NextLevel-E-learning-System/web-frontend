@@ -16,7 +16,7 @@ export function useCategoryColors(categoryId?: string): CategoryColors {
       ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
+        b: parseInt(result[3], 16)
       }
       : null
   }
@@ -26,16 +26,16 @@ export function useCategoryColors(categoryId?: string): CategoryColors {
     return {
       gradientFrom: '#6b7280',
       gradientTo: '#374151',
-      categoryName: '',
+      categoryName: ''
     }
   }
 
-  const categoria = categories.find(c => c.codigo === categoryId)
+  const categoria = categories.find((c) => c.codigo === categoryId)
   if (!categoria) {
     return {
       gradientFrom: '#6b7280',
       gradientTo: '#374151',
-      categoryName: '',
+      categoryName: ''
     }
   }
 
@@ -45,7 +45,7 @@ export function useCategoryColors(categoryId?: string): CategoryColors {
     return {
       gradientFrom: '#6b7280',
       gradientTo: '#374151',
-      categoryName,
+      categoryName
     }
   }
 
@@ -54,7 +54,7 @@ export function useCategoryColors(categoryId?: string): CategoryColors {
     return {
       gradientFrom: '#6b7280',
       gradientTo: '#374151',
-      categoryName,
+      categoryName
     }
   }
 
@@ -65,6 +65,6 @@ export function useCategoryColors(categoryId?: string): CategoryColors {
   return {
     gradientFrom,
     gradientTo,
-    categoryName,
+    categoryName
   }
 }

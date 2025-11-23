@@ -14,7 +14,7 @@ const ROLE_REDIRECTS: Record<string, string> = {
   FUNCIONARIO: '/dashboard/funcionario',
   INSTRUTOR: '/dashboard/instrutor',
   ADMIN: '/dashboard/admin',
-  GERENTE: '/dashboard/admin',
+  GERENTE: '/dashboard/admin'
 }
 
 const getRedirectByRole = (role: string) =>
@@ -23,7 +23,7 @@ const getRedirectByRole = (role: string) =>
 export function ProtectedRoute({
   children,
   allowedRoles = [],
-  fallback,
+  fallback
 }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, user } = useAuth()
 

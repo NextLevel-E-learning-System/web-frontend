@@ -72,7 +72,7 @@ export function useCreateAssessment() {
       authPost<Assessment>(`${API_ENDPOINTS.ASSESSMENTS}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
-    },
+    }
   })
 }
 
@@ -95,7 +95,7 @@ export function useAssessments(
           return list.filter(a => a.modulo_id === filters.modulo_id)
         }
         return list
-      }),
+      })
   })
 }
 
@@ -108,10 +108,10 @@ export function useUpdateAssessment(codigo: string) {
       authPut<Assessment>(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['assessments', 'detail', codigo],
+        queryKey: ['assessments', 'detail', codigo]
       })
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
-    },
+    }
   })
 }
 
@@ -124,7 +124,7 @@ export function useDeleteAssessment() {
       authDelete(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
-    },
+    }
   })
 }
 
@@ -137,7 +137,7 @@ export function useAssessmentQuestions(
     queryKey: ['assessments', 'questions', codigo],
     queryFn: () =>
       authGet<Question[]>(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}/questions`),
-    enabled: !!codigo && (options.enabled ?? true),
+    enabled: !!codigo && (options.enabled ?? true)
   })
 }
 
@@ -153,9 +153,9 @@ export function useCreateQuestion(codigo: string) {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['assessments', 'questions', codigo],
+        queryKey: ['assessments', 'questions', codigo]
       })
-    },
+    }
   })
 }
 
@@ -170,9 +170,9 @@ export function useUpdateQuestion(codigo: string, id: string) {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['assessments', 'questions', codigo],
+        queryKey: ['assessments', 'questions', codigo]
       })
-    },
+    }
   })
 }
 
@@ -184,9 +184,9 @@ export function useDeleteQuestion(codigo: string) {
       authDelete(`${API_ENDPOINTS.ASSESSMENTS}/${codigo}/questions/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['assessments', 'questions', codigo],
+        queryKey: ['assessments', 'questions', codigo]
       })
-    },
+    }
   })
 }
 
@@ -212,7 +212,7 @@ export function useModuleAssessment(moduloId: string, enabled = true) {
       }>(`${API_ENDPOINTS.ASSESSMENTS}/module/${moduloId}/for-student`)
       return response.data
     },
-    enabled: enabled && !!moduloId,
+    enabled: enabled && !!moduloId
   })
 }
 
@@ -256,7 +256,7 @@ export function useStartAssessment() {
         data: StartAssessmentResponse
       }>(`${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/start-complete`, {})
       return response.data // Retorna apenas os dados, não o wrapper
-    },
+    }
   })
 }
 
@@ -272,7 +272,7 @@ export function useActiveAttempt(avaliacaoCodigo: string, enabled = true) {
       }>(`${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/active-attempt`)
       return response.data // Retorna os dados ou null
     },
-    enabled: enabled && !!avaliacaoCodigo,
+    enabled: enabled && !!avaliacaoCodigo
   })
 }
 
@@ -312,7 +312,7 @@ export function useSubmitAssessment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments'] })
       queryClient.invalidateQueries({ queryKey: ['enrollments'] })
-    },
+    }
   })
 }
 
@@ -338,7 +338,7 @@ export function useUserAttempts(avaliacaoCodigo: string, enabled = true) {
       }>(`${API_ENDPOINTS.ASSESSMENTS}/${avaliacaoCodigo}/my-attempts`)
       return response.data
     },
-    enabled: enabled && !!avaliacaoCodigo,
+    enabled: enabled && !!avaliacaoCodigo
   })
 }
 
@@ -370,7 +370,7 @@ export function usePendingReviews(cursoCodigo: string, enabled = true) {
       }>(`${API_ENDPOINTS.ASSESSMENTS}/reviews/pending?curso_id=${cursoCodigo}`)
       return response.data
     },
-    enabled: enabled && !!cursoCodigo,
+    enabled: enabled && !!cursoCodigo
   })
 }
 
@@ -428,7 +428,7 @@ export function useAttemptForReview(tentativaId: string, enabled = true) {
       }>(`${API_ENDPOINTS.ASSESSMENTS}/attempts/${tentativaId}/review-complete`)
       return response.data
     },
-    enabled: enabled && !!tentativaId,
+    enabled: enabled && !!tentativaId
   })
 }
 
@@ -458,7 +458,7 @@ export function useFinalizeReview() {
     mutationKey: ['assessments', 'finalize-review'],
     mutationFn: async ({
       tentativaId,
-      input,
+      input
     }: {
       tentativaId: string
       input: FinalizeReviewInput
@@ -476,6 +476,6 @@ export function useFinalizeReview() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assessments', 'reviews'] })
       queryClient.invalidateQueries({ queryKey: ['assessments', 'attempts'] })
-    },
+    }
   })
 }

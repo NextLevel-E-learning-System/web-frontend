@@ -30,7 +30,7 @@ export default function RankingTable({ rows }: Props) {
         alignItems: 'center',
         fontWeight: 700,
         color:
-          change > 0 ? '#16a34a' : change < 0 ? '#dc2626' : 'text.secondary',
+          change > 0 ? '#16a34a' : change < 0 ? '#dc2626' : 'text.secondary'
       }}
     >
       {change > 0 ? (

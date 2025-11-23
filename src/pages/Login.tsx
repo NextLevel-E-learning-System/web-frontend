@@ -5,7 +5,7 @@ import {
   IconButton,
   InputAdornment,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material'
 import MailOutlineIcon from '@mui/icons-material/MailOutline'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
@@ -49,7 +49,7 @@ export default function Login() {
               <InputAdornment position='start'>
                 <MailOutlineIcon color='disabled' />
               </InputAdornment>
-            ),
+            )
           }}
         />
         <TextField
@@ -75,7 +75,7 @@ export default function Login() {
                   {showPass ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
-            ),
+            )
           }}
         />
 

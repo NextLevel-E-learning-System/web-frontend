@@ -4,7 +4,7 @@ export function useDashboardLayout() {
   const { navigationItems } = useNavigation()
 
   return {
-    navigationItems,
+    navigationItems
   }
 }
 

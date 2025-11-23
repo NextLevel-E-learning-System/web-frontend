@@ -11,7 +11,7 @@ import {
   TableRow,
   Chip,
   Alert,
-  CircularProgress,
+  CircularProgress
 } from '@mui/material'
 import { People, School, CheckCircle } from '@mui/icons-material'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
@@ -19,7 +19,7 @@ import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import {
   useDashboard,
   type DashboardAdmin,
-  type DashboardGerente,
+  type DashboardGerente
 } from '@/api/users'
 import MetricCard from '@/components/common/StatCard'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
         <Box
           sx={{
             maxWidth: '100%',
-            overflow: 'hidden',
+            overflow: 'hidden'
           }}
         >
           {/* Métricas Principais - ADMIN/GERENTE */}
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
                   borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
-                  overflow: 'auto',
+                  overflow: 'auto'
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
                   borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
-                  overflow: 'auto',
+                  overflow: 'auto'
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
@@ -199,7 +199,7 @@ export default function AdminDashboard() {
                   borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
-                  overflow: 'auto',
+                  overflow: 'auto'
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                     borderRadius: 2,
                     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                     maxWidth: '100%',
-                    overflow: 'auto',
+                    overflow: 'auto'
                   }}
                 >
                   <Typography

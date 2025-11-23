@@ -14,7 +14,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Tabs,
-  Tab,
+  Tab
 } from '@mui/material'
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMore'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
@@ -35,7 +35,7 @@ import {
   useUpdateQuestion,
   useDeleteQuestion,
   type Question,
-  type Assessment,
+  type Assessment
 } from '@/api/assessments'
 
 interface Props {
@@ -61,11 +61,11 @@ const formatQuestionType = (tipo: string) => {
 export default function ModuleAssessmentsPanel({
   cursoCodigo,
   moduloId,
-  isViewOnly = false,
+  isViewOnly = false
 }: Props) {
   const { data: assessments = [], isLoading } = useAssessments({
     curso_id: cursoCodigo,
-    modulo_id: moduloId,
+    modulo_id: moduloId
   })
   const createAssessment = useCreateAssessment()
   const deleteAssessment = useDeleteAssessment()
@@ -97,7 +97,7 @@ export default function ModuleAssessmentsPanel({
   const questionsQuery = useAssessmentQuestions(activeAssessmentForQuestions, {
     enabled:
       !!activeAssessmentForQuestions &&
-      expanded === activeAssessmentForQuestions,
+      expanded === activeAssessmentForQuestions
   })
   const { mutateAsync: createQuestion } = useCreateQuestion(
     activeAssessmentForQuestions
@@ -132,7 +132,7 @@ export default function ModuleAssessmentsPanel({
       open: true,
       kind: 'toggle-assessment',
       id: assessment.codigo,
-      assessment,
+      assessment
     })
   }
 
@@ -179,8 +179,8 @@ export default function ModuleAssessmentsPanel({
                   boxShadow: 'none',
                   overflow: 'hidden',
                   '&:before': {
-                    display: 'none',
-                  },
+                    display: 'none'
+                  }
                 }}
               >
                 <AccordionSummary
@@ -193,8 +193,8 @@ export default function ModuleAssessmentsPanel({
                         : 'background.paper',
                     transition: 'background-color 0.2s ease',
                     '& .MuiAccordionSummary-content': {
-                      my: 1.5,
-                    },
+                      my: 1.5
+                    }
                   }}
                 >
                   <Stack
@@ -224,7 +224,7 @@ export default function ModuleAssessmentsPanel({
                               setAssessmentDialog({
                                 open: true,
                                 mode: 'edit',
-                                codigo: a.codigo,
+                                codigo: a.codigo
                               })
                             }}
                           >
@@ -256,7 +256,7 @@ export default function ModuleAssessmentsPanel({
                     sx={{
                       mb: 2,
                       borderBottom: theme =>
-                        `1px solid ${theme.palette.divider}`,
+                        `1px solid ${theme.palette.divider}`
                     }}
                   >
                     <Tabs
@@ -313,7 +313,7 @@ export default function ModuleAssessmentsPanel({
                               setQuestionDialog({
                                 open: true,
                                 mode: 'create',
-                                assessmentCodigo: a.codigo,
+                                assessmentCodigo: a.codigo
                               })
                             }
                             variant='text'
@@ -328,7 +328,7 @@ export default function ModuleAssessmentsPanel({
                           sx={{
                             display: 'flex',
                             justifyContent: 'center',
-                            py: 2,
+                            py: 2
                           }}
                         >
                           <CircularProgress size={20} />
@@ -347,14 +347,14 @@ export default function ModuleAssessmentsPanel({
                                 p: 1.5,
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: 1,
+                                gap: 1
                               }}
                             >
                               <Box
                                 sx={{
                                   display: 'flex',
                                   alignItems: 'flex-start',
-                                  gap: 1,
+                                  gap: 1
                                 }}
                               >
                                 <Box sx={{ flex: 1 }}>
@@ -394,7 +394,7 @@ export default function ModuleAssessmentsPanel({
                                               sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: 1,
+                                                gap: 1
                                               }}
                                             >
                                               <Chip
@@ -414,7 +414,7 @@ export default function ModuleAssessmentsPanel({
                                                 }
                                                 sx={{
                                                   minWidth: 32,
-                                                  fontSize: '0.7rem',
+                                                  fontSize: '0.7rem'
                                                 }}
                                               />
                                               <Typography
@@ -429,7 +429,7 @@ export default function ModuleAssessmentsPanel({
                                                       opcao ===
                                                       q.resposta_correta
                                                         ? 'success.main'
-                                                        : 'text.secondary',
+                                                        : 'text.secondary'
                                                 }}
                                               >
                                                 {opcao}
@@ -463,7 +463,7 @@ export default function ModuleAssessmentsPanel({
                                         variant='filled'
                                         sx={{
                                           fontWeight: 600,
-                                          fontSize: '0.75rem',
+                                          fontSize: '0.75rem'
                                         }}
                                       />
                                     </Box>
@@ -491,7 +491,7 @@ export default function ModuleAssessmentsPanel({
                                             open: true,
                                             mode: 'edit',
                                             assessmentCodigo: a.codigo,
-                                            questionId: q.id,
+                                            questionId: q.id
                                           })
                                         }
                                       >
@@ -505,7 +505,7 @@ export default function ModuleAssessmentsPanel({
                                           setConfirm({
                                             open: true,
                                             kind: 'question',
-                                            id: q.id,
+                                            id: q.id
                                           })
                                         }
                                       >
@@ -606,7 +606,7 @@ export default function ModuleAssessmentsPanel({
                   ? Number(confirm.assessment.nota_minima)
                   : undefined,
                 ativo: !confirm.assessment.ativo,
-                modulo_id: confirm.assessment.modulo_id,
+                modulo_id: confirm.assessment.modulo_id
               })
             } else {
               await deleteQuestion(confirm.id)

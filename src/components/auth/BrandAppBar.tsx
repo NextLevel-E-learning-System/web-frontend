@@ -11,7 +11,7 @@ export default function BrandAppBar() {
             'linear-gradient(90deg, rgba(99,102,241,0.10), rgba(59,130,246,0.10), rgba(16,185,129,0.10))',
           borderBottom: 1,
           borderColor: 'divider',
-          px: 2,
+          px: 2
         }}
       >
         <Toolbar disableGutters sx={{ gap: 3 }}>
@@ -24,7 +24,7 @@ export default function BrandAppBar() {
               alignItems: 'center',
               justifyContent: 'center',
               flex: 1,
-              gap: 2,
+              gap: 2
             }}
           ></Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

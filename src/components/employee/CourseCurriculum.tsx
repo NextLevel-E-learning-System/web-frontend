@@ -18,7 +18,7 @@ import { useModuleAssessment } from '@/api/assessments'
 import {
   useStartModule,
   useCompleteModule,
-  useModulosComProgresso,
+  useModulosComProgresso
 } from '../../api/progress'
 import AssessmentQuiz from './AssessmentQuiz'
 import ModuloPlayer from '../learning/ModuloPlayer'
@@ -36,7 +36,7 @@ function ModuleAccordion({
   expanded,
   onToggle,
   enrollmentId,
-  moduleProgress,
+  moduleProgress
 }: {
   module: Module
   expanded: boolean
@@ -97,7 +97,7 @@ function ModuleAccordion({
     try {
       await startModuleMutation.mutateAsync({
         enrollmentId,
-        moduleId: module.id,
+        moduleId: module.id
       })
     } catch (error) {
       console.error('Erro ao iniciar módulo:', error)
@@ -116,7 +116,7 @@ function ModuleAccordion({
     try {
       await completeModuleMutation.mutateAsync({
         enrollmentId,
-        moduleId: module.id,
+        moduleId: module.id
       })
     } catch (error) {
       console.error('Erro ao concluir módulo:', error)
@@ -146,8 +146,8 @@ function ModuleAccordion({
         boxShadow: 'none',
         overflow: 'hidden',
         '&:before': {
-          display: 'none',
-        },
+          display: 'none'
+        }
       }}
     >
       <AccordionSummary
@@ -157,8 +157,8 @@ function ModuleAccordion({
           bgcolor: expanded ? 'rgba(59,130,246,0.07)' : 'background.paper',
           transition: 'background-color 0.2s ease',
           '& .MuiAccordionSummary-content': {
-            my: 1.5,
-          },
+            my: 1.5
+          }
         }}
       >
         <Stack
@@ -187,7 +187,7 @@ function ModuleAccordion({
                       : 'rgba(15,23,42,0.08)',
                 color: 'white',
                 fontSize: 14,
-                fontWeight: 700,
+                fontWeight: 700
               }}
             >
               {module.ordem}
@@ -206,7 +206,7 @@ function ModuleAccordion({
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
+                    overflow: 'hidden'
                   }}
                 >
                   {module.conteudo}
@@ -247,7 +247,7 @@ function ModuleAccordion({
             }
             sx={{
               minWidth: 120,
-              whiteSpace: 'nowrap',
+              whiteSpace: 'nowrap'
             }}
           >
             {getActionLabel()}
@@ -312,7 +312,7 @@ function ModuleAccordion({
 
 export default function CourseCurriculum({
   modules,
-  enrollmentId,
+  enrollmentId
 }: CourseCurriculumProps) {
   const [expandedModule, setExpandedModule] = useState<string | false>(false)
 

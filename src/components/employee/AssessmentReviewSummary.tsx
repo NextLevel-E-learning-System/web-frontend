@@ -49,7 +49,7 @@ const resolveOptions = (raw: unknown): string[] => {
 }
 
 export default function AssessmentReviewSummary({
-  review,
+  review
 }: AssessmentReviewSummaryProps) {
   const dissertativas = review.questoes_dissertativas || []
   const objetivas = review.respostas_objetivas || []
@@ -85,7 +85,7 @@ export default function AssessmentReviewSummary({
                   sx={{
                     p: { xs: 2, md: 2.5 },
                     borderRadius: 1,
-                    borderColor: acertou ? 'success.light' : 'divider',
+                    borderColor: acertou ? 'success.light' : 'divider'
                   }}
                 >
                   <Stack gap={2}>
@@ -140,7 +140,7 @@ export default function AssessmentReviewSummary({
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
-                                gap: 1.5,
+                                gap: 1.5
                               }}
                             >
                               <Stack
@@ -237,7 +237,7 @@ export default function AssessmentReviewSummary({
                       variant='outlined'
                       sx={{
                         p: { xs: 2, md: 2.5 },
-                        borderRadius: 1,
+                        borderRadius: 1
                       }}
                     >
                       <Stack gap={2}>
@@ -262,7 +262,7 @@ export default function AssessmentReviewSummary({
                             color='success'
                             variant='filled'
                             sx={{
-                              alignSelf: { xs: 'flex-start', md: 'center' },
+                              alignSelf: { xs: 'flex-start', md: 'center' }
                             }}
                           />
                         </Stack>
@@ -277,7 +277,7 @@ export default function AssessmentReviewSummary({
                               mt: 1,
                               p: 1.5,
                               borderRadius: 1.5,
-                              bgcolor: 'background.paper',
+                              bgcolor: 'background.paper'
                             }}
                           >
                             <Typography
@@ -302,7 +302,7 @@ export default function AssessmentReviewSummary({
                               bgcolor: 'background.paper',
                               borderColor: questao.feedback_atual
                                 ? 'primary.light'
-                                : 'divider',
+                                : 'divider'
                             }}
                           >
                             <Typography variant='body2'>

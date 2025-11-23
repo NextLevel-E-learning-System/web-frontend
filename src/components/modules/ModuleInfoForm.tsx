@@ -11,7 +11,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
+  MenuItem
 } from '@mui/material'
 import { type Module, useUpdateModule } from '@/api/courses'
 
@@ -26,7 +26,7 @@ export default function ModuleInfoForm({
   cursoCodigo,
   modulo,
   onSaved,
-  isViewOnly = false,
+  isViewOnly = false
 }: Props) {
   const [titulo, setTitulo] = useState(modulo.titulo)
   const [ordem, setOrdem] = useState<number>(modulo.ordem)
@@ -46,7 +46,7 @@ export default function ModuleInfoForm({
         xp,
         obrigatorio,
         conteudo,
-        tipo_conteudo: tipoConteudo,
+        tipo_conteudo: tipoConteudo
       })
       if (response?.mensagem) {
         toast.success(response.mensagem)

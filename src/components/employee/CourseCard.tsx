@@ -31,7 +31,7 @@ export default function CourseCard({
   completionRate: _completionRate,
   instructorName: _instructorName,
   xpOffered,
-  level,
+  level
 }: CourseCardProps) {
   return (
     <Card
@@ -39,7 +39,7 @@ export default function CourseCard({
         overflow: 'hidden',
         height: 340,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column'
       }}
     >
       <Box
@@ -51,7 +51,7 @@ export default function CourseCard({
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'flex-end',
-          p: 1,
+          p: 1
         }}
       >
         <Chip
@@ -61,7 +61,7 @@ export default function CourseCard({
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
             color: '#fff',
             fontWeight: 600,
-            backdropFilter: 'blur(10px)',
+            backdropFilter: 'blur(10px)'
           }}
         />
       </Box>
@@ -73,7 +73,7 @@ export default function CourseCard({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            mb: 1,
+            mb: 1
           }}
         >
           <Chip
@@ -83,7 +83,7 @@ export default function CourseCard({
               background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
               color: '#fff',
               padding: '6px 8px',
-              borderRadius: '16px',
+              borderRadius: '16px'
             }}
           />
         </Box>
@@ -98,7 +98,7 @@ export default function CourseCard({
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             lineHeight: 1.3,
-            minHeight: '1.6em',
+            minHeight: '1.6em'
           }}
         >
           {title}
@@ -116,7 +116,7 @@ export default function CourseCard({
             WebkitBoxOrient: 'vertical',
             lineHeight: 1.4,
             height: '2.8em',
-            flexGrow: 1,
+            flexGrow: 1
           }}
         >
           {description}
@@ -126,14 +126,14 @@ export default function CourseCard({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            mt: 2,
+            mt: 2
           }}
         >
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 2,
+              gap: 2
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>

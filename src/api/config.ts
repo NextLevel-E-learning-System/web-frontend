@@ -9,5 +9,5 @@ export const API_ENDPOINTS = {
   COURSES: '/courses/v1',
   ASSESSMENTS: '/assessments/v1',
   PROGRESS: '/progress/v1',
-  GAMIFICATION: '/gamification/v1',
+  GAMIFICATION: '/gamification/v1'
 } as const

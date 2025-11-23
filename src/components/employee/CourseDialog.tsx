@@ -15,7 +15,7 @@ import {
   PeopleAlt,
   AccessTime,
   WorkspacePremium,
-  PlaylistPlay,
+  PlaylistPlay
 } from '@mui/icons-material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
@@ -23,7 +23,7 @@ import React from 'react'
 import {
   useCourseModules,
   usePrerequisitesTitles,
-  type Module,
+  type Module
 } from '@/api/courses'
 import { Card, Paper } from '@mui/material'
 
@@ -72,7 +72,7 @@ function ModulePreview({ module }: { module: Module }) {
         borderColor: 'divider',
         boxShadow: 'none',
         overflow: 'hidden',
-        '&:before': { display: 'none' },
+        '&:before': { display: 'none' }
       }}
     >
       <Paper
@@ -81,8 +81,8 @@ function ModulePreview({ module }: { module: Module }) {
           py: 2,
           transition: 'background-color 0.2s ease',
           '& .MuiAccordionSummary-content': {
-            my: 1.5,
-          },
+            my: 1.5
+          }
         }}
       >
         <Stack direction='row' spacing={2} alignItems='center' flex={1}>
@@ -97,7 +97,7 @@ function ModulePreview({ module }: { module: Module }) {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 14,
-              fontWeight: 700,
+              fontWeight: 700
             }}
           >
             {module.ordem}
@@ -135,7 +135,7 @@ export default function CourseDialog({
   course,
   onEnroll,
   onGoToCourse,
-  isEnrolling,
+  isEnrolling
 }: Props) {
   const [tab, setTab] = React.useState(0)
 
@@ -143,7 +143,7 @@ export default function CourseDialog({
   const {
     data: fetchedModules,
     isLoading: modulesLoading,
-    error: modulesError,
+    error: modulesError
   } = useCourseModules(shouldFetchModules ? course.courseCode! : '')
 
   // Usar módulos já disponíveis ou os buscados via API
@@ -162,7 +162,7 @@ export default function CourseDialog({
           background: `linear-gradient(135deg, ${course.gradientFrom}, ${course.gradientTo})`,
           px: 3,
           py: 2,
-          color: '#fff',
+          color: '#fff'
         }}
       >
         <Chip
@@ -170,7 +170,7 @@ export default function CourseDialog({
           sx={{
             bgcolor: 'rgba(255,255,255,0.25)',
             color: '#fff',
-            fontWeight: 700,
+            fontWeight: 700
           }}
         />
         <Typography variant='h4' fontWeight={900} sx={{ mt: 1 }}>
@@ -182,7 +182,7 @@ export default function CourseDialog({
             gap: 2,
             alignItems: 'center',
             mt: 1,
-            flexWrap: 'wrap',
+            flexWrap: 'wrap'
           }}
         >
           <Typography variant='body2'>
@@ -218,7 +218,7 @@ export default function CourseDialog({
               sx={{
                 display: 'grid',
                 gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                gap: 2,
+                gap: 2
               }}
             >
               <Box
@@ -226,7 +226,7 @@ export default function CourseDialog({
                   p: 2,
                   border: 1,
                   borderColor: 'divider',
-                  borderRadius: 2,
+                  borderRadius: 2
                 }}
               >
                 <Typography variant='subtitle2' fontWeight={800} gutterBottom>
@@ -237,7 +237,7 @@ export default function CourseDialog({
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
-                    mb: 1,
+                    mb: 1
                   }}
                 >
                   <Person sx={{ fontSize: 16, color: 'text.secondary' }} />
@@ -254,7 +254,7 @@ export default function CourseDialog({
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
-                    mb: 1,
+                    mb: 1
                   }}
                 >
                   <PeopleAlt fontSize='small' color='primary' />
@@ -274,7 +274,7 @@ export default function CourseDialog({
                   p: 2,
                   border: 1,
                   borderColor: 'divider',
-                  borderRadius: 2,
+                  borderRadius: 2
                 }}
               >
                 <Typography variant='subtitle2' fontWeight={800} gutterBottom>
@@ -283,20 +283,20 @@ export default function CourseDialog({
                 {[
                   {
                     icon: <AccessTime fontSize='small' />,
-                    text: `${course.hours} de conteúdo`,
+                    text: `${course.hours} de conteúdo`
                   },
                   {
                     icon: <PlaylistPlay fontSize='small' />,
-                    text: `${modules?.length || 0} módulos`,
+                    text: `${modules?.length || 0} módulos`
                   },
                   {
                     icon: <WorkspacePremium fontSize='small' />,
-                    text: `${course.xpOffered || 0} XP`,
+                    text: `${course.xpOffered || 0} XP`
                   },
                   {
                     icon: <BookmarkIcon fontSize='small' />,
-                    text: 'Certificado de conclusão',
-                  },
+                    text: 'Certificado de conclusão'
+                  }
                 ].map((i, idx) => (
                   <Box
                     key={idx}
@@ -304,7 +304,7 @@ export default function CourseDialog({
                       display: 'flex',
                       alignItems: 'center',
                       gap: 1,
-                      mb: 1,
+                      mb: 1
                     }}
                   >
                     {i.icon}
@@ -320,7 +320,7 @@ export default function CourseDialog({
                 alignItems: 'center',
                 justifyContent: 'end',
                 flexWrap: 'wrap',
-                gap: 2,
+                gap: 2
               }}
             >
               {course.isActive && (

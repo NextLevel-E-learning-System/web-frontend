@@ -11,7 +11,7 @@ import {
   Paper,
   Divider,
   Stack,
-  Avatar,
+  Avatar
 } from '@mui/material'
 import DashboardLayout from '../../components/layout/DashboardLayout'
 import CourseContentHeader from '../../components/employee/CourseContentHeader'
@@ -20,7 +20,7 @@ import { useCategoryColors } from '../../hooks/useCategoryColors'
 import {
   useCourse,
   useCourseModules,
-  useCourseCatalog,
+  useCourseCatalog
 } from '../../api/courses'
 import { useUserEnrollments, useUserCertificates } from '../../api/progress'
 import CourseCurriculum from '@/components/employee/CourseCurriculum'
@@ -31,7 +31,7 @@ const TAB_INDEX = {
   curriculum: 0,
   overview: 1,
   certificate: 2,
-  discussions: 3,
+  discussions: 3
 } as const
 
 type TabIndex = (typeof TAB_INDEX)[keyof typeof TAB_INDEX]
@@ -50,7 +50,7 @@ export default function CourseContent() {
   const {
     data: course,
     isLoading: courseLoading,
-    error: courseError,
+    error: courseError
   } = useCourse(codigo || '')
   const { data: modules, isLoading: modulesLoading } = useCourseModules(
     codigo || ''
@@ -58,7 +58,7 @@ export default function CourseContent() {
 
   // SEMPRE buscar dados atualizados das inscrições (não usar passedEnrollment)
   const { data: userEnrollmentsResponse } = useUserEnrollments(user?.id || '', {
-    refetchOnMount: 'always', // Força refetch ao montar
+    refetchOnMount: 'always' // Força refetch ao montar
   })
 
   // Buscar certificados do usuário para verificar se já existe certificado
@@ -189,9 +189,9 @@ export default function CourseContent() {
                     display: 'grid',
                     gridTemplateColumns: {
                       xs: '1fr',
-                      md: 'repeat(3, minmax(0, 1fr))',
+                      md: 'repeat(3, minmax(0, 1fr))'
                     },
-                    gap: { xs: 2, md: 2.5 },
+                    gap: { xs: 2, md: 2.5 }
                   }}
                 >
                   <Box>
@@ -204,7 +204,7 @@ export default function CourseContent() {
                       sx={{
                         background: `linear-gradient(135deg, ${gradientFrom}, ${gradientTo})`,
                         color: '#fff',
-                        mt: 0.5,
+                        mt: 0.5
                       }}
                     />
                   </Box>
@@ -233,9 +233,9 @@ export default function CourseContent() {
                     display: 'grid',
                     gridTemplateColumns: {
                       xs: '1fr',
-                      md: 'repeat(2, minmax(0, 1fr))',
+                      md: 'repeat(2, minmax(0, 1fr))'
                     },
-                    gap: { xs: 2, md: 2.5 },
+                    gap: { xs: 2, md: 2.5 }
                   }}
                 >
                   <Box>
@@ -273,7 +273,7 @@ export default function CourseContent() {
                         width: 64,
                         height: 64,
                         fontSize: 24,
-                        fontWeight: 700,
+                        fontWeight: 700
                       }}
                     >
                       {completesCourse.instrutor_nome

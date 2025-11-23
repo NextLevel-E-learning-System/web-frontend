@@ -13,12 +13,12 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Skeleton,
+  Skeleton
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material'
 import { useMemo, useState, useCallback } from 'react'
 import { toast } from 'react-toastify'
@@ -35,7 +35,7 @@ import {
   type InstructorCreate,
   type InstructorUpdate,
   type Funcionario,
-  useListarDepartamentosAdmin,
+  useListarDepartamentosAdmin
 } from '@/api/users'
 
 interface InstructorForm {
@@ -74,7 +74,7 @@ export default function AdminInstructors() {
     funcionario_id: '',
     departamento_id: '',
     biografia: '',
-    especialidades: [],
+    especialidades: []
   })
 
   const createMutation = useCreateInstrutor()
@@ -99,7 +99,7 @@ export default function AdminInstructors() {
     setForm({
       funcionario_id: '',
       biografia: '',
-      especialidades: [],
+      especialidades: []
     })
   }
 
@@ -116,7 +116,7 @@ export default function AdminInstructors() {
     setForm({
       ...form,
       funcionario_id: funcionarioId,
-      departamento_id: funcionario?.departamento_id || '',
+      departamento_id: funcionario?.departamento_id || ''
     })
   }
 
@@ -131,7 +131,7 @@ export default function AdminInstructors() {
         funcionario_id: form.funcionario_id,
         biografia: form.biografia.trim() || undefined,
         especialidades:
-          form.especialidades.length > 0 ? form.especialidades : undefined,
+          form.especialidades.length > 0 ? form.especialidades : undefined
       }
 
       await createMutation.mutateAsync(input)
@@ -152,7 +152,7 @@ export default function AdminInstructors() {
       funcionario_id: instructor.funcionario_id,
       departamento_id: instructor.departamento_id || '',
       biografia: instructor.biografia || '',
-      especialidades: instructor.especialidades || [],
+      especialidades: instructor.especialidades || []
     })
   }, [])
 
@@ -163,12 +163,12 @@ export default function AdminInstructors() {
       const input: InstructorUpdate = {
         biografia: form.biografia.trim() || undefined,
         especialidades:
-          form.especialidades.length > 0 ? form.especialidades : undefined,
+          form.especialidades.length > 0 ? form.especialidades : undefined
       }
 
       await updateMutation.mutateAsync({
         id: editingInstructor.funcionario_id,
-        data: input,
+        data: input
       })
 
       toast.success('Instrutor atualizado com sucesso!')
@@ -225,7 +225,7 @@ export default function AdminInstructors() {
               {row?.nome}
             </Typography>
           </Box>
-        ),
+        )
       },
       {
         id: 'departamento',
@@ -234,14 +234,14 @@ export default function AdminInstructors() {
           <Typography variant='body2'>
             {row?.departamento_nome || '-'}
           </Typography>
-        ),
+        )
       },
       {
         id: 'especialidades',
         label: 'Especialidades',
         render: (_value: any, row: Instructor) => (
           <Typography variant='body2'>{row?.especialidades || '-'}</Typography>
-        ),
+        )
       },
       {
         id: 'biografia',
@@ -254,12 +254,12 @@ export default function AdminInstructors() {
               textOverflow: 'ellipsis',
               display: '-webkit-box',
               WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
+              WebkitBoxOrient: 'vertical'
             }}
           >
             {row?.biografia || '-'}
           </Typography>
-        ),
+        )
       },
       {
         id: 'actions',
@@ -285,8 +285,8 @@ export default function AdminInstructors() {
               <DeleteIcon />
             </IconButton>
           </Box>
-        ),
-      },
+        )
+      }
     ],
     [handleEdit, handleDelete]
   )
@@ -309,7 +309,7 @@ export default function AdminInstructors() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 3,
+            mb: 3
           }}
         >
           <FormControl>
@@ -403,7 +403,7 @@ export default function AdminInstructors() {
                       especialidades: e.target.value
                         .split(',')
                         .map(s => s.trim())
-                        .filter(s => s),
+                        .filter(s => s)
                     })
                   }
                   fullWidth
@@ -477,7 +477,7 @@ export default function AdminInstructors() {
                       especialidades: e.target.value
                         .split(',')
                         .map(s => s.trim())
-                        .filter(s => s),
+                        .filter(s => s)
                     })
                   }
                   fullWidth

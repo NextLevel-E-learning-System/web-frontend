@@ -21,7 +21,7 @@ const NotFound = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'grey.100',
+          backgroundColor: 'grey.100'
         }}
       >
         <Box sx={{ textAlign: 'center' }}>

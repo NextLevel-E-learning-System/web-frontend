@@ -16,7 +16,7 @@ import {
   MenuItem,
   Checkbox,
   ListItemText,
-  Divider,
+  Divider
 } from '@mui/material'
 import {
   useCourse,
@@ -26,7 +26,7 @@ import {
   useCategories,
   useCourses,
   type Course,
-  type Category,
+  type Category
 } from '@/api/courses'
 import { useFuncionarios } from '@/api/users'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -139,7 +139,7 @@ export default function CourseEditorPage() {
     xp_oferecido: 0,
     nivel_dificuldade: 'Iniciante',
     pre_requisitos: [],
-    ativo: false,
+    ativo: false
   })
 
   const [departamentoSelecionado, setDepartamentoSelecionado] = useState('')
@@ -158,7 +158,7 @@ export default function CourseEditorPage() {
           xp_oferecido: course.xp_oferecido || 0,
           nivel_dificuldade: course.nivel_dificuldade || 'Iniciante',
           pre_requisitos: course.pre_requisitos || [],
-          ativo: course.ativo,
+          ativo: course.ativo
         }
         const changed = Object.keys(next).some(
           k => next[k as keyof FormState] !== prevForm[k as keyof FormState]
@@ -223,7 +223,7 @@ export default function CourseEditorPage() {
           xp_oferecido: form.xp_oferecido,
           nivel_dificuldade: form.nivel_dificuldade,
           pre_requisitos: form.pre_requisitos,
-          ativo: form.ativo,
+          ativo: form.ativo
         }
         await updateCourse.mutateAsync(updateData)
         toast.success('Curso atualizado com sucesso!')
@@ -244,7 +244,7 @@ export default function CourseEditorPage() {
           xp_oferecido: form.xp_oferecido,
           nivel_dificuldade: form.nivel_dificuldade,
           pre_requisitos: form.pre_requisitos,
-          ativo: form.ativo,
+          ativo: form.ativo
         }
         const result = await createCourse.mutateAsync(createData)
         toast.success('Curso criado com sucesso!')
@@ -258,7 +258,7 @@ export default function CourseEditorPage() {
         // Após criar, redireciona para edição do curso criado se quiser ir para módulos
         if (goToModules) {
           navigate(`/gerenciar/cursos/${codigoCurso}`, {
-            state: { nextTab: MODULES_TAB.id },
+            state: { nextTab: MODULES_TAB.id }
           })
         } else {
           navigate('/gerenciar/cursos')
@@ -289,7 +289,7 @@ export default function CourseEditorPage() {
             sx={{
               display: 'grid',
               gap: 2,
-              gridTemplateColumns: { xs: '1fr', md: 'repeat(12, 1fr)' },
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(12, 1fr)' }
             }}
           >
             <Box sx={{ gridColumn: { xs: 'span 12', md: 'span 3' } }}>
@@ -462,7 +462,7 @@ export default function CourseEditorPage() {
                     const value = e.target.value
                     setForm({
                       ...form,
-                      pre_requisitos: Array.isArray(value) ? value : [value],
+                      pre_requisitos: Array.isArray(value) ? value : [value]
                     })
                   }}
                   renderValue={selected =>

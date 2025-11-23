@@ -8,7 +8,7 @@ import {
   List,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
+  ListItemText
 } from '@mui/material'
 import { PlayCircle, Article, PictureAsPdf } from '@mui/icons-material'
 import VideoPlayer from '../learning/VideoPlayer'
@@ -21,7 +21,7 @@ interface ModuloPlayerProps {
 
 export default function ModuloPlayer({
   modulo,
-  inscricaoId: _inscricaoId,
+  inscricaoId: _inscricaoId
 }: ModuloPlayerProps) {
   const [currentStep, setCurrentStep] = useState(0)
 
@@ -48,7 +48,7 @@ export default function ModuloPlayer({
       ) : (
         <Article />
       ),
-      data: material,
+      data: material
     })
   })
   const currentStepData = steps[currentStep]
@@ -66,7 +66,7 @@ export default function ModuloPlayer({
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: 500,
+                minHeight: 500
               }}
             >
               <Typography variant='subtitle2' color='text.secondary' mb={2}>
@@ -85,12 +85,12 @@ export default function ModuloPlayer({
                         bgcolor: 'primary.main',
                         color: 'white',
                         '&:hover': {
-                          bgcolor: 'primary.dark',
+                          bgcolor: 'primary.dark'
                         },
                         '& .MuiListItemIcon-root': {
-                          color: 'white',
-                        },
-                      },
+                          color: 'white'
+                        }
+                      }
                     }}
                   >
                     <ListItemIcon sx={{ minWidth: 40 }}>
@@ -100,7 +100,7 @@ export default function ModuloPlayer({
                       primary={step.label}
                       primaryTypographyProps={{
                         variant: 'body2',
-                        noWrap: true,
+                        noWrap: true
                       }}
                     />
                   </ListItemButton>
@@ -118,7 +118,7 @@ export default function ModuloPlayer({
               height: '100%',
               minHeight: 500,
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: 'column'
             }}
           >
             {currentStepData?.type === 'material' &&
@@ -138,7 +138,7 @@ export default function ModuloPlayer({
                     style={{
                       width: '100%',
                       height: '80vh',
-                      border: 'none',
+                      border: 'none'
                     }}
                     title={currentStepData.data.nome_arquivo}
                   />

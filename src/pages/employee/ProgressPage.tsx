@@ -4,7 +4,7 @@ import {
   Alert,
   CircularProgress,
   Typography,
-  Divider,
+  Divider
 } from '@mui/material'
 import { MenuBook, StarRate, EmojiEvents } from '@mui/icons-material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
@@ -48,7 +48,7 @@ function CourseProgressItem({
   enrollment,
   course,
   calculateTimeLeft,
-  handleGoToCourse,
+  handleGoToCourse
 }: CourseProgressItemProps) {
   const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
     course.categoria_id
@@ -89,7 +89,7 @@ export default function ProgressPage() {
   const {
     data: userEnrollmentsResponse,
     isLoading: enrollmentsLoading,
-    error: enrollmentsError,
+    error: enrollmentsError
   } = useUserEnrollments(user?.id || '')
 
   // Buscar catálogo de cursos para obter dados completos
@@ -119,8 +119,8 @@ export default function ProgressPage() {
       state: {
         courseData,
         enrollment,
-        fromProgress: true,
-      },
+        fromProgress: true
+      }
     })
   }
 
@@ -247,7 +247,7 @@ export default function ProgressPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              mb: 2,
+              mb: 2
             }}
           >
             <Typography variant='subtitle1' fontWeight={800}>

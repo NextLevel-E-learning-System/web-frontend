@@ -3,13 +3,13 @@ import {
   Box,
   CircularProgress,
   Alert,
-  Paper,
+  Paper
 } from '@mui/material'
 import {
   School,
   People,
   CheckCircle,
-  Assignment,
+  Assignment
 } from '@mui/icons-material'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import MetricCard from '@/components/common/StatCard'
@@ -57,7 +57,7 @@ export default function InstrutorDashboard() {
       <Box
         sx={{
           maxWidth: '100%',
-          overflow: 'hidden',
+          overflow: 'hidden'
         }}
       >
         {/* Métricas Principais */}
@@ -101,7 +101,7 @@ export default function InstrutorDashboard() {
                 borderRadius: 1,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                 maxWidth: '100%',
-                overflow: 'auto',
+                overflow: 'auto'
               }}
             >
               {/*               {cursos.length > 0 ? (

@@ -13,7 +13,7 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
-  Alert,
+  Alert
 } from '@mui/material'
 import { useCourseEnrollments } from '@/api/progress'
 

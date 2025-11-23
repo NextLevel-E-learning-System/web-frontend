@@ -35,7 +35,7 @@ export function useLogin() {
   return useMutation({
     mutationKey: ['auth', 'login'],
     mutationFn: (credentials: LoginRequest) =>
-      apiPost<LoginResponse>(`${API_ENDPOINTS.AUTH}/login`, credentials),
+      apiPost<LoginResponse>(`${API_ENDPOINTS.AUTH}/login`, credentials)
   })
 }
 
@@ -49,7 +49,7 @@ export function useLogout() {
     onSuccess: () => {
       // Invalidar todas as queries
       queryClient.clear()
-    },
+    }
   })
 }
 
@@ -57,6 +57,6 @@ export function useRefreshToken() {
   return useMutation({
     mutationKey: ['auth', 'refresh'],
     mutationFn: () =>
-      apiPost<RefreshResponse>(`${API_ENDPOINTS.AUTH}/refresh`, {}),
+      apiPost<RefreshResponse>(`${API_ENDPOINTS.AUTH}/refresh`, {})
   })
 }

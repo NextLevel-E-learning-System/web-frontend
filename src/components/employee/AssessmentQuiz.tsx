@@ -14,12 +14,12 @@ import {
   Chip,
   CircularProgress,
   Tabs,
-  Tab,
+  Tab
 } from '@mui/material'
 import {
   CheckCircleRounded,
   TimerRounded,
-  PlayArrowRounded,
+  PlayArrowRounded
 } from '@mui/icons-material'
 import {
   useStartAssessment,
@@ -28,7 +28,7 @@ import {
   useUserAttempts,
   useAttemptForReview,
   type StartAssessmentResponse,
-  type AssessmentForStudent,
+  type AssessmentForStudent
 } from '@/api/assessments'
 import { toast } from 'react-toastify'
 import AssessmentReviewSummary from './AssessmentReviewSummary'
@@ -108,12 +108,12 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
       const todasQuestoes = currentAssessmentData.questoes
       const respostasParaEnviar = todasQuestoes.map(questao => ({
         questao_id: questao.id,
-        resposta_funcionario: currentRespostas[questao.id] || null,
+        resposta_funcionario: currentRespostas[questao.id] || null
       }))
 
       await submitAssessment.mutateAsync({
         tentativa_id: currentAssessmentData.tentativa.id,
-        respostas: respostasParaEnviar,
+        respostas: respostasParaEnviar
       })
 
       // Resetar estado do quiz
@@ -174,9 +174,9 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
       REPROVADO: { label: '❌ Reprovado', color: 'error.main' },
       AGUARDANDO_CORRECAO: {
         label: '⏳ Aguardando correção ',
-        color: 'warning.main',
+        color: 'warning.main'
       },
-      EM_ANDAMENTO: { label: '🔄 Em Andamento', color: 'info.main' },
+      EM_ANDAMENTO: { label: '🔄 Em Andamento', color: 'info.main' }
     }
     return statusMap[status] || { label: status, color: 'text.secondary' }
   }
@@ -197,12 +197,12 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
       const todasQuestoes = assessmentData.questoes
       const respostasParaEnviar = todasQuestoes.map(questao => ({
         questao_id: questao.id,
-        resposta_funcionario: respostas[questao.id] || null,
+        resposta_funcionario: respostas[questao.id] || null
       }))
 
       await submitAssessment.mutateAsync({
         tentativa_id: assessmentData.tentativa.id,
-        respostas: respostasParaEnviar,
+        respostas: respostasParaEnviar
       })
 
       // Resetar estado do quiz para voltar à tela de informações
@@ -353,7 +353,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
         <Box
           sx={{
             mb: 2,
-            borderBottom: theme => `1px solid ${theme.palette.divider}`,
+            borderBottom: theme => `1px solid ${theme.palette.divider}`
           }}
         >
           <Tabs
@@ -427,7 +427,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
                           sx={{
                             p: 2,
                             borderLeft: theme =>
-                              `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`,
+                              `4px solid ${theme.palette[statusInfo.color.split('.')[0] as 'success' | 'error' | 'warning' | 'info'].main}`
                           }}
                         >
                           <Stack gap={1}>
@@ -444,7 +444,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
                                 size='small'
                                 sx={{
                                   bgcolor: statusInfo.color,
-                                  color: 'white',
+                                  color: 'white'
                                 }}
                               />
                             </Box>
@@ -509,7 +509,7 @@ export default function AssessmentQuiz({ avaliacao }: AssessmentQuizProps) {
                                     month: '2-digit',
                                     year: 'numeric',
                                     hour: '2-digit',
-                                    minute: '2-digit',
+                                    minute: '2-digit'
                                   })}
                                 </Typography>
                               </Box>
@@ -597,7 +597,7 @@ function QuizContent({
   timeRemaining,
   formatTime,
   isSubmitting,
-  handleSubmit,
+  handleSubmit
 }: {
   assessmentData: StartAssessmentResponse
   currentQuestionIndex: number
@@ -687,8 +687,8 @@ function QuizContent({
                       py: 1,
                       mb: 1,
                       '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
+                        bgcolor: 'action.hover'
+                      }
                     }}
                   />
                 ))}

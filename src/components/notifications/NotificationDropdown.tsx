@@ -10,11 +10,11 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider,
+  Divider
 } from '@mui/material'
 import {
   NotificationsOutlined as NotificationIcon,
-  MarkEmailRead as MarkReadIcon,
+  MarkEmailRead as MarkReadIcon
 } from '@mui/icons-material'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -23,7 +23,7 @@ import {
   useNotifications,
   useMarkNotificationAsRead,
   useMarkAllNotificationsAsRead,
-  type Notification,
+  type Notification
 } from '@/api/notifications'
 
 export default function NotificationDropdown() {
@@ -34,7 +34,7 @@ export default function NotificationDropdown() {
   const { data: unreadData } = useUnreadNotificationsCount()
   const { data: notificationsData, isLoading: notificationsLoading } =
     useNotifications({
-      limit: 10,
+      limit: 10
     })
   const markAsReadMutation = useMarkNotificationAsRead()
   const markAllAsReadMutation = useMarkAllNotificationsAsRead()
@@ -58,7 +58,7 @@ export default function NotificationDropdown() {
     markAllAsReadMutation.mutate(undefined, {
       onSuccess: () => {
         handleClose()
-      },
+      }
     })
   }
 
@@ -66,7 +66,7 @@ export default function NotificationDropdown() {
     try {
       return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
-        locale: ptBR,
+        locale: ptBR
       })
     } catch {
       return 'Agora'
@@ -93,8 +93,8 @@ export default function NotificationDropdown() {
         PaperProps={{
           sx: {
             width: 380,
-            maxHeight: 480,
-          },
+            maxHeight: 480
+          }
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
@@ -105,14 +105,14 @@ export default function NotificationDropdown() {
             px: 2,
             py: 1.5,
             borderBottom: '1px solid',
-            borderColor: 'divider',
+            borderColor: 'divider'
           }}
         >
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              justifyContent: 'space-between'
             }}
           >
             <Typography variant='h6' fontWeight={600}>
@@ -168,8 +168,8 @@ export default function NotificationDropdown() {
                     '&:hover': {
                       backgroundColor: !notification.lida
                         ? 'action.selected'
-                        : 'action.hover',
-                    },
+                        : 'action.hover'
+                    }
                   }}
                   onClick={() =>
                     !notification.lida && handleMarkAsRead(notification.id)
@@ -181,7 +181,7 @@ export default function NotificationDropdown() {
                         sx={{
                           display: 'flex',
                           alignItems: 'flex-start',
-                          gap: 1,
+                          gap: 1
                         }}
                       >
                         <Typography
@@ -199,7 +199,7 @@ export default function NotificationDropdown() {
                               borderRadius: '50%',
                               backgroundColor: 'primary.main',
                               flexShrink: 0,
-                              mt: 0.5,
+                              mt: 0.5
                             }}
                           />
                         )}
@@ -214,7 +214,7 @@ export default function NotificationDropdown() {
                             display: '-webkit-box',
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
+                            overflow: 'hidden'
                           }}
                         >
                           {notification.mensagem}
@@ -224,7 +224,7 @@ export default function NotificationDropdown() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: 1,
-                            mt: 1,
+                            mt: 1
                           }}
                         >
                           <Typography variant='caption' color='text.secondary'>

@@ -46,7 +46,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
         bgcolor: 'rgba(255,255,255,.8)',
         backdropFilter: 'blur(6px)',
         border: '1px solid rgba(255,255,255,.2)',
-        boxShadow: '0 10px 30px rgba(2,6,23,.06)',
+        boxShadow: '0 10px 30px rgba(2,6,23,.06)'
       }}
     >
       <Box
@@ -54,7 +54,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 2,
+          mb: 2
         }}
       >
         <Box>
@@ -64,7 +64,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
               fontWeight: 800,
               background: 'linear-gradient(90deg,#1E88E5,#7E57C2)',
               WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              WebkitTextFillColor: 'transparent'
             }}
           >
             Olá {name}!
@@ -85,7 +85,7 @@ export default function EmployeeHeader({ dashboardData }: EmployeeHeaderProps) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              mb: 1,
+              mb: 1
             }}
           >
             <Typography variant='body2' fontWeight={600}>

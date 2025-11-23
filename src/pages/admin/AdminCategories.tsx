@@ -13,14 +13,14 @@ import {
   Skeleton,
   Grid,
   FormControl,
-  InputLabel,
+  InputLabel
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Category as CategoryIcon,
-  Circle as CircleIcon,
+  Circle as CircleIcon
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -32,7 +32,7 @@ import {
   useCreateCategory,
   useUpdateCategory,
   useDeleteCategory,
-  type Category,
+  type Category
 } from '@/api/courses'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
 import DataTable, { type Column } from '@/components/common/DataTable'
@@ -76,7 +76,7 @@ export default function AdminCategories() {
     nome: '',
     departamento_codigo: '',
     descricao: '',
-    cor_hex: '#3B82F6',
+    cor_hex: '#3B82F6'
   })
 
   const categoriasFiltradas = useMemo(() => {
@@ -100,7 +100,7 @@ export default function AdminCategories() {
       nome: '',
       departamento_codigo: '',
       descricao: '',
-      cor_hex: '#3B82F6',
+      cor_hex: '#3B82F6'
     })
   }
 
@@ -111,7 +111,7 @@ export default function AdminCategories() {
         nome: form.nome,
         departamento_codigo: form.departamento_codigo,
         descricao: form.descricao || undefined,
-        cor_hex: form.cor_hex || undefined,
+        cor_hex: form.cor_hex || undefined
       })
 
       toast.success('Categoria criada com sucesso!')
@@ -129,7 +129,7 @@ export default function AdminCategories() {
       nome: category.nome,
       departamento_codigo: category.departamento_codigo || '',
       descricao: category.descricao || '',
-      cor_hex: category.cor_hex || '#3B82F6',
+      cor_hex: category.cor_hex || '#3B82F6'
     })
     setIsEditOpen(true)
   }
@@ -146,7 +146,7 @@ export default function AdminCategories() {
         nome: form.nome,
         departamento_codigo: form.departamento_codigo,
         descricao: form.descricao || undefined,
-        cor_hex: form.cor_hex || undefined,
+        cor_hex: form.cor_hex || undefined
       })
 
       toast.success('Categoria atualizada com sucesso!')
@@ -199,18 +199,18 @@ export default function AdminCategories() {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
+            gap: 1.5
           }}
         >
           <CircleIcon
             sx={{
               color: categoria.cor_hex || '#3B82F6',
-              fontSize: 24,
+              fontSize: 24
             }}
           />
           <Typography fontWeight={500}>{categoria.nome}</Typography>
         </Box>
-      ),
+      )
     },
     {
       id: 'departamento',
@@ -225,7 +225,7 @@ export default function AdminCategories() {
             {categoria.departamento_codigo}
           </Typography>
         </Box>
-      ),
+      )
     },
     {
       id: 'descricao',
@@ -238,12 +238,12 @@ export default function AdminCategories() {
           sx={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            whiteSpace: 'nowrap'
           }}
         >
           {categoria.descricao || '—'}
         </Typography>
-      ),
+      )
     },
     {
       id: 'acoes',
@@ -267,8 +267,8 @@ export default function AdminCategories() {
             <DeleteIcon />
           </IconButton>
         </Box>
-      ),
-    },
+      )
+    }
   ]
 
   return (
@@ -279,7 +279,7 @@ export default function AdminCategories() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            mb: 3,
+            mb: 3
           }}
         >
           <FormControl>
@@ -378,12 +378,12 @@ export default function AdminCategories() {
                       backgroundColor: 'transparent',
                       '&::-webkit-color-swatch-wrapper': {
                         padding: 0,
-                        borderRadius: '4px',
+                        borderRadius: '4px'
                       },
                       '&::-webkit-color-swatch': {
                         border: 'none',
-                        borderRadius: '4px',
-                      },
+                        borderRadius: '4px'
+                      }
                     }}
                   />
                 </Box>
@@ -528,12 +528,12 @@ export default function AdminCategories() {
                       backgroundColor: 'transparent',
                       '&::-webkit-color-swatch-wrapper': {
                         padding: 0,
-                        borderRadius: '4px',
+                        borderRadius: '4px'
                       },
                       '&::-webkit-color-swatch': {
                         border: 'none',
-                        borderRadius: '4px',
-                      },
+                        borderRadius: '4px'
+                      }
                     }}
                   />
                 </Box>

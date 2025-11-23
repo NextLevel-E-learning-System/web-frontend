@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
         }
         return failureCount < 2
       },
-      staleTime: 1000 * 60 * 5, // 5 minutos
-    },
-  },
+      staleTime: 1000 * 60 * 5 // 5 minutos
+    }
+  }
 })

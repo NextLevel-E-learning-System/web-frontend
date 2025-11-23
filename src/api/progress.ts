@@ -77,9 +77,9 @@ export function useCreateEnrollment() {
     onSuccess: (_, _variables) => {
       queryClient.invalidateQueries({ queryKey: ['progress', 'enrollments'] })
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'user', _variables.funcionario_id],
+        queryKey: ['progress', 'user', _variables.funcionario_id]
       })
-    },
+    }
   })
 }
 
@@ -96,7 +96,7 @@ export function useUserEnrollments(
         `${API_ENDPOINTS.PROGRESS}/inscricoes/usuario/${userId}`
       ),
     enabled: !!userId,
-    refetchOnMount: options?.refetchOnMount,
+    refetchOnMount: options?.refetchOnMount
   })
 }
 
@@ -107,7 +107,7 @@ export function useStartModule() {
     mutationKey: ['progress', 'start-module'],
     mutationFn: ({
       enrollmentId,
-      moduleId,
+      moduleId
     }: {
       enrollmentId: string
       moduleId: string
@@ -126,7 +126,7 @@ export function useStartModule() {
               ? {
                 ...modulo,
                 data_inicio: data.progresso_modulo.criado_em,
-                liberado: true,
+                liberado: true
               }
               : modulo
           )
@@ -136,15 +136,15 @@ export function useStartModule() {
       // Invalidar apenas dados críticos (sem refetch imediato)
       queryClient.invalidateQueries({
         queryKey: ['progress', 'modulos-progresso', variables.enrollmentId],
-        refetchType: 'none', // Não refaz a query imediatamente
+        refetchType: 'none' // Não refaz a query imediatamente
       })
 
       // Invalidar dashboard em background
       queryClient.invalidateQueries({
         queryKey: ['users', 'dashboard'],
-        refetchType: 'none',
+        refetchType: 'none'
       })
-    },
+    }
   })
 }
 
@@ -155,7 +155,7 @@ export function useCompleteModule() {
     mutationKey: ['progress', 'complete-module'],
     mutationFn: ({
       enrollmentId,
-      moduleId,
+      moduleId
     }: {
       enrollmentId: string
       moduleId: string
@@ -174,7 +174,7 @@ export function useCompleteModule() {
               ? {
                 ...modulo,
                 concluido: true,
-                data_conclusao: new Date().toISOString(),
+                data_conclusao: new Date().toISOString()
               }
               : modulo
           )
@@ -184,28 +184,28 @@ export function useCompleteModule() {
       // Invalidar módulos da inscrição (refetch em background)
       queryClient.invalidateQueries({
         queryKey: ['progress', 'modulos-progresso', variables.enrollmentId],
-        refetchType: 'none',
+        refetchType: 'none'
       })
 
       // Invalidar inscrições do usuário para atualizar progresso
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'user', data.resultado.funcionario_id],
+        queryKey: ['progress', 'user', data.resultado.funcionario_id]
       })
 
       // Invalidar dashboard em background
       queryClient.invalidateQueries({
         queryKey: ['users', 'dashboard'],
-        refetchType: 'none',
+        refetchType: 'none'
       })
 
       // If course was completed, invalidate gamification data
       if (data.resultado.curso_concluido) {
         queryClient.invalidateQueries({
           queryKey: ['gamification'],
-          refetchType: 'none',
+          refetchType: 'none'
         })
       }
-    },
+    }
   })
 }
 
@@ -240,7 +240,7 @@ export function useCourseEnrollments(cursoId: string, enabled = true) {
       authGet<CourseEnrollmentsResponse>(
         `${API_ENDPOINTS.PROGRESS}/inscricoes?curso_id=${cursoId}`
       ),
-    enabled: enabled && !!cursoId,
+    enabled: enabled && !!cursoId
   })
 }
 
@@ -263,7 +263,7 @@ export const getEnrollmentStats = (enrollments: UserEnrollment[]) => {
     cancelados: cancelados.length,
     cursosEmAndamento: emAndamento,
     cursosConcluidos: concluidos,
-    cursosCancelados: cancelados,
+    cursosCancelados: cancelados
   }
 }
 
@@ -302,7 +302,7 @@ export function useUserCertificates(userId: string) {
       authGet<UserCertificatesResponse>(
         `${API_ENDPOINTS.PROGRESS}/certificates/user/${userId}`
       ),
-    enabled: !!userId,
+    enabled: !!userId
   })
 }
 
@@ -319,13 +319,13 @@ export function useIssueCertificate() {
     onSuccess: (_, enrollmentId) => {
       // Invalidar certificados do usuário
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'certificates'],
+        queryKey: ['progress', 'certificates']
       })
       // Invalidar inscrição específica
       queryClient.invalidateQueries({
-        queryKey: ['progress', 'enrollment', enrollmentId],
+        queryKey: ['progress', 'enrollment', enrollmentId]
       })
-    },
+    }
   })
 }
 
@@ -335,7 +335,7 @@ export function useGenerateCertificatePdf() {
     mutationFn: (enrollmentId: string) =>
       authGet<CertificatePdfResponse>(
         `${API_ENDPOINTS.PROGRESS}/certificates/enrollment/${enrollmentId}/pdf`
-      ),
+      )
   })
 }
 
@@ -364,6 +364,6 @@ export function useModulosComProgresso(inscricaoId: string) {
       )
       return response.items || []
     },
-    enabled: !!inscricaoId,
+    enabled: !!inscricaoId
   })
 }

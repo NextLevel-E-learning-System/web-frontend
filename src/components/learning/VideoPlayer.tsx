@@ -35,7 +35,7 @@ export default function VideoPlayer({ material }: VideoPlayerProps) {
         style={{
           width: '100%',
           display: 'block',
-          maxHeight: '70vh',
+          maxHeight: '70vh'
         }}
       />
     </Box>

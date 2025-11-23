@@ -4,7 +4,7 @@ import {
   type LegendComponentOption,
   type TooltipComponentOption,
   TooltipComponent,
-  LegendComponent,
+  LegendComponent
 } from 'echarts/components'
 import { PieChart, type PieSeriesOption } from 'echarts/charts'
 import { LabelLayout } from 'echarts/features'
@@ -15,7 +15,7 @@ echarts.use([
   LegendComponent,
   PieChart,
   CanvasRenderer,
-  LabelLayout,
+  LabelLayout
 ])
 
 type EChartsOption = echarts.ComposeOption<
@@ -31,7 +31,7 @@ interface DepartmentPieChartProps {
 export default function DepartmentPieChart({
   data,
   labels,
-  departmentNames,
+  departmentNames
 }: DepartmentPieChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -45,7 +45,7 @@ export default function DepartmentPieChart({
       value,
       name: labels[index], // Usar código do departamento ao invés do nome completo
       label: labels[index],
-      fullName: departmentNames[index],
+      fullName: departmentNames[index]
     }))
 
     const option: EChartsOption = {
@@ -55,7 +55,7 @@ export default function DepartmentPieChart({
           const item = chartData.find(d => d.name === params.name)
           const fullName = item ? item.fullName : params.name
           return `${fullName}<br/>XP Médio: ${params.value} (${params.percent}%)`
-        },
+        }
       },
       legend: {
         orient: 'horizontal',
@@ -65,7 +65,7 @@ export default function DepartmentPieChart({
           // Mostrar nome do departamento com o valor do XP médio
           const item = chartData.find(d => d.name === name)
           return item ? `${name}: ${item.value} XP` : name
-        },
+        }
       },
       series: [
         {
@@ -76,28 +76,28 @@ export default function DepartmentPieChart({
           itemStyle: {
             borderRadius: 6,
             borderColor: '#fff',
-            borderWidth: 2,
+            borderWidth: 2
           },
           label: {
             show: false,
-            position: 'center',
+            position: 'center'
           },
           emphasis: {
             label: {
               show: true,
               fontSize: 20,
-              fontWeight: 'bold',
-            },
+              fontWeight: 'bold'
+            }
           },
           labelLine: {
-            show: false,
+            show: false
           },
           data: chartData.map(item => ({
             value: item.value,
-            name: item.name,
-          })),
-        },
-      ],
+            name: item.name
+          }))
+        }
+      ]
     }
 
     myChart.setOption(option)

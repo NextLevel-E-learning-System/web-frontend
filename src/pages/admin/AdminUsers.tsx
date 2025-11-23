@@ -16,14 +16,14 @@ import {
   FormControl,
   InputLabel,
   Skeleton,
-  Autocomplete,
+  Autocomplete
 } from '@mui/material'
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Person as PersonIcon,
   Badge as BadgeIcon,
-  AdminPanelSettings as AdminIcon,
+  AdminPanelSettings as AdminIcon
 } from '@mui/icons-material'
 import { useMemo, useState, useCallback } from 'react'
 import { toast } from 'react-toastify'
@@ -40,7 +40,7 @@ import {
   type FuncionarioRegister,
   type UpdateFuncionarioInput,
   type UserRole,
-  type Funcionario,
+  type Funcionario
 } from '@/api/users'
 import { useRegister } from '@/hooks/auth'
 import { useAuth } from '@/contexts/AuthContext'
@@ -62,7 +62,7 @@ export default function AdminUsers() {
   const {
     data: usuariosResponse,
     isLoading: loadingUsers,
-    refetch: refetchUsers,
+    refetch: refetchUsers
   } = useFuncionarios()
 
   const usuarios = useMemo(
@@ -98,14 +98,14 @@ export default function AdminUsers() {
   }>({
     open: false,
     user: null,
-    newStatus: false,
+    newStatus: false
   })
   const [form, setForm] = useState<UserForm>({
     nome: '',
     cpf: '',
     email: '',
     departamento_id: '',
-    cargo_nome: '',
+    cargo_nome: ''
   })
 
   // Funções auxiliares para as colunas
@@ -150,7 +150,7 @@ export default function AdminUsers() {
       departamento_id: user.departamento_id || '',
       cargo_nome: user.cargo_nome || '',
       role: user.role,
-      ativo: user.ativo,
+      ativo: user.ativo
     })
   }, [])
 
@@ -159,7 +159,7 @@ export default function AdminUsers() {
     setToggleDialog({
       open: true,
       user,
-      newStatus: !user.ativo,
+      newStatus: !user.ativo
     })
   }, [])
 
@@ -168,7 +168,7 @@ export default function AdminUsers() {
 
     try {
       await toggleUsuario.mutateAsync({
-        ativo: toggleDialog.newStatus,
+        ativo: toggleDialog.newStatus
       })
 
       const acao = toggleDialog.newStatus ? 'ativado' : 'desativado'
@@ -191,23 +191,23 @@ export default function AdminUsers() {
         label: 'Nome',
         render: (value: string) => (
           <Typography fontWeight={500}>{value}</Typography>
-        ),
+        )
       },
       {
         id: 'email',
         label: 'Email',
-        render: (value: string) => <Typography>{value}</Typography>,
+        render: (value: string) => <Typography>{value}</Typography>
       },
       {
         id: 'departamento_id',
         label: 'Departamento',
         render: (value: string | null) =>
-          value ? getDepartmentName(value) : '—',
+          value ? getDepartmentName(value) : '—'
       },
       {
         id: 'cargo_nome',
         label: 'Cargo',
-        render: (value: string | null) => (value ? getCargoName(value) : '—'),
+        render: (value: string | null) => (value ? getCargoName(value) : '—')
       },
       {
         id: 'role',
@@ -220,7 +220,7 @@ export default function AdminUsers() {
             color={getUserTypeColor(value) as any}
             size='small'
           />
-        ),
+        )
       },
       {
         id: 'ativo',
@@ -232,7 +232,7 @@ export default function AdminUsers() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 0.5,
+              gap: 0.5
             }}
           >
             <Switch
@@ -249,7 +249,7 @@ export default function AdminUsers() {
               {value ? 'Ativo' : 'Inativo'}
             </Typography>
           </Box>
-        ),
+        )
       },
       {
         id: 'actions',
@@ -268,8 +268,8 @@ export default function AdminUsers() {
               <EditIcon />
             </IconButton>
           </Box>
-        ),
-      },
+        )
+      }
     ],
     [getDepartmentName, getCargoName, handleEdit, handleToggleAtivo]
   )
@@ -312,7 +312,7 @@ export default function AdminUsers() {
       departamento_id: '',
       cargo_nome: '',
       role: 'FUNCIONARIO',
-      ativo: true,
+      ativo: true
     })
   }
 
@@ -347,7 +347,7 @@ export default function AdminUsers() {
         cpf: cpfLimpo,
         email: form.email.trim(),
         departamento_id: form.departamento_id.trim(),
-        cargo_nome: form.cargo_nome.trim(),
+        cargo_nome: form.cargo_nome.trim()
       }
 
       await criarUsuario.mutateAsync(input)
@@ -372,7 +372,7 @@ export default function AdminUsers() {
         departamento_id: form.departamento_id || undefined,
         cargo_nome: form.cargo_nome || undefined,
         role: form.role,
-        ativo: form.ativo,
+        ativo: form.ativo
       }
 
       await atualizarUsuario.mutateAsync(input)
@@ -429,7 +429,7 @@ export default function AdminUsers() {
             justifyContent: 'space-between',
             mb: 3,
             gap: 2,
-            flexWrap: 'wrap',
+            flexWrap: 'wrap'
           }}
         >
           <FormControl>
@@ -531,7 +531,7 @@ export default function AdminUsers() {
                   onChange={(_, newValue: any) => {
                     setForm({
                       ...form,
-                      departamento_id: newValue?.codigo || '',
+                      departamento_id: newValue?.codigo || ''
                     })
                   }}
                   renderInput={params => (
@@ -643,7 +643,7 @@ export default function AdminUsers() {
                   onChange={(_, newValue: any) => {
                     setForm({
                       ...form,
-                      departamento_id: newValue?.codigo || '',
+                      departamento_id: newValue?.codigo || ''
                     })
                   }}
                   renderInput={params => (

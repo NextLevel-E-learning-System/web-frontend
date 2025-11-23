@@ -20,7 +20,7 @@ import {
   useCourseCatalog,
   useCategories,
   type Course as Curso,
-  type CatalogFilters as FiltrosCatalogo,
+  type CatalogFilters as FiltrosCatalogo
 } from '@/api/courses'
 import { useCreateEnrollment, useUserEnrollments } from '@/api/progress'
 import { useCategoryColors } from '@/hooks/useCategoryColors'
@@ -39,7 +39,7 @@ import {
   Science,
   Security,
   Storefront,
-  TrendingUp,
+  TrendingUp
 } from '@mui/icons-material'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -136,7 +136,7 @@ function CourseItem({
   userProgress,
   calculateTimeLeft,
   handleViewCourse,
-  handleGoToCourse,
+  handleGoToCourse
 }: CourseItemProps) {
   const { gradientFrom, gradientTo, categoryName } = useCategoryColors(
     course.categoria_id
@@ -227,7 +227,7 @@ export default function Courses() {
   const {
     data: courses,
     isLoading: coursesLoading,
-    error: coursesError,
+    error: coursesError
   } = useCourseCatalog(filters)
   const { mutate: createEnrollment, isPending: isEnrolling } =
     useCreateEnrollment()
@@ -242,7 +242,7 @@ export default function Courses() {
       ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
+        b: parseInt(result[3], 16)
       }
       : null
   }
@@ -275,11 +275,11 @@ export default function Courses() {
       const gradientColors = rgb
         ? {
           gradientFrom: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`,
-          gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`,
+          gradientTo: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`
         }
         : {
           gradientFrom: '#6b7280',
-          gradientTo: '#374151',
+          gradientTo: '#374151'
         }
 
       // Conta cursos TOTAIS da categoria (sem filtros aplicados)
@@ -292,7 +292,7 @@ export default function Courses() {
         code: category.codigo,
         ...gradientColors,
         icon: getCategoryIcon(category.codigo),
-        count: courseCount,
+        count: courseCount
       }
     })
   }, [categories, courses])
@@ -375,8 +375,8 @@ export default function Courses() {
       state: {
         courseData,
         enrollment,
-        fromCatalog: true,
-      },
+        fromCatalog: true
+      }
     })
   }
 
@@ -418,7 +418,7 @@ export default function Courses() {
       completionRate: course.taxa_conclusao || 0,
       totalEnrollments: course.total_inscricoes || 0,
       modules: course.modulos,
-      isEnrolled,
+      isEnrolled
     }
   }
 
@@ -431,7 +431,7 @@ export default function Courses() {
     createEnrollment(
       {
         funcionario_id: user.id,
-        curso_id: courseCode,
+        curso_id: courseCode
       },
       {
         onSuccess: () => {
@@ -488,7 +488,7 @@ export default function Courses() {
                 'Erro ao se inscrever no curso. Tente novamente.'
             )
           }
-        },
+        }
       }
     )
   }
@@ -513,7 +513,7 @@ export default function Courses() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 2,
+          mb: 2
         }}
       >
         <Typography variant='h5' fontWeight={800}>
@@ -566,7 +566,7 @@ export default function Courses() {
                       ? {
                         progresso_percentual:
                             userProgress.progresso_percentual,
-                        status: userProgress.status,
+                        status: userProgress.status
                       }
                       : undefined
                   }

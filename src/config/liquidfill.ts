@@ -1,6 +1,6 @@
 import type {
   DefaultLabelFormatterCallbackParams,
-  EChartsOption,
+  EChartsOption
 } from 'echarts'
 
 /**

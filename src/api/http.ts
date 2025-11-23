@@ -1,7 +1,7 @@
 import axios, {
   AxiosError,
   type AxiosInstance,
-  type AxiosRequestConfig,
+  type AxiosRequestConfig
 } from 'axios'
 import { API_BASE_URL } from './config'
 
@@ -15,14 +15,14 @@ export type HttpOptions = AxiosRequestConfig & {
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // ✅ Sempre enviar cookies
+  withCredentials: true // ✅ Sempre enviar cookies
 })
 
 function mapOptions(opts: HttpOptions = {}): AxiosRequestConfig {
   const { ...rest } = opts
   return {
     ...rest,
-    withCredentials: true, // ✅ Sempre incluir cookies
+    withCredentials: true // ✅ Sempre incluir cookies
   }
 }
 
@@ -30,7 +30,7 @@ function mapOptions(opts: HttpOptions = {}): AxiosRequestConfig {
 async function doRefresh(): Promise<void> {
   const refreshClient = axios.create({
     baseURL: API_BASE_URL,
-    withCredentials: true, // Para enviar refresh token via cookie
+    withCredentials: true // Para enviar refresh token via cookie
   })
 
   await refreshClient.post('/auth/v1/refresh', {})

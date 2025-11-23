@@ -74,7 +74,7 @@ export default function EmployeeDashboard() {
           proximo_nivel: proximoNivel,
           progresso_nivel: progressoNivel,
           xp_proximo_nivel: xpProximoNivel,
-          badges_conquistados: [],
+          badges_conquistados: []
         }}
       />
 

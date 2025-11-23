@@ -14,7 +14,7 @@ import {
   Tooltip,
   Tabs,
   Tab,
-  Typography,
+  Typography
 } from '@mui/material'
 import { Grid } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -22,7 +22,7 @@ import AddIcon from '@mui/icons-material/Add'
 import {
   type CreateQuestionInput,
   type UpdateQuestionInput,
-  type Question,
+  type Question
 } from '@/api/assessments'
 
 export interface QuestionFormDialogProps {
@@ -48,7 +48,7 @@ const PaperOption = ({
   correta,
   onChange,
   onMarkCorrect,
-  onRemove,
+  onRemove
 }: {
   texto: string
   correta: boolean
@@ -94,7 +94,7 @@ export default function QuestionFormDialog({
   mode,
   avaliacaoCodigo,
   question,
-  isSubmitting = false,
+  isSubmitting = false
 }: QuestionFormDialogProps) {
   const [tipo, setTipo] = useState(TIPO_MULTIPLA)
   const [enunciado, setEnunciado] = useState('')
@@ -111,7 +111,7 @@ export default function QuestionFormDialog({
         const newOpcoes = (question.opcoes_resposta || []).map((t, idx) => ({
           id: `${idx}`,
           texto: t,
-          correta: question.resposta_correta === t,
+          correta: question.resposta_correta === t
         }))
 
         setTipo(question.tipo)
@@ -184,7 +184,7 @@ export default function QuestionFormDialog({
               ? respostaVF === 'V'
                 ? 'Verdadeiro'
                 : 'Falso'
-              : undefined,
+              : undefined
       }
       await onCreate(payload)
     } else if (question) {
@@ -205,7 +205,7 @@ export default function QuestionFormDialog({
               ? respostaVF === 'V'
                 ? 'Verdadeiro'
                 : 'Falso'
-              : undefined,
+              : undefined
       }
       await onUpdate(question.id, payload)
     }

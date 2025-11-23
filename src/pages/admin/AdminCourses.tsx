@@ -13,7 +13,7 @@ import {
   Menu,
   Switch,
   Badge,
-  Tooltip,
+  Tooltip
 } from '@mui/material'
 import {
   TrendingUp as TrendingUpIcon,
@@ -23,7 +23,7 @@ import {
   Edit as EditIcon,
   MoreVert as MoreVertIcon,
   Visibility as VisibilityIcon,
-  RateReview,
+  RateReview
 } from '@mui/icons-material'
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -37,7 +37,7 @@ import {
   useCategories,
   useDuplicateCourse,
   useToggleCourseStatus,
-  type Course as Curso,
+  type Course as Curso
 } from '@/api/courses'
 import { useFuncionarios } from '@/api/users'
 import ConfirmationDialog from '@/components/common/ConfirmationDialog'
@@ -61,7 +61,7 @@ export default function AdminCourses() {
     categoria: 'all',
     instrutor: 'all',
     status: 'all',
-    nivel: 'all',
+    nivel: 'all'
   })
 
   // Navegação para editor dedicado
@@ -95,7 +95,7 @@ export default function AdminCourses() {
   const {
     data: cursosResponse,
     isLoading: loadingCursos,
-    refetch,
+    refetch
   } = useCourses(coursesFilters)
   const location = useLocation()
   // Refetch cursos ao voltar para a página
@@ -140,8 +140,8 @@ export default function AdminCourses() {
     navigate(`/gerenciar/cursos/${curso.codigo}`, {
       state: {
         viewOnly: true,
-        ...(hasPendentes && { nextTab: 'reviews' }),
-      },
+        ...(hasPendentes && { nextTab: 'reviews' })
+      }
     })
   }
 
@@ -165,7 +165,7 @@ export default function AdminCourses() {
     try {
       await toggleStatusMutation.mutateAsync({
         codigo: curso.codigo,
-        active: curso.ativo ? false : true,
+        active: curso.ativo ? false : true
       })
       setAnchorEl(null)
     } catch (error) {
@@ -236,7 +236,7 @@ export default function AdminCourses() {
               display: 'flex',
               alignItems: 'center',
               gap: 1,
-              mt: 0.5,
+              mt: 0.5
             }}
           >
             <ScheduleIcon fontSize='small' color='action' />
@@ -249,7 +249,7 @@ export default function AdminCourses() {
             </Typography>
           </Box>
         </Box>
-      ),
+      )
     },
     {
       id: 'categoria',
@@ -267,11 +267,11 @@ export default function AdminCourses() {
               color: categoria?.cor_hex || '#666',
               backgroundColor: categoria?.cor_hex
                 ? `${categoria.cor_hex}15`
-                : 'transparent',
+                : 'transparent'
             }}
           />
         )
-      },
+      }
     },
     !isInstrutor
       ? {
@@ -280,7 +280,7 @@ export default function AdminCourses() {
         align: 'center' as const,
         render: (value: string | null) => (
           <Typography variant='body2'>{value || '-'}</Typography>
-        ),
+        )
       }
       : null,
     {
@@ -295,7 +295,7 @@ export default function AdminCourses() {
             color={getNivelColor(curso.nivel_dificuldade)}
           />
         </Box>
-      ),
+      )
     },
     {
       id: 'inscritos',
@@ -310,7 +310,7 @@ export default function AdminCourses() {
             {curso.total_conclusoes || 0} conclusões
           </Typography>
         </Box>
-      ),
+      )
     },
     // Coluna de correções pendentes (apenas para INSTRUTOR)
     isInstrutor
@@ -330,7 +330,7 @@ export default function AdminCourses() {
           >
             {curso.pendentes_correcao || 0}
           </Typography>
-        ),
+        )
       }
       : null,
     {
@@ -355,7 +355,7 @@ export default function AdminCourses() {
             }
           />
         </Box>
-      ),
+      )
     },
     {
       id: 'status',
@@ -367,7 +367,7 @@ export default function AdminCourses() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 0.5,
+            gap: 0.5
           }}
         >
           <Switch
@@ -385,7 +385,7 @@ export default function AdminCourses() {
             {curso.ativo ? 'Ativo' : 'Inativo'}
           </Typography>
         </Box>
-      ),
+      )
     },
     {
       id: 'acoes',
@@ -413,8 +413,8 @@ export default function AdminCourses() {
             </IconButton>
           </Tooltip>
         )
-      },
-    },
+      }
+    }
   ]
 
   const courseColumns: Column[] = allColumns.filter(
@@ -441,7 +441,7 @@ export default function AdminCourses() {
             justifyContent: 'space-between',
             mb: 3,
             gap: 2,
-            flexWrap: 'wrap',
+            flexWrap: 'wrap'
           }}
         >
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
@@ -547,14 +547,14 @@ export default function AdminCourses() {
                   navigate(
                     `/gerenciar/cursos/${selectedCourseForMenu.codigo}`,
                     {
-                      state: { viewOnly: true, nextTab: 'reviews' },
+                      state: { viewOnly: true, nextTab: 'reviews' }
                     }
                   )
                 }
               }}
               sx={{
                 color: 'warning.main',
-                fontWeight: 500,
+                fontWeight: 500
               }}
             >
               <RateReview sx={{ mr: 1 }} fontSize='small' />
@@ -588,7 +588,7 @@ export default function AdminCourses() {
               opacity:
                 selectedCourseForMenu && !canEditCourse(selectedCourseForMenu)
                   ? 0.5
-                  : 1,
+                  : 1
             }}
           >
             <EditIcon sx={{ mr: 1 }} fontSize='small' />
@@ -601,7 +601,7 @@ export default function AdminCourses() {
                 setConfirmDialog({
                   open: true,
                   action: 'duplicate',
-                  curso: selectedCourseForMenu,
+                  curso: selectedCourseForMenu
                 })
               }
             }}

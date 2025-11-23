@@ -30,7 +30,7 @@ export default function FilterBar({
   onCategoryChange,
   onLevelChange,
   onDurationChange,
-  onClearFilters,
+  onClearFilters
 }: FilterBarProps) {
   return (
     <Box
@@ -40,7 +40,7 @@ export default function FilterBar({
         gap: 1.5,
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        mb: 2,
+        mb: 2
       }}
     >
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>

@@ -6,7 +6,7 @@ interface CourseForumPanelProps {
 }
 
 export default function CourseForumPanel({
-  cursoCodigo: _cursoCodigo,
+  cursoCodigo: _cursoCodigo
 }: CourseForumPanelProps) {
   return (
     <Box>

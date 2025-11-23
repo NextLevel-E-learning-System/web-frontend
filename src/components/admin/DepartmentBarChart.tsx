@@ -18,7 +18,7 @@ interface DepartmentBarChartProps {
 
 export default function DepartmentBarChart({
   data,
-  labels,
+  labels
 }: DepartmentBarChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
 
@@ -32,19 +32,19 @@ export default function DepartmentBarChart({
         left: '3%',
         right: '4%',
         bottom: '3%',
-        containLabel: true,
+        containLabel: true
       },
       xAxis: {
         type: 'category',
         data: labels,
         axisLabel: {
           rotate: 0,
-          fontSize: 12,
-        },
+          fontSize: 12
+        }
       },
       yAxis: {
         type: 'value',
-        minInterval: 1,
+        minInterval: 1
       },
       series: [
         {
@@ -52,16 +52,16 @@ export default function DepartmentBarChart({
           type: 'bar',
           itemStyle: {
             color: '#1283E6',
-            borderRadius: [4, 4, 0, 0],
+            borderRadius: [4, 4, 0, 0]
           },
           label: {
             show: true,
             position: 'top',
             fontSize: 12,
-            fontWeight: 'bold',
-          },
-        },
-      ],
+            fontWeight: 'bold'
+          }
+        }
+      ]
     }
 
     myChart.setOption(option)

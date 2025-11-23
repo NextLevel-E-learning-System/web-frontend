@@ -20,19 +20,19 @@ import {
   DialogActions,
   Divider,
   Alert,
-  CircularProgress,
+  CircularProgress
 } from '@mui/material'
 import {
   RateReview as ReviewIcon,
   CheckCircle as ApproveIcon,
   Info as InfoIcon,
-  CheckCircle,
+  CheckCircle
 } from '@mui/icons-material'
 import { toast } from 'react-toastify'
 import {
   usePendingReviews,
   useAttemptForReview,
-  useFinalizeReview,
+  useFinalizeReview
 } from '@/api/assessments'
 
 interface Props {
@@ -115,7 +115,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
           typeof questao.pontuacao_atual === 'number'
             ? questao.pontuacao_atual
             : null,
-        feedback: questao.feedback_atual || '',
+        feedback: questao.feedback_atual || ''
       }))
     })
   }, [attemptDetails, reviewDialog.open])
@@ -138,14 +138,14 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
       const correcoesPayload = questionScores.map(score => ({
         resposta_id: score.resposta_id,
         pontuacao: score.pontuacao,
-        feedback: score.feedback?.trim() ? score.feedback.trim() : undefined,
+        feedback: score.feedback?.trim() ? score.feedback.trim() : undefined
       }))
 
       const result = await finalizeReview.mutateAsync({
         tentativaId: reviewDialog.tentativaId,
         input: {
-          correcoes: correcoesPayload,
-        },
+          correcoes: correcoesPayload
+        }
       })
 
       // Usar a mensagem que vem da API
@@ -258,7 +258,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                         month: '2-digit',
                         year: 'numeric',
                         hour: '2-digit',
-                        minute: '2-digit',
+                        minute: '2-digit'
                       })}
                     </Typography>
                   </TableCell>
@@ -310,7 +310,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                       month: '2-digit',
                       year: 'numeric',
                       hour: '2-digit',
-                      minute: '2-digit',
+                      minute: '2-digit'
                     }
                   )}
                 </Typography>
@@ -355,7 +355,7 @@ export default function CourseReviewsPanel({ cursoCodigo }: Props) {
                           }}
                           inputProps={{
                             min: 0,
-                            max: 100,
+                            max: 100
                           }}
                           variant='standard'
                         />

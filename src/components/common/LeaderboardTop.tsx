@@ -28,13 +28,13 @@ export default function LeaderboardTop({ top3 }: Props) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 1,
+          gap: 1
         }}
       >
         <EmojiEventsIcon
           sx={{
             color:
-              place === 1 ? '#f59e0b' : place === 2 ? '#9ca3af' : '#d97706',
+              place === 1 ? '#f59e0b' : place === 2 ? '#9ca3af' : '#d97706'
           }}
         />
         <Avatar sx={{ bgcolor: p.avatarColor, width: 56, height: 56 }}>
@@ -52,7 +52,7 @@ export default function LeaderboardTop({ top3 }: Props) {
             py: 0.25,
             borderRadius: 1,
             bgcolor: 'rgba(16,185,129,0.1)',
-            color: '#059669',
+            color: '#059669'
           }}
         >
           Top {place}

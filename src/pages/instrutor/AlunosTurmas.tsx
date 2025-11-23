@@ -12,7 +12,7 @@ import {
   LinearProgress,
   Stack,
   Avatar,
-  Grid,
+  Grid
 } from '@mui/material'
 import {
   Person as PersonIcon,
@@ -23,7 +23,7 @@ import {
   Cancel,
   People,
   IncompleteCircle,
-  Percent,
+  Percent
 } from '@mui/icons-material'
 import { useMemo, useState } from 'react'
 import DashboardLayout from '@/components/layout/DashboardLayout'
@@ -56,13 +56,13 @@ export default function AlunosTurmas() {
       // INSTRUTOR vê apenas seus cursos vindos do endpoint específico
       return instructorCoursesData.items.map(course => ({
         codigo: course.codigo,
-        titulo: course.titulo,
+        titulo: course.titulo
       }))
     } else if (isAdmin && allCoursesData) {
       // ADMIN vê todos os cursos
       return allCoursesData.map(course => ({
         codigo: course.codigo,
-        titulo: course.titulo,
+        titulo: course.titulo
       }))
     }
     return []
@@ -78,7 +78,7 @@ export default function AlunosTurmas() {
   const {
     data: enrollmentsData,
     isLoading: loadingEnrollments,
-    error: enrollmentsError,
+    error: enrollmentsError
   } = useCourseEnrollments(cursoSelecionado)
 
   const enrollments = useMemo(
@@ -93,7 +93,7 @@ export default function AlunosTurmas() {
         total: 0,
         concluidos: 0,
         emAndamento: 0,
-        mediaProgresso: 0,
+        mediaProgresso: 0
       }
     }
 
@@ -111,7 +111,7 @@ export default function AlunosTurmas() {
       total: enrollments.length,
       concluidos,
       emAndamento,
-      mediaProgresso,
+      mediaProgresso
     }
   }, [enrollments])
 
@@ -192,7 +192,7 @@ export default function AlunosTurmas() {
               </Typography>
             </Box>
           </Box>
-        ),
+        )
       },
       {
         id: 'funcionario_departamento',
@@ -201,7 +201,7 @@ export default function AlunosTurmas() {
           <Typography variant='body2'>
             {row.funcionario.departamento}
           </Typography>
-        ),
+        )
       },
       {
         id: 'status',
@@ -215,7 +215,7 @@ export default function AlunosTurmas() {
             size='small'
             variant='outlined'
           />
-        ),
+        )
       },
       {
         id: 'progresso_percentual',
@@ -239,7 +239,7 @@ export default function AlunosTurmas() {
               sx={{ mt: 0.5 }}
             />
           </Box>
-        ),
+        )
       },
       {
         id: 'modulos_concluidos',
@@ -249,7 +249,7 @@ export default function AlunosTurmas() {
           <Typography variant='body2' fontWeight={500}>
             {row.modulos_completos || 0}/{row.total_modulos || 0}
           </Typography>
-        ),
+        )
       },
       {
         id: 'data_inscricao',
@@ -264,8 +264,8 @@ export default function AlunosTurmas() {
             <Typography variant='body2' color='text.secondary'>
               —
             </Typography>
-          ),
-      },
+          )
+      }
     ],
     []
   )
@@ -349,7 +349,7 @@ export default function AlunosTurmas() {
                   alignItems: 'center',
                   mb: 2,
                   gap: 2,
-                  flexWrap: 'wrap',
+                  flexWrap: 'wrap'
                 }}
               >
                 <StatusFilterTabs

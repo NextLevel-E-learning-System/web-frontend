@@ -14,7 +14,7 @@ import {
   ListItemText,
   Divider,
   Collapse,
-  Link,
+  Link
 } from '@mui/material'
 import { Menu as MenuIcon } from '@mui/icons-material'
 import LogoutIcon from '@mui/icons-material/Logout'
@@ -34,7 +34,7 @@ export type NavItem = {
 
 export default function DashboardLayout({
   items,
-  children,
+  children
 }: PropsWithChildren<{ items: NavItem[] }>) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
@@ -82,7 +82,7 @@ export default function DashboardLayout({
                 pl: 2 + level * 2,
                 borderRadius: 1,
                 mx: 1,
-                my: 0.5,
+                my: 0.5
               }}
             >
               <ListItemText primary={item.label} />
@@ -111,7 +111,7 @@ export default function DashboardLayout({
           borderColor: 'divider',
           backgroundColor: 'rgba(255,255,255,0.95)',
           color: 'text.primary',
-          backdropFilter: 'saturate(180%) blur(8px)',
+          backdropFilter: 'saturate(180%) blur(8px)'
         }}
       >
         <Toolbar disableGutters sx={{ gap: 3, px: 2 }}>
@@ -129,7 +129,7 @@ export default function DashboardLayout({
             sx={{
               display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
-              textDecoration: 'none',
+              textDecoration: 'none'
             }}
           >
             <img src={logoIcon} alt='Logo NextLevel' style={{ height: 60 }} />
@@ -143,7 +143,7 @@ export default function DashboardLayout({
               alignItems: 'center',
               justifyContent: 'center',
               flex: '8',
-              gap: 3,
+              gap: 3
             }}
           >
             {items.map((item, idx) => {
@@ -175,7 +175,7 @@ export default function DashboardLayout({
                     fontWeight: 600,
                     color: isActive ? 'primary.main' : 'text.secondary',
                     transition: 'color .2s ease',
-                    '&:hover': { color: 'text.primary' },
+                    '&:hover': { color: 'text.primary' }
                   }}
                 >
                   {item.label}
@@ -191,7 +191,7 @@ export default function DashboardLayout({
               alignItems: 'center',
               gap: 1,
               justifyContent: 'end',
-              flex: 2,
+              flex: 2
             }}
           >
             <Avatar sx={{ width: 32, height: 32 }}>{avatarText}</Avatar>
@@ -218,8 +218,8 @@ export default function DashboardLayout({
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
-            width: 200,
-          },
+            width: 200
+          }
         }}
       >
         <Toolbar>
@@ -235,7 +235,7 @@ export default function DashboardLayout({
         sx={{
           flexGrow: 1,
           bgcolor: '#F5F7FB',
-          minHeight: { xs: 'calc(100vh + 235px)', md: 'calc(100vh - 74px)' },
+          minHeight: { xs: 'calc(100vh + 235px)', md: 'calc(100vh - 74px)' }
         }}
       >
         <Box sx={{ p: { xs: 2, sm: 3 } }}>{children}</Box>
@@ -248,7 +248,7 @@ export default function DashboardLayout({
 function NavDropdown({
   item,
   isActive,
-  currentPath,
+  currentPath
 }: {
   item: NavItem
   isActive: boolean
@@ -271,7 +271,7 @@ function NavDropdown({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          cursor: 'pointer',
+          cursor: 'pointer'
         }}
         onClick={handleClick}
       >
@@ -281,7 +281,7 @@ function NavDropdown({
             fontWeight: 600,
             transition: 'color .2s ease',
             '&:hover': { color: 'text.primary' },
-            color: isActive ? 'primary.main' : 'text.secondary',
+            color: isActive ? 'primary.main' : 'text.secondary'
           }}
         >
           {item.label}
@@ -295,11 +295,11 @@ function NavDropdown({
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
       >
         {item.children?.map((child, idx) => (
@@ -315,9 +315,9 @@ function NavDropdown({
                 bgcolor: 'primary.main',
                 color: 'primary.contrastText',
                 '&:hover': {
-                  bgcolor: 'primary.dark',
-                },
-              },
+                  bgcolor: 'primary.dark'
+                }
+              }
             }}
           >
             <ListItemText primary={child.label} />

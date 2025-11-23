@@ -6,11 +6,11 @@ import {
   DialogActions,
   TextField,
   Grid,
-  Button,
+  Button
 } from '@mui/material'
 import {
   type CreateAssessmentInput,
-  type UpdateAssessmentInput,
+  type UpdateAssessmentInput
 } from '@/api/assessments'
 
 export interface AssessmentFormDialogProps {
@@ -44,7 +44,7 @@ export default function AssessmentFormDialog({
   cursoId,
   moduloId,
   assessment,
-  isSubmitting = false,
+  isSubmitting = false
 }: AssessmentFormDialogProps) {
   const [codigo, setCodigo] = useState('')
   const [titulo, setTitulo] = useState('')
@@ -85,7 +85,7 @@ export default function AssessmentFormDialog({
         tempo_limite: tempoLimite === '' ? undefined : Number(tempoLimite),
         tentativas_permitidas:
           tentativas === '' ? undefined : Number(tentativas),
-        nota_minima: notaMinima === '' ? undefined : Number(notaMinima),
+        nota_minima: notaMinima === '' ? undefined : Number(notaMinima)
       }
       await onCreate(payload)
     } else if (assessment) {
@@ -96,7 +96,7 @@ export default function AssessmentFormDialog({
           tentativas === '' ? undefined : Number(tentativas),
         nota_minima: notaMinima === '' ? undefined : Number(notaMinima),
         ativo,
-        modulo_id: moduloId,
+        modulo_id: moduloId
       }
       await onUpdate(assessment.codigo, payload)
     }
@@ -109,7 +109,7 @@ export default function AssessmentFormDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth='sm'>
       <DialogTitle>
-        {mode === 'create' ? 'Nova Avaliação' : `Editar Avaliação`}
+        {mode === 'create' ? 'Nova Avaliação' : 'Editar Avaliação'}
       </DialogTitle>
       <DialogContent sx={{ py: 0 }}>
         <Grid container spacing={2} sx={{ mt: 1 }}>

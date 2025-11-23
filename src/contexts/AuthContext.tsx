@@ -3,7 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
-  type ReactNode,
+  type ReactNode
 } from 'react'
 
 // Types
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     login,
     logout,
-    hasRole,
+    hasRole
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

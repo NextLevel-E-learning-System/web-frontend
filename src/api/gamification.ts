@@ -40,7 +40,7 @@ export function useMyGamificationProfile() {
   return useQuery<MyGamificationProfile>({
     queryKey: ['gamification', 'profile', 'me'],
     queryFn: () =>
-      authGet<MyGamificationProfile>(`${API_ENDPOINTS.GAMIFICATION}/me`),
+      authGet<MyGamificationProfile>(`${API_ENDPOINTS.GAMIFICATION}/me`)
   })
 }
 
@@ -50,7 +50,7 @@ export function useGlobalRanking() {
     queryFn: () =>
       authGet<GlobalRankingEntry[]>(
         `${API_ENDPOINTS.GAMIFICATION}/ranking/global`
-      ),
+      )
   })
 }
 
@@ -68,6 +68,6 @@ export function useMonthlyRanking(filters: MonthlyRankingFilters = {}) {
 
   return useQuery<MonthlyRankingEntry[]>({
     queryKey: ['gamification', 'ranking', 'monthly', filters],
-    queryFn: () => authGet<MonthlyRankingEntry[]>(url),
+    queryFn: () => authGet<MonthlyRankingEntry[]>(url)
   })
 }

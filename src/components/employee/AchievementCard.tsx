@@ -18,7 +18,7 @@ export default function AchievementCard({
   gradientFrom,
   gradientTo,
   icon,
-  earned = true,
+  earned = true
 }: Props) {
   return (
     <Paper
@@ -31,7 +31,7 @@ export default function AchievementCard({
         height: '100%',
         minHeight: 100,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column'
       }}
     >
       <Box
@@ -39,7 +39,7 @@ export default function AchievementCard({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          mb: 3,
+          mb: 3
         }}
       >
         {icon}
@@ -50,7 +50,7 @@ export default function AchievementCard({
             sx={{
               bgcolor: 'rgba(255,255,255,0.9)',
               color: '#111827',
-              fontWeight: 700,
+              fontWeight: 700
             }}
           />
         ) : null}

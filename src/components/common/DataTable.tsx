@@ -8,7 +8,7 @@ import {
   Paper,
   TablePagination,
   Box,
-  Typography,
+  Typography
 } from '@mui/material'
 import { InboxOutlined } from '@mui/icons-material'
 import React, { useMemo, type ReactNode } from 'react'
@@ -34,7 +34,7 @@ function DataTableInner<T extends Record<string, any>>({
   data,
   size = 'small',
   onRowClick,
-  getRowId = (_, index) => index,
+  getRowId = (_, index) => index
 }: DataTableProps<T>) {
   const [page, setPage] = React.useState(0)
   const [rowsPerPage, setRowsPerPage] = React.useState(5)
@@ -81,7 +81,7 @@ function DataTableInner<T extends Record<string, any>>({
                       alignItems: 'center',
                       justifyContent: 'center',
                       py: 8,
-                      gap: 2,
+                      gap: 2
                     }}
                   >
                     <InboxOutlined

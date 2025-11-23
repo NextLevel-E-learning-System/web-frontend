@@ -21,7 +21,7 @@ export default function MetricCard({ icon, value, label }: Props) {
         gap: 2,
         px: 3,
         bgcolor: theme.palette.background.paper,
-        height: 100,
+        height: 100
       }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -29,7 +29,7 @@ export default function MetricCard({ icon, value, label }: Props) {
           sx={{
             p: 1.5,
             borderRadius: 2,
-            display: 'inline-flex',
+            display: 'inline-flex'
           }}
         >
           {icon}

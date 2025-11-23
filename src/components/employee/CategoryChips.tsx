@@ -19,7 +19,7 @@ interface Props {
 export default function CategoryChips({
   items,
   selectedCategory,
-  onCategorySelect,
+  onCategorySelect
 }: Props) {
   return (
     <Box
@@ -30,7 +30,7 @@ export default function CategoryChips({
         justifyContent: 'center',
         gap: 1.5,
         flexWrap: 'wrap',
-        width: '100%',
+        width: '100%'
       }}
     >
       {items.map(c => {
@@ -69,9 +69,9 @@ export default function CategoryChips({
               '&:hover': onCategorySelect
                 ? {
                   transform: 'scale(1.02)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                 }
-                : {},
+                : {}
             }}
           >
             {/* Ícone */}
@@ -84,7 +84,7 @@ export default function CategoryChips({
               sx={{
                 fontWeight: 700,
                 fontSize: 16,
-                textAlign: 'center',
+                textAlign: 'center'
               }}
             >
               {c.label}

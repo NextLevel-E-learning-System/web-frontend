@@ -1,7 +1,7 @@
 import { Box, Tab, Tabs } from '@mui/material'
 import {
   CheckCircle as CheckCircleIcon,
-  Block as BlockIcon,
+  Block as BlockIcon
 } from '@mui/icons-material'
 
 interface StatusFilterTabsProps {
@@ -21,7 +21,7 @@ export default function StatusFilterTabs({
   inactiveCount,
   activeLabel = 'Ativos',
   inactiveLabel = 'Inativos',
-  sx,
+  sx
 }: StatusFilterTabsProps) {
   const totalCount = activeCount + inactiveCount
 

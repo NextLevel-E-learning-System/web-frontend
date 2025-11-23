@@ -184,7 +184,7 @@ export function useCategories() {
         mensagem: string
       }>(`${API_ENDPOINTS.COURSES}/categorias`)
       return response.items || []
-    },
+    }
   })
 }
 
@@ -197,7 +197,7 @@ export function useCreateCategory() {
       authPost<Category>(`${API_ENDPOINTS.COURSES}/categorias`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
-    },
+    }
   })
 }
 
@@ -213,7 +213,7 @@ export function useUpdateCategory() {
       authPut<Category>(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
-    },
+    }
   })
 }
 
@@ -226,7 +226,7 @@ export function useDeleteCategory() {
       authDelete(`${API_ENDPOINTS.COURSES}/categorias/${codigo}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'categories'] })
-    },
+    }
   })
 }
 
@@ -235,7 +235,7 @@ export function useCourse(codigo: string) {
   return useQuery<Course>({
     queryKey: ['courses', 'detail', codigo],
     queryFn: () => authGet<Course>(`${API_ENDPOINTS.COURSES}/${codigo}`),
-    enabled: !!codigo,
+    enabled: !!codigo
   })
 }
 
@@ -248,7 +248,7 @@ export function useCreateCourse() {
       authPost<Course>(`${API_ENDPOINTS.COURSES}`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] })
-    },
+    }
   })
 }
 
@@ -262,7 +262,7 @@ export function useUpdateCourse(codigo: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'detail', codigo] })
       queryClient.invalidateQueries({ queryKey: ['courses'] })
-    },
+    }
   })
 }
 
@@ -275,7 +275,7 @@ export function useDuplicateCourse() {
       authPost<Course>(`${API_ENDPOINTS.COURSES}/${codigo}/duplicar`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] })
-    },
+    }
   })
 }
 
@@ -289,7 +289,7 @@ export function useToggleCourseStatus() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses', 'detail'] })
       queryClient.invalidateQueries({ queryKey: ['courses'] })
-    },
+    }
   })
 }
 
@@ -307,10 +307,10 @@ export function useCourseModules(codigo: string) {
       >(`${API_ENDPOINTS.COURSES}/${codigo}/modulos`)
       const list: Module[] = Array.isArray(raw) ? raw : raw.items || []
       return list.map(m => ({
-        ...m,
+        ...m
       }))
     },
-    enabled: !!codigo,
+    enabled: !!codigo
   })
 }
 
@@ -326,9 +326,9 @@ export function useCreateModule(codigo: string) {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['courses', 'modules', codigo],
+        queryKey: ['courses', 'modules', codigo]
       })
-    },
+    }
   })
 }
 
@@ -344,9 +344,9 @@ export function useUpdateModule(codigo: string, moduloId: string) {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['courses', 'modules', codigo],
+        queryKey: ['courses', 'modules', codigo]
       })
-    },
+    }
   })
 }
 
@@ -361,9 +361,9 @@ export function useDeleteModule() {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['courses', 'modules'],
+        queryKey: ['courses', 'modules']
       })
-    },
+    }
   })
 }
 
@@ -377,7 +377,7 @@ export function useModuleMaterials(moduloId: string) {
       )
       return response.items || []
     },
-    enabled: !!moduloId,
+    enabled: !!moduloId
   })
 }
 
@@ -395,9 +395,9 @@ export function useUploadMaterial(moduloId: string) {
       }>(`${API_ENDPOINTS.COURSES}/modulos/${moduloId}/materiais`, input),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['courses', 'materials', moduloId],
+        queryKey: ['courses', 'materials', moduloId]
       })
-    },
+    }
   })
 }
 
@@ -410,9 +410,9 @@ export function useDeleteMaterial() {
       authDelete(`${API_ENDPOINTS.COURSES}/materiais/${materialId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['courses', 'materials'],
+        queryKey: ['courses', 'materials']
       })
-    },
+    }
   })
 }
 
@@ -434,7 +434,7 @@ export function useCourseCatalog(filters: CatalogFilters = {}) {
     queryFn: async () => {
       const response = await authGet<CoursesResponse>(url)
       return response.items || (response as unknown as Course[])
-    },
+    }
   })
 }
 
@@ -453,7 +453,7 @@ export function useCourses(filters: CatalogFilters = {}) {
 
   return useQuery<CoursesResponse>({
     queryKey: ['courses', 'list', filters],
-    queryFn: () => authGet<CoursesResponse>(url),
+    queryFn: () => authGet<CoursesResponse>(url)
   })
 }
 
@@ -507,6 +507,6 @@ export function useModuloCompleto(moduloId: string) {
       )
       return response.data
     },
-    enabled: !!moduloId,
+    enabled: !!moduloId
   })
 }
