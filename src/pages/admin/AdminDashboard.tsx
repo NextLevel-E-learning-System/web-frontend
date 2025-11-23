@@ -112,7 +112,7 @@ export default function AdminDashboard() {
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  Visão Geral por Departamento
+                  Visão Geral
                 </Typography>
                 <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Table size='small'>
@@ -308,7 +308,7 @@ export default function AdminDashboard() {
 
           {/* Gráficos */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, lg: 6 }}>
+            <Grid size={{ xs: 12, lg: 8 }}>
               <Paper
                 sx={{
                   p: 3,
@@ -319,7 +319,7 @@ export default function AdminDashboard() {
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  Funcionários Ativos por Departamento
+                  Funcionários por Departamento
                 </Typography>
                 <DepartmentBarChart
                   data={
@@ -335,7 +335,7 @@ export default function AdminDashboard() {
                 />
               </Paper>
             </Grid>
-            <Grid size={{ xs: 12, lg: 6 }}>
+            <Grid size={{ xs: 12, lg: 4 }}>
               <Paper
                 sx={{
                   p: 3,
@@ -346,12 +346,12 @@ export default function AdminDashboard() {
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  Distribuição de Funcionários Ativos
+                  Cursos por Departamento
                 </Typography>
                 <DepartmentPieChart
                   data={
                     (adminData?.metricas_departamento || []).map(
-                      d => d.funcionarios_ativos
+                      d => d.total_cursos
                     ) || []
                   }
                   labels={

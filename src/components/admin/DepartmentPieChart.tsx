@@ -54,24 +54,24 @@ export default function DepartmentPieChart({
         formatter: (params: any) => {
           const item = chartData.find(d => d.name === params.name)
           const fullName = item ? item.fullName : params.name
-          return `${fullName}<br/>XP Médio: ${params.value} (${params.percent}%)`
+          return `${fullName}<br/>Total de cursos: ${params.value}`
         }
       },
       legend: {
-        orient: 'horizontal',
-        left: 'center',
-        bottom: '0%',
+        orient: 'vertical',
+        left: 'left',
+        top: 'center',
         formatter: (name: string) => {
           // Mostrar nome do departamento com o valor do XP médio
           const item = chartData.find(d => d.name === name)
-          return item ? `${name}: ${item.value} XP` : name
+          return item ? `${name}: ${item.value}` : name
         }
       },
       series: [
         {
           type: 'pie',
           radius: ['40%', '70%'],
-          center: ['50%', '45%'],
+          center: ['70%', 'center'],
           avoidLabelOverlap: false,
           itemStyle: {
             borderRadius: 6,
@@ -79,14 +79,11 @@ export default function DepartmentPieChart({
             borderWidth: 2
           },
           label: {
-            show: false,
-            position: 'center'
+            show: false
           },
           emphasis: {
             label: {
-              show: true,
-              fontSize: 20,
-              fontWeight: 'bold'
+              show: false
             }
           },
           labelLine: {
