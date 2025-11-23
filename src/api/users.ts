@@ -149,7 +149,6 @@ export interface DashboardAdmin {
     funcionarios_ativos: number
     total_cursos: number
     total_categorias: number
-    total_instrutores: number
     categorias: {
       categoria_id: string
       categoria_nome: string

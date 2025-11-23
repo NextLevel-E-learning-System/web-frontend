@@ -126,7 +126,6 @@ export default function AdminDashboard() {
                       <TableRow>
                         <TableCell>Departamento</TableCell>
                         <TableCell align='center'>Funcionários</TableCell>
-                        <TableCell align='center'>Instrutores</TableCell>
                         <TableCell align='center'>Cursos</TableCell>
                         <TableCell align='center'>Categorias</TableCell>
                       </TableRow>
@@ -150,12 +149,6 @@ export default function AdminDashboard() {
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                                 <People fontSize='small' color='success' />
                                 <Typography variant='body2'>{dept.funcionarios_ativos}</Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell align='center'>
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                                <Person fontSize='small' sx={{ color: 'primary.main' }} />
-                                <Typography variant='body2'>{dept.total_instrutores || 0}</Typography>
                               </Box>
                             </TableCell>
                             <TableCell align='center'>
