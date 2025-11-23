@@ -10,19 +10,24 @@ import {
   TableHead,
   TableRow,
   Chip,
-  CircularProgress
+  CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material'
-import { People, School, Person } from '@mui/icons-material'
+import { People, School, Person, ExpandMore, Category, MenuBook } from '@mui/icons-material'
 import DepartmentBarChart from '@/components/admin/DepartmentBarChart'
 import DepartmentPieChart from '@/components/admin/DepartmentPieChart'
 import { useDashboard, type DashboardAdmin } from '@/api/users'
 import MetricCard from '@/components/common/StatCard'
 import DashboardLayout from '@/components/layout/DashboardLayout'
 import useDashboardLayout from '@/hooks/useDashboardLayout'
+import { useState } from 'react'
 
 export default function AdminDashboard() {
   const { navigationItems } = useDashboardLayout()
   const { data: dashboardResponse, isLoading } = useDashboard()
+  const [expandedDept, setExpandedDept] = useState<string | false>(false)
 
   // Extrair dashboard dos dados da resposta
   const dashboard = dashboardResponse?.dashboard
@@ -48,11 +53,9 @@ export default function AdminDashboard() {
     )
   }
 
-  // Calcular cursos populares a partir dos dados hierárquicos
-  const cursosPopulares = adminData?.metricas_departamento
-    .flatMap(dept => dept.categorias.flatMap(cat => cat.cursos))
-    .sort((a, b) => b.total_inscricoes - a.total_inscricoes)
-    .slice(0, 5) || []
+  const handleAccordionChange = (panel: string) => (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpandedDept(isExpanded ? panel : false)
+  }
 
   return (
     <DashboardLayout items={navigationItems}>
@@ -96,7 +99,7 @@ export default function AdminDashboard() {
             </Grid>
           </Grid>
 
-          {/* Cursos por Departamento */}
+          {/* Tabela Resumo: Departamentos com Categorias, Funcionários e Cursos */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid size={{ xs: 12 }}>
               <Paper
@@ -109,14 +112,16 @@ export default function AdminDashboard() {
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  Cursos por Departamento
+                  Visão Geral por Departamento
                 </Typography>
                 <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
                   <Table size='small'>
                     <TableHead>
                       <TableRow>
                         <TableCell>Departamento</TableCell>
-                        <TableCell align='right'>Total de Cursos</TableCell>
+                        <TableCell align='center'>Categorias</TableCell>
+                        <TableCell align='center'>Funcionários</TableCell>
+                        <TableCell align='center'>Cursos</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -134,16 +139,31 @@ export default function AdminDashboard() {
                                 {dept.departamento_codigo}
                               </Typography>
                             </TableCell>
-                            <TableCell align='right'>
+                            <TableCell align='center'>
+                              <Chip
+                                label={dept.total_categorias.toString()}
+                                size='small'
+                                color='default'
+                                variant='outlined'
+                                icon={<Category fontSize='small' />}
+                              />
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Chip
+                                label={dept.funcionarios_ativos.toString()}
+                                size='small'
+                                color={dept.funcionarios_ativos > 0 ? 'success' : 'default'}
+                                variant='outlined'
+                                icon={<People fontSize='small' />}
+                              />
+                            </TableCell>
+                            <TableCell align='center'>
                               <Chip
                                 label={dept.total_cursos.toString()}
                                 size='small'
-                                color={
-                                  dept.total_cursos > 0
-                                    ? 'primary'
-                                    : 'default'
-                                }
+                                color={dept.total_cursos > 0 ? 'primary' : 'default'}
                                 variant='outlined'
+                                icon={<MenuBook fontSize='small' />}
                               />
                             </TableCell>
                           </TableRow>
@@ -152,6 +172,136 @@ export default function AdminDashboard() {
                     </TableBody>
                   </Table>
                 </TableContainer>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          {/* Detalhamento: Categorias e Cursos por Departamento */}
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 12 }}>
+              <Paper
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  maxWidth: '100%',
+                  overflow: 'auto'
+                }}
+              >
+                <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
+                  Categorias e Cursos por Departamento
+                </Typography>
+                {(adminData?.metricas_departamento || []).map(dept => (
+                  <Accordion
+                    key={dept.departamento_codigo}
+                    expanded={expandedDept === dept.departamento_codigo}
+                    onChange={handleAccordionChange(dept.departamento_codigo)}
+                    sx={{ mb: 2 }}
+                  >
+                    <AccordionSummary
+                      expandIcon={<ExpandMore />}
+                      sx={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                        '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                        <Typography variant='subtitle1' fontWeight={600}>
+                          {dept.departamento_nome}
+                        </Typography>
+                        <Chip label={`${dept.total_categorias} categorias`} size='small' />
+                        <Chip label={`${dept.total_cursos} cursos`} size='small' color='primary' />
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      {dept.categorias.map(cat => (
+                        <Box key={cat.categoria_id} sx={{ mb: 3 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                            <Category color='action' />
+                            <Typography variant='subtitle2' fontWeight={600}>
+                              {cat.categoria_nome}
+                            </Typography>
+                            <Chip label={`${cat.total_cursos} cursos`} size='small' variant='outlined' />
+                          </Box>
+
+                          {cat.cursos.length > 0 ? (
+                            <TableContainer>
+                              <Table size='small'>
+                                <TableHead>
+                                  <TableRow>
+                                    <TableCell>Curso</TableCell>
+                                    <TableCell align='center'>Instrutor</TableCell>
+                                    <TableCell align='center'>Inscrições</TableCell>
+                                    <TableCell align='center'>Conclusões</TableCell>
+                                    <TableCell align='center'>Taxa</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {cat.cursos.map(curso => (
+                                    <TableRow key={curso.codigo} hover>
+                                      <TableCell>
+                                        <Typography variant='body2' fontWeight={500}>
+                                          {curso.titulo}
+                                        </Typography>
+                                        <Typography variant='caption' color='text.secondary'>
+                                          {curso.codigo}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell align='center'>
+                                        <Typography variant='body2'>
+                                          {curso.instrutor_nome || '-'}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell align='center'>
+                                        <Chip
+                                          label={curso.total_inscricoes}
+                                          size='small'
+                                          variant='outlined'
+                                        />
+                                      </TableCell>
+                                      <TableCell align='center'>
+                                        <Chip
+                                          label={curso.total_conclusoes}
+                                          size='small'
+                                          variant='outlined'
+                                          color='success'
+                                        />
+                                      </TableCell>
+                                      <TableCell align='center'>
+                                        <Chip
+                                          label={`${curso.taxa_conclusao.toFixed(1)}%`}
+                                          size='small'
+                                          color={
+                                            curso.taxa_conclusao >= 70
+                                              ? 'success'
+                                              : curso.taxa_conclusao >= 40
+                                                ? 'warning'
+                                                : 'error'
+                                          }
+                                          variant='filled'
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          ) : (
+                            <Typography variant='body2' color='text.secondary' sx={{ ml: 4, fontStyle: 'italic' }}>
+                              Nenhum curso nesta categoria
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+
+                      {dept.categorias.length === 0 && (
+                        <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic' }}>
+                          Nenhuma categoria neste departamento
+                        </Typography>
+                      )}
+                    </AccordionDetails>
+                  </Accordion>
+                ))}
               </Paper>
             </Grid>
           </Grid>
@@ -218,155 +368,6 @@ export default function AdminDashboard() {
               </Paper>
             </Grid>
           </Grid>
-
-          {/* Tabela de Engajamento por Departamento */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12 }}>
-              <Paper
-                sx={{
-                  p: 3,
-                  borderRadius: 2,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                  maxWidth: '100%',
-                  overflow: 'auto'
-                }}
-              >
-                <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
-                  Engajamento por Departamento
-                </Typography>
-                <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
-                  <Table size='small'>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Departamento</TableCell>
-                        <TableCell align='right'>Funcionários Ativos</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {(adminData?.metricas_departamento || []).map(
-                        dept => (
-                          <TableRow key={dept.departamento_codigo} hover>
-                            <TableCell>
-                              <Typography variant='body2' fontWeight={500}>
-                                {dept.departamento_nome}
-                              </Typography>
-                              <Typography
-                                variant='caption'
-                                color='text.secondary'
-                              >
-                                {dept.departamento_codigo}
-                              </Typography>
-                            </TableCell>
-
-                            <TableCell align='right'>
-                              <Chip
-                                label={dept.funcionarios_ativos.toString()}
-                                size='small'
-                                color={
-                                  dept.funcionarios_ativos > 0
-                                    ? 'success'
-                                    : 'default'
-                                }
-                                variant='outlined'
-                              />
-                            </TableCell>
-
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Paper>
-            </Grid>
-          </Grid>
-
-          {/* Cursos Populares - Apenas para ADMIN */}
-          {cursosPopulares && (
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12 }}>
-                <Paper
-                  sx={{
-                    p: 3,
-                    borderRadius: 2,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                    maxWidth: '100%',
-                    overflow: 'auto'
-                  }}
-                >
-                  <Typography
-                    variant='h6'
-                    gutterBottom
-                    sx={{ fontWeight: 600 }}
-                  >
-                    Cursos Populares
-                  </Typography>
-                  {cursosPopulares.length > 0 ? (
-                    <TableContainer sx={{ maxWidth: '100%', overflow: 'auto' }}>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Curso</TableCell>
-                            <TableCell align='right'>Inscrições</TableCell>
-                            <TableCell align='right'>Taxa Conclusão</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {cursosPopulares.map(
-                            (curso: any, index: number) => (
-                              <TableRow key={curso.codigo || index} hover>
-                                <TableCell>
-                                  <Typography variant='body2' fontWeight={500}>
-                                    {curso.titulo ||
-                                      curso.nome ||
-                                      'Curso sem título'}
-                                  </Typography>
-                                  <Typography
-                                    variant='caption'
-                                    color='text.secondary'
-                                  >
-                                    {curso.codigo}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align='right'>
-                                  <Typography variant='body2'>
-                                    {curso.inscricoes ||
-                                      curso.total_inscricoes ||
-                                      0}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align='right'>
-                                  <Chip
-                                    label={`${((curso.taxa_conclusao || 0) * 100).toFixed(1)}%`}
-                                    size='small'
-                                    color={
-                                      (curso.taxa_conclusao || 0) > 0.7
-                                        ? 'success'
-                                        : (curso.taxa_conclusao || 0) > 0.4
-                                          ? 'warning'
-                                          : 'error'
-                                    }
-                                    variant='filled'
-                                  />
-                                </TableCell>
-                              </TableRow>
-                            )
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  ) : (
-                    <Typography
-                      color='text.secondary'
-                      align='center'
-                      sx={{ py: 3 }}
-                    >
-                      Nenhum curso encontrado
-                    </Typography>
-                  )}
-                </Paper>
-              </Grid>
-            </Grid>
-          )}
         </Box>
       )}
 
