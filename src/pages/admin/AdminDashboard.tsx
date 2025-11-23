@@ -10,7 +10,6 @@ import {
   TableHead,
   TableRow,
   Chip,
-  Alert,
   CircularProgress
 } from '@mui/material'
 import { People, School, CheckCircle } from '@mui/icons-material'
@@ -187,34 +186,34 @@ export default function AdminDashboard() {
                     <TableBody>
                       {(adminData?.engajamento_departamentos || []).map(
                         dept => (
-                        <TableRow key={dept.codigo} hover>
-                          <TableCell>
-                            <Typography variant='body2' fontWeight={500}>
-                              {dept.nome}
-                            </Typography>
-                            <Typography
-                              variant='caption'
-                              color='text.secondary'
-                            >
-                              {dept.codigo}
-                            </Typography>
-                          </TableCell>
+                          <TableRow key={dept.codigo} hover>
+                            <TableCell>
+                              <Typography variant='body2' fontWeight={500}>
+                                {dept.nome}
+                              </Typography>
+                              <Typography
+                                variant='caption'
+                                color='text.secondary'
+                              >
+                                {dept.codigo}
+                              </Typography>
+                            </TableCell>
 
-                          <TableCell align='right'>
-                            <Chip
-                              label={dept.funcionarios_ativos.toString()}
-                              size='small'
-                              color={
-                                dept.funcionarios_ativos > 0
-                                  ? 'success'
-                                  : 'default'
-                              }
-                              variant='outlined'
-                            />
-                          </TableCell>
+                            <TableCell align='right'>
+                              <Chip
+                                label={dept.funcionarios_ativos.toString()}
+                                size='small'
+                                color={
+                                  dept.funcionarios_ativos > 0
+                                    ? 'success'
+                                    : 'default'
+                                }
+                                variant='outlined'
+                              />
+                            </TableCell>
 
-                        </TableRow>
-                      ))}
+                          </TableRow>
+                        ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
