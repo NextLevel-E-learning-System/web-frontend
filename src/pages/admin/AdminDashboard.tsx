@@ -70,7 +70,7 @@ export default function AdminDashboard() {
           {/* Layout: Métricas + Tabela Resumo */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
             {/* Coluna Esquerda: Métricas */}
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <MetricCard
                   label='Funcionários Ativos'
@@ -81,24 +81,24 @@ export default function AdminDashboard() {
                   icon={<People color='info' />}
                 />
                 <MetricCard
-                  label='Total de Cursos'
-                  value={
-                    adminData?.metricas_gerais?.total_cursos?.toString() || '0'
-                  }
-                  icon={<School color='info' />}
-                />
-                <MetricCard
                   label='Total de Instrutores'
                   value={
                     adminData?.metricas_gerais?.total_instrutores?.toString() || '0'
                   }
                   icon={<Person color='success' />}
                 />
+                <MetricCard
+                  label='Total de Cursos'
+                  value={
+                    adminData?.metricas_gerais?.total_cursos?.toString() || '0'
+                  }
+                  icon={<School color='info' />}
+                />
               </Box>
             </Grid>
 
             {/* Coluna Direita: Tabela Resumo */}
-            <Grid size={{ xs: 12, md: 8 }}>
+            <Grid size={{ xs: 12, md: 9 }}>
               <Paper
                 sx={{
                   p: 3,
@@ -117,10 +117,10 @@ export default function AdminDashboard() {
                     <TableHead>
                       <TableRow>
                         <TableCell>Departamento</TableCell>
-                        <TableCell align='center'>Categorias</TableCell>
-                        <TableCell align='center'>Instrutores</TableCell>
                         <TableCell align='center'>Funcionários</TableCell>
+                        <TableCell align='center'>Instrutores</TableCell>
                         <TableCell align='center'>Cursos</TableCell>
+                        <TableCell align='center'>Categorias</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -140,8 +140,8 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell align='center'>
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                                <Category fontSize='small' color='action' />
-                                <Typography variant='body2'>{dept.total_categorias}</Typography>
+                                <People fontSize='small' color='success' />
+                                <Typography variant='body2'>{dept.funcionarios_ativos}</Typography>
                               </Box>
                             </TableCell>
                             <TableCell align='center'>
@@ -152,14 +152,14 @@ export default function AdminDashboard() {
                             </TableCell>
                             <TableCell align='center'>
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                                <People fontSize='small' color='success' />
-                                <Typography variant='body2'>{dept.funcionarios_ativos}</Typography>
+                                <MenuBook fontSize='small' color='primary' />
+                                <Typography variant='body2'>{dept.total_cursos}</Typography>
                               </Box>
                             </TableCell>
                             <TableCell align='center'>
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                                <MenuBook fontSize='small' color='primary' />
-                                <Typography variant='body2'>{dept.total_cursos}</Typography>
+                                <Category fontSize='small' color='action' />
+                                <Typography variant='body2'>{dept.total_categorias}</Typography>
                               </Box>
                             </TableCell>
                           </TableRow>
