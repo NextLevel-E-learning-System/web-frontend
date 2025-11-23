@@ -67,48 +67,46 @@ export default function AdminDashboard() {
             overflow: 'hidden'
           }}
         >
-          {/* Métricas Principais - ADMIN */}
+          {/* Layout: Métricas + Tabela Resumo */}
           <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <MetricCard
-                label='Funcionários Ativos'
-                value={
-                  adminData?.metricas_gerais?.funcionarios_ativos?.toString() ||
-                  '0'
-                }
-                icon={<People color='info' />}
-              />
+            {/* Coluna Esquerda: Métricas */}
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <MetricCard
+                  label='Funcionários Ativos'
+                  value={
+                    adminData?.metricas_gerais?.funcionarios_ativos?.toString() ||
+                    '0'
+                  }
+                  icon={<People color='info' />}
+                />
+                <MetricCard
+                  label='Total de Cursos'
+                  value={
+                    adminData?.metricas_gerais?.total_cursos?.toString() || '0'
+                  }
+                  icon={<School color='info' />}
+                />
+                <MetricCard
+                  label='Total de Instrutores'
+                  value={
+                    adminData?.metricas_gerais?.total_instrutores?.toString() || '0'
+                  }
+                  icon={<Person color='success' />}
+                />
+              </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <MetricCard
-                label='Total de Cursos'
-                value={
-                  adminData?.metricas_gerais?.total_cursos?.toString() || '0'
-                }
-                icon={<School color='info' />}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-              <MetricCard
-                label='Total de Instrutores'
-                value={
-                  adminData?.metricas_gerais?.total_instrutores?.toString() || '0'
-                }
-                icon={<Person color='success' />}
-              />
-            </Grid>
-          </Grid>
 
-          {/* Tabela Resumo: Departamentos com Categorias, Funcionários e Cursos */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid size={{ xs: 12 }}>
+            {/* Coluna Direita: Tabela Resumo */}
+            <Grid size={{ xs: 12, md: 8 }}>
               <Paper
                 sx={{
                   p: 3,
                   borderRadius: 2,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                   maxWidth: '100%',
-                  overflow: 'auto'
+                  overflow: 'auto',
+                  height: '100%'
                 }}
               >
                 <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
@@ -120,6 +118,7 @@ export default function AdminDashboard() {
                       <TableRow>
                         <TableCell>Departamento</TableCell>
                         <TableCell align='center'>Categorias</TableCell>
+                        <TableCell align='center'>Instrutores</TableCell>
                         <TableCell align='center'>Funcionários</TableCell>
                         <TableCell align='center'>Cursos</TableCell>
                       </TableRow>
@@ -143,6 +142,12 @@ export default function AdminDashboard() {
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                                 <Category fontSize='small' color='action' />
                                 <Typography variant='body2'>{dept.total_categorias}</Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell align='center'>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                                <Person fontSize='small' sx={{ color: 'primary.main' }} />
+                                <Typography variant='body2'>{dept.total_instrutores || 0}</Typography>
                               </Box>
                             </TableCell>
                             <TableCell align='center'>
