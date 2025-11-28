@@ -286,7 +286,6 @@ export default function InstrutorDashboard() {
                                                     <TableHead>
                                                       <TableRow>
                                                         <TableCell>Curso</TableCell>
-                                                        <TableCell align='center'>Alunos</TableCell>
                                                         <TableCell align='center'>Inscrições</TableCell>
                                                         <TableCell align='center'>Conclusões</TableCell>
                                                         <TableCell align='center'>Taxa de Conclusão</TableCell>
@@ -299,17 +298,11 @@ export default function InstrutorDashboard() {
                                                             <Typography variant='body2' fontWeight={500}>
                                                               {curso.titulo}
                                                             </Typography>
-                                                            <Typography variant='caption' color='text.secondary'>
-                                                              {curso.codigo}
-                                                            </Typography>
                                                             {curso.descricao && (
                                                               <Typography variant='caption' color='text.secondary' display='block' sx={{ mt: 0.5 }}>
                                                                 {curso.descricao.length > 100 ? `${curso.descricao.substring(0, 100)}...` : curso.descricao}
                                                               </Typography>
                                                             )}
-                                                          </TableCell>
-                                                          <TableCell align='center'>
-                                                            <Typography variant='body2'>{curso.total_alunos}</Typography>
                                                           </TableCell>
                                                           <TableCell align='center'>
                                                             <Typography variant='body2'>{curso.total_inscricoes}</Typography>
