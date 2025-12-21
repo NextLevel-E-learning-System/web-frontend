@@ -53,7 +53,7 @@ export default function Home() {
                   size='large'
                   variant='contained'
                   component={RouterLink}
-                  to='/sign-up'
+                  to='/register'
                   sx={{ background: 'linear-gradient(90deg,#4F46E5,#3B82F6)' }}
                   endIcon={<ArrowForwardIcon />}
                 >
@@ -63,7 +63,7 @@ export default function Home() {
                   size='large'
                   variant='outlined'
                   component={RouterLink}
-                  to='/sign-in'
+                  to='/login'
                 >
                   Entrar na sua conta
                 </Button>

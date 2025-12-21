@@ -1,23 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
-  plugins: [react(), tsconfigPaths(), basicSsl()],
+  plugins: [
+    react(), 
+    tsconfigPaths(), 
+    basicSsl()
+  ],
   base: '/',
-  publicDir: './public',
-  resolve: {
-    alias: {
-      '@': path.resolve(process.cwd(), './src')
-    }
-  },
   server: {
     port: 3000,
     host: '0.0.0.0',
     watch: {
-      usePolling: true
+      usePolling: true 
     }
   }
 })
